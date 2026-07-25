@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, BackgroundTasks
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 from datetime import datetime
 from backend.database import get_db
 from backend.models.models import Post, PostTarget, SocialAccount, PostType, PostStatus, ActivityLog
@@ -20,6 +20,7 @@ class PostCreate(BaseModel):
     location: Optional[str] = ""
     alt_text: Optional[str] = ""
     media_urls: List[str] = []
+    platform_configurations: Optional[Dict[str, Any]] = None # PostForMe platform configs
     scheduled_at: Optional[str] = None # ISO format string
     action: str = "publish_now" # publish_now, schedule, save_draft
 
@@ -30,6 +31,7 @@ class PostUpdate(BaseModel):
     location: Optional[str] = None
     alt_text: Optional[str] = None
     media_urls: Optional[List[str]] = None
+    platform_configurations: Optional[Dict[str, Any]] = None
     scheduled_at: Optional[str] = None
 
 @router.get("/")
@@ -77,6 +79,8 @@ def get_posts(
             "location": p.location,
             "alt_text": p.alt_text,
             "media_urls": p.media_urls or [],
+            "platform_configurations": p.platform_configurations,
+            "postforme_post_id": p.postforme_post_id,
             "scheduled_at": p.scheduled_at,
             "published_at": p.published_at,
             "status": p.status.value,
@@ -118,13 +122,14 @@ async def create_post(
     post = Post(
         workspace_id=data.workspace_id,
         client_id=data.client_id,
-        post_type=PostType(data.post_type),
+        post_type=PostType(data.post_type) if data.post_type in [p.value for p in PostType] else PostType.IMAGE,
         caption=data.caption,
         hashtags=data.hashtags,
         first_comment=data.first_comment,
         location=data.location,
         alt_text=data.alt_text,
         media_urls=data.media_urls,
+        platform_configurations=data.platform_configurations,
         scheduled_at=sched_dt,
         status=initial_status,
         created_by="Agency Admin"

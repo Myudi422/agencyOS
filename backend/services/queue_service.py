@@ -7,8 +7,7 @@ from sqlalchemy.orm import Session
 from backend.models.models import (
     Post, PostTarget, PublishJob, PostStatus, JobStatus, AccountPlatform
 )
-from backend.services.meta_adapter import meta_adapter
-from backend.services.instagrapi_service import instagrapi_service, SessionExpired
+from backend.services.postforme_service import postforme_service
 
 logger = logging.getLogger("QueueService")
 
@@ -69,43 +68,21 @@ class QueueService:
             job.attempts += 1
             db.commit()
 
-            raw_token = meta_adapter.decrypt_token(account.access_token_encrypted)
+            target_account_id = account.postforme_account_id or account.platform_account_id or account.id
+            media_list = [{"url": u} for u in (post.media_urls or [])]
 
             try:
-                if account.platform == AccountPlatform.INSTAGRAM_BUSINESS:
-                    # Check if session cookie/settings JSON from instagrapi
-                    if raw_token.startswith("{") or "authorization_data" in raw_token or "sessionid" in raw_token:
-                        logger.info(f"Publishing to Instagram @{account.username} using Instagrapi Cookie...")
-                        try:
-                            session_settings = json.loads(raw_token)
-                        except Exception:
-                            session_settings = {"sessionid": raw_token}
+                logger.info(f"Publishing via PostForMe API targeting account @{account.username} ({account.platform.value})...")
+                res = await postforme_service.create_post(
+                    caption=post.caption or "",
+                    social_accounts=[target_account_id],
+                    media=media_list if media_list else None,
+                    platform_configurations=post.platform_configurations,
+                    scheduled_at=post.scheduled_at.isoformat() if post.scheduled_at else None,
+                    external_id=post.id
+                )
 
-                        first_media = post.media_urls[0] if post.media_urls else ""
-                        is_video = post.post_type.value == "video" or first_media.endswith(".mp4")
-                        
-                        res = await instagrapi_service.publish_post(
-                            session_settings=session_settings,
-                            media_urls=post.media_urls or [],
-                            caption=post.caption or "",
-                            is_video=is_video
-                        )
-                        platform_post_id = res.get("id") or f"ig_cookie_{account.platform_account_id}"
-                    else:
-                        platform_post_id = await meta_adapter.publish_to_instagram(
-                            ig_user_id=account.platform_account_id,
-                            access_token=raw_token,
-                            media_urls=post.media_urls or [],
-                            caption=post.caption or "",
-                            post_type=post.post_type.value
-                        )
-                else: # FACEBOOK_PAGE
-                    platform_post_id = await meta_adapter.publish_to_facebook(
-                        page_id=account.platform_account_id,
-                        page_access_token=raw_token,
-                        message=post.caption or "",
-                        media_urls=post.media_urls or []
-                    )
+                platform_post_id = res.get("id") or f"pf_{account.platform.value}_{account.id}"
 
                 # Success
                 job.status = JobStatus.SUCCESS
@@ -119,38 +96,17 @@ class QueueService:
 
             except Exception as e:
                 err_msg = str(e)
-                # Detect expired/revoked Instagram session — no point retrying, mark account for reconnect
-                is_login_required = (
-                    "login_required" in err_msg.lower()
-                    or "LoginRequired" in err_msg
-                    or isinstance(e, SessionExpired)
-                )
-
-                if is_login_required:
-                    logger.error(f"Job {job_id}: Instagram session EXPIRED for @{account.username}. Marking account as need_reconnect.")
-                    # Update account status to need_reconnect in DB
-                    account.status = __import__("backend.models.models", fromlist=["AccountStatus"]).AccountStatus.NEED_RECONNECT
-                    job.status = JobStatus.FAILED
-                    job.last_error = f"Session expired — please reconnect @{account.username} with a fresh Instagram sessionid cookie."
-                    target.status = PostStatus.FAILED
-                    target.error_message = "Instagram session expired. Please reconnect the account via Accounts page."
-                    db.commit()
-                    self._update_parent_post_status(db, post.id)
-                    return
-
-                logger.error(f"Job {job_id} attempt {job.attempts} failed: {err_msg}")
+                logger.error(f"Job {job_id} attempt {job.attempts} failed via PostForMe: {err_msg}")
                 job.last_error = err_msg
 
                 if job.attempts < job.max_attempts:
                     job.status = JobStatus.RETRYING
-                    # Exponential backoff (e.g. 5s, 10s, 20s, 40s)
                     delay_seconds = 2 ** job.attempts * 5
                     job.next_retry_at = datetime.utcnow() + timedelta(seconds=delay_seconds)
                     target.status = PostStatus.FAILED
                     target.error_message = f"Attempt {job.attempts} failed: {err_msg}. Retrying in {delay_seconds}s..."
                     db.commit()
 
-                    # Schedule retry
                     await asyncio.sleep(delay_seconds)
                     await self.process_publish_job(job_id)
                 else:

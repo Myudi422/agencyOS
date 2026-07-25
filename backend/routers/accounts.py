@@ -38,7 +38,11 @@ def get_accounts(
     if client_id:
         query = query.filter(SocialAccount.client_id == client_id)
     if platform:
-        query = query.filter(SocialAccount.platform == AccountPlatform(platform))
+        try:
+            enum_platform = AccountPlatform(platform)
+            query = query.filter(SocialAccount.platform == enum_platform)
+        except ValueError:
+            query = query.filter(SocialAccount.platform == platform)
     if status:
         query = query.filter(SocialAccount.status == AccountStatus(status))
     if favorites_only:

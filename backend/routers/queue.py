@@ -12,7 +12,7 @@ def get_queue_status(
     db: Session = Depends(get_db)
 ):
     """
-    Returns Upstash Redis & Celery worker queue metrics and job logs.
+    Returns Redis queue metrics and job logs.
     """
     jobs = (
         db.query(PublishJob)
@@ -52,7 +52,7 @@ def get_queue_status(
         })
 
     return {
-        "engine": "Upstash Redis + Celery Worker",
+        "engine": "AgencyOS Queue Engine",
         "active_workers": 100,
         "metrics": {
             "pending": pending_count,
@@ -81,4 +81,14 @@ async def retry_job(
     db.commit()
 
     background_tasks.add_task(queue_service.process_publish_job, job.id)
-    return {"status": "success", "message": f"Job {job_id} requeued into Upstash Redis."}
+    return {"status": "success", "message": f"Job {job_id} requeued."}
+
+@router.delete("/{job_id}")
+def delete_queue_job(job_id: str, db: Session = Depends(get_db)):
+    """Deletes/cancels a specific queue job."""
+    job = db.query(PublishJob).filter(PublishJob.id == job_id).first()
+    if not job:
+        raise HTTPException(status_code=404, detail="Queue job not found")
+    db.delete(job)
+    db.commit()
+    return {"status": "success", "message": "Queue job deleted"}

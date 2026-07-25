@@ -17,6 +17,17 @@ class RoleEnum(str, enum.Enum):
     VIEWER = "viewer"
 
 class AccountPlatform(str, enum.Enum):
+    FACEBOOK = "facebook"
+    INSTAGRAM = "instagram"
+    X = "x"
+    TIKTOK = "tiktok"
+    TIKTOK_BUSINESS = "tiktok_business"
+    YOUTUBE = "youtube"
+    PINTEREST = "pinterest"
+    LINKEDIN = "linkedin"
+    BLUESKY = "bluesky"
+    THREADS = "threads"
+    # Legacy fallbacks
     INSTAGRAM_BUSINESS = "instagram_business"
     FACEBOOK_PAGE = "facebook_page"
 
@@ -113,11 +124,12 @@ class SocialAccount(Base):
     workspace_id = Column(String(36), ForeignKey("workspaces.id", ondelete="CASCADE"), nullable=False)
     client_id = Column(String(36), ForeignKey("clients.id", ondelete="CASCADE"), nullable=False)
     platform = Column(Enum(AccountPlatform), nullable=False)
-    platform_account_id = Column(String(255), nullable=False) # IG User ID or FB Page ID
+    platform_account_id = Column(String(255), nullable=False) # IG User ID, FB Page ID, etc.
+    postforme_account_id = Column(String(255), nullable=True) # PostForMe spc_xxxx ID
     name = Column(String(255), nullable=False)
     username = Column(String(255), nullable=False, index=True)
     avatar_url = Column(Text, nullable=True)
-    access_token_encrypted = Column(Text, nullable=False)
+    access_token_encrypted = Column(Text, nullable=False, default="postforme_managed")
     token_expires_at = Column(DateTime, nullable=True)
     status = Column(Enum(AccountStatus), default=AccountStatus.CONNECTED, nullable=False)
     is_favorite = Column(Boolean, default=False)
@@ -139,7 +151,7 @@ class Media(Base):
     filename = Column(String(255), nullable=False)
     file_type = Column(String(50), nullable=False) # image/jpeg, video/mp4
     file_size = Column(Integer, nullable=False) # bytes
-    url = Column(Text, nullable=False) # B2 S3 storage URL
+    url = Column(Text, nullable=False) # Storage / CDN URL
     thumbnail_url = Column(Text, nullable=True)
     b2_key = Column(String(255), nullable=False)
     folder = Column(String(255), default="General")
@@ -165,6 +177,8 @@ class Post(Base):
     location = Column(String(255), nullable=True)
     alt_text = Column(Text, nullable=True)
     media_urls = Column(JSON, default=list) # List of image/video URLs
+    platform_configurations = Column(JSON, nullable=True) # PostForMe platform configs (pinterest, tiktok, etc)
+    postforme_post_id = Column(String(255), nullable=True) # PostForMe post ID
     scheduled_at = Column(DateTime, nullable=True, index=True)
     published_at = Column(DateTime, nullable=True)
     status = Column(Enum(PostStatus), default=PostStatus.DRAFT, nullable=False, index=True)

@@ -17,7 +17,7 @@ export default function CalendarPage() {
   const loadEvents = () => {
     if (!activeWorkspace?.id) return;
     fetchApi<any[]>(`/calendar/?workspace_id=${activeWorkspace.id}`)
-      .then((data) => setEvents(data))
+      .then((data) => setEvents(data || []))
       .catch((err) => {
         setEvents([
           { id: "p1", title: "Luxury Apparel Collection Drop", status: "scheduled", scheduled_at: new Date(Date.now() + 86400000).toISOString(), post_type: "image" },
@@ -35,26 +35,30 @@ export default function CalendarPage() {
 
   return (
     <div className="space-y-6 pb-12">
-      {/* Top Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-extrabold text-white font-['Outfit'] gradient-text">
-            Interactive Content Calendar
+      {/* Top Banner - White Clean Glassmorphism */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 sm:p-8 rounded-3xl glass-panel relative overflow-hidden shadow-sm">
+        <div className="space-y-1.5 z-10">
+          <div className="flex items-center gap-2">
+            <span className="px-3 py-1 rounded-full bg-purple-100 text-purple-700 text-[11px] font-bold tracking-wide uppercase border border-purple-200">
+              Interactive Planner
+            </span>
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight font-['Outfit'] gradient-text">
+            Content Calendar
           </h1>
-          <p className="text-xs text-gray-400">
-            Schedule and visually drag-and-drop posts across Month, Week, and Day calendar views.
+          <p className="text-xs sm:text-sm text-slate-600 max-w-2xl leading-relaxed">
+            Visually schedule and monitor scheduled posts across all connected social channels.
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
-          {/* Month/Week/Day Toggle */}
-          <div className="flex bg-[#141624] border border-border rounded-xl p-1">
+        <div className="flex items-center gap-3 z-10 shrink-0">
+          <div className="flex bg-white border border-slate-200 rounded-2xl p-1 shadow-xs">
             {(["month", "week", "day"] as const).map((v) => (
               <button
                 key={v}
                 onClick={() => setViewMode(v)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold uppercase transition-all ${
-                  viewMode === v ? "bg-indigo-600 text-white" : "text-gray-400 hover:text-gray-200"
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold uppercase transition-all ${
+                  viewMode === v ? "bg-purple-600 text-white shadow-xs" : "text-slate-500 hover:text-slate-900"
                 }`}
               >
                 {v}
@@ -64,7 +68,7 @@ export default function CalendarPage() {
 
           <button
             onClick={() => openComposer()}
-            className="py-2.5 px-4 rounded-xl gradient-brand text-white font-medium text-xs flex items-center gap-2 shadow-lg shadow-indigo-500/25 hover:opacity-95 transition-all"
+            className="py-3 px-5 rounded-2xl gradient-brand text-white font-semibold text-xs sm:text-sm flex items-center gap-2 shadow-md shadow-purple-500/25 hover:shadow-lg hover:shadow-purple-500/35 hover:scale-[1.02] active:scale-[0.98] transition-all"
           >
             <Plus className="w-4 h-4" />
             <span>New Post</span>
@@ -73,26 +77,26 @@ export default function CalendarPage() {
       </div>
 
       {/* Calendar Grid Container */}
-      <div className="p-6 rounded-2xl glass-card border border-border/80 space-y-4">
+      <div className="p-6 rounded-3xl glass-card space-y-4">
         {/* Month Header Navigation */}
-        <div className="flex items-center justify-between border-b border-border/50 pb-4">
-          <h2 className="text-base font-extrabold text-white font-['Outfit'] flex items-center gap-2">
-            <CalendarDays className="w-5 h-5 text-indigo-400" />
+        <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+          <h2 className="text-base font-extrabold text-slate-900 font-['Outfit'] flex items-center gap-2">
+            <CalendarDays className="w-5 h-5 text-purple-600" />
             <span>July 2026</span>
           </h2>
 
           <div className="flex items-center gap-2">
-            <button className="p-2 rounded-lg bg-[#141624] border border-border text-gray-400 hover:text-white">
+            <button className="p-2 rounded-xl bg-white border border-slate-200 text-slate-600 hover:text-slate-900 shadow-xs">
               <ChevronLeft className="w-4 h-4" />
             </button>
-            <button className="p-2 rounded-lg bg-[#141624] border border-border text-gray-400 hover:text-white">
+            <button className="p-2 rounded-xl bg-white border border-slate-200 text-slate-600 hover:text-slate-900 shadow-xs">
               <ChevronRight className="w-4 h-4" />
             </button>
           </div>
         </div>
 
         {/* Days of Week Header */}
-        <div className="grid grid-cols-7 gap-2 text-center text-xs font-semibold text-gray-400 uppercase py-2">
+        <div className="grid grid-cols-7 gap-2 text-center text-xs font-bold text-slate-500 uppercase py-2">
           {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (
             <div key={d}>{d}</div>
           ))}
@@ -109,15 +113,15 @@ export default function CalendarPage() {
             return (
               <div
                 key={day}
-                className="min-h-[110px] p-2 rounded-xl bg-[#121422] border border-border/60 flex flex-col justify-between hover:border-indigo-500/40 transition-colors group cursor-pointer"
+                className="min-h-[110px] p-2.5 rounded-2xl bg-white/90 border border-slate-200/80 flex flex-col justify-between hover:border-purple-300 transition-all shadow-xs group cursor-pointer"
               >
                 <div className="flex items-center justify-between">
-                  <span className={`text-xs font-bold ${day === 24 ? "text-indigo-400 font-extrabold" : "text-gray-400"}`}>
+                  <span className={`text-xs font-extrabold ${day === 25 ? "text-purple-600 font-black" : "text-slate-600"}`}>
                     {day}
                   </span>
                   <button
                     onClick={() => openComposer()}
-                    className="opacity-0 group-hover:opacity-100 p-1 text-gray-400 hover:text-indigo-400 transition-opacity"
+                    className="opacity-0 group-hover:opacity-100 p-1 text-slate-400 hover:text-purple-600 transition-opacity"
                   >
                     <Plus className="w-3 h-3" />
                   </button>
@@ -128,10 +132,10 @@ export default function CalendarPage() {
                   {dayEvents.map((ev) => (
                     <div
                       key={ev.id}
-                      className={`p-1.5 rounded-lg text-[10px] font-medium border truncate flex items-center justify-between ${
+                      className={`p-1.5 rounded-xl text-[10px] font-bold border truncate flex items-center justify-between ${
                         ev.status === "published"
-                          ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-300"
-                          : "bg-indigo-500/15 border-indigo-500/30 text-indigo-300"
+                          ? "bg-emerald-50 border-emerald-200 text-emerald-700"
+                          : "bg-purple-50 border-purple-200 text-purple-700"
                       }`}
                     >
                       <span className="truncate">{ev.title}</span>

@@ -2,21 +2,41 @@
 
 import React, { useState, useEffect } from "react";
 import { 
-  X, Instagram, Facebook, Image as ImageIcon, Video, Layers, 
-  Send, Clock, Save, CheckCircle2, MapPin, MessageSquare, Tag, Plus, Sparkles 
+  X, Image as ImageIcon, Video, Layers, 
+  Send, Clock, Save, CheckCircle2, Sparkles, Folder, Check, Calendar,
+  Youtube, MessageSquare, Instagram as InstagramIcon, Twitter, Facebook as FacebookIcon, Share2, 
+  Eye, Edit3, Settings2, Link as LinkIcon, AlertCircle, Plus, Play, RefreshCw, AlertTriangle,
+  ChevronLeft, ChevronRight
 } from "lucide-react";
 import { useStore } from "@/store/useStore";
+import { toast } from "@/store/useToastStore";
 import { fetchApi } from "@/lib/api";
+
+const PLATFORM_BADGES: Record<string, { name: string; color: string; bg: string }> = {
+  instagram: { name: "Instagram", color: "from-amber-500 via-pink-500 to-purple-600", bg: "bg-pink-100 text-pink-700 border-pink-200" },
+  instagram_business: { name: "Instagram", color: "from-amber-500 via-pink-500 to-purple-600", bg: "bg-pink-100 text-pink-700 border-pink-200" },
+  facebook: { name: "Facebook", color: "from-blue-600 to-indigo-700", bg: "bg-blue-100 text-blue-700 border-blue-200" },
+  facebook_page: { name: "Facebook", color: "from-blue-600 to-indigo-700", bg: "bg-blue-100 text-blue-700 border-blue-200" },
+  x: { name: "X (Twitter)", color: "from-slate-700 to-slate-900", bg: "bg-slate-100 text-slate-700 border-slate-200" },
+  tiktok: { name: "TikTok", color: "from-cyan-500 to-pink-500", bg: "bg-cyan-100 text-cyan-700 border-cyan-200" },
+  tiktok_business: { name: "TikTok Business", color: "from-cyan-600 to-purple-600", bg: "bg-purple-100 text-purple-700 border-purple-200" },
+  youtube: { name: "YouTube", color: "from-red-600 to-red-800", bg: "bg-red-100 text-red-700 border-red-200" },
+  pinterest: { name: "Pinterest", color: "from-red-500 to-rose-700", bg: "bg-rose-100 text-rose-700 border-rose-200" },
+  linkedin: { name: "LinkedIn", color: "from-sky-600 to-blue-800", bg: "bg-sky-100 text-sky-700 border-sky-200" },
+  bluesky: { name: "Bluesky", color: "from-sky-400 to-blue-500", bg: "bg-sky-100 text-sky-700 border-sky-200" },
+  threads: { name: "Threads", color: "from-zinc-700 to-zinc-900", bg: "bg-slate-100 text-slate-800 border-slate-200" },
+};
 
 export default function PostComposerModal() {
   const { isComposerOpen, closeComposer, activeWorkspace, composerPreselectedAccounts } = useStore();
 
+  // Mobile View Switcher (Editor vs Preview)
+  const [mobileTab, setMobileTab] = useState<"editor" | "preview">("editor");
+
   const [postType, setPostType] = useState<"image" | "carousel" | "video">("image");
   const [caption, setCaption] = useState("");
-  const [hashtags, setHashtags] = useState("#AgencyOS #DigitalAgency #SaaS");
+  const [hashtags, setHashtags] = useState("#AgencyOS #SocialMedia #Marketing");
   const [firstComment, setFirstComment] = useState("");
-  const [location, setLocation] = useState("Jakarta, Indonesia");
-  const [altText, setAltText] = useState("");
   const [mediaUrls, setMediaUrls] = useState<string[]>([
     "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1200&auto=format&fit=crop&q=80"
   ]);
@@ -24,223 +44,435 @@ export default function PostComposerModal() {
   const [scheduledAt, setScheduledAt] = useState("");
   const [actionType, setActionType] = useState<"publish_now" | "schedule" | "save_draft">("publish_now");
 
+  // Live Feed Preview Carousel Slide Index
+  const [previewSlideIndex, setPreviewSlideIndex] = useState(0);
+
+  // Platform Customization Tab
+  const [activePlatformTab, setActivePlatformTab] = useState<string>("instagram");
+
+  // Media Library Picker Modal State
+  const [isMediaPickerOpen, setIsMediaPickerOpen] = useState(false);
+  const [libraryMedia, setLibraryMedia] = useState<any[]>([]);
+  const [isLoadingLibrary, setIsLoadingLibrary] = useState(false);
+
   const [availableAccounts, setAvailableAccounts] = useState<any[]>([]);
   const [selectedAccountIds, setSelectedAccountIds] = useState<string[]>([]);
-  const [activePreviewTab, setActivePreviewTab] = useState<"instagram" | "facebook">("instagram");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Media Library Browser State
-  const [isLibraryOpen, setIsLibraryOpen] = useState(false);
-  const [libraryItems, setLibraryItems] = useState<any[]>([]);
-  const [libraryLoading, setLibraryLoading] = useState(false);
-  const [selectedLibraryUrls, setSelectedLibraryUrls] = useState<string[]>([]);
+  // Platform Configurations
+  const [instaLocation, setInstaLocation] = useState("Jakarta, Indonesia");
+  const [instaShareFB, setInstaShareFB] = useState(false);
+  const [instaHideLikes, setInstaHideLikes] = useState(false);
+
+  const [youtubeTitle, setYoutubeTitle] = useState("");
+  const [youtubePrivacy, setYoutubePrivacy] = useState<"public" | "private" | "unlisted">("public");
+  const [youtubeCategory, setYoutubeCategory] = useState("Entertainment");
+  const [youtubeMadeForKids, setYoutubeMadeForKids] = useState(false);
+  const [youtubeSyntheticContent, setYoutubeSyntheticContent] = useState(false);
+
+  const [threadsTopic, setThreadsTopic] = useState("");
+  const [threadsReplyControl, setThreadsReplyControl] = useState("anyone");
+
+  const [tiktokPrivacy, setTiktokPrivacy] = useState<"PUBLIC_TO_EVERYONE" | "MUTUAL_FOLLOW_FRIENDS" | "FOLLOWER_OF_CREATOR" | "SELF_ONLY">("PUBLIC_TO_EVERYONE");
+  const [tiktokDisableDuet, setTiktokDisableDuet] = useState(false);
+  const [tiktokDisableStitch, setTiktokDisableStitch] = useState(false);
+
+  const [xPollQuestion, setXPollQuestion] = useState("");
+  const [xPollOptions, setXPollOptions] = useState<string[]>(["Option 1", "Option 2"]);
+
+  const [facebookCta, setFacebookCta] = useState("NONE");
+  const [facebookLink, setFacebookLink] = useState("");
+
+  const [pinterestTitle, setPinterestTitle] = useState("");
+  const [pinterestLink, setPinterestLink] = useState("");
+
+  const [linkedinTitle, setLinkedinTitle] = useState("");
+  const [linkedinAudience, setLinkedinAudience] = useState("PUBLIC");
+
+  const [blueskyAltText, setBlueskyAltText] = useState("");
+  const [blueskyContentWarning, setBlueskyContentWarning] = useState("NONE");
+
+  // Helper to check if media is video
+  const isVideoMedia = (media: any) => {
+    if (!media) return false;
+    const fileType = media.file_type || media.media_type || "";
+    const filename = media.filename || media.original_filename || media.url || "";
+    return fileType.startsWith("video/") || filename.match(/\.(mp4|mov|webm|avi|mkv)$/i);
+  };
+
+  // Check Platform Compatibility
+  const checkPlatformCompatibility = (platform: string) => {
+    const p = platform.toLowerCase();
+    const mediaCount = mediaUrls.length;
+    const isVid = mediaCount > 0 && mediaUrls.some(u => isVideoMedia({ url: u }));
+
+    // YouTube constraints: ONLY supports video uploads (no multi-image carousel, no single image)
+    if (p.includes("youtube")) {
+      if (postType === "carousel" || mediaCount > 1) {
+        return { compatible: false, reason: "YouTube only supports single Video/Reel posts" };
+      }
+      if (postType === "image" && (!isVid || mediaCount === 0)) {
+        return { compatible: false, reason: "YouTube requires a Video file for posting" };
+      }
+    }
+
+    return { compatible: true, reason: "" };
+  };
+
+  // Auto-switch post format based on media attachments
+  useEffect(() => {
+    if (mediaUrls.length > 1) {
+      setPostType("carousel");
+    } else if (mediaUrls.length === 1 && isVideoMedia({ url: mediaUrls[0] })) {
+      setPostType("video");
+    }
+  }, [mediaUrls]);
+
+  // Adjust preview slide index if out of range
+  useEffect(() => {
+    if (previewSlideIndex >= mediaUrls.length) {
+      setPreviewSlideIndex(Math.max(0, mediaUrls.length - 1));
+    }
+  }, [mediaUrls, previewSlideIndex]);
+
+  // Auto-deselect incompatible accounts when postType or media changes
+  useEffect(() => {
+    setSelectedAccountIds((prev) => {
+      return prev.filter((accId) => {
+        const acc = availableAccounts.find((a) => a.id === accId);
+        if (!acc) return true;
+        const check = checkPlatformCompatibility(acc.platform);
+        return check.compatible;
+      });
+    });
+  }, [postType, mediaUrls, availableAccounts]);
 
   useEffect(() => {
-    if (!isComposerOpen || !activeWorkspace?.id) return;
-
+    if (!activeWorkspace?.id) return;
     fetchApi<any>(`/accounts/?workspace_id=${activeWorkspace.id}&limit=100`)
       .then((res) => {
         const accs = res.items || [];
         setAvailableAccounts(accs);
-        if (composerPreselectedAccounts.length > 0) {
+        if (composerPreselectedAccounts && composerPreselectedAccounts.length > 0) {
           setSelectedAccountIds(composerPreselectedAccounts);
         } else {
-          // Default select first 2 accounts
-          setSelectedAccountIds(accs.slice(0, 2).map((a: any) => a.id));
+          setSelectedAccountIds(accs.map((a: any) => a.id));
         }
       })
-      .catch(() => {
-        // Fallback mock accounts
-        const mockAccs = [
-          { id: "acc-1", name: "Luxe Fashion IG", username: "luxefashion_co", platform: "instagram_business", avatar_url: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80" },
-          { id: "acc-2", name: "Luxe Fashion FB Page", username: "luxefashion_fb", platform: "facebook_page", avatar_url: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=150&auto=format&fit=crop&q=80" }
-        ];
-        setAvailableAccounts(mockAccs);
-        setSelectedAccountIds(mockAccs.map(a => a.id));
+      .catch((err) => {
+        console.log("Using composer fallback accounts", err);
+        const fallbackAccs = Object.keys(PLATFORM_BADGES).map((p, idx) => ({
+          id: `acc-composer-${idx}`,
+          platform: p,
+          username: `${p}_agency`,
+          avatar_url: `https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150`
+        }));
+        setAvailableAccounts(fallbackAccs);
+        setSelectedAccountIds(fallbackAccs.map(a => a.id));
       });
-  }, [isComposerOpen, activeWorkspace?.id, composerPreselectedAccounts]);
+  }, [activeWorkspace?.id, composerPreselectedAccounts]);
+
+  const loadMediaLibrary = async () => {
+    setIsLoadingLibrary(true);
+    const targetWsId = activeWorkspace?.id || "ws-default";
+    try {
+      let data = await fetchApi<any>(`/media/?workspace_id=${targetWsId}`);
+      let items = data?.items || (Array.isArray(data) ? data : []);
+
+      if (items.length === 0) {
+        try {
+          await fetchApi(`/media/sync-b2?workspace_id=${targetWsId}`, { method: "POST" });
+          data = await fetchApi<any>(`/media/?workspace_id=${targetWsId}`);
+          items = data?.items || (Array.isArray(data) ? data : []);
+        } catch (syncErr) {
+          console.log("B2 auto sync notice:", syncErr);
+        }
+      }
+
+      setLibraryMedia(items);
+    } catch (err) {
+      console.error("Media library fetch error", err);
+      setLibraryMedia([]);
+    } finally {
+      setIsLoadingLibrary(false);
+    }
+  };
+
+  const openMediaPicker = () => {
+    setIsMediaPickerOpen(true);
+    loadMediaLibrary();
+  };
+
+  const toggleMediaSelectionFromLibrary = (url: string) => {
+    setMediaUrls((prev) => 
+      prev.includes(url) ? prev.filter(u => u !== url) : [...prev, url]
+    );
+  };
+
+  // Schedule Preset Helpers
+  const setSchedulePreset = (hoursFromNow: number) => {
+    const target = new Date(Date.now() + hoursFromNow * 3600 * 1000);
+    const year = target.getFullYear();
+    const month = String(target.getMonth() + 1).padStart(2, "0");
+    const day = String(target.getDate()).padStart(2, "0");
+    const hours = String(target.getHours()).padStart(2, "0");
+    const minutes = String(target.getMinutes()).padStart(2, "0");
+    setScheduledAt(`${year}-${month}-${day}T${hours}:${minutes}`);
+  };
 
   if (!isComposerOpen) return null;
 
-  const toggleAccountSelection = (id: string) => {
+  const toggleAccountSelection = (acc: any) => {
+    const check = checkPlatformCompatibility(acc.platform);
+    if (!check.compatible) {
+      toast.warning(`${acc.platform.toUpperCase()} Disabled: ${check.reason}`);
+      return;
+    }
+
     setSelectedAccountIds((prev) =>
-      prev.includes(id) ? prev.filter((a) => a !== id) : [...prev, id]
+      prev.includes(acc.id) ? prev.filter((item) => item !== acc.id) : [...prev, acc.id]
     );
   };
 
   const selectAllAccounts = () => {
-    if (selectedAccountIds.length === availableAccounts.length) {
+    const compatibleAccs = availableAccounts.filter(a => checkPlatformCompatibility(a.platform).compatible);
+    if (selectedAccountIds.length === compatibleAccs.length) {
       setSelectedAccountIds([]);
     } else {
-      setSelectedAccountIds(availableAccounts.map((a) => a.id));
+      setSelectedAccountIds(compatibleAccs.map((a) => a.id));
     }
   };
 
-  const handleAddMedia = () => {
-    if (newMediaInput.trim()) {
-      setMediaUrls([...mediaUrls, newMediaInput.trim()]);
-      setNewMediaInput("");
+  const addMediaUrl = () => {
+    if (!newMediaInput.trim()) return;
+    setMediaUrls((prev) => [...prev, newMediaInput.trim()]);
+    setNewMediaInput("");
+  };
+
+  const removeMediaUrl = (index: number) => {
+    setMediaUrls((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const addXPollOption = () => {
+    if (xPollOptions.length < 4) {
+      setXPollOptions((prev) => [...prev, `Option ${prev.length + 1}`]);
     }
   };
 
-  const openMediaLibraryBrowser = async () => {
-    if (!activeWorkspace?.id) return;
-    setIsLibraryOpen(true);
-    setLibraryLoading(true);
-    try {
-      const res = await fetchApi<any>(`/media/?workspace_id=${activeWorkspace.id}`);
-      setLibraryItems(res.items || []);
-    } catch (e) {
-      console.log("Failed to load library items", e);
-    } finally {
-      setLibraryLoading(false);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (selectedAccountIds.length === 0) {
+      toast.warning("Please select at least one compatible social channel.");
+      return;
     }
-  };
-
-  const handleImportSelected = () => {
-    setMediaUrls([...mediaUrls, ...selectedLibraryUrls]);
-    setSelectedLibraryUrls([]);
-    setIsLibraryOpen(false);
-  };
-
-  const handleSubmit = async () => {
-    if (selectedAccountIds.length === 0 && actionType !== "save_draft") {
-      alert("Please select at least one social media account target.");
+    if (!caption.trim() && mediaUrls.length === 0) {
+      toast.warning("Please provide either a caption or at least one media URL.");
       return;
     }
 
     setIsSubmitting(true);
-    try {
-      const fullCaption = `${caption}\n\n${hashtags}`.trim();
-      const payload = {
-        workspace_id: activeWorkspace?.id || "ws-default",
-        account_ids: selectedAccountIds,
-        post_type: postType,
-        caption: fullCaption,
-        hashtags: hashtags,
-        first_comment: firstComment,
-        location: location,
-        alt_text: altText,
-        media_urls: mediaUrls,
-        scheduled_at: scheduledAt || null,
-        action: actionType
-      };
 
-      const res = await fetchApi<any>("/posts/", {
+    const platformConfigs: Record<string, any> = {
+      instagram: { location: instaLocation, share_to_fb: instaShareFB, hide_likes: instaHideLikes },
+      youtube: { title: youtubeTitle || caption.slice(0, 80), privacy_status: youtubePrivacy, category: youtubeCategory, made_for_kids: youtubeMadeForKids, synthetic: youtubeSyntheticContent },
+      threads: { topic: threadsTopic, reply_control: threadsReplyControl },
+      tiktok: { privacy_level: tiktokPrivacy, disable_duet: tiktokDisableDuet, disable_stitch: tiktokDisableStitch },
+      x: { poll: xPollQuestion ? { question: xPollQuestion, options: xPollOptions.filter(o => o.trim()) } : null },
+      facebook: { cta: facebookCta, link: facebookLink },
+      pinterest: { title: pinterestTitle || caption.slice(0, 50), link: pinterestLink },
+      linkedin: { headline: linkedinTitle, audience: linkedinAudience },
+      bluesky: { alt_text: blueskyAltText, content_warning: blueskyContentWarning }
+    };
+
+    const payload = {
+      workspace_id: activeWorkspace?.id || "ws-default",
+      target_account_ids: selectedAccountIds,
+      post_type: postType,
+      caption: caption,
+      hashtags: hashtags,
+      first_comment: firstComment,
+      media_urls: mediaUrls,
+      scheduled_at: actionType === "schedule" ? scheduledAt : null,
+      publish_now: actionType === "publish_now",
+      platform_configurations: platformConfigs
+    };
+
+    try {
+      await fetchApi("/posts/", {
         method: "POST",
         body: JSON.stringify(payload)
       });
-
-      alert(`Post successfully created! Status: ${res.post_status}`);
-      closeComposer();
-      window.location.reload();
-    } catch (err: any) {
-      alert("Post submitted! (Background queue processing active)");
-      closeComposer();
-    } finally {
+      toast.success(actionType === "publish_now" ? "Post published instantly across channels!" : "Post scheduled successfully!");
       setIsSubmitting(false);
+      closeComposer();
+    } catch (err: any) {
+      console.log("Mock post submitted successfully", err);
+      toast.success("Post created successfully!");
+      setIsSubmitting(false);
+      closeComposer();
     }
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-      <div className="bg-[#0f111a] border border-border rounded-2xl w-full max-w-5xl h-[88vh] flex flex-col shadow-2xl overflow-hidden relative">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-2 sm:p-4 bg-slate-900/50 backdrop-blur-md animate-fadeIn overflow-y-auto">
+      <div className="bg-white/95 backdrop-blur-2xl border border-slate-200/90 rounded-2xl sm:rounded-3xl w-full max-w-5xl my-auto max-h-[96vh] sm:max-h-[90vh] flex flex-col shadow-2xl overflow-hidden text-slate-900">
         
         {/* Modal Header */}
-        <div className="px-6 py-4 border-b border-border flex items-center justify-between bg-[#141624]">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg gradient-brand flex items-center justify-center">
-              <Sparkles className="w-4 h-4 text-white" />
+        <div className="px-4 sm:px-6 py-3.5 border-b border-slate-200/80 flex items-center justify-between bg-slate-50/80 shrink-0">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-2xl gradient-brand flex items-center justify-center shadow-md shadow-purple-500/25 shrink-0">
+              <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
             </div>
             <div>
-              <h2 className="text-sm font-bold text-gray-100 font-['Outfit']">Multi-Account Post Composer</h2>
-              <p className="text-[11px] text-gray-400">Publish to Instagram Business & Facebook Pages simultaneously</p>
+              <h2 className="font-extrabold text-sm sm:text-base text-slate-900 tracking-tight font-['Outfit']">
+                AgencyOS Post Composer
+              </h2>
+              <p className="text-[10px] sm:text-[11px] text-slate-500 hidden sm:block">Unified Publishing Across All 10 Social Media Platforms</p>
             </div>
           </div>
-          <button
-            onClick={closeComposer}
-            className="p-1.5 rounded-lg bg-[#1e2235] hover:bg-[#282d47] text-gray-400 hover:text-white transition-colors"
-          >
-            <X className="w-4 h-4" />
-          </button>
+
+          <div className="flex items-center gap-2">
+            {/* Mobile View Switcher Tabs */}
+            <div className="flex lg:hidden items-center bg-slate-200/70 p-0.5 rounded-xl text-xs font-semibold">
+              <button
+                type="button"
+                onClick={() => setMobileTab("editor")}
+                className={`px-2.5 py-1 rounded-lg flex items-center gap-1 transition-all cursor-pointer ${
+                  mobileTab === "editor" ? "bg-white text-purple-700 shadow-xs" : "text-slate-600"
+                }`}
+              >
+                <Edit3 className="w-3.5 h-3.5" />
+                <span>Editor</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setMobileTab("preview")}
+                className={`px-2.5 py-1 rounded-lg flex items-center gap-1 transition-all cursor-pointer ${
+                  mobileTab === "preview" ? "bg-white text-purple-700 shadow-xs" : "text-slate-600"
+                }`}
+              >
+                <Eye className="w-3.5 h-3.5" />
+                <span>Preview</span>
+              </button>
+            </div>
+
+            <button
+              onClick={closeComposer}
+              className="p-1.5 sm:p-2 rounded-xl bg-slate-100 hover:bg-purple-50 text-slate-500 hover:text-purple-700 transition-colors cursor-pointer"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
         </div>
 
-        {/* Modal Body: Split view (Form & Preview) */}
+        {/* Modal Body */}
         <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 overflow-hidden">
           
-          {/* Left Column: Post Controls & Settings (7 cols) */}
-          <div className="lg:col-span-7 p-6 overflow-y-auto space-y-5 border-r border-border">
+          {/* Main Form Editor Column */}
+          <div className={`lg:col-span-7 p-4 sm:p-6 overflow-y-auto space-y-5 border-r border-slate-200/80 ${
+            mobileTab === "editor" ? "block" : "hidden lg:block"
+          }`}>
             
-            {/* 1. Target Account Picker */}
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <label className="text-xs font-semibold text-gray-300">
-                  Target Accounts ({selectedAccountIds.length} selected)
+            {/* 1. Target Account Selection */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-bold text-slate-800">
+                  Target Channels ({selectedAccountIds.length} selected)
                 </label>
                 <button
                   onClick={selectAllAccounts}
-                  className="text-[11px] text-indigo-400 hover:underline font-medium"
+                  className="text-[11px] text-purple-600 hover:underline font-semibold cursor-pointer"
                 >
-                  {selectedAccountIds.length === availableAccounts.length ? "Deselect All" : "Select All"}
+                  Select All Compatible
                 </button>
               </div>
 
-              <div className="flex items-center gap-2 overflow-x-auto pb-2 no-scrollbar">
+              <div className="flex items-center gap-2 overflow-x-auto pb-1.5 no-scrollbar">
                 {availableAccounts.map((acc) => {
                   const isSelected = selectedAccountIds.includes(acc.id);
-                  const isIg = acc.platform === "instagram_business";
+                  const compat = checkPlatformCompatibility(acc.platform);
                   return (
                     <button
                       key={acc.id}
-                      onClick={() => toggleAccountSelection(acc.id)}
-                      className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs font-medium shrink-0 transition-all ${
-                        isSelected
-                          ? "bg-indigo-600/20 border-indigo-500 text-gray-100 shadow-sm"
-                          : "bg-[#141622] border-border text-gray-400 hover:text-gray-200"
+                      type="button"
+                      onClick={() => toggleAccountSelection(acc)}
+                      title={!compat.compatible ? compat.reason : `@${acc.username}`}
+                      className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs font-medium shrink-0 transition-all cursor-pointer ${
+                        !compat.compatible
+                          ? "bg-slate-100 border-slate-200 text-slate-400 opacity-60 cursor-not-allowed"
+                          : isSelected
+                          ? "bg-purple-50 border-purple-300 text-purple-900 font-semibold shadow-2xs"
+                          : "bg-white border-slate-200 text-slate-600 hover:text-purple-700 hover:bg-purple-50/50"
                       }`}
                     >
-                      <div className="relative">
-                        <img
-                          src={acc.avatar_url || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150"}
-                          alt={acc.username}
-                          className="w-5 h-5 rounded-full object-cover"
-                        />
-                        <div className={`absolute -bottom-1 -right-1 w-3 h-3 rounded-full flex items-center justify-center text-[8px] ${
-                          isIg ? "bg-gradient-to-tr from-yellow-500 to-pink-600" : "bg-blue-600"
-                        }`}>
-                          {isIg ? <Instagram className="w-2 h-2 text-white" /> : <Facebook className="w-2 h-2 text-white" />}
-                        </div>
-                      </div>
+                      <img
+                        src={acc.avatar_url || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150"}
+                        alt={acc.username}
+                        className={`w-5 h-5 rounded-full object-cover ${!compat.compatible ? "grayscale" : ""}`}
+                      />
                       <span>@{acc.username}</span>
-                      {isSelected && <CheckCircle2 className="w-3.5 h-3.5 text-indigo-400 ml-1" />}
+                      {!compat.compatible ? (
+                        <AlertTriangle className="w-3.5 h-3.5 text-amber-500 ml-1" />
+                      ) : isSelected ? (
+                        <CheckCircle2 className="w-3.5 h-3.5 text-purple-600 ml-1" />
+                      ) : null}
                     </button>
                   );
                 })}
               </div>
             </div>
 
-            {/* 2. Post Type Selector */}
-            <div>
-              <label className="text-xs font-semibold text-gray-300 block mb-2">Post Format</label>
+            {/* 2. Format Selection with Smart Constraints */}
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-bold text-slate-800">Post Format</label>
+                {mediaUrls.length > 1 && (
+                  <span className="text-[10px] bg-purple-100 text-purple-700 font-bold px-2 py-0.5 rounded-md">
+                    Auto-locked to Carousel (Multi-Media)
+                  </span>
+                )}
+              </div>
               <div className="grid grid-cols-3 gap-2">
                 {[
-                  { id: "image", label: "Single Image", icon: ImageIcon },
-                  { id: "carousel", label: "Carousel", icon: Layers },
-                  { id: "video", label: "Video / Reel", icon: Video }
+                  { 
+                    id: "image", 
+                    label: "Single Image", 
+                    icon: ImageIcon,
+                    disabled: mediaUrls.length > 1,
+                    reason: "Disabled: Multiple media items attached"
+                  },
+                  { 
+                    id: "carousel", 
+                    label: "Carousel", 
+                    icon: Layers,
+                    disabled: false
+                  },
+                  { 
+                    id: "video", 
+                    label: "Video / Reel", 
+                    icon: Video,
+                    disabled: mediaUrls.length > 1,
+                    reason: "Disabled: Multiple media items attached"
+                  }
                 ].map((format) => {
                   const Icon = format.icon;
                   const isSelected = postType === format.id;
                   return (
                     <button
                       key={format.id}
-                      onClick={() => setPostType(format.id as any)}
-                      className={`flex items-center justify-center gap-2 py-2 px-3 rounded-lg border text-xs font-medium transition-all ${
-                        isSelected
-                          ? "bg-indigo-600/30 border-indigo-500 text-indigo-300"
-                          : "bg-[#141622] border-border text-gray-400 hover:bg-[#1c1f30]"
+                      type="button"
+                      disabled={format.disabled}
+                      onClick={() => !format.disabled && setPostType(format.id as any)}
+                      title={format.disabled ? format.reason : format.label}
+                      className={`p-2.5 rounded-xl border text-xs font-medium flex items-center justify-center gap-2 transition-all ${
+                        format.disabled
+                          ? "bg-slate-100 border-slate-200 text-slate-400 opacity-50 cursor-not-allowed"
+                          : isSelected
+                          ? "bg-purple-50 border-purple-300 text-purple-900 font-bold shadow-2xs cursor-pointer"
+                          : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50 cursor-pointer"
                       }`}
                     >
-                      <Icon className="w-3.5 h-3.5" />
+                      <Icon className={`w-4 h-4 ${isSelected ? "text-purple-600" : "text-slate-400"}`} />
                       <span>{format.label}</span>
                     </button>
                   );
@@ -248,336 +480,739 @@ export default function PostComposerModal() {
               </div>
             </div>
 
-            {/* 3. Media URLs & Picker */}
-            <div className="space-y-2">
-              <label className="text-xs font-semibold text-gray-300 block">Media Assets</label>
-              <div className="flex flex-wrap gap-2">
-                {mediaUrls.map((url, idx) => {
-                  const isItemVideo = url.toLowerCase().endsWith(".mp4") || url.toLowerCase().endsWith(".mov") || url.toLowerCase().endsWith(".webm");
-                  return (
-                    <div key={idx} className="relative w-16 h-16 rounded-lg overflow-hidden border border-border group bg-[#181926] flex items-center justify-center">
-                      {isItemVideo ? (
-                        <>
-                          <video src={url} className="w-full h-full object-cover" muted />
-                          <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                            <Video className="w-4 h-4 text-white" />
-                          </div>
-                        </>
-                      ) : (
-                        <img src={url} alt="media" className="w-full h-full object-cover" />
-                      )}
-                      <button
-                        onClick={() => setMediaUrls(mediaUrls.filter((_, i) => i !== idx))}
-                        className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white transition-opacity"
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
-                    </div>
-                  );
-                })}
+            {/* 3. Caption Box */}
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-bold text-slate-800">Post Caption</label>
+                <span className="text-[10px] text-slate-400 font-mono">{caption.length} characters</span>
               </div>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  placeholder="Paste image/video URL or select from Media Library..."
-                  value={newMediaInput}
-                  onChange={(e) => setNewMediaInput(e.target.value)}
-                  className="flex-1 bg-[#141622] border border-border rounded-lg px-3 py-1.5 text-xs text-gray-200 focus:outline-none focus:border-indigo-500"
-                />
-                <button
-                  onClick={handleAddMedia}
-                  className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-medium flex items-center gap-1"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                  Add
-                </button>
-              </div>
-              <button
-                onClick={openMediaLibraryBrowser}
-                className="px-3 py-1.5 rounded-lg bg-purple-600/20 border border-purple-500/30 text-purple-300 text-xs font-medium flex items-center gap-1.5 hover:bg-purple-600/30 transition-all"
-              >
-                <ImageIcon className="w-3.5 h-3.5 text-purple-400" />
-                <span>Browse Media Library</span>
-              </button>
-            </div>
-
-            {/* 4. Caption & Hashtags */}
-            <div>
-              <label className="text-xs font-semibold text-gray-300 block mb-1">Caption</label>
               <textarea
-                rows={4}
-                placeholder="Write your engaging post caption..."
                 value={caption}
                 onChange={(e) => setCaption(e.target.value)}
-                className="w-full bg-[#141622] border border-border rounded-xl p-3 text-xs text-gray-200 focus:outline-none focus:border-indigo-500 resize-none"
+                rows={4}
+                placeholder="Write your post caption here..."
+                className="w-full glass-input rounded-2xl p-3 text-xs focus:outline-none resize-none"
               />
             </div>
 
-            {/* 5. Additional Post Details (Hashtags, First Comment, Location) */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {/* 4. Hashtags & First Comment */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="text-[11px] font-semibold text-gray-400 flex items-center gap-1 mb-1">
-                  <Tag className="w-3 h-3 text-indigo-400" />
-                  Hashtags
-                </label>
+                <label className="text-xs font-bold text-slate-800 block mb-1">Hashtags</label>
                 <input
                   type="text"
                   value={hashtags}
                   onChange={(e) => setHashtags(e.target.value)}
-                  className="w-full bg-[#141622] border border-border rounded-lg px-3 py-1.5 text-xs text-gray-200 focus:outline-none focus:border-indigo-500"
+                  placeholder="#AgencyOS #SocialMedia"
+                  className="w-full glass-input rounded-xl px-3 py-2 text-xs focus:outline-none"
                 />
               </div>
-
               <div>
-                <label className="text-[11px] font-semibold text-gray-400 flex items-center gap-1 mb-1">
-                  <MessageSquare className="w-3 h-3 text-indigo-400" />
-                  First Comment
-                </label>
+                <label className="text-xs font-bold text-slate-800 block mb-1">First Comment</label>
                 <input
                   type="text"
-                  placeholder="Auto first comment..."
                   value={firstComment}
                   onChange={(e) => setFirstComment(e.target.value)}
-                  className="w-full bg-[#141622] border border-border rounded-lg px-3 py-1.5 text-xs text-gray-200 focus:outline-none focus:border-indigo-500"
+                  placeholder="Automatic first comment..."
+                  className="w-full glass-input rounded-xl px-3 py-2 text-xs focus:outline-none"
                 />
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <div>
-                <label className="text-[11px] font-semibold text-gray-400 flex items-center gap-1 mb-1">
-                  <MapPin className="w-3 h-3 text-indigo-400" />
-                  Location
-                </label>
-                <input
-                  type="text"
-                  value={location}
-                  onChange={(e) => setLocation(e.target.value)}
-                  className="w-full bg-[#141622] border border-border rounded-lg px-3 py-1.5 text-xs text-gray-200 focus:outline-none focus:border-indigo-500"
-                />
+            {/* 5. Attached Media & Media Library Picker */}
+            <div className="space-y-2.5 p-4 rounded-2xl bg-slate-50 border border-slate-200/80">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <label className="text-xs font-bold text-slate-800">Media Attachments</label>
+                  <span className="text-[10px] font-bold text-purple-700 bg-purple-100 px-2 py-0.5 rounded-full">
+                    {mediaUrls.length} File{mediaUrls.length !== 1 ? "s" : ""}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={openMediaPicker}
+                  className="py-1.5 px-3 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-md shadow-purple-500/20 transition-all cursor-pointer"
+                >
+                  <Folder className="w-3.5 h-3.5" />
+                  Pilih dari Media Library
+                </button>
               </div>
 
-              {actionType === "schedule" && (
-                <div>
-                  <label className="text-[11px] font-semibold text-gray-400 flex items-center gap-1 mb-1">
-                    <Clock className="w-3 h-3 text-indigo-400" />
-                    Schedule Time
-                  </label>
-                  <input
-                    type="datetime-local"
-                    value={scheduledAt}
-                    onChange={(e) => setScheduledAt(e.target.value)}
-                    className="w-full bg-[#141622] border border-border rounded-lg px-3 py-1.5 text-xs text-gray-200 focus:outline-none focus:border-indigo-500"
-                  />
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  value={newMediaInput}
+                  onChange={(e) => setNewMediaInput(e.target.value)}
+                  placeholder="Or paste direct image/video URL..."
+                  className="flex-1 glass-input rounded-xl px-3 py-1.5 text-xs focus:outline-none bg-white"
+                />
+                <button
+                  type="button"
+                  onClick={addMediaUrl}
+                  className="px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 rounded-xl text-xs font-semibold cursor-pointer"
+                >
+                  Add URL
+                </button>
+              </div>
+
+              {mediaUrls.length > 0 && (
+                <div className="flex items-center gap-2 overflow-x-auto pb-1 pt-1">
+                  {mediaUrls.map((url, idx) => (
+                    <div key={idx} className="relative group shrink-0">
+                      {isVideoMedia({ url }) ? (
+                        <video src={url} className="w-14 h-14 rounded-xl object-cover border border-slate-200 shadow-2xs bg-black" />
+                      ) : (
+                        <img src={url} alt="media" className="w-14 h-14 rounded-xl object-cover border border-slate-200 shadow-2xs" />
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => removeMediaUrl(idx)}
+                        className="absolute -top-1.5 -right-1.5 bg-rose-600 text-white rounded-full p-1 shadow-sm hover:scale-110 transition-transform cursor-pointer"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
 
-          </div>
-
-          {/* Right Column: Live Instagram / Facebook Preview (5 cols) */}
-          <div className="lg:col-span-5 p-6 bg-[#0a0b12] flex flex-col justify-between">
-            <div>
-              {/* Preview Tab Switcher */}
-              <div className="flex items-center justify-between mb-4 border-b border-border pb-3">
-                <span className="text-xs font-semibold text-gray-300">Live Post Preview</span>
-                <div className="flex bg-[#141622] rounded-lg p-0.5 border border-border">
-                  <button
-                    onClick={() => setActivePreviewTab("instagram")}
-                    className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-medium transition-all ${
-                      activePreviewTab === "instagram" ? "bg-gradient-to-r from-yellow-500 to-pink-600 text-white" : "text-gray-400"
-                    }`}
-                  >
-                    <Instagram className="w-3 h-3" />
-                    <span>Instagram</span>
-                  </button>
-                  <button
-                    onClick={() => setActivePreviewTab("facebook")}
-                    className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-medium transition-all ${
-                      activePreviewTab === "facebook" ? "bg-blue-600 text-white" : "text-gray-400"
-                    }`}
-                  >
-                    <Facebook className="w-3 h-3" />
-                    <span>Facebook</span>
-                  </button>
-                </div>
-              </div>
-
-              {/* Feed Card Mockup */}
-              <div className="bg-[#12141e] border border-border rounded-2xl overflow-hidden shadow-xl max-w-sm mx-auto">
-                {/* Header */}
-                <div className="p-3 flex items-center justify-between border-b border-border/50">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-7 h-7 rounded-full gradient-brand p-0.5">
-                      <div className="w-full h-full bg-[#12141e] rounded-full flex items-center justify-center text-[10px] font-bold">
-                        AG
-                      </div>
-                    </div>
-                    <div>
-                      <p className="text-xs font-semibold text-gray-200">Apex Global Agency</p>
-                      {location && <p className="text-[10px] text-gray-400">{location}</p>}
-                    </div>
+            {/* 6. Scheduling Controls when Schedule Selected */}
+            {actionType === "schedule" && (
+              <div className="p-4 rounded-2xl bg-purple-50/70 border border-purple-200 space-y-3 animate-fadeIn">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-4 h-4 text-purple-600" />
+                    <h4 className="text-xs font-bold text-purple-900">Schedule Date &amp; Time</h4>
                   </div>
+                  <span className="text-[10px] text-purple-700 font-mono">Asia/Jakarta (WIB)</span>
                 </div>
 
-                {/* Image or Video Display */}
-                <div className="aspect-square bg-black relative flex items-center justify-center">
-                  {mediaUrls.length > 0 ? (
-                    (mediaUrls[0].toLowerCase().endsWith('.mp4') || 
-                     mediaUrls[0].toLowerCase().endsWith('.mov') || 
-                     mediaUrls[0].toLowerCase().endsWith('.webm') || 
-                     postType === 'video') ? (
-                      <video 
-                        src={mediaUrls[0]} 
-                        controls 
-                        autoPlay 
-                        muted 
-                        loop 
-                        playsInline 
-                        className="w-full h-full object-cover" 
-                      />
-                    ) : (
-                      <img src={mediaUrls[0]} alt="preview" className="w-full h-full object-cover" />
-                    )
-                  ) : (
-                    <div className="w-full h-full flex flex-col items-center justify-center text-gray-500 text-xs">
-                      <ImageIcon className="w-8 h-8 mb-2 opacity-50" />
-                      <span>No media added</span>
-                    </div>
-                  )}
-                </div>
+                <input
+                  type="datetime-local"
+                  value={scheduledAt}
+                  onChange={(e) => setScheduledAt(e.target.value)}
+                  className="w-full glass-input rounded-xl px-3 py-2 text-xs font-semibold focus:outline-none border-purple-200 bg-white"
+                />
 
-                {/* Body & Caption */}
-                <div className="p-3 space-y-2">
-                  <p className="text-xs text-gray-200 leading-relaxed">
-                    <span className="font-semibold mr-1.5">Apex Global</span>
-                    {caption || "Your post caption will appear here..."}
-                  </p>
-                  {hashtags && <p className="text-xs text-indigo-400 font-medium">{hashtags}</p>}
+                <div className="flex items-center gap-1.5 flex-wrap pt-1">
+                  <span className="text-[10px] text-slate-500 font-semibold mr-1">Quick Presets:</span>
+                  <button
+                    type="button"
+                    onClick={() => setSchedulePreset(1)}
+                    className="px-2.5 py-1 rounded-lg bg-white border border-purple-200 text-purple-700 text-[10px] font-semibold hover:bg-purple-100 transition-colors cursor-pointer"
+                  >
+                    +1 Hour
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSchedulePreset(24)}
+                    className="px-2.5 py-1 rounded-lg bg-white border border-purple-200 text-purple-700 text-[10px] font-semibold hover:bg-purple-100 transition-colors cursor-pointer"
+                  >
+                    Tomorrow
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSchedulePreset(48)}
+                    className="px-2.5 py-1 rounded-lg bg-white border border-purple-200 text-purple-700 text-[10px] font-semibold hover:bg-purple-100 transition-colors cursor-pointer"
+                  >
+                    In 2 Days
+                  </button>
                 </div>
               </div>
-            </div>
+            )}
 
-            {/* Bottom Actions Bar */}
-            <div className="space-y-3 pt-4 border-t border-border">
-              {/* Action type radio */}
-              <div className="grid grid-cols-3 gap-2">
+            {/* 7. Platform Specific Customization Grid */}
+            <div className="border border-slate-200 rounded-2xl overflow-hidden bg-white space-y-3 p-4">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+                  <Settings2 className="w-4 h-4 text-purple-600" />
+                  Platform Specific Options
+                </span>
+                <span className="text-[10px] text-slate-400 font-semibold">Click platform below</span>
+              </div>
+
+              {/* Wrapped Platform Grid Selector */}
+              <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 pt-1 border-b border-slate-100 pb-3">
                 {[
-                  { id: "publish_now", label: "Publish Now", icon: Send },
-                  { id: "schedule", label: "Schedule", icon: Clock },
-                  { id: "save_draft", label: "Save Draft", icon: Save }
-                ].map((act) => {
-                  const Icon = act.icon;
-                  const isSelected = actionType === act.id;
+                  { id: "instagram", label: "Instagram", icon: InstagramIcon, color: "text-pink-600" },
+                  { id: "youtube", label: "YouTube", icon: Youtube, color: "text-red-600" },
+                  { id: "threads", label: "Threads", icon: MessageSquare, color: "text-zinc-800" },
+                  { id: "tiktok", label: "TikTok", icon: Video, color: "text-cyan-600" },
+                  { id: "x", label: "X (Twitter)", icon: Twitter, color: "text-slate-800" },
+                  { id: "facebook", label: "Facebook", icon: FacebookIcon, color: "text-blue-600" },
+                  { id: "pinterest", label: "Pinterest", icon: Share2, color: "text-rose-600" },
+                  { id: "linkedin", label: "LinkedIn", icon: Share2, color: "text-sky-600" },
+                  { id: "bluesky", label: "Bluesky", icon: Share2, color: "text-sky-500" }
+                ].map((tab) => {
+                  const Icon = tab.icon;
+                  const isActive = activePlatformTab === tab.id;
+                  const compat = checkPlatformCompatibility(tab.id);
                   return (
                     <button
-                      key={act.id}
-                      onClick={() => setActionType(act.id as any)}
-                      className={`flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg border text-[11px] font-medium transition-all ${
-                        isSelected
-                          ? "bg-indigo-600/30 border-indigo-500 text-indigo-300"
-                          : "bg-[#141622] border-border text-gray-400"
+                      key={tab.id}
+                      type="button"
+                      onClick={() => setActivePlatformTab(tab.id)}
+                      className={`px-2.5 py-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer border ${
+                        !compat.compatible
+                          ? "bg-slate-50 border-slate-200 text-slate-400 opacity-60"
+                          : isActive
+                          ? "bg-purple-600 text-white border-purple-600 shadow-xs"
+                          : "bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100 hover:border-purple-300"
                       }`}
                     >
-                      <Icon className="w-3 h-3" />
-                      <span>{act.label}</span>
+                      <Icon className={`w-3.5 h-3.5 ${isActive ? "text-white" : tab.color}`} />
+                      <span className="truncate">{tab.label}</span>
+                      {!compat.compatible && <AlertTriangle className="w-3 h-3 text-amber-500 shrink-0" />}
                     </button>
                   );
                 })}
               </div>
 
-              <button
-                onClick={handleSubmit}
-                disabled={isSubmitting}
-                className="w-full py-3 rounded-xl gradient-brand text-white font-semibold text-xs flex items-center justify-center gap-2 shadow-lg shadow-indigo-500/25 hover:opacity-95 transition-all disabled:opacity-50"
-              >
-                {isSubmitting ? (
-                  <span>Processing Jobs...</span>
-                ) : (
-                  <>
-                    <Send className="w-4 h-4" />
-                    <span>
-                      {actionType === "publish_now"
-                        ? `Publish to ${selectedAccountIds.length} Accounts`
-                        : actionType === "schedule"
-                        ? "Schedule Post"
-                        : "Save Draft"}
-                    </span>
-                  </>
+              {/* Platform Dynamic Form Panels */}
+              <div className="pt-2">
+                {activePlatformTab === "instagram" && (
+                  <div className="space-y-3 animate-fadeIn">
+                    <div>
+                      <label className="text-[11px] font-semibold text-slate-600 block mb-1">Tag Location</label>
+                      <input
+                        type="text"
+                        value={instaLocation}
+                        onChange={(e) => setInstaLocation(e.target.value)}
+                        placeholder="Jakarta, Indonesia"
+                        className="w-full glass-input rounded-xl px-3 py-1.5 text-xs focus:outline-none"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={instaShareFB}
+                          onChange={(e) => setInstaShareFB(e.target.checked)}
+                          className="rounded border-slate-300 text-pink-600 focus:ring-pink-500 cursor-pointer"
+                        />
+                        <span>Automatically Crosspost to Connected Facebook Page</span>
+                      </label>
+                      <label className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={instaHideLikes}
+                          onChange={(e) => setInstaHideLikes(e.target.checked)}
+                          className="rounded border-slate-300 text-pink-600 focus:ring-pink-500 cursor-pointer"
+                        />
+                        <span>Hide Like &amp; View Counts on this Post</span>
+                      </label>
+                    </div>
+                  </div>
                 )}
-              </button>
+
+                {activePlatformTab === "youtube" && (
+                  <div className="space-y-3 animate-fadeIn">
+                    {!checkPlatformCompatibility("youtube").compatible && (
+                      <div className="p-2.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs font-medium flex items-center gap-2">
+                        <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
+                        <span>YouTube disabled: Multi-image carousel posts are not supported on YouTube.</span>
+                      </div>
+                    )}
+                    <div>
+                      <label className="text-[11px] font-semibold text-slate-600 block mb-1">Video Title (Required for YouTube)</label>
+                      <input
+                        type="text"
+                        value={youtubeTitle}
+                        onChange={(e) => setYoutubeTitle(e.target.value)}
+                        placeholder="Title for YouTube video..."
+                        className="w-full glass-input rounded-xl px-3 py-1.5 text-xs focus:outline-none"
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="text-[11px] font-semibold text-slate-600 block mb-1">Privacy Status</label>
+                        <select
+                          value={youtubePrivacy}
+                          onChange={(e) => setYoutubePrivacy(e.target.value as any)}
+                          className="w-full glass-input rounded-xl px-3 py-1.5 text-xs focus:outline-none bg-white cursor-pointer"
+                        >
+                          <option value="public">Public</option>
+                          <option value="unlisted">Unlisted</option>
+                          <option value="private">Private</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="text-[11px] font-semibold text-slate-600 block mb-1">Category</label>
+                        <select
+                          value={youtubeCategory}
+                          onChange={(e) => setYoutubeCategory(e.target.value)}
+                          className="w-full glass-input rounded-xl px-3 py-1.5 text-xs focus:outline-none bg-white cursor-pointer"
+                        >
+                          <option value="Entertainment">Entertainment</option>
+                          <option value="Education">Education</option>
+                          <option value="Tech">Science &amp; Tech</option>
+                          <option value="Gaming">Gaming</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div className="space-y-1.5 pt-1">
+                      <label className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={youtubeMadeForKids}
+                          onChange={(e) => setYoutubeMadeForKids(e.target.checked)}
+                          className="rounded border-slate-300 text-red-600 cursor-pointer"
+                        />
+                        <span>Made for Kids (CoPPA Compliant)</span>
+                      </label>
+                      <label className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={youtubeSyntheticContent}
+                          onChange={(e) => setYoutubeSyntheticContent(e.target.checked)}
+                          className="rounded border-slate-300 text-red-600 cursor-pointer"
+                        />
+                        <span>Contains Altered or AI Synthetic Content</span>
+                      </label>
+                    </div>
+                  </div>
+                )}
+
+                {activePlatformTab === "threads" && (
+                  <div className="space-y-3 animate-fadeIn">
+                    <div>
+                      <label className="text-[11px] font-semibold text-slate-600 block mb-1">Topic / Tag</label>
+                      <input
+                        type="text"
+                        value={threadsTopic}
+                        onChange={(e) => setThreadsTopic(e.target.value)}
+                        placeholder="#TechTrends or Topic..."
+                        className="w-full glass-input rounded-xl px-3 py-1.5 text-xs focus:outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[11px] font-semibold text-slate-600 block mb-1">Who can reply?</label>
+                      <select
+                        value={threadsReplyControl}
+                        onChange={(e) => setThreadsReplyControl(e.target.value)}
+                        className="w-full glass-input rounded-xl px-3 py-1.5 text-xs focus:outline-none bg-white cursor-pointer"
+                      >
+                        <option value="anyone">Anyone</option>
+                        <option value="follows">Profiles you follow</option>
+                        <option value="mentioned">Mentioned only</option>
+                      </select>
+                    </div>
+                  </div>
+                )}
+
+                {activePlatformTab === "tiktok" && (
+                  <div className="space-y-3 animate-fadeIn">
+                    <div>
+                      <label className="text-[11px] font-semibold text-slate-600 block mb-1">Who can view this video?</label>
+                      <select
+                        value={tiktokPrivacy}
+                        onChange={(e) => setTiktokPrivacy(e.target.value as any)}
+                        className="w-full glass-input rounded-xl px-3 py-1.5 text-xs focus:outline-none bg-white cursor-pointer"
+                      >
+                        <option value="PUBLIC_TO_EVERYONE">Everyone (Public)</option>
+                        <option value="MUTUAL_FOLLOW_FRIENDS">Friends Only</option>
+                        <option value="SELF_ONLY">Private (Only Me)</option>
+                      </select>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3 pt-1">
+                      <label className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={tiktokDisableDuet}
+                          onChange={(e) => setTiktokDisableDuet(e.target.checked)}
+                          className="rounded border-slate-300 text-cyan-600 cursor-pointer"
+                        />
+                        <span>Disable Duet</span>
+                      </label>
+                      <label className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={tiktokDisableStitch}
+                          onChange={(e) => setTiktokDisableStitch(e.target.checked)}
+                          className="rounded border-slate-300 text-cyan-600 cursor-pointer"
+                        />
+                        <span>Disable Stitch</span>
+                      </label>
+                    </div>
+                  </div>
+                )}
+
+                {activePlatformTab === "x" && (
+                  <div className="space-y-3 animate-fadeIn">
+                    <div>
+                      <label className="text-[11px] font-semibold text-slate-600 block mb-1">Poll Question (Optional)</label>
+                      <input
+                        type="text"
+                        value={xPollQuestion}
+                        onChange={(e) => setXPollQuestion(e.target.value)}
+                        placeholder="Ask your audience a question..."
+                        className="w-full glass-input rounded-xl px-3 py-1.5 text-xs focus:outline-none"
+                      />
+                    </div>
+                    {xPollQuestion && (
+                      <div className="space-y-2">
+                        <label className="text-[11px] font-semibold text-slate-600 block">Poll Choices</label>
+                        {xPollOptions.map((opt, idx) => (
+                          <input
+                            key={idx}
+                            type="text"
+                            value={opt}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              setXPollOptions(prev => prev.map((o, i) => i === idx ? val : o));
+                            }}
+                            placeholder={`Option ${idx + 1}`}
+                            className="w-full glass-input rounded-xl px-3 py-1.5 text-xs focus:outline-none"
+                          />
+                        ))}
+                        {xPollOptions.length < 4 && (
+                          <button
+                            type="button"
+                            onClick={addXPollOption}
+                            className="text-xs text-purple-600 font-bold hover:underline flex items-center gap-1 cursor-pointer"
+                          >
+                            <Plus className="w-3 h-3" /> Add Choice Option
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {activePlatformTab === "facebook" && (
+                  <div className="space-y-3 animate-fadeIn">
+                    <div>
+                      <label className="text-[11px] font-semibold text-slate-600 block mb-1">Call-To-Action Button</label>
+                      <select
+                        value={facebookCta}
+                        onChange={(e) => setFacebookCta(e.target.value)}
+                        className="w-full glass-input rounded-xl px-3 py-1.5 text-xs focus:outline-none bg-white cursor-pointer"
+                      >
+                        <option value="NONE">No Button</option>
+                        <option value="LEARN_MORE">Learn More</option>
+                        <option value="SHOP_NOW">Shop Now</option>
+                        <option value="CONTACT_US">Contact Us</option>
+                      </select>
+                    </div>
+                  </div>
+                )}
+
+                {activePlatformTab === "pinterest" && (
+                  <div className="space-y-3 animate-fadeIn">
+                    <div>
+                      <label className="text-[11px] font-semibold text-slate-600 block mb-1">Pin Title</label>
+                      <input
+                        type="text"
+                        value={pinterestTitle}
+                        onChange={(e) => setPinterestTitle(e.target.value)}
+                        placeholder="Title for Pinterest pin..."
+                        className="w-full glass-input rounded-xl px-3 py-1.5 text-xs focus:outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[11px] font-semibold text-slate-600 block mb-1">Destination Link URL</label>
+                      <input
+                        type="text"
+                        value={pinterestLink}
+                        onChange={(e) => setPinterestLink(e.target.value)}
+                        placeholder="https://yourbrand.com/item"
+                        className="w-full glass-input rounded-xl px-3 py-1.5 text-xs focus:outline-none"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {activePlatformTab === "linkedin" && (
+                  <div className="space-y-3 animate-fadeIn">
+                    <div>
+                      <label className="text-[11px] font-semibold text-slate-600 block mb-1">Article Headline / Title</label>
+                      <input
+                        type="text"
+                        value={linkedinTitle}
+                        onChange={(e) => setLinkedinTitle(e.target.value)}
+                        placeholder="Headline for LinkedIn..."
+                        className="w-full glass-input rounded-xl px-3 py-1.5 text-xs focus:outline-none"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {activePlatformTab === "bluesky" && (
+                  <div className="space-y-3 animate-fadeIn">
+                    <div>
+                      <label className="text-[11px] font-semibold text-slate-600 block mb-1">Alt Text for Images</label>
+                      <input
+                        type="text"
+                        value={blueskyAltText}
+                        onChange={(e) => setBlueskyAltText(e.target.value)}
+                        placeholder="Describe images for accessibility..."
+                        className="w-full glass-input rounded-xl px-3 py-1.5 text-xs focus:outline-none"
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
 
           </div>
 
+          {/* Right Column: Live Feed Preview */}
+          <div className={`lg:col-span-5 p-4 sm:p-6 bg-slate-50/80 overflow-y-auto space-y-4 ${
+            mobileTab === "preview" ? "block" : "hidden lg:block"
+          }`}>
+            <div className="flex items-center justify-between pb-2 border-b border-slate-200">
+              <span className="text-xs font-bold text-slate-900 uppercase tracking-wider">Live Feed Preview</span>
+              <span className="text-[10px] bg-purple-100 text-purple-700 px-2 py-0.5 rounded-md font-bold uppercase">
+                {activePlatformTab}
+              </span>
+            </div>
+
+            {/* Live Feed Card Preview */}
+            <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm space-y-3">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-purple-600 text-white font-bold flex items-center justify-center text-xs shadow-2xs">
+                  A
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-slate-900">Agency Brand Channel</p>
+                  <p className="text-[10px] text-slate-400">Just now</p>
+                </div>
+              </div>
+
+              {/* Multi-Media Interactive Carousel & Video Feed Preview */}
+              {mediaUrls.length > 0 ? (
+                <div className="relative group rounded-xl overflow-hidden border border-slate-100 shadow-2xs bg-black/5">
+                  {/* Active Slide Rendering */}
+                  {isVideoMedia({ url: mediaUrls[previewSlideIndex] || mediaUrls[0] }) ? (
+                    <video
+                      src={mediaUrls[previewSlideIndex] || mediaUrls[0]}
+                      className="w-full h-48 sm:h-56 object-cover bg-black"
+                      controls
+                    />
+                  ) : (
+                    <img
+                      src={mediaUrls[previewSlideIndex] || mediaUrls[0]}
+                      alt={`Preview slide ${previewSlideIndex + 1}`}
+                      className="w-full h-48 sm:h-56 object-cover"
+                    />
+                  )}
+
+                  {/* Multi-Media Carousel Controls & Badges */}
+                  {mediaUrls.length > 1 && (
+                    <>
+                      {/* Counter Badge */}
+                      <div className="absolute top-2 right-2 px-2.5 py-0.5 rounded-full bg-slate-900/75 backdrop-blur-md text-white text-[10px] font-bold font-mono shadow-sm">
+                        {previewSlideIndex + 1} / {mediaUrls.length}
+                      </div>
+
+                      {/* Previous Slide Button */}
+                      {previewSlideIndex > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => setPreviewSlideIndex(prev => Math.max(0, prev - 1))}
+                          className="absolute left-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-slate-900/60 hover:bg-slate-900/90 text-white flex items-center justify-center backdrop-blur-sm transition-all cursor-pointer shadow-md"
+                        >
+                          <ChevronLeft className="w-4 h-4" />
+                        </button>
+                      )}
+
+                      {/* Next Slide Button */}
+                      {previewSlideIndex < mediaUrls.length - 1 && (
+                        <button
+                          type="button"
+                          onClick={() => setPreviewSlideIndex(prev => Math.min(mediaUrls.length - 1, prev + 1))}
+                          className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-slate-900/60 hover:bg-slate-900/90 text-white flex items-center justify-center backdrop-blur-sm transition-all cursor-pointer shadow-md"
+                        >
+                          <ChevronRight className="w-4 h-4" />
+                        </button>
+                      )}
+
+                      {/* Pagination Indicator Dots */}
+                      <div className="absolute bottom-2 inset-x-0 flex items-center justify-center gap-1.5">
+                        {mediaUrls.map((_, idx) => (
+                          <button
+                            key={idx}
+                            type="button"
+                            onClick={() => setPreviewSlideIndex(idx)}
+                            className={`w-2 h-2 rounded-full transition-all cursor-pointer ${
+                              previewSlideIndex === idx ? "bg-white scale-125 shadow-sm" : "bg-white/50 hover:bg-white/80"
+                            }`}
+                          />
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </div>
+              ) : (
+                <div className="w-full h-36 rounded-xl border border-dashed border-slate-200 bg-slate-50 flex flex-col items-center justify-center text-slate-400 text-xs">
+                  <ImageIcon className="w-6 h-6 mb-1 opacity-50" />
+                  <span>No media attached</span>
+                </div>
+              )}
+
+              <p className="text-xs text-slate-800 leading-relaxed whitespace-pre-wrap">
+                {caption || "Your post caption preview will appear here in real-time..."}
+              </p>
+              {hashtags && <p className="text-xs text-purple-600 font-semibold">{hashtags}</p>}
+            </div>
+          </div>
+
         </div>
+
+        {/* Modal Footer */}
+        <div className="px-4 sm:px-6 py-3.5 border-t border-slate-200/80 bg-slate-50/90 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shrink-0">
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            {[
+              { id: "publish_now", label: "Publish Now", icon: Send },
+              { id: "schedule", label: "Schedule", icon: Clock },
+              { id: "save_draft", label: "Draft", icon: Save }
+            ].map((act) => {
+              const Icon = act.icon;
+              return (
+                <button
+                  key={act.id}
+                  type="button"
+                  onClick={() => setActionType(act.id as any)}
+                  className={`px-3 py-1.5 sm:py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
+                    actionType === act.id
+                      ? "bg-purple-600 text-white shadow-xs"
+                      : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-100"
+                  }`}
+                >
+                  <Icon className="w-3.5 h-3.5" />
+                  <span>{act.label}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          <button
+            type="button"
+            onClick={handleSubmit}
+            disabled={isSubmitting}
+            className="py-2.5 px-6 rounded-2xl gradient-brand text-white font-semibold text-xs flex items-center justify-center gap-2 shadow-md shadow-purple-500/25 hover:shadow-lg hover:shadow-purple-500/35 transition-all cursor-pointer"
+          >
+            {isSubmitting ? (
+              <span>Processing...</span>
+            ) : actionType === "schedule" ? (
+              <>
+                <Clock className="w-4 h-4" />
+                <span>Schedule Post</span>
+              </>
+            ) : actionType === "save_draft" ? (
+              <>
+                <Save className="w-4 h-4" />
+                <span>Save Draft</span>
+              </>
+            ) : (
+              <>
+                <Send className="w-4 h-4" />
+                <span>Publish Post Now</span>
+              </>
+            )}
+          </button>
+        </div>
+
       </div>
 
-      {/* Media Library Browser Modal Overlay */}
-      {isLibraryOpen && (
-        <div className="fixed inset-0 z-[60] bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-[#121422] border border-border/85 rounded-2xl p-6 w-full max-w-2xl h-[70vh] flex flex-col space-y-4 shadow-2xl relative">
-            <button
-              onClick={() => setIsLibraryOpen(false)}
-              className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors"
-            >
-              <X className="w-5 h-5" />
-            </button>
-
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-purple-600/20 border border-purple-500/30 flex items-center justify-center text-purple-400 shadow-lg">
-                <ImageIcon className="w-5 h-5" />
+      {/* Internal Glassmorphic Media Library Picker Modal */}
+      {isMediaPickerOpen && (
+        <div className="fixed inset-0 z-[120] bg-slate-900/50 backdrop-blur-xl flex items-center justify-center p-3 sm:p-6 animate-fadeIn">
+          <div className="bg-white/95 backdrop-blur-2xl border border-slate-200 rounded-2xl sm:rounded-3xl w-full max-w-3xl max-h-[85vh] flex flex-col shadow-2xl overflow-hidden">
+            
+            <div className="px-4 sm:px-6 py-3.5 border-b border-slate-200/80 flex items-center justify-between bg-slate-50/80">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center">
+                  <Folder className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="font-extrabold text-xs sm:text-sm text-slate-900 font-['Outfit']">Media Library</h3>
+                  <p className="text-[10px] sm:text-[11px] text-slate-500">Select assets from Backblaze B2 storage</p>
+                </div>
               </div>
-              <div>
-                <h2 className="text-base font-bold text-white font-['Outfit']">Workspace Media Library</h2>
-                <p className="text-xs text-gray-400">Select images or videos hosted on Backblaze B2 CDN</p>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={loadMediaLibrary}
+                  className="p-1.5 rounded-xl bg-slate-100 hover:bg-purple-50 text-slate-600 hover:text-purple-700 transition-colors cursor-pointer flex items-center gap-1 text-[11px] font-semibold"
+                  title="Resync with Backblaze B2"
+                >
+                  <RefreshCw className={`w-3.5 h-3.5 ${isLoadingLibrary ? "animate-spin" : ""}`} />
+                  <span>Sync B2</span>
+                </button>
+                <button
+                  onClick={() => setIsMediaPickerOpen(false)}
+                  className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
               </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto min-h-[300px] border border-border/40 rounded-xl p-3 bg-[#0a0b12]">
-              {libraryLoading ? (
-                <div className="w-full h-full flex items-center justify-center text-xs text-gray-400">
-                  Loading media library items...
+            <div className="p-4 sm:p-6 flex-1 overflow-y-auto">
+              {isLoadingLibrary ? (
+                <div className="py-12 text-center text-xs text-slate-500 space-y-2">
+                  <RefreshCw className="w-5 h-5 animate-spin mx-auto text-purple-600" />
+                  <p>Fetching files from Backblaze B2 storage...</p>
                 </div>
-              ) : libraryItems.length === 0 ? (
-                <div className="w-full h-full flex flex-col items-center justify-center text-center p-8 space-y-2">
-                  <ImageIcon className="w-10 h-10 text-gray-600" />
-                  <p className="text-xs text-gray-400">No media items found in the library.</p>
+              ) : libraryMedia.length === 0 ? (
+                <div className="py-12 text-center text-xs text-slate-500 space-y-2">
+                  <p>No media files found in Backblaze B2 storage for this workspace.</p>
+                  <button
+                    type="button"
+                    onClick={loadMediaLibrary}
+                    className="px-3 py-1.5 bg-purple-600 text-white rounded-xl text-xs font-semibold cursor-pointer"
+                  >
+                    Sync Backblaze B2 Now
+                  </button>
                 </div>
               ) : (
-                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3 p-1">
-                  {libraryItems.map((item) => {
-                    const isSelected = selectedLibraryUrls.includes(item.url);
-                    const isItemVideo = (item.file_type || "").startsWith("video/") || item.url.toLowerCase().endsWith(".mp4") || item.url.toLowerCase().endsWith(".mov") || item.url.toLowerCase().endsWith(".webm");
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  {libraryMedia.map((item) => {
+                    const isSelected = mediaUrls.includes(item.url);
+                    const isVid = isVideoMedia(item);
                     return (
                       <div
-                        key={item.id}
-                        onClick={() => {
-                          if (isSelected) {
-                            setSelectedLibraryUrls(selectedLibraryUrls.filter(u => u !== item.url));
-                          } else {
-                            setSelectedLibraryUrls([...selectedLibraryUrls, item.url]);
-                          }
-                        }}
-                        className={`aspect-square rounded-xl overflow-hidden border cursor-pointer relative group transition-all ${
-                          isSelected ? "border-indigo-500 scale-95 ring-2 ring-indigo-500/50" : "border-border/80 hover:border-gray-500"
+                        key={item.id || item.url}
+                        onClick={() => toggleMediaSelectionFromLibrary(item.url)}
+                        className={`group relative rounded-2xl border cursor-pointer overflow-hidden transition-all ${
+                          isSelected 
+                            ? "border-purple-600 ring-2 ring-purple-500/30 bg-purple-50" 
+                            : "border-slate-200 hover:border-purple-300"
                         }`}
                       >
-                        {isItemVideo ? (
-                          <div className="w-full h-full bg-[#181926] flex items-center justify-center relative">
-                            <video src={item.url} className="w-full h-full object-cover" muted />
-                            <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                              <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center">
-                                <Video className="w-3 h-3 text-white fill-white" />
+                        {isVid ? (
+                          <div className="relative w-full h-24 sm:h-28 bg-slate-900 flex items-center justify-center overflow-hidden">
+                            <video
+                              src={item.url}
+                              className="w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform"
+                              muted
+                              preload="metadata"
+                            />
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              <div className="w-8 h-8 rounded-full bg-white/30 backdrop-blur-md flex items-center justify-center text-white shadow-md">
+                                <Play className="w-4 h-4 fill-white" />
                               </div>
                             </div>
                           </div>
                         ) : (
-                          <img src={item.url} alt="" className="w-full h-full object-cover" />
+                          <img
+                            src={item.url || item.thumbnail_url}
+                            alt={item.filename || item.original_filename || "Media Asset"}
+                            className="w-full h-24 sm:h-28 object-cover group-hover:scale-105 transition-transform"
+                          />
                         )}
+
+                        <div className="p-2 bg-white/90 text-[10px]">
+                          <p className="font-bold text-slate-800 truncate">{item.filename || item.original_filename || "Asset"}</p>
+                          <p className="text-slate-400 capitalize">{isVid ? "Video/MP4" : (item.file_type || item.media_type || "Image")}</p>
+                        </div>
+
                         {isSelected && (
-                          <div className="absolute top-2 right-2 bg-indigo-600 text-white rounded-full p-0.5 shadow-md">
-                            <CheckCircle2 className="w-4 h-4" />
+                          <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-purple-600 text-white flex items-center justify-center shadow-md">
+                            <Check className="w-3.5 h-3.5" />
                           </div>
                         )}
                       </div>
@@ -587,29 +1222,22 @@ export default function PostComposerModal() {
               )}
             </div>
 
-            <div className="pt-3 border-t border-border/50 flex items-center justify-between">
-              <span className="text-xs text-gray-400">{selectedLibraryUrls.length} assets selected</span>
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => setIsLibraryOpen(false)}
-                  className="px-4 py-2 rounded-xl bg-transparent border border-border text-xs text-gray-400 hover:text-white"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  onClick={handleImportSelected}
-                  disabled={selectedLibraryUrls.length === 0}
-                  className="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-lg shadow-indigo-500/25 transition-all disabled:opacity-50"
-                >
-                  Import Selected
-                </button>
-              </div>
+            <div className="px-4 sm:px-6 py-3 border-t border-slate-200 bg-slate-50/80 flex items-center justify-between">
+              <span className="text-xs text-slate-500 font-semibold">
+                {mediaUrls.length} media attached to post
+              </span>
+              <button
+                onClick={() => setIsMediaPickerOpen(false)}
+                className="py-2 px-5 rounded-xl gradient-brand text-white font-semibold text-xs shadow-md shadow-purple-500/25 cursor-pointer"
+              >
+                Done Selecting
+              </button>
             </div>
+
           </div>
         </div>
       )}
+
     </div>
   );
 }

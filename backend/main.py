@@ -1,3 +1,8 @@
+import sys
+from pathlib import Path
+# Ensure project root is in sys.path for backend package imports
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import logging

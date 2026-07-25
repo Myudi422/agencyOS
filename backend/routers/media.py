@@ -4,6 +4,7 @@ from sqlalchemy import or_
 from pydantic import BaseModel
 from typing import List, Optional
 import json
+from datetime import datetime
 from backend.database import get_db
 from backend.models.models import Media, ActivityLog
 from backend.services.storage_service import storage_service
@@ -18,6 +19,130 @@ class MediaUpdate(BaseModel):
 class BulkDeleteRequest(BaseModel):
     media_ids: List[str]
 
+class BulkMoveRequest(BaseModel):
+    media_ids: List[str]
+    target_folder: str
+
+@router.post("/sync-b2")
+def sync_b2_bucket(
+    workspace_id: str = Query(..., description="Workspace ID to sync into"),
+    db: Session = Depends(get_db)
+):
+    """
+    Scans Backblaze B2 bucket (ccgnimex) under 'AgencyOS/' prefix directly and synchronizes files into database.
+    """
+    b2_objects = storage_service.list_b2_objects(limit=100)
+    synced_count = 0
+
+    for obj in b2_objects:
+        existing = db.query(Media).filter(
+            Media.workspace_id == workspace_id,
+            Media.b2_key == obj["b2_key"]
+        ).first()
+
+        if not existing:
+            media = Media(
+                workspace_id=workspace_id,
+                filename=obj["filename"],
+                file_type=obj["file_type"],
+                file_size=obj["file_size"],
+                url=obj["url"],
+                thumbnail_url=obj["url"],
+                b2_key=obj["b2_key"],
+                folder=obj["folder"],
+                tags=["backblaze_b2", "synced"]
+            )
+            db.add(media)
+            synced_count += 1
+
+    if synced_count > 0:
+        db.commit()
+
+    return {"status": "success", "synced_count": synced_count, "total_b2_objects": len(b2_objects)}
+
+@router.delete("/folder")
+def delete_folder(
+    folder: str = Query(..., description="Folder name to delete"),
+    workspace_id: str = Query(..., description="Workspace ID"),
+    db: Session = Depends(get_db)
+):
+    """Deletes a folder and all media items inside it from Backblaze B2 storage and database."""
+    clean_folder = folder.strip().capitalize()
+    
+    # 1. Fetch DB items
+    db_items = db.query(Media).filter(
+        Media.workspace_id == workspace_id,
+        Media.folder == clean_folder,
+        Media.b2_key.ilike("AgencyOS/%")
+    ).all()
+    db_b2_keys = [i.b2_key for i in db_items if i.b2_key]
+
+    # 2. Scan B2 directly for any files under AgencyOS/{clean_folder}/
+    b2_keys_to_delete = set(db_b2_keys)
+    try:
+        b2_objects = storage_service.list_b2_objects(limit=500)
+        prefix = f"AgencyOS/{clean_folder}/"
+        for obj in b2_objects:
+            if obj["b2_key"].startswith(prefix):
+                b2_keys_to_delete.add(obj["b2_key"])
+    except Exception as e:
+        print("B2 folder scan error during delete:", e)
+
+    # 3. Purge from Backblaze B2 S3 storage
+    if b2_keys_to_delete:
+        storage_service.delete_bulk_files(list(b2_keys_to_delete))
+        
+    # 4. Purge from database
+    for item in db_items:
+        db.delete(item)
+
+    log = ActivityLog(
+        workspace_id=workspace_id,
+        user_name="System",
+        action="DELETE_FOLDER",
+        details=f"Deleted folder '{clean_folder}' ({len(b2_keys_to_delete)} files purged from Backblaze B2 & database)",
+        entity_type="MediaFolder"
+    )
+    db.add(log)
+
+    db.commit()
+    return {
+        "status": "success", 
+        "deleted_db_count": len(db_items), 
+        "deleted_b2_count": len(b2_keys_to_delete), 
+        "folder": clean_folder
+    }
+
+@router.post("/reset")
+def reset_media_vault(
+    workspace_id: str = Query(..., description="Workspace ID"),
+    db: Session = Depends(get_db)
+):
+    """Resets all media assets for the workspace from Backblaze B2 'AgencyOS/' and database."""
+    items = db.query(Media).filter(
+        Media.workspace_id == workspace_id,
+        Media.b2_key.ilike("AgencyOS/%")
+    ).all()
+    
+    b2_keys = [i.b2_key for i in items if i.b2_key]
+    if b2_keys:
+        storage_service.delete_bulk_files(b2_keys)
+        
+    for item in items:
+        db.delete(item)
+
+    log = ActivityLog(
+        workspace_id=workspace_id,
+        user_name="System",
+        action="RESET_MEDIA_VAULT",
+        details=f"Reset media vault: cleared {len(items)} assets from Backblaze B2 & database",
+        entity_type="MediaVault"
+    )
+    db.add(log)
+
+    db.commit()
+    return {"status": "success", "deleted_count": len(items)}
+
 @router.get("/")
 def get_media_items(
     workspace_id: str = Query(..., description="Workspace ID"),
@@ -27,8 +152,22 @@ def get_media_items(
     favorites_only: Optional[bool] = Query(False, description="Favorites only"),
     db: Session = Depends(get_db)
 ):
-    """Lists reusable media assets from Backblaze B2 S3 with tag & folder filters."""
-    query = db.query(Media).filter(Media.workspace_id == workspace_id)
+    """Lists reusable media assets from Backblaze B2 S3 strictly under AgencyOS/ prefix."""
+    query = db.query(Media).filter(
+        Media.workspace_id == workspace_id,
+        Media.b2_key.ilike("AgencyOS/%")
+    )
+
+    total_count = query.count()
+    if total_count == 0:
+        try:
+            sync_b2_bucket(workspace_id=workspace_id, db=db)
+            query = db.query(Media).filter(
+                Media.workspace_id == workspace_id,
+                Media.b2_key.ilike("AgencyOS/%")
+            )
+        except Exception as e:
+            print("Auto B2 Sync warning:", e)
 
     if folder and folder != "All":
         query = query.filter(Media.folder == folder)
@@ -39,12 +178,13 @@ def get_media_items(
 
     items = query.order_by(Media.created_at.desc()).all()
 
-    # Filter tags in python if specified
     if tag:
         items = [i for i in items if tag in (i.tags or [])]
 
-    # Collect folders and tags summary
-    all_media = db.query(Media).filter(Media.workspace_id == workspace_id).all()
+    all_media = db.query(Media).filter(
+        Media.workspace_id == workspace_id,
+        Media.b2_key.ilike("AgencyOS/%")
+    ).all()
     folders = list(set([m.folder for m in all_media if m.folder]))
     all_tags = set()
     for m in all_media:
@@ -79,7 +219,7 @@ def get_media_items(
 async def upload_media(
     workspace_id: str = Form(...),
     folder: str = Form("General"),
-    tags: str = Form("[]"), # JSON array string
+    tags: str = Form("[]"),
     file: UploadFile = File(...),
     db: Session = Depends(get_db)
 ):
@@ -94,11 +234,11 @@ async def upload_media(
     )
 
     try:
-        parsed_tags = json.loads(tags)
+        tag_list = json.loads(tags)
     except:
-        parsed_tags = []
+        tag_list = ["uploaded"]
 
-    media_obj = Media(
+    media = Media(
         workspace_id=workspace_id,
         filename=upload_res["filename"],
         file_type=upload_res["file_type"],
@@ -107,85 +247,65 @@ async def upload_media(
         thumbnail_url=upload_res["thumbnail_url"],
         b2_key=upload_res["b2_key"],
         folder=folder,
-        tags=parsed_tags,
-        width=upload_res["width"],
-        height=upload_res["height"],
-        duration=upload_res["duration"]
+        tags=tag_list,
+        width=upload_res.get("width"),
+        height=upload_res.get("height"),
+        duration=upload_res.get("duration")
     )
+    db.add(media)
 
-    db.add(media_obj)
-    db.add(ActivityLog(
+    log = ActivityLog(
         workspace_id=workspace_id,
+        user_name="System",
         action="UPLOAD_MEDIA",
-        details=f"Uploaded asset '{media_obj.filename}' to Backblaze B2 ({folder})",
-        entity_type="Media"
-    ))
-    db.commit()
-    db.refresh(media_obj)
-    return media_obj
-
-@router.put("/{media_id}")
-def update_media(media_id: str, data: MediaUpdate, db: Session = Depends(get_db)):
-    media = db.query(Media).filter(Media.id == media_id).first()
-    if not media:
-        raise HTTPException(status_code=404, detail="Media not found")
-
-    if data.folder is not None:
-        media.folder = data.folder
-    if data.tags is not None:
-        media.tags = data.tags
-    if data.is_favorite is not None:
-        media.is_favorite = data.is_favorite
+        details=f"Uploaded '{file.filename}' to Backblaze B2 key '{upload_res['b2_key']}'",
+        entity_type="Media",
+        entity_id=media.id
+    )
+    db.add(log)
 
     db.commit()
+    db.refresh(media)
+
     return media
+
+@router.post("/bulk-move")
+def bulk_move_media(req: BulkMoveRequest, db: Session = Depends(get_db)):
+    """Moves multiple media items to a target folder in database."""
+    clean_folder = req.target_folder.strip().capitalize()
+    items = db.query(Media).filter(Media.id.in_(req.media_ids)).all()
+    
+    for item in items:
+        item.folder = clean_folder
+
+    db.commit()
+    return {"status": "success", "moved_count": len(items), "target_folder": clean_folder}
+
+@router.delete("/bulk-delete")
+def bulk_delete_media(req: BulkDeleteRequest, db: Session = Depends(get_db)):
+    """Deletes multiple media assets from Backblaze B2 and database."""
+    items = db.query(Media).filter(Media.id.in_(req.media_ids)).all()
+    b2_keys = [i.b2_key for i in items if i.b2_key]
+    
+    if b2_keys:
+        storage_service.delete_bulk_files(b2_keys)
+
+    for item in items:
+        db.delete(item)
+
+    db.commit()
+    return {"status": "success", "deleted_count": len(items)}
 
 @router.delete("/{media_id}")
 def delete_media(media_id: str, db: Session = Depends(get_db)):
-    """Deletes single media record from database and removes object from Backblaze B2 bucket."""
+    """Deletes a single media file from Backblaze B2 storage and DB."""
     media = db.query(Media).filter(Media.id == media_id).first()
     if not media:
-        raise HTTPException(status_code=404, detail="Media not found")
+        raise HTTPException(status_code=404, detail="Media item not found")
 
-    # Delete from Backblaze B2 S3 storage
     if media.b2_key:
         storage_service.delete_file(media.b2_key)
 
-    workspace_id = media.workspace_id
-    filename = media.filename
     db.delete(media)
-
-    db.add(ActivityLog(
-        workspace_id=workspace_id,
-        action="DELETE_MEDIA",
-        details=f"Deleted asset '{filename}' from Backblaze B2 & database",
-        entity_type="Media"
-    ))
     db.commit()
-    return {"status": "success", "message": f"Media '{filename}' deleted successfully"}
-
-@router.post("/bulk-delete")
-def bulk_delete_media(data: BulkDeleteRequest, db: Session = Depends(get_db)):
-    """Deletes multiple media records from database and Backblaze B2 storage in batch."""
-    items = db.query(Media).filter(Media.id.in_(data.media_ids)).all()
-    if not items:
-        raise HTTPException(status_code=404, detail="No matching media items found")
-
-    count = len(items)
-    b2_keys = [m.b2_key for m in items if m.b2_key]
-    workspace_id = items[0].workspace_id if items else "ws-default"
-
-    # Delete objects batch from Backblaze B2
-    storage_service.delete_bulk_files(b2_keys)
-
-    for m in items:
-        db.delete(m)
-
-    db.add(ActivityLog(
-        workspace_id=workspace_id,
-        action="BULK_DELETE_MEDIA",
-        details=f"Bulk deleted {count} media assets from Backblaze B2 & database",
-        entity_type="Media"
-    ))
-    db.commit()
-    return {"status": "success", "message": f"Successfully deleted {count} media assets."}
+    return {"status": "success", "message": "Media asset deleted"}

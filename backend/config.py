@@ -38,6 +38,10 @@ class Settings:
     B2_SECRET_KEY: str = os.getenv("B2_SECRET_KEY", "K005XvUqydtIZQvuNBYCM/UDhXfrWLQ")
     B2_PUBLIC_CUSTOM_DOMAIN: str = os.getenv("B2_PUBLIC_CUSTOM_DOMAIN", "https://file.legalpilar.id/file")
 
+    # PostForMe API (https://api.postforme.dev)
+    POSTFORME_API_KEY: str = os.getenv("POSTFORME_API_KEY", "")
+    POSTFORME_BASE_URL: str = os.getenv("POSTFORME_BASE_URL", "https://api.postforme.dev")
+
     # Meta Platform (OAuth 2.0 & Graph API v25.0 with HTTPS Callback)
     META_CLIENT_ID: str = os.getenv("META_CLIENT_ID", "1662829861460983")
     META_CLIENT_SECRET: str = os.getenv("META_CLIENT_SECRET", "64a65b12da82c841961be33c03826456")

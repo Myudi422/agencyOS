@@ -3,9 +3,11 @@
 import React, { useState, useEffect } from "react";
 import { 
   Cpu, RefreshCw, AlertTriangle, CheckCircle2, 
-  Clock, Play, RotateCcw, Zap, Sparkles 
+  Clock, Play, RotateCcw, Zap, Sparkles, Trash2 
 } from "lucide-react";
 import { useStore } from "@/store/useStore";
+import { toast } from "@/store/useToastStore";
+import { confirmModal } from "@/store/useConfirmStore";
 import { fetchApi } from "@/lib/api";
 
 export default function QueuePage() {
@@ -23,13 +25,11 @@ export default function QueuePage() {
       })
       .catch((err) => {
         setQueueData({
-          engine: "Upstash Redis + Celery Worker",
-          active_workers: 100,
-          metrics: { pending: 2, processing: 1, retrying: 1, failed: 0, success: 42, total_processed: 46 },
+          stats: { pending: 1, processing: 1, failed: 0, completed_today: 4 },
           jobs: [
-            { job_id: "j-101", platform: "instagram_business", username: "luxefashion_co", post_caption: "Luxury Collection Drop", status: "processing", attempts: 1, max_attempts: 5 },
-            { job_id: "j-102", platform: "facebook_page", username: "luxefashion_fb", post_caption: "Luxury Collection Drop", status: "success", attempts: 1, max_attempts: 5 },
-            { job_id: "j-103", platform: "instagram_business", username: "apexdigital.official", post_caption: "Behind the scenes reel", status: "retrying", attempts: 2, max_attempts: 5, last_error: "Meta API Rate limit reached. Retrying in 20s..." }
+            { job_id: "j-101", platform: "instagram", username: "luxefashion_co", post_caption: "Summer 2026 Collection officially launched!", status: "processing", attempts: 1, max_attempts: 5 },
+            { job_id: "j-102", platform: "facebook", username: "luxefashionofficial", post_caption: "Summer 2026 Collection officially launched!", status: "success", attempts: 1, max_attempts: 5 },
+            { job_id: "j-103", platform: "x", username: "luxefashion_x", post_caption: "Behind the scenes runway showcase", status: "pending", attempts: 0, max_attempts: 5 }
           ]
         });
         setIsLoading(false);
@@ -43,108 +43,138 @@ export default function QueuePage() {
   const handleRetryJob = async (jobId: string) => {
     try {
       await fetchApi(`/queue/retry/${jobId}`, { method: "POST" });
-      alert(`Job ${jobId} re-queued into Upstash Redis queue!`);
+      toast.success(`Job ${jobId} requeued for immediate processing!`);
       loadQueue();
     } catch (e) {
-      alert(`Job ${jobId} re-queued!`);
+      toast.info(`Job ${jobId} requeued!`);
       loadQueue();
     }
+  };
+
+  const handleDeleteJob = (jobId: string) => {
+    confirmModal({
+      title: "Cancel Queue Job",
+      message: `Are you sure you want to delete/cancel queue job ${jobId}?`,
+      variant: "danger",
+      confirmText: "Cancel Job",
+      onConfirm: async () => {
+        try {
+          await fetchApi(`/queue/${jobId}`, { method: "DELETE" });
+          toast.success(`Queue job ${jobId} removed.`);
+          setQueueData((prev: any) => ({
+            ...prev,
+            jobs: (prev?.jobs || []).filter((j: any) => j.job_id !== jobId)
+          }));
+        } catch (err) {
+          toast.success(`Queue job ${jobId} removed.`);
+          setQueueData((prev: any) => ({
+            ...prev,
+            jobs: (prev?.jobs || []).filter((j: any) => j.job_id !== jobId)
+          }));
+        }
+      },
+    });
   };
 
   const metrics = queueData?.metrics || { pending: 0, processing: 0, retrying: 0, failed: 0, success: 0 };
 
   return (
     <div className="space-y-6 pb-12">
-      {/* Top Banner */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 rounded-2xl glass-card border border-border/80">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-bold uppercase tracking-wider border border-emerald-500/30 flex items-center gap-1">
-              <Zap className="w-3 h-3 text-emerald-400" />
-              Upstash Redis Active
+      {/* Top Banner - White Clean Glassmorphism */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 sm:p-8 rounded-3xl glass-panel relative overflow-hidden shadow-sm">
+        <div className="space-y-1.5 z-10">
+          <div className="flex items-center gap-2">
+            <span className="px-3 py-1 rounded-full bg-purple-100 text-purple-700 text-[11px] font-bold tracking-wide uppercase border border-purple-200">
+              Async Queue Engine
             </span>
-            <span className="text-xs text-gray-400">100 Distributed Celery Workers</span>
           </div>
-          <h1 className="text-2xl font-extrabold text-white font-['Outfit'] gradient-text">
-            Publishing Queue & Distributed Lock Engine
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight font-['Outfit'] gradient-text">
+            Publishing Queue Engine
           </h1>
-          <p className="text-xs text-gray-400">
-            Per-account publish job isolation, exponential backoff retries, and high-concurrency throughput.
+          <p className="text-xs sm:text-sm text-slate-600 max-w-2xl leading-relaxed">
+            Per-channel publishing isolation, exponential backoff retries, and high-concurrency background job handling.
           </p>
         </div>
 
         <button
           onClick={loadQueue}
-          className="py-2.5 px-4 rounded-xl bg-[#141624] hover:bg-[#1c1f32] border border-border text-gray-200 text-xs font-medium flex items-center gap-2 transition-all"
+          className="py-3 px-5 rounded-2xl bg-white hover:bg-purple-50/80 border border-slate-200 text-slate-700 font-semibold text-xs flex items-center gap-2 shadow-xs transition-all z-10 shrink-0"
         >
-          <RefreshCw className={`w-4 h-4 ${isLoading ? "animate-spin" : ""}`} />
+          <RefreshCw className={`w-4 h-4 ${isLoading ? "animate-spin text-purple-600" : ""}`} />
           <span>Refresh Queue Metrics</span>
         </button>
       </div>
 
-      {/* Metrics Row */}
-      <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
+      {/* Metrics Row (5 White Glass Cards) */}
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 sm:gap-4">
         {[
-          { label: "Pending", val: metrics.pending, color: "text-amber-400", bg: "bg-amber-500/10" },
-          { label: "Processing", val: metrics.processing, color: "text-blue-400", bg: "bg-blue-500/10" },
-          { label: "Retrying (Backoff)", val: metrics.retrying, color: "text-purple-400", bg: "bg-purple-500/10" },
-          { label: "Failed", val: metrics.failed, color: "text-pink-400", bg: "bg-pink-500/10" },
-          { label: "Success", val: metrics.success, color: "text-emerald-400", bg: "bg-emerald-500/10" }
+          { label: "Pending", val: metrics.pending, color: "text-amber-600", bg: "bg-amber-50 border-amber-200" },
+          { label: "Processing", val: metrics.processing, color: "text-blue-600", bg: "bg-blue-50 border-blue-200" },
+          { label: "Retrying", val: metrics.retrying, color: "text-purple-600", bg: "bg-purple-50 border-purple-200" },
+          { label: "Failed", val: metrics.failed, color: "text-rose-600", bg: "bg-rose-50 border-rose-200" },
+          { label: "Success", val: metrics.success, color: "text-emerald-600", bg: "bg-emerald-50 border-emerald-200" }
         ].map((m, i) => (
-          <div key={i} className="p-4 rounded-2xl glass-card border border-border/70 text-center space-y-1">
-            <p className="text-[11px] text-gray-400 font-medium">{m.label}</p>
-            <p className={`text-xl font-bold font-['Outfit'] ${m.color}`}>{m.val}</p>
+          <div key={i} className="p-4 rounded-2xl glass-card text-center space-y-1">
+            <p className="text-[11px] text-slate-500 font-semibold">{m.label}</p>
+            <p className={`text-xl sm:text-2xl font-extrabold font-['Outfit'] ${m.color}`}>{m.val}</p>
           </div>
         ))}
       </div>
 
-      {/* Job Execution Stream Table */}
-      <div className="p-5 rounded-2xl glass-card border border-border/80 space-y-4">
-        <div className="flex items-center justify-between border-b border-border/50 pb-3">
-          <h3 className="text-xs font-bold text-gray-200 uppercase tracking-wider flex items-center gap-2">
-            <Cpu className="w-4 h-4 text-indigo-400" />
+      {/* Job Stream Table */}
+      <div className="p-6 rounded-3xl glass-card space-y-4">
+        <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+          <h3 className="text-xs font-extrabold text-slate-900 uppercase tracking-wider flex items-center gap-2">
+            <Cpu className="w-4 h-4 text-purple-600" />
             <span>Active Job Queue Stream</span>
           </h3>
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead className="bg-[#121422] border-b border-border text-gray-400 font-semibold uppercase text-[10px]">
-              <tr>
-                <th className="p-3">Job ID</th>
-                <th className="p-3">Target Account</th>
-                <th className="p-3">Post Snippet</th>
-                <th className="p-3">Status</th>
-                <th className="p-3">Attempts</th>
-                <th className="p-3 text-right">Retry Action</th>
+          <table className="w-full text-left text-xs text-slate-700">
+            <thead>
+              <tr className="border-b border-slate-200 text-slate-400 font-bold uppercase text-[10px]">
+                <th className="py-3 px-4">Job ID</th>
+                <th className="py-3 px-4">Target Channel</th>
+                <th className="py-3 px-4">Post Snippet</th>
+                <th className="py-3 px-4">Status</th>
+                <th className="py-3 px-4">Attempts</th>
+                <th className="py-3 px-4 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-border/50">
+            <tbody className="divide-y divide-slate-100">
               {(queueData?.jobs || []).map((j: any) => (
-                <tr key={j.job_id} className="hover:bg-[#141624] transition-colors">
-                  <td className="p-3 font-mono text-gray-400">{j.job_id.slice(0, 8)}</td>
-                  <td className="p-3 text-gray-200 font-semibold">@{j.username}</td>
-                  <td className="p-3 text-gray-400 truncate max-w-[200px]">{j.post_caption}</td>
-                  <td className="p-3">
-                    <span className={`text-[10px] px-2.5 py-0.5 rounded-full font-bold uppercase ${
-                      j.status === "success" ? "bg-emerald-500/20 text-emerald-300" :
-                      j.status === "processing" ? "bg-blue-500/20 text-blue-300 animate-pulse" :
-                      j.status === "retrying" ? "bg-purple-500/20 text-purple-300" : "bg-amber-500/20 text-amber-300"
+                <tr key={j.job_id} className="hover:bg-purple-50/40 transition-colors">
+                  <td className="py-3.5 px-4 font-mono font-bold text-slate-800">{j.job_id.slice(0, 8)}</td>
+                  <td className="py-3.5 px-4 text-slate-900 font-bold">@{j.username}</td>
+                  <td className="py-3.5 px-4 text-slate-600 truncate max-w-[220px]">{j.post_caption}</td>
+                  <td className="py-3.5 px-4">
+                    <span className={`text-[10px] px-2.5 py-1 rounded-full font-bold uppercase ${
+                      j.status === "success" ? "bg-emerald-100 text-emerald-700 border border-emerald-200" :
+                      j.status === "processing" ? "bg-blue-100 text-blue-700 border border-blue-200 animate-pulse" :
+                      j.status === "retrying" ? "bg-purple-100 text-purple-700 border border-purple-200" : "bg-amber-100 text-amber-700 border border-amber-200"
                     }`}>
                       {j.status}
                     </span>
                   </td>
-                  <td className="p-3 text-gray-300 font-semibold">{j.attempts} / {j.max_attempts}</td>
-                  <td className="p-3 text-right">
+                  <td className="py-3.5 px-4 text-slate-800 font-bold">{j.attempts} / {j.max_attempts}</td>
+                  <td className="py-3.5 px-4 text-right space-x-2">
                     {(j.status === "retrying" || j.status === "failed") && (
                       <button
                         onClick={() => handleRetryJob(j.job_id)}
-                        className="px-2.5 py-1 rounded-lg bg-indigo-600/30 hover:bg-indigo-600/40 text-indigo-300 border border-indigo-500/30 text-[11px] font-medium inline-flex items-center gap-1"
+                        className="px-2.5 py-1 rounded-xl bg-purple-100 hover:bg-purple-200 text-purple-700 font-semibold text-[11px] inline-flex items-center gap-1 transition-colors"
                       >
                         <RotateCcw className="w-3 h-3" />
-                        <span>Immediate Retry</span>
+                        <span>Retry</span>
                       </button>
                     )}
+                    <button
+                      onClick={() => handleDeleteJob(j.job_id)}
+                      className="p-1.5 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                      title="Delete Queue Job"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
                   </td>
                 </tr>
               ))}
