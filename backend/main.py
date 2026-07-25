@@ -48,7 +48,8 @@ Base.metadata.create_all(bind=engine)
 app = FastAPI(
     title=settings.APP_NAME,
     version="1.0.0-MVP",
-    description="Enterprise Multi-Workspace, Multi-Client Instagram Business & Facebook Page Management Platform."
+    description="Enterprise Multi-Workspace, Multi-Client Instagram Business & Facebook Page Management Platform.",
+    root_path="/api/backend"
 )
 
 # Enable CORS for Next.js Frontend
