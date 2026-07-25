@@ -54,6 +54,8 @@ app.include_router(activity.router)
 app.include_router(dashboard.router)
 
 @app.get("/")
+@app.get("/api/backend")
+@app.get("/api/backend/")
 def root():
     return {
         "status": "healthy",
