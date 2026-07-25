@@ -12,19 +12,31 @@ if str(backend_dir) not in sys.path:
 
 # Dynamic alias for 'backend' package when executed in isolated Vercel container
 if "backend" not in sys.modules:
+    import importlib.machinery
     backend_pkg = types.ModuleType("backend")
     backend_pkg.__path__ = [str(backend_dir)]
+    backend_pkg.__file__ = str(backend_dir / "__init__.py")
+    backend_pkg.__spec__ = importlib.machinery.ModuleSpec("backend", None, is_package=True)
     sys.modules["backend"] = backend_pkg
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import logging
-from backend.config import settings
-from backend.database import engine, Base
-from backend.routers import (
-    auth, workspaces, clients, accounts, media, posts, calendar, queue, activity, dashboard
-)
-from backend.seed import seed_database
+
+try:
+    from backend.config import settings
+    from backend.database import engine, Base
+    from backend.routers import (
+        auth, workspaces, clients, accounts, media, posts, calendar, queue, activity, dashboard
+    )
+    from backend.seed import seed_database
+except ModuleNotFoundError:
+    from config import settings
+    from database import engine, Base
+    from routers import (
+        auth, workspaces, clients, accounts, media, posts, calendar, queue, activity, dashboard
+    )
+    from seed import seed_database
 
 # Configure Logging
 logging.basicConfig(level=logging.INFO)
