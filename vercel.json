@@ -5,8 +5,8 @@
       "framework": "nextjs"
     },
     "backend": {
-      "root": ".",
-      "entrypoint": "api/index.py"
+      "root": "backend",
+      "entrypoint": "main.py"
     }
   },
   "rewrites": [
