@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, Query
+# pyrefly: ignore [missing-import]
 from sqlalchemy.orm import Session
 from datetime import datetime, time
 from backend.database import get_db
@@ -67,6 +68,7 @@ def get_dashboard_overview(
 
     # 6. System & Infrastructure Metrics (Memory, DB Size, Redis, Vercel)
     import os
+    # pyrefly: ignore [missing-import]
     from sqlalchemy import text
 
     # DB Size
