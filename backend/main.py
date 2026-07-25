@@ -1,4 +1,5 @@
 import sys
+import types
 from pathlib import Path
 
 backend_dir = Path(__file__).resolve().parent
@@ -8,6 +9,12 @@ if str(root_dir) not in sys.path:
     sys.path.insert(0, str(root_dir))
 if str(backend_dir) not in sys.path:
     sys.path.insert(0, str(backend_dir))
+
+# Dynamic alias for 'backend' package when executed in isolated Vercel container
+if "backend" not in sys.modules:
+    backend_pkg = types.ModuleType("backend")
+    backend_pkg.__path__ = [str(backend_dir)]
+    sys.modules["backend"] = backend_pkg
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -54,8 +61,6 @@ app.include_router(activity.router)
 app.include_router(dashboard.router)
 
 @app.get("/")
-@app.get("/api/backend")
-@app.get("/api/backend/")
 def root():
     return {
         "status": "healthy",
