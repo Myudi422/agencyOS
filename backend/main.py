@@ -73,11 +73,13 @@ app.include_router(activity.router)
 app.include_router(dashboard.router)
 
 @app.get("/")
+@app.get("/api/backend")
+@app.get("/api/backend/")
 def root():
     return {
         "status": "healthy",
         "app": settings.APP_NAME,
         "version": "1.0.0-MVP",
-        "docs": "/docs",
+        "docs": "/api/backend/docs",
         "mock_mode": settings.USE_MOCK_SERVICES
     }
