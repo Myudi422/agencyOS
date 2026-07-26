@@ -16,7 +16,7 @@ export default function Header({ onToggleMobileSidebar }: { onToggleMobileSideba
   }, [activeWorkspace?.id, setClients]);
 
   return (
-    <header className="h-16 border-b border-slate-200/80 bg-white/75 backdrop-blur-xl sticky top-0 z-20 flex items-center justify-between px-4 sm:px-6 shadow-sm">
+    <header className="h-16 border-b border-slate-200 bg-white sticky top-0 z-20 flex items-center justify-between px-4 sm:px-6 shadow-xs">
       {/* Left section: Mobile Menu Toggle & Active Client Switcher */}
       <div className="flex items-center gap-3">
         {/* Mobile Sidebar Toggle Button */}

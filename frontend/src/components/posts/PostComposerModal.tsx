@@ -314,8 +314,8 @@ export default function PostComposerModal() {
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-2 sm:p-4 bg-slate-900/50 backdrop-blur-md animate-fadeIn overflow-y-auto">
-      <div className="bg-white/95 backdrop-blur-2xl border border-slate-200/90 rounded-2xl sm:rounded-3xl w-full max-w-5xl my-auto max-h-[96vh] sm:max-h-[90vh] flex flex-col shadow-2xl overflow-hidden text-slate-900">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-2 sm:p-4 bg-slate-900/60 animate-fadeIn overflow-y-auto">
+      <div className="bg-white border border-slate-200 rounded-2xl sm:rounded-3xl w-full max-w-5xl my-auto max-h-[96vh] sm:max-h-[90vh] flex flex-col shadow-xl overflow-hidden text-slate-900">
         
         {/* Modal Header */}
         <div className="px-4 sm:px-6 py-3.5 border-b border-slate-200/80 flex items-center justify-between bg-slate-50/80 shrink-0">
@@ -1118,8 +1118,8 @@ export default function PostComposerModal() {
 
       {/* Internal Glassmorphic Media Library Picker Modal */}
       {isMediaPickerOpen && (
-        <div className="fixed inset-0 z-[120] bg-slate-900/50 backdrop-blur-xl flex items-center justify-center p-3 sm:p-6 animate-fadeIn">
-          <div className="bg-white/95 backdrop-blur-2xl border border-slate-200 rounded-2xl sm:rounded-3xl w-full max-w-3xl max-h-[85vh] flex flex-col shadow-2xl overflow-hidden">
+        <div className="fixed inset-0 z-[120] bg-slate-900/60 flex items-center justify-center p-3 sm:p-6 animate-fadeIn">
+          <div className="bg-white border border-slate-200 rounded-2xl sm:rounded-3xl w-full max-w-3xl max-h-[85vh] flex flex-col shadow-xl overflow-hidden">
             
             <div className="px-4 sm:px-6 py-3.5 border-b border-slate-200/80 flex items-center justify-between bg-slate-50/80">
               <div className="flex items-center gap-2.5">

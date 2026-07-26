@@ -50,12 +50,12 @@ export default function Sidebar({ isMobileOpen = false, onCloseMobile }: Sidebar
       {isMobileOpen && (
         <div 
           onClick={onCloseMobile} 
-          className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40 md:hidden transition-opacity"
+          className="fixed inset-0 bg-slate-900/50 z-40 md:hidden transition-opacity"
         />
       )}
 
       <aside className={`
-        fixed md:sticky top-0 left-0 z-50 h-screen w-64 border-r border-slate-200/80 bg-white/90 backdrop-blur-xl flex flex-col justify-between select-none shadow-sm transition-transform duration-300 ease-in-out
+        fixed md:sticky top-0 left-0 z-50 h-screen w-64 border-r border-slate-200 bg-white flex flex-col justify-between select-none shadow-xs transition-transform duration-200 ease-in-out
         ${isMobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
       `}>
         <div>

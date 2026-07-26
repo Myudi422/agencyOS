@@ -6,61 +6,50 @@
 
 :root {
   --color-bg: #f8fafc;
-  --color-card: rgba(255, 255, 255, 0.75);
-  --color-border: rgba(226, 232, 240, 0.8);
+  --color-card: #ffffff;
+  --color-border: #e2e8f0;
   --primary-purple: #9333ea;
   --primary-purple-dark: #7e22ce;
 }
 
 body {
   background-color: var(--color-bg);
-  background-image: 
-    radial-gradient(at 5% 5%, rgba(147, 51, 234, 0.07) 0px, transparent 40%),
-    radial-gradient(at 95% 95%, rgba(99, 102, 241, 0.05) 0px, transparent 40%),
-    radial-gradient(at 50% 50%, rgba(236, 72, 153, 0.03) 0px, transparent 60%);
-  background-attachment: fixed;
   color: #0f172a;
   font-family: 'Inter', sans-serif;
   overflow-x: hidden;
   letter-spacing: -0.01em;
 }
 
-/* White Clean Glassmorphism Utilities */
+/* High-Performance Lightweight UI Utilities (No heavy backdrop-filter blur) */
 .glass-panel {
-  background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(226, 232, 240, 0.9);
-  box-shadow: 0 10px 30px -5px rgba(147, 51, 234, 0.05), 0 4px 12px rgba(0, 0, 0, 0.03);
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05);
 }
 
 .glass-card {
-  background: rgba(255, 255, 255, 0.75);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(226, 232, 240, 0.8);
-  box-shadow: 0 4px 20px -2px rgba(147, 51, 234, 0.04), 0 2px 6px rgba(0, 0, 0, 0.02);
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .glass-card:hover {
-  border-color: rgba(147, 51, 234, 0.35);
-  background: rgba(255, 255, 255, 0.9);
-  box-shadow: 0 12px 32px -8px rgba(147, 51, 234, 0.15), 0 4px 12px rgba(147, 51, 234, 0.08);
-  transform: translateY(-2px);
+  border-color: #cbd5e1;
+  box-shadow: 0 4px 12px -2px rgba(147, 51, 234, 0.08);
 }
 
 .glass-input {
-  background: rgba(255, 255, 255, 0.85);
-  border: 1px solid rgba(203, 213, 225, 0.8);
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
   color: #0f172a;
-  transition: all 0.2s ease;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .glass-input:focus {
   background: #ffffff;
   border-color: #9333ea;
-  box-shadow: 0 0 0 3px rgba(147, 51, 234, 0.15);
+  box-shadow: 0 0 0 2px rgba(147, 51, 234, 0.15);
 }
 
 /* Purple Primary Gradients & Accents */
@@ -69,14 +58,12 @@ body {
 }
 
 .gradient-text {
-  background: linear-gradient(135deg, #3b0764 0%, #6b21a8 50%, #9333ea 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: #1e1b4b;
 }
 
 .purple-badge {
-  background: rgba(147, 51, 234, 0.08);
-  border: 1px solid rgba(147, 51, 234, 0.2);
+  background: #f3e8ff;
+  border: 1px solid #e9d5ff;
   color: #7e22ce;
 }
 
