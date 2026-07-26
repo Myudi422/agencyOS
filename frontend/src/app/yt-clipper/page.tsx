@@ -6,7 +6,8 @@ import {
   Scissors, Smartphone, Laptop, CheckCircle2, XCircle, RefreshCw,
   Copy, Download, Terminal, Play, Sparkles, Sliders, AlertTriangle,
   Video, Subtitles, HelpCircle, Layers, Check, ExternalLink, Code2, Cpu, Zap, Folder, FolderOpen,
-  Plus, Trash2, Clock, SplitSquareHorizontal, SkipBack, SkipForward, Flag, BookmarkPlus, Clapperboard, Eye
+  Plus, Trash2, Clock, SplitSquareHorizontal, SkipBack, SkipForward, Flag, BookmarkPlus, Clapperboard, Eye,
+  Wand2, ImageIcon, FileText, Key, Wifi, WifiOff, Send, RotateCcw
 } from "lucide-react";
 
 // YouTube IFrame API global type
@@ -187,15 +188,20 @@ export default function YtClipperPage() {
   const [maxDuration, setMaxDuration] = useState<number>(60);
   const [maxClips, setMaxClips] = useState<number>(5);
 
-  // Tab State: heatmap | manual
-  const [activeTab, setActiveTab] = useState<"heatmap" | "manual">("heatmap");
+  // Tab State: heatmap | manual | ai-generate
+  const [activeTab, setActiveTab] = useState<"heatmap" | "manual" | "ai-generate">("heatmap");
 
-  // Manual Clip State
+  // Manual Clip State & Auto Heatmap Timeline
   const [manualUrl, setManualUrl] = useState<string>("");
   const [manualCropMode, setManualCropMode] = useState<number>(1);
+  const [manualUseSubtitle, setManualUseSubtitle] = useState<boolean>(true);
+  const [manualWhisperModel, setManualWhisperModel] = useState<string>("tiny");
   const [manualSegments, setManualSegments] = useState<ManualSegment[]>([
     { id: "1", start: "", end: "", label: "Klip 1" }
   ]);
+  const [heatmapClips, setHeatmapClips] = useState<Array<{ start: number; end: number; duration: number; score: number }>>([]);
+  const [heatmapMarkers, setHeatmapMarkers] = useState<Array<{ start: number; duration: number; score: number }>>([]);
+  const [isAnalyzingHeatmap, setIsAnalyzingHeatmap] = useState<boolean>(false);
 
   // YouTube IFrame Player State
   const ytPlayerRef = useRef<YTPlayer | null>(null);
@@ -214,6 +220,27 @@ export default function YtClipperPage() {
   const [jobStatus, setJobStatus] = useState<JobStatus | null>(null);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  // AI Generate State
+  const [geminiPsid, setGeminiPsid] = useState<string>("");
+  const [geminiPsidts, setGeminiPsidts] = useState<string>("");
+  const [geminiConnected, setGeminiConnected] = useState<boolean>(false);
+  const [isConnectingGemini, setIsConnectingGemini] = useState<boolean>(false);
+  const [aiSubTab, setAiSubTab] = useState<"image" | "script">("image");
+  // Image gen state
+  const [imagePrompt, setImagePrompt] = useState<string>("");
+  const [imageAspect, setImageAspect] = useState<string>("16:9");
+  const [isGeneratingImage, setIsGeneratingImage] = useState<boolean>(false);
+  const [generatedImages, setGeneratedImages] = useState<Array<{ url: string; filename: string }>>([]);
+  const [imageGenText, setImageGenText] = useState<string>("");
+  // Script gen state
+  const [scriptTopic, setScriptTopic] = useState<string>("");
+  const [scriptTone, setScriptTone] = useState<string>("santai");
+  const [scriptLength, setScriptLength] = useState<string>("medium");
+  const [isGeneratingScript, setIsGeneratingScript] = useState<boolean>(false);
+  const [generatedScript, setGeneratedScript] = useState<string>("");
+  const [scriptCopied, setScriptCopied] = useState<boolean>(false);
+  const [geminiModel, setGeminiModel] = useState<string>("gemini-3-flash");
 
   // Detect Mobile User Agent & Screen Width
   useEffect(() => {
@@ -282,7 +309,35 @@ export default function YtClipperPage() {
     });
   }, [ytApiReady]);
 
-  // Load player when user loads video
+  // Fetch heatmap analysis for manual timeline view
+  const fetchHeatmapForManual = useCallback(async (url: string) => {
+    if (!url) return;
+    setIsAnalyzingHeatmap(true);
+    try {
+      const res = await fetch("http://127.0.0.1:5000/api/heatmap", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          url,
+          min_score: minScore,
+          padding,
+          max_duration: maxDuration,
+          video_duration: duration > 0 ? duration : undefined
+        })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.clips) setHeatmapClips(data.clips);
+        if (data.markers) setHeatmapMarkers(data.markers);
+      }
+    } catch (e) {
+      console.error("Heatmap fetch error:", e);
+    } finally {
+      setIsAnalyzingHeatmap(false);
+    }
+  }, [minScore, padding, maxDuration, duration]);
+
+  // Load player & auto-fetch heatmap when user loads video
   const handleLoadVideo = useCallback(() => {
     const vid = extractVideoId(manualUrl);
     if (!vid) { alert("URL YouTube tidak valid!"); return; }
@@ -291,8 +346,27 @@ export default function YtClipperPage() {
     setCurrentTime(0);
     setDuration(0);
     setManualSegments([{ id: "1", start: "", end: "", label: "Klip 1" }]);
+    setHeatmapClips([]);
+    setHeatmapMarkers([]);
     initPlayer(vid);
-  }, [manualUrl, extractVideoId, initPlayer]);
+    fetchHeatmapForManual(manualUrl);
+  }, [manualUrl, extractVideoId, initPlayer, fetchHeatmapForManual]);
+
+  const importHeatmapToSegments = () => {
+    if (heatmapClips.length === 0) return;
+    const maxDur = duration > 0 ? duration : Infinity;
+    const imported: ManualSegment[] = heatmapClips.map((hc, idx) => {
+      const safeEnd = Math.min(hc.end, maxDur);
+      const safeStart = Math.min(hc.start, Math.max(0, safeEnd - 1));
+      return {
+        id: (Date.now() + idx).toString(),
+        start: fmtTime(safeStart),
+        end: fmtTime(safeEnd),
+        label: `Heatmap Peak #${idx + 1} (${Math.round(hc.score * 100)}%)`
+      };
+    });
+    setManualSegments(imported);
+  };
 
   // Mark current time into a segment field
   const markTime = useCallback((segId: string, field: "start" | "end") => {
@@ -314,6 +388,68 @@ export default function YtClipperPage() {
       try { ytPlayerRef.current?.destroy(); } catch { }
     };
   }, []);
+
+  // Check Gemini connection status on tab open
+  useEffect(() => {
+    if (activeTab === "ai-generate") {
+      fetch("http://127.0.0.1:5000/api/gemini/status")
+        .then(r => r.json())
+        .then(d => setGeminiConnected(d.connected === true))
+        .catch(() => setGeminiConnected(false));
+    }
+  }, [activeTab]);
+
+  const handleGeminiConnect = async () => {
+    if (!geminiPsid.trim()) return;
+    setIsConnectingGemini(true);
+    try {
+      const res = await fetch("http://127.0.0.1:5000/api/gemini/config", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ psid: geminiPsid.trim(), psidts: geminiPsidts.trim() })
+      });
+      if (res.ok) { setGeminiConnected(true); }
+      else { const d = await res.json(); alert("Gagal connect Gemini: " + (d.detail || "Unknown error")); }
+    } catch { alert("Tidak bisa terhubung ke agent. Pastikan agent berjalan."); }
+    finally { setIsConnectingGemini(false); }
+  };
+
+  const handleGenerateImage = async () => {
+    if (!imagePrompt.trim()) return;
+    setIsGeneratingImage(true);
+    setGeneratedImages([]);
+    setImageGenText("");
+    try {
+      const res = await fetch("http://127.0.0.1:5000/api/gemini/generate-image", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt: imagePrompt.trim(), aspect_ratio: imageAspect, model: geminiModel })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setGeneratedImages(data.images || []);
+        setImageGenText(data.text || "");
+      } else { alert("Error: " + (data.detail || "Generate gagal")); }
+    } catch { alert("Tidak bisa terhubung ke agent."); }
+    finally { setIsGeneratingImage(false); }
+  };
+
+  const handleGenerateScript = async () => {
+    if (!scriptTopic.trim()) return;
+    setIsGeneratingScript(true);
+    setGeneratedScript("");
+    try {
+      const res = await fetch("http://127.0.0.1:5000/api/gemini/generate-script", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ topic: scriptTopic.trim(), tone: scriptTone, length: scriptLength, model: geminiModel })
+      });
+      const data = await res.json();
+      if (res.ok) { setGeneratedScript(data.script || ""); }
+      else { alert("Error: " + (data.detail || "Generate gagal")); }
+    } catch { alert("Tidak bisa terhubung ke agent."); }
+    finally { setIsGeneratingScript(false); }
+  };
 
   // Check Local Agent Health
   const checkAgentHealth = async () => {
@@ -490,7 +626,8 @@ export default function YtClipperPage() {
         body: JSON.stringify({
           url: manualUrl.trim(),
           crop_mode: manualCropMode,
-          use_subtitle: false,
+          use_subtitle: manualUseSubtitle,
+          whisper_model: manualWhisperModel,
           segments: validSegments.map(s => ({
             start: parseTime(s.start),
             end: parseTime(s.end),
@@ -732,29 +869,49 @@ export default function YtClipperPage() {
           )}
 
           {/* TAB SWITCHER */}
-          <div className="flex items-center gap-1 p-1 bg-slate-100 rounded-xl border border-slate-200 w-fit">
-            <button
-              type="button"
-              onClick={() => { setActiveTab("heatmap"); setJobStatus(null); setActiveJobId(null); }}
-              className={`px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 ${activeTab === "heatmap"
-                  ? "bg-white text-purple-700 shadow-sm border border-slate-200"
-                  : "text-slate-500 hover:text-slate-700"
-                }`}
-            >
-              <Sparkles className="w-3.5 h-3.5" />
-              Auto Heatmap Clip
-            </button>
-            <button
-              type="button"
-              onClick={() => { setActiveTab("manual"); setJobStatus(null); setActiveJobId(null); }}
-              className={`px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 ${activeTab === "manual"
-                  ? "bg-white text-purple-700 shadow-sm border border-slate-200"
-                  : "text-slate-500 hover:text-slate-700"
-                }`}
-            >
-              <SplitSquareHorizontal className="w-3.5 h-3.5" />
-              Manual Clip Editor
-            </button>
+          <div className="flex flex-wrap items-center gap-4 p-2 bg-slate-100/80 rounded-2xl border border-slate-200/80 w-fit">
+            {/* Group 1: YouTube Tools */}
+            <div className="flex items-center gap-1 bg-white p-1 rounded-xl shadow-xs border border-slate-200/60">
+              <span className="text-[10px] font-extrabold text-slate-400 px-2 uppercase tracking-wider select-none">YouTube</span>
+              <button
+                type="button"
+                onClick={() => { setActiveTab("heatmap"); setJobStatus(null); setActiveJobId(null); }}
+                className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${activeTab === "heatmap"
+                    ? "bg-purple-600 text-white shadow-xs font-extrabold"
+                    : "text-slate-600 hover:text-purple-700 hover:bg-slate-50"
+                  }`}
+              >
+                <Sparkles className="w-3.5 h-3.5" />
+                Auto Heatmap
+              </button>
+              <button
+                type="button"
+                onClick={() => { setActiveTab("manual"); setJobStatus(null); setActiveJobId(null); }}
+                className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${activeTab === "manual"
+                    ? "bg-purple-600 text-white shadow-xs font-extrabold"
+                    : "text-slate-600 hover:text-purple-700 hover:bg-slate-50"
+                  }`}
+              >
+                <SplitSquareHorizontal className="w-3.5 h-3.5" />
+                Manual Editor
+              </button>
+            </div>
+
+            {/* Group 2: AI Generate */}
+            <div className="flex items-center gap-1 bg-white p-1 rounded-xl shadow-xs border border-slate-200/60">
+              <span className="text-[10px] font-extrabold text-slate-400 px-2 uppercase tracking-wider select-none">AI Content</span>
+              <button
+                type="button"
+                onClick={() => { setActiveTab("ai-generate"); setJobStatus(null); setActiveJobId(null); }}
+                className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${activeTab === "ai-generate"
+                    ? "bg-gradient-to-r from-violet-600 to-purple-600 text-white shadow-xs font-extrabold"
+                    : "text-slate-600 hover:text-violet-700 hover:bg-slate-50"
+                  }`}
+              >
+                <Wand2 className="w-3.5 h-3.5" />
+                AI Generate
+              </button>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -763,6 +920,199 @@ export default function YtClipperPage() {
             <div className="lg:col-span-2 space-y-6">
 
               {/* ======= VIDEO CLIP EDITOR PANEL ======= */}
+              {/* ======= AI GENERATE PANEL ======= */}
+              {activeTab === "ai-generate" && (
+                <div className="space-y-5">
+
+                  {/* Header */}
+                  <div className="bg-gradient-to-br from-violet-50 to-purple-50 p-5 rounded-2xl border border-violet-200/80 shadow-xs">
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 text-white flex items-center justify-center shrink-0 shadow-md shadow-violet-500/30">
+                        <Wand2 className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-extrabold text-slate-900">AI Generate — Powered by Gemini</h3>
+                        <p className="text-[11px] text-slate-500">Generate gambar & script konten menggunakan Google Gemini via cookie</p>
+                      </div>
+                      <div className={`ml-auto flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-bold border ${geminiConnected ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-rose-50 text-rose-600 border-rose-200"}`}>
+                        {geminiConnected ? <Wifi className="w-3 h-3" /> : <WifiOff className="w-3 h-3" />}
+                        {geminiConnected ? "Gemini Terhubung" : "Belum Terhubung"}
+                      </div>
+                    </div>
+
+                    {/* Cookie Config */}
+                    {!geminiConnected && (
+                      <div className="space-y-3 p-4 bg-white/70 rounded-xl border border-violet-200/60">
+                        <div className="flex items-center gap-2 text-xs font-bold text-violet-700">
+                          <Key className="w-3.5 h-3.5" />
+                          Konfigurasi Cookie Gemini
+                        </div>
+                        <p className="text-[10px] text-slate-500">Buka <strong>gemini.google.com</strong> → F12 → Network → refresh → copy cookie <code className="bg-slate-100 px-1 rounded">__Secure-1PSID</code> dan <code className="bg-slate-100 px-1 rounded">__Secure-1PSIDTS</code></p>
+                        <div className="space-y-2">
+                          <input type="password" value={geminiPsid} onChange={e => setGeminiPsid(e.target.value)} placeholder="__Secure-1PSID  (wajib)" className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-violet-400 focus:border-violet-400 outline-none font-mono" />
+                          <input type="password" value={geminiPsidts} onChange={e => setGeminiPsidts(e.target.value)} placeholder="__Secure-1PSIDTS  (opsional)" className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-violet-400 focus:border-violet-400 outline-none font-mono" />
+                          <button type="button" onClick={handleGeminiConnect} disabled={isConnectingGemini || !geminiPsid.trim()} className="w-full py-2.5 rounded-xl bg-gradient-to-r from-violet-600 to-purple-600 text-white text-xs font-bold flex items-center justify-center gap-2 shadow-md shadow-violet-500/20 hover:scale-[1.01] disabled:opacity-60 disabled:cursor-not-allowed transition-all">
+                            {isConnectingGemini ? <><RefreshCw className="w-3.5 h-3.5 animate-spin" /> Menghubungkan...</> : <><Wifi className="w-3.5 h-3.5" /> Connect ke Gemini</>}
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    {geminiConnected && (
+                      <button type="button" onClick={() => setGeminiConnected(false)} className="text-[10px] text-rose-500 hover:underline flex items-center gap-1">
+                        <WifiOff className="w-3 h-3" /> Ganti Cookie / Disconnect
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Sub-tab selector */}
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div className="flex gap-1 p-1 bg-slate-100 rounded-xl border border-slate-200 w-fit">
+                      <button type="button" onClick={() => setAiSubTab("image")} className={`px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 ${aiSubTab === "image" ? "bg-white text-violet-700 shadow-sm border border-slate-200" : "text-slate-500 hover:text-slate-700"}`}>
+                        <ImageIcon className="w-3.5 h-3.5" /> Generate Image
+                      </button>
+                      <button type="button" onClick={() => setAiSubTab("script")} className={`px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 ${aiSubTab === "script" ? "bg-white text-violet-700 shadow-sm border border-slate-200" : "text-slate-500 hover:text-slate-700"}`}>
+                        <FileText className="w-3.5 h-3.5" /> Generate Script Konten
+                      </button>
+                    </div>
+
+                    <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 rounded-xl border border-slate-200">
+                      <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Model:</span>
+                      <select value={geminiModel} onChange={e => setGeminiModel(e.target.value)} className="bg-transparent border-none text-xs font-extrabold text-violet-700 focus:outline-none cursor-pointer">
+                        <option value="gemini-3-flash">Gemini 1.5 Flash</option>
+                        <option value="gemini-3-pro">Gemini 1.5 Pro</option>
+                        <option value="gemini-3-flash-thinking">Flash Thinking</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* ── Generate Image ── */}
+                  {aiSubTab === "image" && (
+                    <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs space-y-4">
+                      <div className="flex items-center gap-2">
+                        <ImageIcon className="w-4 h-4 text-violet-600" />
+                        <h4 className="text-sm font-bold text-slate-900">Generate Image dengan Gemini</h4>
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-bold text-slate-700">Deskripsi Gambar</label>
+                        <textarea rows={4} value={imagePrompt} onChange={e => setImagePrompt(e.target.value)} placeholder="Contoh: Seorang pria muda berpakaian kasual sedang tersenyum menatap kamera dengan latar belakang studio bersih berwarna putih, pencahayaan profesional..." className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:ring-2 focus:ring-violet-400 focus:border-violet-400 outline-none resize-none" />
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-bold text-slate-700">Ukuran / Rasio Gambar</label>
+                        <div className="grid grid-cols-4 gap-2">
+                          {[
+                            { val: "1:1", label: "1:1", desc: "Square" },
+                            { val: "16:9", label: "16:9", desc: "YouTube" },
+                            { val: "9:16", label: "9:16", desc: "Reels/TikTok" },
+                            { val: "4:3", label: "4:3", desc: "Standard" },
+                          ].map(r => (
+                            <button key={r.val} type="button" onClick={() => setImageAspect(r.val)} className={`p-2.5 rounded-xl border text-center transition-all ${imageAspect === r.val ? "bg-violet-50 border-violet-300 text-violet-800" : "bg-slate-50 border-slate-200 text-slate-600 hover:border-slate-300"}`}>
+                              <div className="text-xs font-extrabold">{r.label}</div>
+                              <div className="text-[10px] text-slate-400">{r.desc}</div>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      <button type="button" onClick={handleGenerateImage} disabled={isGeneratingImage || !geminiConnected || !imagePrompt.trim()} className="w-full py-3 rounded-xl bg-gradient-to-r from-violet-600 to-purple-600 text-white font-bold text-sm flex items-center justify-center gap-2 shadow-md shadow-violet-500/20 hover:scale-[1.01] disabled:opacity-60 disabled:cursor-not-allowed transition-all">
+                        {isGeneratingImage ? <><RefreshCw className="w-4 h-4 animate-spin" />Generating Image...</> : <><Sparkles className="w-4 h-4" />Generate Image dengan Gemini</>}
+                      </button>
+
+                      {!geminiConnected && <p className="text-[11px] text-center text-rose-500">Hubungkan Gemini terlebih dahulu di atas</p>}
+
+                      {/* Image Results */}
+                      {imageGenText && <div className="p-3 bg-violet-50 rounded-xl border border-violet-200 text-xs text-violet-800 leading-relaxed">{imageGenText}</div>}
+
+                      {generatedImages.length > 0 && (
+                        <div className="space-y-3">
+                          <p className="text-xs font-bold text-slate-700">{generatedImages.length} Gambar Dihasilkan:</p>
+                          <div className="grid grid-cols-2 gap-3">
+                            {generatedImages.map((img, i) => (
+                              <div key={i} className="relative group rounded-xl overflow-hidden border border-slate-200 shadow-xs">
+                                <img src={img.url} alt={`Generated ${i + 1}`} className="w-full h-48 object-cover" />
+                                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                  <a href={img.url} download={img.filename} className="px-3 py-1.5 rounded-lg bg-white text-slate-800 text-[11px] font-bold flex items-center gap-1 hover:bg-slate-100">
+                                    <Download className="w-3 h-3" /> Download
+                                  </a>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* ── Generate Script Konten ── */}
+                  {aiSubTab === "script" && (
+                    <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs space-y-4">
+                      <div className="flex items-center gap-2">
+                        <FileText className="w-4 h-4 text-violet-600" />
+                        <h4 className="text-sm font-bold text-slate-900">Generate Script Konten dengan Gemini</h4>
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-bold text-slate-700">Topik / Brief Konten</label>
+                        <textarea rows={3} value={scriptTopic} onChange={e => setScriptTopic(e.target.value)} placeholder="Contoh: Tips memulai bisnis online dari nol untuk pemula..." className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:ring-2 focus:ring-violet-400 focus:border-violet-400 outline-none resize-none" />
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-1.5">
+                          <label className="text-xs font-bold text-slate-700">Gaya Bahasa (Tone)</label>
+                          <div className="grid grid-cols-2 gap-1.5">
+                            {[
+                              { val: "santai", label: "Santai" },
+                              { val: "formal", label: "Formal" },
+                              { val: "viral", label: "Viral" },
+                              { val: "persuasif", label: "Persuasif" },
+                            ].map(t => (
+                              <button key={t.val} type="button" onClick={() => setScriptTone(t.val)} className={`py-1.5 rounded-lg border text-[11px] font-bold transition-all ${scriptTone === t.val ? "bg-violet-50 border-violet-300 text-violet-800" : "bg-slate-50 border-slate-200 text-slate-600 hover:border-slate-300"}`}>{t.label}</button>
+                            ))}
+                          </div>
+                        </div>
+                        <div className="space-y-1.5">
+                          <label className="text-xs font-bold text-slate-700">Panjang Script</label>
+                          <div className="flex flex-col gap-1.5">
+                            {[
+                              { val: "short", label: "Pendek", desc: "~100-150 kata" },
+                              { val: "medium", label: "Sedang", desc: "~250-400 kata" },
+                              { val: "long", label: "Panjang", desc: "~600-900 kata" },
+                            ].map(l => (
+                              <button key={l.val} type="button" onClick={() => setScriptLength(l.val)} className={`px-3 py-1.5 rounded-lg border text-left text-[11px] font-bold transition-all flex justify-between ${scriptLength === l.val ? "bg-violet-50 border-violet-300 text-violet-800" : "bg-slate-50 border-slate-200 text-slate-600 hover:border-slate-300"}`}>
+                                <span>{l.label}</span><span className="font-normal text-slate-400">{l.desc}</span>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+
+                      <button type="button" onClick={handleGenerateScript} disabled={isGeneratingScript || !geminiConnected || !scriptTopic.trim()} className="w-full py-3 rounded-xl bg-gradient-to-r from-violet-600 to-purple-600 text-white font-bold text-sm flex items-center justify-center gap-2 shadow-md shadow-violet-500/20 hover:scale-[1.01] disabled:opacity-60 disabled:cursor-not-allowed transition-all">
+                        {isGeneratingScript ? <><RefreshCw className="w-4 h-4 animate-spin" />Generating Script...</> : <><Send className="w-4 h-4" />Generate Script dengan Gemini</>}
+                      </button>
+
+                      {!geminiConnected && <p className="text-[11px] text-center text-rose-500">Hubungkan Gemini terlebih dahulu di atas</p>}
+
+                      {/* Script Result */}
+                      {generatedScript && (
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <p className="text-xs font-bold text-slate-700">Hasil Script:</p>
+                            <button type="button" onClick={() => { navigator.clipboard.writeText(generatedScript); setScriptCopied(true); setTimeout(() => setScriptCopied(false), 2000); }} className="px-3 py-1 rounded-lg bg-violet-100 hover:bg-violet-200 text-violet-700 text-[11px] font-bold flex items-center gap-1.5 transition-colors">
+                              {scriptCopied ? <><Check className="w-3 h-3" />Disalin!</> : <><Copy className="w-3 h-3" />Copy Script</>}
+                            </button>
+                          </div>
+                          <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 text-xs text-slate-800 leading-relaxed whitespace-pre-wrap max-h-96 overflow-y-auto font-mono">
+                            {generatedScript}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+
               {activeTab === "manual" && (
                 <div className="space-y-4">
 
@@ -818,17 +1168,118 @@ export default function YtClipperPage() {
 
                     {/* Player Controls Bar */}
                     {ytPlayerReady && duration > 0 && (
-                      <div className="px-4 py-3 space-y-2 border-t border-slate-700">
-                        {/* Timeline scrubber */}
-                        <div className="relative h-8 group">
-                          {/* Background track */}
-                          <div className="absolute top-3 left-0 right-0 h-2 bg-slate-700 rounded-full overflow-hidden">
+                      <div className="px-4 py-3 space-y-3 border-t border-slate-700">
+                        {/* Auto Heatmap Visual Timeline Bar */}
+                        <div className="space-y-2 bg-slate-800/80 p-3 rounded-xl border border-slate-700/80">
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-[11px] font-bold">
+                            <span className="flex items-center gap-1.5 text-amber-400">
+                              <Sparkles className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
+                              Auto Heatmap Visual Timeline (Spot Paling Populer)
+                              {isAnalyzingHeatmap && <RefreshCw className="w-3 h-3 animate-spin text-amber-400" />}
+                            </span>
+
+                            {heatmapClips.length > 0 && (
+                              <button
+                                type="button"
+                                onClick={importHeatmapToSegments}
+                                className="px-2.5 py-1 rounded bg-amber-500 hover:bg-amber-600 text-slate-900 font-extrabold transition-all text-[10px] flex items-center gap-1 shadow-sm shrink-0"
+                              >
+                                ⚡ Import {heatmapClips.length} Segmen Heatmap ke Daftar Edit
+                              </button>
+                            )}
+                          </div>
+
+                          {/* Quick Heatmap Duration Controls */}
+                          <div className="grid grid-cols-3 gap-2 pt-1 border-t border-slate-700/60 text-[10px]">
+                            <div>
+                              <span className="text-slate-400 block font-medium">Max Klip (Detik):</span>
+                              <input
+                                type="number"
+                                min={15} max={180} step={5}
+                                value={maxDuration}
+                                onChange={(e) => setMaxDuration(Number(e.target.value))}
+                                className="w-full px-2 py-0.5 bg-slate-900 border border-slate-700 rounded text-amber-300 font-mono font-bold mt-0.5"
+                              />
+                            </div>
+
+                            <div>
+                              <span className="text-slate-400 block font-medium">Padding (Detik):</span>
+                              <input
+                                type="number"
+                                min={0} max={30} step={1}
+                                value={padding}
+                                onChange={(e) => setPadding(Number(e.target.value))}
+                                className="w-full px-2 py-0.5 bg-slate-900 border border-slate-700 rounded text-amber-300 font-mono font-bold mt-0.5"
+                              />
+                            </div>
+
+                            <div>
+                              <span className="text-slate-400 block font-medium">Min Score Heatmap:</span>
+                              <input
+                                type="number"
+                                min={0.1} max={0.9} step={0.05}
+                                value={minScore}
+                                onChange={(e) => setMinScore(Number(e.target.value))}
+                                className="w-full px-2 py-0.5 bg-slate-900 border border-slate-700 rounded text-amber-300 font-mono font-bold mt-0.5"
+                              />
+                            </div>
+                          </div>
+
+                          {/* Reload heatmap with updated duration */}
+                          <div className="flex justify-end pt-0.5">
+                            <button
+                              type="button"
+                              onClick={() => fetchHeatmapForManual(manualUrl)}
+                              disabled={isAnalyzingHeatmap || !manualUrl}
+                              className="px-2.5 py-1 rounded bg-slate-700 hover:bg-slate-600 text-slate-200 text-[10px] font-semibold flex items-center gap-1 transition-colors disabled:opacity-50"
+                            >
+                              <RefreshCw className={`w-3 h-3 ${isAnalyzingHeatmap ? "animate-spin" : ""}`} />
+                              <span>Hitung Ulang Durasi Heatmap</span>
+                            </button>
+                          </div>
+
+                          {/* Heatmap intensity track */}
+                          <div className="relative h-2.5 bg-slate-900 rounded-full overflow-hidden flex items-center mt-1">
+                            {heatmapMarkers.length > 0 ? (
+                              heatmapMarkers.map((m, i) => {
+                                const leftPct = (m.start / duration) * 100;
+                                const widthPct = Math.max(0.6, (m.duration / duration) * 100);
+                                const alpha = Math.max(0.4, m.score);
+                                return (
+                                  <div
+                                    key={i}
+                                    className="absolute top-0 bottom-0 bg-gradient-to-r from-amber-400 to-rose-400 transition-all cursor-pointer hover:brightness-125"
+                                    style={{
+                                      left: `${leftPct}%`,
+                                      width: `${widthPct}%`,
+                                      opacity: alpha
+                                    }}
+                                    title={`Heatmap Peak @ ${fmtTime(m.start)} (Engagement: ${Math.round(m.score * 100)}%)`}
+                                    onClick={() => {
+                                      setCurrentTime(m.start);
+                                      ytPlayerRef.current?.seekTo(m.start, true);
+                                    }}
+                                  />
+                                );
+                              })
+                            ) : (
+                              <div className="text-[9px] text-slate-500 text-center w-full">
+                                {isAnalyzingHeatmap ? "Menganalisis data heatmap..." : "Tidak ada data heatmap/fallback"}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Player scrubber */}
+                        <div className="relative h-6 group">
+                          {/* Track */}
+                          <div className="absolute top-2 left-0 right-0 h-2 bg-slate-700 rounded-full overflow-hidden">
                             {/* Progress */}
                             <div
                               className="h-full bg-purple-500 transition-none"
                               style={{ width: `${(currentTime / duration) * 100}%` }}
                             />
-                            {/* Segment markers */}
+                            {/* Manual segment markers overlay */}
                             {manualSegments.map((seg, i) => {
                               const s = parseTime(seg.start);
                               const e = parseTime(seg.end);
@@ -837,13 +1288,13 @@ export default function YtClipperPage() {
                               return (
                                 <div
                                   key={seg.id}
-                                  className={`absolute top-0 h-full opacity-60 ${colors[i % colors.length]}`}
+                                  className={`absolute top-0 h-full opacity-70 ${colors[i % colors.length]}`}
                                   style={{ left: `${(s / duration) * 100}%`, width: `${((e - s) / duration) * 100}%` }}
                                 />
                               );
                             })}
                           </div>
-                          {/* Clickable seek area */}
+                          {/* Clickable seek range */}
                           <input
                             type="range"
                             min={0} max={duration} step={0.5}
@@ -995,6 +1446,25 @@ export default function YtClipperPage() {
                                   )}
                                 </div>
                               </div>
+
+                              {/* Quick Preset Durations */}
+                              <div className="flex items-center gap-1.5 pt-1.5 border-t border-white/80">
+                                <span className="text-[10px] text-slate-500 font-semibold">Atur Durasi Klip:</span>
+                                {[15, 30, 45, 60].map((durSec) => (
+                                  <button
+                                    key={durSec}
+                                    type="button"
+                                    onClick={() => {
+                                      const startSec = parseTime(seg.start) || 0;
+                                      updateManualSegment(seg.id, "end", fmtTime(startSec + durSec));
+                                    }}
+                                    className="px-2 py-0.5 rounded-lg bg-white hover:bg-purple-100 text-purple-700 text-[10px] font-bold border border-slate-200/80 shadow-2xs transition-colors"
+                                    title={`Set durasi klip menjadi ${durSec} detik dari waktu mulai`}
+                                  >
+                                    {durSec}s
+                                  </button>
+                                ))}
+                              </div>
                             </div>
                           );
                         })}
@@ -1023,6 +1493,44 @@ export default function YtClipperPage() {
                             </button>
                           ))}
                         </div>
+                      </div>
+
+                      {/* Manual Mode AI Subtitle Configuration */}
+                      <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-3">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <Subtitles className="w-4 h-4 text-purple-600" />
+                            <div>
+                              <h4 className="text-xs font-bold text-slate-900">AI Auto Subtitle (Faster-Whisper)</h4>
+                              <p className="text-[11px] text-slate-500">Otomatis tempel teks subtitle pada klip manual</p>
+                            </div>
+                          </div>
+                          <label className="relative inline-flex items-center cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={manualUseSubtitle}
+                              onChange={(e) => setManualUseSubtitle(e.target.checked)}
+                              className="sr-only peer"
+                            />
+                            <div className="w-9 h-5 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-purple-600"></div>
+                          </label>
+                        </div>
+
+                        {manualUseSubtitle && (
+                          <div className="pt-2 border-t border-slate-200/80 flex items-center gap-4">
+                            <label className="text-xs font-medium text-slate-700">Model Whisper:</label>
+                            <select
+                              value={manualWhisperModel}
+                              onChange={(e) => setManualWhisperModel(e.target.value)}
+                              className="px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-semibold text-slate-800 focus:outline-none focus:border-purple-600"
+                            >
+                              <option value="tiny">Tiny (~75 MB - Paling Cepat)</option>
+                              <option value="base">Base (~140 MB - Cepat)</option>
+                              <option value="small">Small (~460 MB - Seimbang)</option>
+                              <option value="medium">Medium (~1.5 GB - Paling Akurat)</option>
+                            </select>
+                          </div>
+                        )}
                       </div>
 
                       {errorMessage && (

@@ -11,7 +11,9 @@ import uuid
 import shutil
 import subprocess
 import threading
+import asyncio
 import time
+import base64
 from typing import List, Dict, Optional
 from pathlib import Path
 
@@ -42,12 +44,34 @@ CLIPS_DIR = BASE_DIR / "clips"
 CLIPS_DIR.mkdir(exist_ok=True)
 TEMP_DIR = BASE_DIR / "temp_yt"
 TEMP_DIR.mkdir(exist_ok=True)
+MODELS_DIR = BASE_DIR / "models"
+MODELS_DIR.mkdir(exist_ok=True)
+GENERATED_DIR = BASE_DIR / "generated"
+GENERATED_DIR.mkdir(exist_ok=True)
 
 # Mount StaticFiles for /clips to handle HTTP Range headers (HTML5 video streaming 206 Partial Content)
 app.mount("/clips", StaticFiles(directory=str(CLIPS_DIR)), name="clips")
+app.mount("/generated", StaticFiles(directory=str(GENERATED_DIR)), name="generated")
 
-# In-memory job store
+# In-memory job store, whisper model cache & Gemini client state
 jobs: Dict[str, Dict] = {}
+_whisper_models_cache: Dict[str, any] = {}
+_gemini_client = None
+_gemini_loop = None
+
+
+def get_whisper_model(model_name: str = "tiny"):
+    """Loads and caches Faster-Whisper model in local models directory (downloads once)."""
+    if model_name not in _whisper_models_cache:
+        from faster_whisper import WhisperModel
+        print(f"[Whisper] Loading model '{model_name}' (saving to {MODELS_DIR})...")
+        _whisper_models_cache[model_name] = WhisperModel(
+            model_name,
+            device="cpu",
+            compute_type="int8",
+            download_root=str(MODELS_DIR)
+        )
+    return _whisper_models_cache[model_name]
 
 
 class ClipRequest(BaseModel):
@@ -111,89 +135,127 @@ def open_clips_folder():
         raise HTTPException(status_code=500, detail=f"Failed to open folder: {str(e)}")
 
 
-def extract_youtube_heatmap(url: str, min_score: float = 0.40, padding: int = 10, max_duration: int = 60) -> List[Dict]:
+def extract_youtube_heatmap(
+    url: str,
+    min_score: float = 0.40,
+    padding: int = 10,
+    max_duration: int = 60,
+    return_raw: bool = False,
+    video_duration: Optional[float] = None
+):
     """
     Extracts YouTube Heatmap (Most Replayed) data from video watch page.
+    Guarantees clip bounds never exceed video duration and dynamically scales segments.
     """
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
         "Accept-Language": "en-US,en;q=0.9"
     }
-    
-    res = requests.get(url, headers=headers)
-    html = res.text
 
-    # Extract video title & duration
+    try:
+        res = requests.get(url, headers=headers, timeout=10)
+        html = res.text
+    except Exception:
+        html = ""
+
+    # Extract video title & duration from HTML meta or player response
     title_match = re.search(r'<meta property="og:title" content="([^"]+)"', html)
     title = title_match.group(1) if title_match else "YouTube Video"
 
-    # Extract heatmap markers from ytInitialData
-    markers = []
-    heatmap_match = re.search(r'"heatMarkerRenderer":\s*({[^}]+})', html)
-    
-    # Fallback to broad regex match for all heatMarkerRenderers
-    all_markers = re.findall(r'{"heatMarkerRenderer":({[^}]+})}', html)
-    
-    if all_markers:
-        for m_str in all_markers:
-            try:
-                data = json.loads(m_str)
-                start_ms = int(data.get("timeRangeStartMillis", 0))
-                dur_ms = int(data.get("markerDurationMillis", 0))
-                score = float(data.get("heatMarkerIntensityScoreNormalized", 0))
-                markers.append({
-                    "start": start_ms / 1000.0,
-                    "duration": dur_ms / 1000.0,
-                    "score": score
-                })
-            except Exception:
-                continue
+    # Extract video duration in seconds
+    video_dur_match = re.search(r'"lengthSeconds"\s*:\s*"(\d+)"', html)
+    if not video_dur_match:
+        video_dur_match = re.search(r'<meta property="og:video:duration" content="(\d+)"', html)
 
-    # Filter segments with high engagement
+    if video_dur_match:
+        extracted_dur = float(video_dur_match.group(1))
+    elif video_duration and video_duration > 0:
+        extracted_dur = float(video_duration)
+    else:
+        extracted_dur = 300.0
+
+    # Extract heatmap markers using direct parameter regex matching
+    markers = []
+    pattern = r'"timeRangeStartMillis"\s*:\s*(\d+)[^}]*?"markerDurationMillis"\s*:\s*(\d+)[^}]*?"heatMarkerIntensityScoreNormalized"\s*:\s*([0-9.]+)'
+    matches = re.findall(pattern, html)
+    if matches:
+        for start_ms, dur_ms, score in matches:
+            markers.append({
+                "start": float(start_ms) / 1000.0,
+                "duration": float(dur_ms) / 1000.0,
+                "score": float(score)
+            })
+
+    # Filter markers with high engagement score
     high_score_markers = [m for m in markers if m["score"] >= min_score]
-    
-    # If no heatmap found, create default segments based on video length
+
+    # If min_score filtered out all markers, take top 20% highest scoring markers
+    if markers and not high_score_markers:
+        sorted_markers = sorted(markers, key=lambda x: x["score"], reverse=True)
+        top_count = max(1, len(sorted_markers) // 5)
+        high_score_markers = sorted(sorted_markers[:top_count], key=lambda x: x["start"])
+
+    # Dynamic Fallback if video HAS NO heatmap markers on YouTube (e.g., new video)
     if not high_score_markers:
-        # Fallback: Create 3 sample segments if heatmap isn't available
-        high_score_markers = [
-            {"start": 30.0, "duration": 30.0, "score": 0.85},
-            {"start": 120.0, "duration": 30.0, "score": 0.90},
-            {"start": 240.0, "duration": 30.0, "score": 0.80},
-        ]
+        # Dynamically create sample segments distributed across video duration (never exceeding video length)
+        num_segments = max(1, min(5, int(extracted_dur // max_duration) or 1))
+        step = extracted_dur / (num_segments + 1)
+        fallback_markers = []
+        for i in range(1, num_segments + 1):
+            m_start = round(i * step, 1)
+            if m_start < extracted_dur:
+                fallback_markers.append({
+                    "start": m_start,
+                    "duration": min(float(max_duration), extracted_dur - m_start),
+                    "score": round(0.85 - (i * 0.05), 2)
+                })
+        high_score_markers = fallback_markers or [{"start": 0.0, "duration": min(float(max_duration), extracted_dur), "score": 0.85}]
 
     # Group adjacent markers into clips
     clips = []
     if high_score_markers:
-        current_start = max(0, high_score_markers[0]["start"] - padding)
-        current_end = high_score_markers[0]["start"] + high_score_markers[0]["duration"] + padding
+        current_start = max(0.0, high_score_markers[0]["start"] - padding)
+        current_end = min(extracted_dur, high_score_markers[0]["start"] + high_score_markers[0]["duration"] + padding)
         max_score = high_score_markers[0]["score"]
 
         for m in high_score_markers[1:]:
-            m_start = max(0, m["start"] - padding)
-            m_end = m["start"] + m["duration"] + padding
-            
+            m_start = max(0.0, m["start"] - padding)
+            m_end = min(extracted_dur, m["start"] + m["duration"] + padding)
+
             if m_start <= current_end and (m_end - current_start) <= max_duration:
-                current_end = max(current_end, m_end)
+                current_end = min(extracted_dur, max(current_end, m_end))
                 max_score = max(max_score, m["score"])
             else:
-                clips.append({
-                    "start": round(current_start, 1),
-                    "end": round(min(current_start + max_duration, current_end), 1),
-                    "duration": round(min(max_duration, current_end - current_start), 1),
-                    "score": round(max_score, 2)
-                })
+                clip_end = min(extracted_dur, min(current_start + max_duration, current_end))
+                if clip_end > current_start:
+                    clips.append({
+                        "start": round(current_start, 1),
+                        "end": round(clip_end, 1),
+                        "duration": round(clip_end - current_start, 1),
+                        "score": round(max_score, 2)
+                    })
                 current_start = m_start
                 current_end = m_end
                 max_score = m["score"]
 
-        clips.append({
-            "start": round(current_start, 1),
-            "end": round(min(current_start + max_duration, current_end), 1),
-            "duration": round(min(max_duration, current_end - current_start), 1),
-            "score": round(max_score, 2)
-        })
+        clip_end = min(extracted_dur, min(current_start + max_duration, current_end))
+        if clip_end > current_start:
+            clips.append({
+                "start": round(current_start, 1),
+                "end": round(clip_end, 1),
+                "duration": round(clip_end - current_start, 1),
+                "score": round(max_score, 2)
+            })
 
-    return clips
+    # Guarantee all clips strict upper bound by extracted_dur
+    valid_clips = []
+    for c in clips:
+        if c["start"] < extracted_dur and c["end"] <= extracted_dur and c["end"] > c["start"]:
+            valid_clips.append(c)
+
+    if return_raw:
+        return valid_clips, markers
+    return valid_clips
 
 
 def format_srt_timestamp(seconds: float) -> str:
@@ -205,11 +267,9 @@ def format_srt_timestamp(seconds: float) -> str:
 
 
 def generate_subtitles(audio_path: str, srt_path: str, model_name: str = "tiny") -> bool:
-    """Generates SRT subtitle file using Faster-Whisper if available."""
+    """Generates SRT subtitle file using Faster-Whisper if available (uses cached model)."""
     try:
-        # pyrefly: ignore [missing-import]
-        from faster_whisper import WhisperModel
-        model = WhisperModel(model_name, device="cpu", compute_type="int8")
+        model = get_whisper_model(model_name)
         segments, _ = model.transcribe(audio_path, beam_size=5)
 
         with open(srt_path, "w", encoding="utf-8") as f:
@@ -221,6 +281,36 @@ def generate_subtitles(audio_path: str, srt_path: str, model_name: str = "tiny")
     except Exception as e:
         print(f"Subtitle generation failed/skipped: {e}")
         return False
+
+
+class HeatmapRequest(BaseModel):
+    url: str
+    min_score: float = 0.40
+    padding: int = 10
+    max_duration: int = 60
+    video_duration: Optional[float] = None
+
+
+@app.post("/api/heatmap")
+def fetch_heatmap_analysis(req: HeatmapRequest):
+    """Returns raw YouTube heatmap markers and clip suggestions without cutting/rendering."""
+    try:
+        clips, markers = extract_youtube_heatmap(
+            req.url,
+            min_score=req.min_score,
+            padding=req.padding,
+            max_duration=req.max_duration,
+            return_raw=True,
+            video_duration=req.video_duration
+        )
+        return {
+            "status": "success",
+            "url": req.url,
+            "clips": clips,
+            "markers": markers
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to fetch heatmap: {str(e)}")
 
 
 def check_has_audio(file_path: str) -> bool:
@@ -628,9 +718,204 @@ def start_manual_clipping(req: ManualClipRequest, background_tasks: BackgroundTa
     return {"job_id": job_id, "status": "queued", "message": f"Manual clip job dimulai dengan {len(req.segments)} segmen."}
 
 
+# ============================================================
+# GEMINI AI GENERATE ENDPOINTS
+# ============================================================
+
+class GeminiConfigRequest(BaseModel):
+    psid: str
+    psidts: str = ""
+
+
+class GeminiImageRequest(BaseModel):
+    prompt: str
+    aspect_ratio: str = "1:1"  # 1:1, 9:16, 16:9, 4:3
+    model: str = "gemini-3-flash"
+
+
+class GeminiScriptRequest(BaseModel):
+    topic: str
+    tone: str = "santai"  # formal, santai, viral, persuasif
+    length: str = "medium"  # short, medium, long
+    model: str = "gemini-3-flash"
+
+
+def _run_in_gemini_loop(coro):
+    """Run an async coroutine in the dedicated Gemini event loop thread."""
+    global _gemini_loop
+    if _gemini_loop is None or not _gemini_loop.is_running():
+        raise RuntimeError("Gemini event loop not running")
+    future = asyncio.run_coroutine_threadsafe(coro, _gemini_loop)
+    return future.result(timeout=120)
+
+
+def _start_gemini_loop():
+    """Start a persistent asyncio event loop in a background thread for Gemini."""
+    global _gemini_loop
+    _gemini_loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(_gemini_loop)
+    _gemini_loop.run_forever()
+
+
+# Start background loop immediately
+_gemini_thread = threading.Thread(target=_start_gemini_loop, daemon=True)
+_gemini_thread.start()
+time.sleep(0.2)  # Give the loop time to start
+
+
+async def _init_gemini_client(psid: str, psidts: str):
+    """Initialize or re-initialize the Gemini client with given cookies."""
+    global _gemini_client
+    try:
+        from gemini_webapi import GeminiClient
+        client = GeminiClient(psid, psidts if psidts else None, proxy=None)
+        await client.init(timeout=120, auto_close=False, auto_refresh=True)
+        _gemini_client = client
+        return True
+    except Exception as e:
+        print(f"[Gemini] Init error: {e}")
+        _gemini_client = None
+        raise e
+
+
+@app.post("/api/gemini/config")
+def gemini_config(req: GeminiConfigRequest):
+    """Initialize Gemini client with provided cookies."""
+    try:
+        _run_in_gemini_loop(_init_gemini_client(req.psid, req.psidts))
+        return {"status": "connected", "message": "Gemini client berhasil terhubung!"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Gagal terhubung ke Gemini: {str(e)}")
+
+
+@app.get("/api/gemini/status")
+def gemini_status():
+    """Returns current Gemini client connection status."""
+    global _gemini_client
+    connected = _gemini_client is not None
+    return {"connected": connected, "status": "online" if connected else "offline"}
+
+
+@app.post("/api/gemini/generate-image")
+def gemini_generate_image(req: GeminiImageRequest):
+    """Generate image using Gemini. Returns saved image URL."""
+    global _gemini_client
+    if _gemini_client is None:
+        raise HTTPException(status_code=400, detail="Gemini belum terhubung. Masukkan cookie terlebih dahulu.")
+
+    size_prompts = {
+        "1:1": "square format, 1:1 aspect ratio",
+        "9:16": "vertical portrait format, 9:16 aspect ratio, suitable for TikTok/Reels/Shorts",
+        "16:9": "horizontal landscape format, 16:9 aspect ratio, suitable for YouTube thumbnail",
+        "4:3": "standard format, 4:3 aspect ratio",
+    }
+    size_hint = size_prompts.get(req.aspect_ratio, "")
+    full_prompt = f"Generate an image of: {req.prompt}. {size_hint}. High quality, professional image."
+
+    async def _do_generate():
+        response = await _gemini_client.generate_content(full_prompt, model=req.model)
+        saved_images = []
+        
+        # Save generated images to disk
+        if hasattr(response, "images") and response.images:
+            print(f"[Gemini] Ditemukan {len(response.images)} gambar dalam respon.")
+            for idx, img in enumerate(response.images):
+                filename = f"gemini_img_{uuid.uuid4().hex[:8]}.png"
+                try:
+                    # Using the built-in async save method from gemini-webapi
+                    await img.save(path=str(GENERATED_DIR), filename=filename, verbose=True)
+                    saved_images.append({
+                        "url": f"http://127.0.0.1:5000/generated/{filename}",
+                        "filename": filename
+                    })
+                    print(f"[Gemini] Berhasil menyimpan gambar {idx} ke {filename}")
+                except Exception as save_err:
+                    print(f"[Gemini] Gagal menyimpan gambar {idx} via save(): {save_err}")
+                    # Fallback to direct download
+                    try:
+                        if hasattr(img, "url") and img.url:
+                            import urllib.request
+                            urllib.request.urlretrieve(img.url, str(GENERATED_DIR / filename))
+                            saved_images.append({
+                                "url": f"http://127.0.0.1:5000/generated/{filename}",
+                                "filename": filename
+                            })
+                            print(f"[Gemini] Fallback urlretrieve berhasil untuk {filename}")
+                    except Exception as fallback_err:
+                        print(f"[Gemini] Fallback urlretrieve gagal: {fallback_err}")
+        else:
+            print("[Gemini] Tidak ada gambar dalam respon.")
+            
+        return response, saved_images
+
+    try:
+        response, saved_images = _run_in_gemini_loop(_do_generate())
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Gemini generate image error: {str(e)}")
+
+    return {
+        "status": "success",
+        "text": response.text if hasattr(response, "text") else "",
+        "images": saved_images,
+        "prompt_used": full_prompt
+    }
+
+
+@app.post("/api/gemini/generate-script")
+def gemini_generate_script(req: GeminiScriptRequest):
+    """Generate content script using Gemini."""
+    global _gemini_client
+    if _gemini_client is None:
+        raise HTTPException(status_code=400, detail="Gemini belum terhubung. Masukkan cookie terlebih dahulu.")
+
+    tone_map = {
+        "formal": "profesional dan formal",
+        "santai": "santai, friendly, dan mudah dipahami",
+        "viral": "viral, menarik perhatian, menggunakan bahasa gaul yang kekinian",
+        "persuasif": "persuasif dan meyakinkan, mendorong audiens untuk bertindak",
+    }
+    length_map = {
+        "short": "singkat sekitar 100-150 kata",
+        "medium": "sedang sekitar 250-400 kata",
+        "long": "panjang dan detail sekitar 600-900 kata",
+    }
+    tone_desc = tone_map.get(req.tone, "santai")
+    length_desc = length_map.get(req.length, "sedang sekitar 250-400 kata")
+
+    system_prompt = f"""Kamu adalah content creator profesional Indonesia. 
+Buatkan script konten untuk topik berikut dengan gaya bahasa yang {tone_desc}.
+Panjang script: {length_desc}.
+Topik: {req.topic}
+
+Format output:
+1. Judul Konten
+2. Hook pembuka yang menarik (2-3 kalimat)
+3. Isi utama konten
+4. Call-to-action penutup
+
+Gunakan bahasa Indonesia yang natural."""
+
+    async def _do_generate():
+        response = await _gemini_client.generate_content(system_prompt, model=req.model)
+        return response
+
+    try:
+        response = _run_in_gemini_loop(_do_generate())
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Gemini generate script error: {str(e)}")
+
+    return {
+        "status": "success",
+        "script": response.text if hasattr(response, "text") else str(response),
+        "topic": req.topic,
+        "tone": req.tone,
+        "length": req.length
+    }
+
+
 if __name__ == "__main__":
     print("=" * 60)
-    print("🚀 AgencyOS YT-Clipper Local Agent is starting...")
+    print("[+] AgencyOS YT-Clipper Local Agent is starting...")
     print("   URL: http://127.0.0.1:5000")
     print("   Health Check: http://127.0.0.1:5000/health")
     print("=" * 60)

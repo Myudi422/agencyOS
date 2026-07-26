@@ -51,7 +51,8 @@ fastapi ^
 uvicorn ^
 requests ^
 yt-dlp ^
-faster-whisper
+faster-whisper ^
+gemini-webapi
 
 :: =====================================================
 :: Download Agent
