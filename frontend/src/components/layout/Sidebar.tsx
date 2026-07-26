@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { 
   LayoutDashboard, Users2, Briefcase, Image as ImageIcon, 
-  CalendarDays, Cpu, History, Plus, ChevronDown, Sparkles, X, ShieldCheck 
+  CalendarDays, Cpu, History, Plus, ChevronDown, Sparkles, X, ShieldCheck, Scissors
 } from "lucide-react";
 import { useStore } from "@/store/useStore";
 import { fetchApi } from "@/lib/api";
@@ -38,6 +38,7 @@ export default function Sidebar({ isMobileOpen = false, onCloseMobile }: Sidebar
     { name: "Dashboard", href: "/", icon: LayoutDashboard },
     { name: "Account Manager", href: "/accounts", icon: Users2, badge: "10 Platforms" },
     { name: "Client Roster", href: "/clients", icon: Briefcase },
+    { name: "YT Clipper", href: "/yt-clipper", icon: Scissors, badge: "Local AI" },
     { name: "Media Library", href: "/media", icon: ImageIcon },
     { name: "Content Calendar", href: "/calendar", icon: CalendarDays },
     { name: "Queue Engine", href: "/queue", icon: Cpu, activeDot: true },
