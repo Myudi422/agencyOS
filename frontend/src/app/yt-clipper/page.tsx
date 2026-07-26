@@ -2,9 +2,9 @@
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
-import { 
-  Scissors, Smartphone, Laptop, CheckCircle2, XCircle, RefreshCw, 
-  Copy, Download, Terminal, Play, Sparkles, Sliders, AlertTriangle, 
+import {
+  Scissors, Smartphone, Laptop, CheckCircle2, XCircle, RefreshCw,
+  Copy, Download, Terminal, Play, Sparkles, Sliders, AlertTriangle,
   Video, Subtitles, HelpCircle, Layers, Check, ExternalLink, Code2, Cpu, Zap, Folder, FolderOpen,
   Plus, Trash2, Clock, SplitSquareHorizontal, SkipBack, SkipForward, Flag, BookmarkPlus, Clapperboard, Eye
 } from "lucide-react";
@@ -70,62 +70,101 @@ interface JobStatus {
   error?: string;
 }
 
-// Embedded 1-Click Auto Setup Batch Script Source (Bug-free, no auto-close)
 const AUTO_SETUP_BAT_CODE = `@echo off
-setlocal enabledelayedexpansion
+setlocal EnableDelayedExpansion
+
 title AgencyOS YT-Clipper Auto Setup
 color 0A
+
+REM Selalu pindah ke folder BAT
+cd /d "%~dp0"
 
 echo ========================================================
 echo    AgencyOS YT-Clipper Auto Setup Installer
 echo ========================================================
 echo.
 
-:: 1. Check Python
-echo [1/4] Memeriksa Python...
-python --version >nul 2>&1
-if !errorlevel! neq 0 (
-    echo [!] Python tidak ditemukan. Mengunduh & Menginstall Python otomatis...
-    winget install -e --id Python.Python.3.11 --accept-package-agreements --accept-source-agreements
-    if !errorlevel! neq 0 (
-        echo [X] Gagal install via winget. Silakan install Python 3.11 dari https://python.org
-        echo.
-        pause
-        exit /b 1
-    )
-    echo [+] Python berhasil terinstall!
-) else (
-    echo [+] Python terdeteksi.
+:: Cari Python
+set "PYTHON_EXE="
+
+for /f "delims=" %%P in ('where python 2^>nul') do (
+    set "PYTHON_EXE=%%P"
+    goto :python_found
 )
 
-:: 2. Check FFmpeg
+echo [X] Python tidak ditemukan.
+echo.
+echo Menginstall Python...
+
+winget install -e --id Python.Python.3.11 --accept-package-agreements --accept-source-agreements
+
+for /f "delims=" %%P in ('where python 2^>nul') do (
+    set "PYTHON_EXE=%%P"
+    goto :python_found
+)
+
+echo.
+echo Gagal menemukan Python.
+pause
+exit /b 1
+
+:python_found
+
+echo [+] Python:
+echo !PYTHON_EXE!
+
 echo.
 echo [2/4] Memeriksa FFmpeg...
+
 ffmpeg -version >nul 2>&1
-if !errorlevel! neq 0 (
-    echo [!] FFmpeg tidak ditemukan. Mengunduh & Menginstall FFmpeg otomatis...
+
+if errorlevel 1 (
+    echo Menginstall FFmpeg...
     winget install -e --id Gyan.FFmpeg --accept-package-agreements --accept-source-agreements
 ) else (
-    echo [+] FFmpeg terdeteksi.
+    echo [+] FFmpeg OK
 )
 
-:: 3. Install Python Dependencies
 echo.
-echo [3/4] Menginstal library Python pendukung...
-python -m pip install --upgrade pip
-python -m pip install fastapi uvicorn requests yt-dlp faster-whisper pydantic
+echo [3/4] Install Dependency...
 
-:: 4. Run Agent
+"!PYTHON_EXE!" -m pip install --upgrade pip
+
+"!PYTHON_EXE!" -m pip install fastapi uvicorn requests yt-dlp faster-whisper pydantic
+
 echo.
 echo [4/4] Menjalankan Local Engine Server...
 echo ========================================================
-echo    Server lokal aktif di http://127.0.0.1:5000
-echo    Buka/kembali ke dashboard AgencyOS di browser Anda.
+echo Folder : %CD%
+echo Script : %~dp0yt_clipper_agent.py
 echo ========================================================
-python yt_clipper_agent.py
+
+if not exist "%~dp0yt_clipper_agent.py" (
+    echo.
+    echo Backend belum ada.
+    echo Downloading...
+
+    powershell -NoProfile -ExecutionPolicy Bypass -Command "Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/Myudi422/agencyOS/main/yt_clipper_agent.py' -OutFile '%~dp0yt_clipper_agent.py'"
+)
+
+if not exist "%~dp0yt_clipper_agent.py" (
+    echo.
+    echo Gagal download backend.
+    pause
+    exit /b 1
+)
+
+pushd "%~dp0"
+
+"!PYTHON_EXE!" "%~dp0yt_clipper_agent.py"
+
+set EXITCODE=!ERRORLEVEL!
+
+popd
 
 echo.
-echo [!] Server telah berhenti. Tekan tombol apa saja untuk keluar.
+echo Server berhenti.
+echo Exit Code : !EXITCODE!
 pause
 `;
 
@@ -133,7 +172,7 @@ export default function YtClipperPage() {
   // Device & Connection State
   const [isMobile, setIsMobile] = useState<boolean>(false);
   const [copiedLink, setCopiedLink] = useState<boolean>(false);
-  
+
   const [healthStatus, setHealthStatus] = useState<AgentHealth | null>(null);
   const [connectionState, setConnectionState] = useState<"checking" | "connected" | "disconnected">("checking");
   const [isRefreshingHealth, setIsRefreshingHealth] = useState<boolean>(false);
@@ -216,7 +255,7 @@ export default function YtClipperPage() {
   const initPlayer = useCallback((videoId: string) => {
     if (!ytApiReady || !ytDivRef.current) return;
     if (ytPlayerRef.current) {
-      try { ytPlayerRef.current.destroy(); } catch {}
+      try { ytPlayerRef.current.destroy(); } catch { }
       ytPlayerRef.current = null;
     }
     ytPlayerRef.current = new window.YT.Player(ytDivRef.current, {
@@ -272,7 +311,7 @@ export default function YtClipperPage() {
   useEffect(() => {
     return () => {
       if (tickRef.current) clearInterval(tickRef.current);
-      try { ytPlayerRef.current?.destroy(); } catch {}
+      try { ytPlayerRef.current?.destroy(); } catch { }
     };
   }, []);
 
@@ -475,7 +514,7 @@ export default function YtClipperPage() {
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
-      
+
       {/* ========================================================= */}
       {/* MOBILE RESTRICTION POPUP MODAL                            */}
       {/* ========================================================= */}
@@ -543,27 +582,24 @@ export default function YtClipperPage() {
 
         {/* Local Engine Status Badge */}
         <div className="flex items-center gap-3">
-          <div className={`px-3 py-2 rounded-xl border text-xs font-semibold flex items-center gap-2 shadow-xs ${
-            connectionState === "connected"
+          <div className={`px-3 py-2 rounded-xl border text-xs font-semibold flex items-center gap-2 shadow-xs ${connectionState === "connected"
               ? "bg-emerald-50 text-emerald-700 border-emerald-200"
               : connectionState === "checking"
-              ? "bg-amber-50 text-amber-700 border-amber-200"
-              : "bg-rose-50 text-rose-700 border-rose-200"
-          }`}>
+                ? "bg-amber-50 text-amber-700 border-amber-200"
+                : "bg-rose-50 text-rose-700 border-rose-200"
+            }`}>
             <span className="relative flex h-2.5 w-2.5">
-              <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${
-                connectionState === "connected" ? "bg-emerald-400" : "bg-rose-400"
-              }`}></span>
-              <span className={`relative inline-flex rounded-full h-2.5 w-2.5 ${
-                connectionState === "connected" ? "bg-emerald-600" : "bg-rose-600"
-              }`}></span>
+              <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${connectionState === "connected" ? "bg-emerald-400" : "bg-rose-400"
+                }`}></span>
+              <span className={`relative inline-flex rounded-full h-2.5 w-2.5 ${connectionState === "connected" ? "bg-emerald-600" : "bg-rose-600"
+                }`}></span>
             </span>
             <span>
               {connectionState === "connected"
                 ? "Agent Aktif (127.0.0.1:5000)"
                 : connectionState === "checking"
-                ? "Mengecek Agent..."
-                : "Agent Offline (Perlu Setup 1-Klik)"}
+                  ? "Mengecek Agent..."
+                  : "Agent Offline (Perlu Setup 1-Klik)"}
             </span>
           </div>
 
@@ -583,7 +619,7 @@ export default function YtClipperPage() {
       {/* ========================================================= */}
       {connectionState === "disconnected" && (
         <div className="bg-white rounded-2xl border border-purple-200 p-6 shadow-md space-y-6 animate-in fade-in duration-300">
-          
+
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-5 bg-gradient-to-r from-purple-900 to-slate-900 text-white rounded-2xl shadow-md">
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 rounded-xl bg-purple-500/20 border border-purple-400/30 text-purple-300 flex items-center justify-center shrink-0 shadow-inner">
@@ -700,11 +736,10 @@ export default function YtClipperPage() {
             <button
               type="button"
               onClick={() => { setActiveTab("heatmap"); setJobStatus(null); setActiveJobId(null); }}
-              className={`px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 ${
-                activeTab === "heatmap" 
-                  ? "bg-white text-purple-700 shadow-sm border border-slate-200" 
+              className={`px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 ${activeTab === "heatmap"
+                  ? "bg-white text-purple-700 shadow-sm border border-slate-200"
                   : "text-slate-500 hover:text-slate-700"
-              }`}
+                }`}
             >
               <Sparkles className="w-3.5 h-3.5" />
               Auto Heatmap Clip
@@ -712,11 +747,10 @@ export default function YtClipperPage() {
             <button
               type="button"
               onClick={() => { setActiveTab("manual"); setJobStatus(null); setActiveJobId(null); }}
-              className={`px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 ${
-                activeTab === "manual"
+              className={`px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 ${activeTab === "manual"
                   ? "bg-white text-purple-700 shadow-sm border border-slate-200"
                   : "text-slate-500 hover:text-slate-700"
-              }`}
+                }`}
             >
               <SplitSquareHorizontal className="w-3.5 h-3.5" />
               Manual Clip Editor
@@ -724,580 +758,576 @@ export default function YtClipperPage() {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          
-          {/* LEFT 2 COLUMNS: CONFIGURATION FORM */}
-          <div className="lg:col-span-2 space-y-6">
 
-            {/* ======= VIDEO CLIP EDITOR PANEL ======= */}
-            {activeTab === "manual" && (
-              <div className="space-y-4">
+            {/* LEFT 2 COLUMNS: CONFIGURATION FORM */}
+            <div className="lg:col-span-2 space-y-6">
 
-                {/* ── Header & URL Input ── */}
-                <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs space-y-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center shrink-0">
-                      <Clapperboard className="w-5 h-5" />
+              {/* ======= VIDEO CLIP EDITOR PANEL ======= */}
+              {activeTab === "manual" && (
+                <div className="space-y-4">
+
+                  {/* ── Header & URL Input ── */}
+                  <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs space-y-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center shrink-0">
+                        <Clapperboard className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-extrabold text-slate-900 font-['Outfit']">Video Clip Editor</h3>
+                        <p className="text-[11px] text-slate-500">Tonton video, tandai titik mulai & akhir langsung saat diputar — tanpa download penuh.</p>
+                      </div>
                     </div>
-                    <div>
-                      <h3 className="text-sm font-extrabold text-slate-900 font-['Outfit']">Video Clip Editor</h3>
-                      <p className="text-[11px] text-slate-500">Tonton video, tandai titik mulai & akhir langsung saat diputar — tanpa download penuh.</p>
+
+                    <div className="flex gap-2">
+                      <div className="relative flex-1">
+                        <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-rose-500">
+                          <Video className="w-4 h-4" />
+                        </div>
+                        <input
+                          type="url"
+                          value={manualUrl}
+                          onChange={(e) => setManualUrl(e.target.value)}
+                          onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleLoadVideo(); } }}
+                          placeholder="https://www.youtube.com/watch?v=..."
+                          className="w-full pl-10 pr-4 py-2.5 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:ring-2 focus:ring-purple-400 focus:border-purple-400 outline-none"
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={handleLoadVideo}
+                        disabled={!ytApiReady || !manualUrl.trim()}
+                        className="px-4 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold flex items-center gap-2 shadow-sm disabled:opacity-50 transition-all whitespace-nowrap"
+                      >
+                        <Eye className="w-3.5 h-3.5" />
+                        Load Video
+                      </button>
                     </div>
                   </div>
 
-                  <div className="flex gap-2">
-                    <div className="relative flex-1">
+                  {/* ── Embedded YouTube Player ── */}
+                  <div className="bg-slate-900 rounded-2xl overflow-hidden border border-slate-700 shadow-xl">
+                    <div className="relative" style={{ paddingBottom: "56.25%" }}>
+                      <div ref={ytDivRef} className="absolute inset-0 w-full h-full" />
+                      {!loadedVideoId && (
+                        <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-400 gap-3">
+                          <Play className="w-12 h-12 opacity-30" />
+                          <span className="text-xs">Masukkan URL YouTube & klik Load Video</span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Player Controls Bar */}
+                    {ytPlayerReady && duration > 0 && (
+                      <div className="px-4 py-3 space-y-2 border-t border-slate-700">
+                        {/* Timeline scrubber */}
+                        <div className="relative h-8 group">
+                          {/* Background track */}
+                          <div className="absolute top-3 left-0 right-0 h-2 bg-slate-700 rounded-full overflow-hidden">
+                            {/* Progress */}
+                            <div
+                              className="h-full bg-purple-500 transition-none"
+                              style={{ width: `${(currentTime / duration) * 100}%` }}
+                            />
+                            {/* Segment markers */}
+                            {manualSegments.map((seg, i) => {
+                              const s = parseTime(seg.start);
+                              const e = parseTime(seg.end);
+                              if (!seg.start || !seg.end || s >= e) return null;
+                              const colors = ["bg-emerald-400", "bg-amber-400", "bg-rose-400", "bg-cyan-400", "bg-pink-400"];
+                              return (
+                                <div
+                                  key={seg.id}
+                                  className={`absolute top-0 h-full opacity-60 ${colors[i % colors.length]}`}
+                                  style={{ left: `${(s / duration) * 100}%`, width: `${((e - s) / duration) * 100}%` }}
+                                />
+                              );
+                            })}
+                          </div>
+                          {/* Clickable seek area */}
+                          <input
+                            type="range"
+                            min={0} max={duration} step={0.5}
+                            value={currentTime}
+                            onChange={(ev) => {
+                              const t = Number(ev.target.value);
+                              setCurrentTime(t);
+                              ytPlayerRef.current?.seekTo(t, true);
+                            }}
+                            className="absolute inset-0 w-full opacity-0 cursor-pointer"
+                          />
+                        </div>
+
+                        <div className="flex items-center justify-between text-[11px] font-mono text-slate-400">
+                          <span className="text-purple-400 font-bold text-xs">{fmtTime(currentTime)}</span>
+                          <div className="flex items-center gap-2">
+                            <button type="button" onClick={() => ytPlayerRef.current?.seekTo(Math.max(0, currentTime - 5), true)} className="p-1.5 rounded-lg hover:bg-slate-700 text-slate-400 transition-colors"><SkipBack className="w-3.5 h-3.5" /></button>
+                            <button type="button" onClick={() => ytPlayerRef.current?.seekTo(Math.min(duration, currentTime + 5), true)} className="p-1.5 rounded-lg hover:bg-slate-700 text-slate-400 transition-colors"><SkipForward className="w-3.5 h-3.5" /></button>
+                          </div>
+                          <span>{fmtTime(duration)}</span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* ── Segment Marker List ── */}
+                  {loadedVideoId && (
+                    <form onSubmit={handleManualClip} className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs space-y-4">
+
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                            <Flag className="w-3.5 h-3.5 text-purple-600" />
+                            Segmen Klip ({manualSegments.length}/10)
+                          </label>
+                          {ytPlayerReady && (
+                            <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200 font-semibold">
+                              ▶ Live @ {fmtTime(currentTime)}
+                            </span>
+                          )}
+                        </div>
+                        <button
+                          type="button"
+                          onClick={addManualSegment}
+                          disabled={manualSegments.length >= 10}
+                          className="px-2.5 py-1.5 rounded-lg bg-purple-100 hover:bg-purple-200 text-purple-700 text-[11px] font-semibold flex items-center gap-1.5 transition-colors disabled:opacity-40"
+                        >
+                          <Plus className="w-3 h-3" />
+                          Tambah Segmen
+                        </button>
+                      </div>
+
+                      {/* Segment rows */}
+                      <div className="space-y-2.5">
+                        {manualSegments.map((seg, idx) => {
+                          const startSec = parseTime(seg.start);
+                          const endSec = parseTime(seg.end);
+                          const dur = seg.start && seg.end ? Math.max(0, endSec - startSec) : null;
+                          const colors = ["border-emerald-300 bg-emerald-50", "border-amber-300 bg-amber-50", "border-rose-300 bg-rose-50", "border-cyan-300 bg-cyan-50", "border-pink-300 bg-pink-50"];
+                          const dotColors = ["bg-emerald-500", "bg-amber-500", "bg-rose-500", "bg-cyan-500", "bg-pink-500"];
+
+                          return (
+                            <div key={seg.id} className={`p-3 rounded-xl border ${colors[idx % colors.length]} space-y-2`}>
+                              {/* Segment header */}
+                              <div className="flex items-center gap-2">
+                                <span className={`w-5 h-5 rounded-full ${dotColors[idx % dotColors.length]} text-white text-[10px] font-extrabold flex items-center justify-center shrink-0`}>{idx + 1}</span>
+                                <input
+                                  type="text"
+                                  value={seg.label}
+                                  onChange={(e) => updateManualSegment(seg.id, "label", e.target.value)}
+                                  placeholder="Nama klip"
+                                  className="flex-1 px-2.5 py-1.5 text-[11px] font-bold rounded-lg border border-white/80 bg-white focus:ring-1 focus:ring-purple-400 outline-none"
+                                />
+                                {dur !== null && (
+                                  <span className="text-[10px] font-mono font-bold text-slate-600 bg-white px-2 py-0.5 rounded-lg border shrink-0">
+                                    {dur.toFixed(0)}s
+                                  </span>
+                                )}
+                                {manualSegments.length > 1 && (
+                                  <button type="button" onClick={() => removeManualSegment(seg.id)} className="p-1 rounded-lg hover:bg-red-100 hover:text-red-500 text-slate-400 transition-colors shrink-0">
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                  </button>
+                                )}
+                              </div>
+
+                              {/* Time inputs + mark buttons */}
+                              <div className="grid grid-cols-2 gap-2">
+                                {/* Start */}
+                                <div className="space-y-1">
+                                  <span className="text-[10px] font-semibold text-slate-500 flex items-center gap-1">
+                                    <span className="w-2 h-2 rounded-full bg-green-500 inline-block"></span>
+                                    Mulai
+                                  </span>
+                                  <div className="flex gap-1">
+                                    <input
+                                      type="text"
+                                      value={seg.start}
+                                      onChange={(e) => updateManualSegment(seg.id, "start", e.target.value)}
+                                      placeholder="mm:ss"
+                                      className="flex-1 px-2.5 py-1.5 text-[11px] rounded-lg border border-white/80 bg-white focus:ring-1 focus:ring-green-400 outline-none font-mono min-w-0"
+                                    />
+                                    {ytPlayerReady && (
+                                      <button
+                                        type="button"
+                                        onClick={() => markTime(seg.id, "start")}
+                                        title="Tandai waktu saat ini sebagai Mulai"
+                                        className="px-2 py-1.5 rounded-lg bg-green-500 hover:bg-green-600 text-white text-[10px] font-bold transition-colors shrink-0"
+                                      >
+                                        ▶ Mark
+                                      </button>
+                                    )}
+                                  </div>
+                                  {seg.start && (
+                                    <button type="button" onClick={() => seekTo(seg.start)} className="text-[10px] text-purple-600 hover:underline flex items-center gap-0.5">
+                                      <SkipBack className="w-2.5 h-2.5" /> Seek ke sini
+                                    </button>
+                                  )}
+                                </div>
+
+                                {/* End */}
+                                <div className="space-y-1">
+                                  <span className="text-[10px] font-semibold text-slate-500 flex items-center gap-1">
+                                    <span className="w-2 h-2 rounded-full bg-red-500 inline-block"></span>
+                                    Akhir
+                                  </span>
+                                  <div className="flex gap-1">
+                                    <input
+                                      type="text"
+                                      value={seg.end}
+                                      onChange={(e) => updateManualSegment(seg.id, "end", e.target.value)}
+                                      placeholder="mm:ss"
+                                      className="flex-1 px-2.5 py-1.5 text-[11px] rounded-lg border border-white/80 bg-white focus:ring-1 focus:ring-red-400 outline-none font-mono min-w-0"
+                                    />
+                                    {ytPlayerReady && (
+                                      <button
+                                        type="button"
+                                        onClick={() => markTime(seg.id, "end")}
+                                        title="Tandai waktu saat ini sebagai Akhir"
+                                        className="px-2 py-1.5 rounded-lg bg-red-500 hover:bg-red-600 text-white text-[10px] font-bold transition-colors shrink-0"
+                                      >
+                                        ⏹ Mark
+                                      </button>
+                                    )}
+                                  </div>
+                                  {seg.end && (
+                                    <button type="button" onClick={() => seekTo(seg.end)} className="text-[10px] text-purple-600 hover:underline flex items-center gap-0.5">
+                                      <SkipForward className="w-2.5 h-2.5" /> Seek ke sini
+                                    </button>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      {/* Crop Mode */}
+                      <div className="space-y-1.5">
+                        <label className="block text-xs font-bold text-slate-800">Mode Crop Output</label>
+                        <div className="grid grid-cols-3 gap-2">
+                          {[
+                            { val: 1, label: "Center 9:16", desc: "Default" },
+                            { val: 2, label: "Split Kiri", desc: "Facecam kiri" },
+                            { val: 3, label: "Split Kanan", desc: "Facecam kanan" },
+                          ].map((m) => (
+                            <button
+                              key={m.val}
+                              type="button"
+                              onClick={() => setManualCropMode(m.val)}
+                              className={`p-2 rounded-xl border text-center transition-all ${manualCropMode === m.val
+                                  ? "bg-purple-50 border-purple-300 text-purple-800"
+                                  : "bg-slate-50 border-slate-200 text-slate-600 hover:border-slate-300"
+                                }`}
+                            >
+                              <div className="text-[11px] font-bold">{m.label}</div>
+                              <div className="text-[10px] text-slate-400">{m.desc}</div>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {errorMessage && (
+                        <div className="p-3 bg-rose-50 rounded-xl border border-rose-200 text-xs text-rose-700 flex items-center gap-2">
+                          <AlertTriangle className="w-4 h-4 shrink-0" />
+                          {errorMessage}
+                        </div>
+                      )}
+
+                      <button
+                        type="submit"
+                        disabled={isSubmitting}
+                        className="w-full py-3 rounded-xl gradient-brand text-white font-bold text-sm flex items-center justify-center gap-2 shadow-md shadow-purple-500/20 hover:scale-[1.01] active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed transition-all"
+                      >
+                        {isSubmitting ? (
+                          <><RefreshCw className="w-4 h-4 animate-spin" /><span>Memproses {manualSegments.filter(s => s.start && s.end).length} Klip...</span></>
+                        ) : (
+                          <><Scissors className="w-4 h-4" /><span>Render {manualSegments.filter(s => s.start && s.end).length} Klip Sekarang →</span></>
+                        )}
+                      </button>
+                    </form>
+                  )}
+                </div>
+              )}
+
+              {activeTab === "heatmap" && (
+                <form onSubmit={handleStartClipping} className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs space-y-6">
+
+                  {/* URL Input */}
+                  <div className="space-y-2">
+                    <label className="block text-xs font-bold text-slate-800 flex items-center justify-between">
+                      <span>URL Video YouTube</span>
+                      <span className="text-[11px] font-normal text-slate-400">Standard / Shorts Video</span>
+                    </label>
+                    <div className="relative">
                       <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-rose-500">
                         <Video className="w-4 h-4" />
                       </div>
                       <input
                         type="url"
-                        value={manualUrl}
-                        onChange={(e) => setManualUrl(e.target.value)}
-                        onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleLoadVideo(); }}}
+                        value={ytUrl}
+                        onChange={(e) => setYtUrl(e.target.value)}
                         placeholder="https://www.youtube.com/watch?v=..."
-                        className="w-full pl-10 pr-4 py-2.5 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:ring-2 focus:ring-purple-400 focus:border-purple-400 outline-none"
+                        className="w-full pl-10 pr-24 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all"
+                        required
                       />
-                    </div>
-                    <button
-                      type="button"
-                      onClick={handleLoadVideo}
-                      disabled={!ytApiReady || !manualUrl.trim()}
-                      className="px-4 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold flex items-center gap-2 shadow-sm disabled:opacity-50 transition-all whitespace-nowrap"
-                    >
-                      <Eye className="w-3.5 h-3.5" />
-                      Load Video
-                    </button>
-                  </div>
-                </div>
-
-                {/* ── Embedded YouTube Player ── */}
-                <div className="bg-slate-900 rounded-2xl overflow-hidden border border-slate-700 shadow-xl">
-                  <div className="relative" style={{ paddingBottom: "56.25%" }}>
-                    <div ref={ytDivRef} className="absolute inset-0 w-full h-full" />
-                    {!loadedVideoId && (
-                      <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-400 gap-3">
-                        <Play className="w-12 h-12 opacity-30" />
-                        <span className="text-xs">Masukkan URL YouTube & klik Load Video</span>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Player Controls Bar */}
-                  {ytPlayerReady && duration > 0 && (
-                    <div className="px-4 py-3 space-y-2 border-t border-slate-700">
-                      {/* Timeline scrubber */}
-                      <div className="relative h-8 group">
-                        {/* Background track */}
-                        <div className="absolute top-3 left-0 right-0 h-2 bg-slate-700 rounded-full overflow-hidden">
-                          {/* Progress */}
-                          <div
-                            className="h-full bg-purple-500 transition-none"
-                            style={{ width: `${(currentTime / duration) * 100}%` }}
-                          />
-                          {/* Segment markers */}
-                          {manualSegments.map((seg, i) => {
-                            const s = parseTime(seg.start);
-                            const e = parseTime(seg.end);
-                            if (!seg.start || !seg.end || s >= e) return null;
-                            const colors = ["bg-emerald-400", "bg-amber-400", "bg-rose-400", "bg-cyan-400", "bg-pink-400"];
-                            return (
-                              <div
-                                key={seg.id}
-                                className={`absolute top-0 h-full opacity-60 ${colors[i % colors.length]}`}
-                                style={{ left: `${(s / duration) * 100}%`, width: `${((e - s) / duration) * 100}%` }}
-                              />
-                            );
-                          })}
-                        </div>
-                        {/* Clickable seek area */}
-                        <input
-                          type="range"
-                          min={0} max={duration} step={0.5}
-                          value={currentTime}
-                          onChange={(ev) => {
-                            const t = Number(ev.target.value);
-                            setCurrentTime(t);
-                            ytPlayerRef.current?.seekTo(t, true);
-                          }}
-                          className="absolute inset-0 w-full opacity-0 cursor-pointer"
-                        />
-                      </div>
-
-                      <div className="flex items-center justify-between text-[11px] font-mono text-slate-400">
-                        <span className="text-purple-400 font-bold text-xs">{fmtTime(currentTime)}</span>
-                        <div className="flex items-center gap-2">
-                          <button type="button" onClick={() => ytPlayerRef.current?.seekTo(Math.max(0, currentTime - 5), true)} className="p-1.5 rounded-lg hover:bg-slate-700 text-slate-400 transition-colors"><SkipBack className="w-3.5 h-3.5" /></button>
-                          <button type="button" onClick={() => ytPlayerRef.current?.seekTo(Math.min(duration, currentTime + 5), true)} className="p-1.5 rounded-lg hover:bg-slate-700 text-slate-400 transition-colors"><SkipForward className="w-3.5 h-3.5" /></button>
-                        </div>
-                        <span>{fmtTime(duration)}</span>
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* ── Segment Marker List ── */}
-                {loadedVideoId && (
-                  <form onSubmit={handleManualClip} className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs space-y-4">
-                    
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                          <Flag className="w-3.5 h-3.5 text-purple-600" />
-                          Segmen Klip ({manualSegments.length}/10)
-                        </label>
-                        {ytPlayerReady && (
-                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200 font-semibold">
-                            ▶ Live @ {fmtTime(currentTime)}
-                          </span>
-                        )}
-                      </div>
                       <button
                         type="button"
-                        onClick={addManualSegment}
-                        disabled={manualSegments.length >= 10}
-                        className="px-2.5 py-1.5 rounded-lg bg-purple-100 hover:bg-purple-200 text-purple-700 text-[11px] font-semibold flex items-center gap-1.5 transition-colors disabled:opacity-40"
+                        onClick={() => setYtUrl("https://www.youtube.com/watch?v=dQw4w9WgXcQ")}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 px-2.5 py-1 rounded-lg bg-slate-200 hover:bg-slate-300 text-[10px] font-semibold text-slate-700 transition-colors"
                       >
-                        <Plus className="w-3 h-3" />
-                        Tambah Segmen
+                        Contoh Demo
                       </button>
                     </div>
+                  </div>
 
-                    {/* Segment rows */}
-                    <div className="space-y-2.5">
-                      {manualSegments.map((seg, idx) => {
-                        const startSec = parseTime(seg.start);
-                        const endSec = parseTime(seg.end);
-                        const dur = seg.start && seg.end ? Math.max(0, endSec - startSec) : null;
-                        const colors = ["border-emerald-300 bg-emerald-50", "border-amber-300 bg-amber-50", "border-rose-300 bg-rose-50", "border-cyan-300 bg-cyan-50", "border-pink-300 bg-pink-50"];
-                        const dotColors = ["bg-emerald-500", "bg-amber-500", "bg-rose-500", "bg-cyan-500", "bg-pink-500"];
+                  {/* Crop Mode Selector */}
+                  <div className="space-y-3">
+                    <label className="block text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                      <Layers className="w-4 h-4 text-purple-600" />
+                      <span>Pilih Mode Cropping 9:16 Vertikal</span>
+                    </label>
 
-                        return (
-                          <div key={seg.id} className={`p-3 rounded-xl border ${colors[idx % colors.length]} space-y-2`}>
-                            {/* Segment header */}
-                            <div className="flex items-center gap-2">
-                              <span className={`w-5 h-5 rounded-full ${dotColors[idx % dotColors.length]} text-white text-[10px] font-extrabold flex items-center justify-center shrink-0`}>{idx + 1}</span>
-                              <input
-                                type="text"
-                                value={seg.label}
-                                onChange={(e) => updateManualSegment(seg.id, "label", e.target.value)}
-                                placeholder="Nama klip"
-                                className="flex-1 px-2.5 py-1.5 text-[11px] font-bold rounded-lg border border-white/80 bg-white focus:ring-1 focus:ring-purple-400 outline-none"
-                              />
-                              {dur !== null && (
-                                <span className="text-[10px] font-mono font-bold text-slate-600 bg-white px-2 py-0.5 rounded-lg border shrink-0">
-                                  {dur.toFixed(0)}s
-                                </span>
-                              )}
-                              {manualSegments.length > 1 && (
-                                <button type="button" onClick={() => removeManualSegment(seg.id)} className="p-1 rounded-lg hover:bg-red-100 hover:text-red-500 text-slate-400 transition-colors shrink-0">
-                                  <Trash2 className="w-3.5 h-3.5" />
-                                </button>
-                              )}
-                            </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                      {/* Mode 1 */}
+                      <div
+                        onClick={() => setCropMode(1)}
+                        className={`p-3.5 rounded-xl border cursor-pointer transition-all ${cropMode === 1
+                            ? "bg-purple-50/70 border-purple-300 ring-2 ring-purple-500/20"
+                            : "bg-slate-50 border-slate-200 hover:bg-slate-100"
+                          }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-bold text-slate-900">1. Center Crop</span>
+                          {cropMode === 1 && <CheckCircle2 className="w-4 h-4 text-purple-600" />}
+                        </div>
+                        <p className="text-[11px] text-slate-500 mt-1">
+                          Krop tengah fokus utama. Sangat cocok untuk Podcast & Vlog.
+                        </p>
+                      </div>
 
-                            {/* Time inputs + mark buttons */}
-                            <div className="grid grid-cols-2 gap-2">
-                              {/* Start */}
-                              <div className="space-y-1">
-                                <span className="text-[10px] font-semibold text-slate-500 flex items-center gap-1">
-                                  <span className="w-2 h-2 rounded-full bg-green-500 inline-block"></span>
-                                  Mulai
-                                </span>
-                                <div className="flex gap-1">
-                                  <input
-                                    type="text"
-                                    value={seg.start}
-                                    onChange={(e) => updateManualSegment(seg.id, "start", e.target.value)}
-                                    placeholder="mm:ss"
-                                    className="flex-1 px-2.5 py-1.5 text-[11px] rounded-lg border border-white/80 bg-white focus:ring-1 focus:ring-green-400 outline-none font-mono min-w-0"
-                                  />
-                                  {ytPlayerReady && (
-                                    <button
-                                      type="button"
-                                      onClick={() => markTime(seg.id, "start")}
-                                      title="Tandai waktu saat ini sebagai Mulai"
-                                      className="px-2 py-1.5 rounded-lg bg-green-500 hover:bg-green-600 text-white text-[10px] font-bold transition-colors shrink-0"
-                                    >
-                                      ▶ Mark
-                                    </button>
-                                  )}
-                                </div>
-                                {seg.start && (
-                                  <button type="button" onClick={() => seekTo(seg.start)} className="text-[10px] text-purple-600 hover:underline flex items-center gap-0.5">
-                                    <SkipBack className="w-2.5 h-2.5" /> Seek ke sini
-                                  </button>
-                                )}
-                              </div>
+                      {/* Mode 2 */}
+                      <div
+                        onClick={() => setCropMode(2)}
+                        className={`p-3.5 rounded-xl border cursor-pointer transition-all ${cropMode === 2
+                            ? "bg-purple-50/70 border-purple-300 ring-2 ring-purple-500/20"
+                            : "bg-slate-50 border-slate-200 hover:bg-slate-100"
+                          }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-bold text-slate-900">2. Split Left</span>
+                          {cropMode === 2 && <CheckCircle2 className="w-4 h-4 text-purple-600" />}
+                        </div>
+                        <p className="text-[11px] text-slate-500 mt-1">
+                          Atas: Konten, Bawah: Facecam Kiri Bawah (Gaming Streamer).
+                        </p>
+                      </div>
 
-                              {/* End */}
-                              <div className="space-y-1">
-                                <span className="text-[10px] font-semibold text-slate-500 flex items-center gap-1">
-                                  <span className="w-2 h-2 rounded-full bg-red-500 inline-block"></span>
-                                  Akhir
-                                </span>
-                                <div className="flex gap-1">
-                                  <input
-                                    type="text"
-                                    value={seg.end}
-                                    onChange={(e) => updateManualSegment(seg.id, "end", e.target.value)}
-                                    placeholder="mm:ss"
-                                    className="flex-1 px-2.5 py-1.5 text-[11px] rounded-lg border border-white/80 bg-white focus:ring-1 focus:ring-red-400 outline-none font-mono min-w-0"
-                                  />
-                                  {ytPlayerReady && (
-                                    <button
-                                      type="button"
-                                      onClick={() => markTime(seg.id, "end")}
-                                      title="Tandai waktu saat ini sebagai Akhir"
-                                      className="px-2 py-1.5 rounded-lg bg-red-500 hover:bg-red-600 text-white text-[10px] font-bold transition-colors shrink-0"
-                                    >
-                                      ⏹ Mark
-                                    </button>
-                                  )}
-                                </div>
-                                {seg.end && (
-                                  <button type="button" onClick={() => seekTo(seg.end)} className="text-[10px] text-purple-600 hover:underline flex items-center gap-0.5">
-                                    <SkipForward className="w-2.5 h-2.5" /> Seek ke sini
-                                  </button>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-
-                    {/* Crop Mode */}
-                    <div className="space-y-1.5">
-                      <label className="block text-xs font-bold text-slate-800">Mode Crop Output</label>
-                      <div className="grid grid-cols-3 gap-2">
-                        {[
-                          { val: 1, label: "Center 9:16", desc: "Default" },
-                          { val: 2, label: "Split Kiri", desc: "Facecam kiri" },
-                          { val: 3, label: "Split Kanan", desc: "Facecam kanan" },
-                        ].map((m) => (
-                          <button
-                            key={m.val}
-                            type="button"
-                            onClick={() => setManualCropMode(m.val)}
-                            className={`p-2 rounded-xl border text-center transition-all ${
-                              manualCropMode === m.val
-                                ? "bg-purple-50 border-purple-300 text-purple-800"
-                                : "bg-slate-50 border-slate-200 text-slate-600 hover:border-slate-300"
-                            }`}
-                          >
-                            <div className="text-[11px] font-bold">{m.label}</div>
-                            <div className="text-[10px] text-slate-400">{m.desc}</div>
-                          </button>
-                        ))}
+                      {/* Mode 3 */}
+                      <div
+                        onClick={() => setCropMode(3)}
+                        className={`p-3.5 rounded-xl border cursor-pointer transition-all ${cropMode === 3
+                            ? "bg-purple-50/70 border-purple-300 ring-2 ring-purple-500/20"
+                            : "bg-slate-50 border-slate-200 hover:bg-slate-100"
+                          }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-bold text-slate-900">3. Split Right</span>
+                          {cropMode === 3 && <CheckCircle2 className="w-4 h-4 text-purple-600" />}
+                        </div>
+                        <p className="text-[11px] text-slate-500 mt-1">
+                          Atas: Konten, Bawah: Facecam Kanan Bawah (Gaming Streamer).
+                        </p>
                       </div>
                     </div>
+                  </div>
 
-                    {errorMessage && (
-                      <div className="p-3 bg-rose-50 rounded-xl border border-rose-200 text-xs text-rose-700 flex items-center gap-2">
-                        <AlertTriangle className="w-4 h-4 shrink-0" />
-                        {errorMessage}
+                  {/* Subtitle Configuration */}
+                  <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Subtitles className="w-4 h-4 text-purple-600" />
+                        <div>
+                          <h4 className="text-xs font-bold text-slate-900">AI Auto Subtitle (Faster-Whisper)</h4>
+                          <p className="text-[11px] text-slate-500">Otomatis menembel teks subtitle pada video</p>
+                        </div>
+                      </div>
+                      <label className="relative inline-flex items-center cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={useSubtitle}
+                          onChange={(e) => setUseSubtitle(e.target.checked)}
+                          className="sr-only peer"
+                        />
+                        <div className="w-9 h-5 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-purple-600"></div>
+                      </label>
+                    </div>
+
+                    {useSubtitle && (
+                      <div className="pt-2 border-t border-slate-200/80 flex items-center gap-4">
+                        <label className="text-xs font-medium text-slate-700">Model Whisper:</label>
+                        <select
+                          value={whisperModel}
+                          onChange={(e) => setWhisperModel(e.target.value)}
+                          className="px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-semibold text-slate-800 focus:outline-none focus:border-purple-600"
+                        >
+                          <option value="tiny">Tiny (~75 MB - Paling Cepat)</option>
+                          <option value="base">Base (~140 MB - Cepat)</option>
+                          <option value="small">Small (~460 MB - Seimbang)</option>
+                          <option value="medium">Medium (~1.5 GB - Paling Akurat)</option>
+                        </select>
                       </div>
                     )}
-
-                    <button
-                      type="submit"
-                      disabled={isSubmitting}
-                      className="w-full py-3 rounded-xl gradient-brand text-white font-bold text-sm flex items-center justify-center gap-2 shadow-md shadow-purple-500/20 hover:scale-[1.01] active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed transition-all"
-                    >
-                      {isSubmitting ? (
-                        <><RefreshCw className="w-4 h-4 animate-spin" /><span>Memproses {manualSegments.filter(s => s.start && s.end).length} Klip...</span></>
-                      ) : (
-                        <><Scissors className="w-4 h-4" /><span>Render {manualSegments.filter(s => s.start && s.end).length} Klip Sekarang →</span></>
-                      )}
-                    </button>
-                  </form>
-                )}
-              </div>
-            )}
-
-            {activeTab === "heatmap" && (
-            <form onSubmit={handleStartClipping} className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs space-y-6">
-              
-              {/* URL Input */}
-              <div className="space-y-2">
-                <label className="block text-xs font-bold text-slate-800 flex items-center justify-between">
-                  <span>URL Video YouTube</span>
-                  <span className="text-[11px] font-normal text-slate-400">Standard / Shorts Video</span>
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-rose-500">
-                    <Video className="w-4 h-4" />
-                  </div>
-                  <input
-                    type="url"
-                    value={ytUrl}
-                    onChange={(e) => setYtUrl(e.target.value)}
-                    placeholder="https://www.youtube.com/watch?v=..."
-                    className="w-full pl-10 pr-24 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all"
-                    required
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setYtUrl("https://www.youtube.com/watch?v=dQw4w9WgXcQ")}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 px-2.5 py-1 rounded-lg bg-slate-200 hover:bg-slate-300 text-[10px] font-semibold text-slate-700 transition-colors"
-                  >
-                    Contoh Demo
-                  </button>
-                </div>
-              </div>
-
-              {/* Crop Mode Selector */}
-              <div className="space-y-3">
-                <label className="block text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                  <Layers className="w-4 h-4 text-purple-600" />
-                  <span>Pilih Mode Cropping 9:16 Vertikal</span>
-                </label>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                  {/* Mode 1 */}
-                  <div
-                    onClick={() => setCropMode(1)}
-                    className={`p-3.5 rounded-xl border cursor-pointer transition-all ${
-                      cropMode === 1
-                        ? "bg-purple-50/70 border-purple-300 ring-2 ring-purple-500/20"
-                        : "bg-slate-50 border-slate-200 hover:bg-slate-100"
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-slate-900">1. Center Crop</span>
-                      {cropMode === 1 && <CheckCircle2 className="w-4 h-4 text-purple-600" />}
-                    </div>
-                    <p className="text-[11px] text-slate-500 mt-1">
-                      Krop tengah fokus utama. Sangat cocok untuk Podcast & Vlog.
-                    </p>
                   </div>
 
-                  {/* Mode 2 */}
-                  <div
-                    onClick={() => setCropMode(2)}
-                    className={`p-3.5 rounded-xl border cursor-pointer transition-all ${
-                      cropMode === 2
-                        ? "bg-purple-50/70 border-purple-300 ring-2 ring-purple-500/20"
-                        : "bg-slate-50 border-slate-200 hover:bg-slate-100"
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-slate-900">2. Split Left</span>
-                      {cropMode === 2 && <CheckCircle2 className="w-4 h-4 text-purple-600" />}
-                    </div>
-                    <p className="text-[11px] text-slate-500 mt-1">
-                      Atas: Konten, Bawah: Facecam Kiri Bawah (Gaming Streamer).
-                    </p>
-                  </div>
-
-                  {/* Mode 3 */}
-                  <div
-                    onClick={() => setCropMode(3)}
-                    className={`p-3.5 rounded-xl border cursor-pointer transition-all ${
-                      cropMode === 3
-                        ? "bg-purple-50/70 border-purple-300 ring-2 ring-purple-500/20"
-                        : "bg-slate-50 border-slate-200 hover:bg-slate-100"
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-slate-900">3. Split Right</span>
-                      {cropMode === 3 && <CheckCircle2 className="w-4 h-4 text-purple-600" />}
-                    </div>
-                    <p className="text-[11px] text-slate-500 mt-1">
-                      Atas: Konten, Bawah: Facecam Kanan Bawah (Gaming Streamer).
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Subtitle Configuration */}
-              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Subtitles className="w-4 h-4 text-purple-600" />
+                  {/* Advanced Parameters */}
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 pt-2">
                     <div>
-                      <h4 className="text-xs font-bold text-slate-900">AI Auto Subtitle (Faster-Whisper)</h4>
-                      <p className="text-[11px] text-slate-500">Otomatis menembel teks subtitle pada video</p>
+                      <label className="block text-[11px] font-semibold text-slate-600 mb-1">Padding (Detik)</label>
+                      <input
+                        type="number"
+                        value={padding}
+                        onChange={(e) => setPadding(Number(e.target.value))}
+                        min={0} max={30}
+                        className="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold"
+                      />
                     </div>
-                  </div>
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={useSubtitle}
-                      onChange={(e) => setUseSubtitle(e.target.checked)}
-                      className="sr-only peer"
-                    />
-                    <div className="w-9 h-5 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-purple-600"></div>
-                  </label>
-                </div>
 
-                {useSubtitle && (
-                  <div className="pt-2 border-t border-slate-200/80 flex items-center gap-4">
-                    <label className="text-xs font-medium text-slate-700">Model Whisper:</label>
-                    <select
-                      value={whisperModel}
-                      onChange={(e) => setWhisperModel(e.target.value)}
-                      className="px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-semibold text-slate-800 focus:outline-none focus:border-purple-600"
-                    >
-                      <option value="tiny">Tiny (~75 MB - Paling Cepat)</option>
-                      <option value="base">Base (~140 MB - Cepat)</option>
-                      <option value="small">Small (~460 MB - Seimbang)</option>
-                      <option value="medium">Medium (~1.5 GB - Paling Akurat)</option>
-                    </select>
-                  </div>
-                )}
-              </div>
-
-              {/* Advanced Parameters */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 pt-2">
-                <div>
-                  <label className="block text-[11px] font-semibold text-slate-600 mb-1">Padding (Detik)</label>
-                  <input
-                    type="number"
-                    value={padding}
-                    onChange={(e) => setPadding(Number(e.target.value))}
-                    min={0} max={30}
-                    className="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-[11px] font-semibold text-slate-600 mb-1">Max Clip (Detik)</label>
-                  <input
-                    type="number"
-                    value={maxDuration}
-                    onChange={(e) => setMaxDuration(Number(e.target.value))}
-                    min={15} max={180}
-                    className="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-[11px] font-semibold text-slate-600 mb-1">Min Score Heatmap</label>
-                  <input
-                    type="number"
-                    step="0.05"
-                    value={minScore}
-                    onChange={(e) => setMinScore(Number(e.target.value))}
-                    min={0.1} max={0.9}
-                    className="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-[11px] font-semibold text-slate-600 mb-1">Maksimal Hasil Klip</label>
-                  <input
-                    type="number"
-                    value={maxClips}
-                    onChange={(e) => setMaxClips(Number(e.target.value))}
-                    min={1} max={10}
-                    className="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold"
-                  />
-                </div>
-              </div>
-
-              {/* Error Alert */}
-              {errorMessage && (
-                <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 text-xs rounded-xl flex items-center gap-2">
-                  <XCircle className="w-4 h-4 shrink-0" />
-                  <span>{errorMessage}</span>
-                </div>
-              )}
-
-              {/* Submit CTA */}
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="w-full py-3 rounded-xl gradient-brand text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-purple-500/25 hover:shadow-purple-500/35 hover:scale-[1.005] active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-              >
-                {isSubmitting ? (
-                  <>
-                    <RefreshCw className="w-4 h-4 animate-spin" />
-                    <span>Sedang Memproses Klip Video...</span>
-                  </>
-                ) : (
-                  <>
-                    <Sparkles className="w-4 h-4" />
-                    <span>Generate Heatmap Clips Now</span>
-                  </>
-                )}
-              </button>
-            </form>
-            )}
-          </div>
-
-          {/* RIGHT 1 COLUMN: LIVE STATUS & SYSTEM INFOS */}
-
-          <div className="space-y-6">
-            
-            {/* Realtime Job Progress Card */}
-            <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs space-y-4">
-              <h3 className="text-xs font-bold text-slate-900 flex items-center gap-2">
-                <Terminal className="w-4 h-4 text-purple-600" />
-                <span>Realtime Execution Log</span>
-              </h3>
-
-              {jobStatus ? (
-                <div className="space-y-4">
-                  <div>
-                    <div className="flex justify-between text-xs font-bold mb-1">
-                      <span className="text-slate-700 capitalize">Status: {jobStatus.status}</span>
-                      <span className="text-purple-600 font-mono">{jobStatus.progress}%</span>
+                    <div>
+                      <label className="block text-[11px] font-semibold text-slate-600 mb-1">Max Clip (Detik)</label>
+                      <input
+                        type="number"
+                        value={maxDuration}
+                        onChange={(e) => setMaxDuration(Number(e.target.value))}
+                        min={15} max={180}
+                        className="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold"
+                      />
                     </div>
-                    <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
-                      <div
-                        className="bg-purple-600 h-full transition-all duration-300"
-                        style={{ width: `${jobStatus.progress}%` }}
-                      ></div>
+
+                    <div>
+                      <label className="block text-[11px] font-semibold text-slate-600 mb-1">Min Score Heatmap</label>
+                      <input
+                        type="number"
+                        step="0.05"
+                        value={minScore}
+                        onChange={(e) => setMinScore(Number(e.target.value))}
+                        min={0.1} max={0.9}
+                        className="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-semibold text-slate-600 mb-1">Maksimal Hasil Klip</label>
+                      <input
+                        type="number"
+                        value={maxClips}
+                        onChange={(e) => setMaxClips(Number(e.target.value))}
+                        min={1} max={10}
+                        className="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold"
+                      />
                     </div>
                   </div>
 
-                  {/* Terminal Log Output */}
-                  <div className="bg-slate-900 rounded-xl p-3 h-48 overflow-y-auto font-mono text-[11px] text-slate-300 space-y-1">
-                    {jobStatus.logs.map((log, i) => (
-                      <p key={i} className="leading-tight">
-                        <span className="text-purple-400">&gt;</span> {log}
-                      </p>
-                    ))}
-                  </div>
-                </div>
-              ) : (
-                <div className="h-48 rounded-xl bg-slate-50 border border-dashed border-slate-200 flex flex-col items-center justify-center p-4 text-center text-slate-400 space-y-2">
-                  <Scissors className="w-8 h-8 opacity-40" />
-                  <p className="text-xs">Belum ada tugas pencetakan yang berjalan.</p>
-                  <p className="text-[10px] text-slate-400">Masukkan URL YouTube di sebelah kiri lalu klik tombol Generate.</p>
-                </div>
+                  {/* Error Alert */}
+                  {errorMessage && (
+                    <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 text-xs rounded-xl flex items-center gap-2">
+                      <XCircle className="w-4 h-4 shrink-0" />
+                      <span>{errorMessage}</span>
+                    </div>
+                  )}
+
+                  {/* Submit CTA */}
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="w-full py-3 rounded-xl gradient-brand text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-purple-500/25 hover:shadow-purple-500/35 hover:scale-[1.005] active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <RefreshCw className="w-4 h-4 animate-spin" />
+                        <span>Sedang Memproses Klip Video...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="w-4 h-4" />
+                        <span>Generate Heatmap Clips Now</span>
+                      </>
+                    )}
+                  </button>
+                </form>
               )}
             </div>
 
-            {/* Agent Info Card */}
-            {healthStatus && (
-              <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs space-y-3">
-                <h4 className="text-xs font-bold text-slate-800">Status System & Auto Dependencies Check</h4>
-                <div className="space-y-2 text-xs">
-                  <div className="flex justify-between items-center">
-                    <span className="text-slate-600">FFmpeg (Video Crop)</span>
-                    <span className={`font-bold ${healthStatus.dependencies.ffmpeg ? "text-emerald-600" : "text-rose-500"}`}>
-                      {healthStatus.dependencies.ffmpeg ? "Terdeteksi ✅" : "Missing ❌"}
-                    </span>
+            {/* RIGHT 1 COLUMN: LIVE STATUS & SYSTEM INFOS */}
+
+            <div className="space-y-6">
+
+              {/* Realtime Job Progress Card */}
+              <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs space-y-4">
+                <h3 className="text-xs font-bold text-slate-900 flex items-center gap-2">
+                  <Terminal className="w-4 h-4 text-purple-600" />
+                  <span>Realtime Execution Log</span>
+                </h3>
+
+                {jobStatus ? (
+                  <div className="space-y-4">
+                    <div>
+                      <div className="flex justify-between text-xs font-bold mb-1">
+                        <span className="text-slate-700 capitalize">Status: {jobStatus.status}</span>
+                        <span className="text-purple-600 font-mono">{jobStatus.progress}%</span>
+                      </div>
+                      <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+                        <div
+                          className="bg-purple-600 h-full transition-all duration-300"
+                          style={{ width: `${jobStatus.progress}%` }}
+                        ></div>
+                      </div>
+                    </div>
+
+                    {/* Terminal Log Output */}
+                    <div className="bg-slate-900 rounded-xl p-3 h-48 overflow-y-auto font-mono text-[11px] text-slate-300 space-y-1">
+                      {jobStatus.logs.map((log, i) => (
+                        <p key={i} className="leading-tight">
+                          <span className="text-purple-400">&gt;</span> {log}
+                        </p>
+                      ))}
+                    </div>
                   </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-slate-600">yt-dlp (Downloader)</span>
-                    <span className={`font-bold ${healthStatus.dependencies.yt_dlp ? "text-emerald-600" : "text-rose-500"}`}>
-                      {healthStatus.dependencies.yt_dlp ? "Terdeteksi ✅" : "Missing ❌"}
-                    </span>
+                ) : (
+                  <div className="h-48 rounded-xl bg-slate-50 border border-dashed border-slate-200 flex flex-col items-center justify-center p-4 text-center text-slate-400 space-y-2">
+                    <Scissors className="w-8 h-8 opacity-40" />
+                    <p className="text-xs">Belum ada tugas pencetakan yang berjalan.</p>
+                    <p className="text-[10px] text-slate-400">Masukkan URL YouTube di sebelah kiri lalu klik tombol Generate.</p>
                   </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-slate-600">Faster-Whisper (AI Sub)</span>
-                    <span className={`font-bold ${healthStatus.dependencies.faster_whisper ? "text-emerald-600" : "text-amber-500"}`}>
-                      {healthStatus.dependencies.faster_whisper ? "Terdeteksi ✅" : "Optional ⚠️"}
-                    </span>
+                )}
+              </div>
+
+              {/* Agent Info Card */}
+              {healthStatus && (
+                <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs space-y-3">
+                  <h4 className="text-xs font-bold text-slate-800">Status System & Auto Dependencies Check</h4>
+                  <div className="space-y-2 text-xs">
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-600">FFmpeg (Video Crop)</span>
+                      <span className={`font-bold ${healthStatus.dependencies.ffmpeg ? "text-emerald-600" : "text-rose-500"}`}>
+                        {healthStatus.dependencies.ffmpeg ? "Terdeteksi ✅" : "Missing ❌"}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-600">yt-dlp (Downloader)</span>
+                      <span className={`font-bold ${healthStatus.dependencies.yt_dlp ? "text-emerald-600" : "text-rose-500"}`}>
+                        {healthStatus.dependencies.yt_dlp ? "Terdeteksi ✅" : "Missing ❌"}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-600">Faster-Whisper (AI Sub)</span>
+                      <span className={`font-bold ${healthStatus.dependencies.faster_whisper ? "text-emerald-600" : "text-amber-500"}`}>
+                        {healthStatus.dependencies.faster_whisper ? "Terdeteksi ✅" : "Optional ⚠️"}
+                      </span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
-        </div>
         </div>
       )}
 
@@ -1321,7 +1351,7 @@ export default function YtClipperPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 pt-2">
             {jobStatus.clips.map((clip, index) => (
               <div key={index} className="bg-slate-50 rounded-2xl border border-slate-200 overflow-hidden space-y-3 p-3 flex flex-col justify-between">
-                
+
                 {/* HTML5 Video Preview */}
                 <div className="relative aspect-[9/16] bg-black rounded-xl overflow-hidden shadow-sm">
                   <video
