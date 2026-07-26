@@ -66,10 +66,9 @@ export default function Sidebar({ isMobileOpen = false, onCloseMobile }: Sidebar
                 <Sparkles className="w-4 h-4 text-white" />
               </div>
               <div>
-                <h1 className="font-extrabold text-base tracking-tight text-slate-900 font-['Outfit'] flex items-center gap-1.5">
-                  AgencyOS <span className="text-[10px] px-1.5 py-0.5 rounded bg-purple-100 text-purple-700 font-bold border border-purple-200">AI</span>
+                <h1 className="font-extrabold text-base tracking-tight text-slate-900 font-['Outfit']">
+                  AgencyOS
                 </h1>
-                <span className="text-[10px] text-slate-500 font-medium">White Glass Edition</span>
               </div>
             </div>
 
