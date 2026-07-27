@@ -1007,12 +1007,21 @@ def gemini_generate_image(req: GeminiImageRequest):
     except Exception as e:
         err_msg = str(e)
         if any(term in err_msg.lower() for term in ["cookie", "auth", "login", "400", "401", "403"]):
-            err_msg += " (Sesi cookie mungkin kadaluarsa. Silakan perbarui cookie __Secure-1PSID Gemini)."
+            err_msg += " (Sesi cookie mungkin kadaluarsa. Silakan perbarui cookie __Secure-1PSID dan __Secure-1PSIDTS Gemini)."
         raise HTTPException(status_code=500, detail=f"Gemini generate image error: {err_msg}")
+
+    resp_text = response.text if hasattr(response, "text") else ""
+
+    # Check if Gemini returned text indicating missing __Secure-1PSIDTS or guest session restriction
+    if not saved_images and any(phrase in resp_text.lower() for phrase in ["signed out", "can't create any for you", "not be available", "create any for you"]):
+        raise HTTPException(
+            status_code=400,
+            detail="Google Gemini menolak pembuatan gambar karena cookie __Secure-1PSIDTS tidak valid atau belum diisi. Silakan disconnect di atas dan masukkan KEDUA cookie (__Secure-1PSID dan __Secure-1PSIDTS) yang baru dari gemini.google.com."
+        )
 
     return {
         "status": "success",
-        "text": response.text if hasattr(response, "text") else "",
+        "text": resp_text,
         "images": saved_images,
         "prompt_used": full_prompt
     }

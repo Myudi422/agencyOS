@@ -1024,10 +1024,10 @@ export default function YtClipperPage() {
                           <Key className="w-3.5 h-3.5" />
                           Konfigurasi Cookie Gemini
                         </div>
-                        <p className="text-[10px] text-slate-500">Buka <strong>gemini.google.com</strong> → F12 → Network → refresh → copy cookie <code className="bg-slate-100 px-1 rounded">__Secure-1PSID</code> dan <code className="bg-slate-100 px-1 rounded">__Secure-1PSIDTS</code></p>
+                        <p className="text-[10px] text-slate-500">Buka <strong>gemini.google.com</strong> → F12 → Application → Cookies → copy <code className="bg-slate-100 px-1 rounded">__Secure-1PSID</code> dan <code className="bg-slate-100 px-1 rounded">__Secure-1PSIDTS</code> (Wajib untuk Image Gen!)</p>
                         <div className="space-y-2">
-                          <input type="password" value={geminiPsid} onChange={e => setGeminiPsid(e.target.value)} placeholder="__Secure-1PSID  (wajib)" className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-violet-400 focus:border-violet-400 outline-none font-mono" />
-                          <input type="password" value={geminiPsidts} onChange={e => setGeminiPsidts(e.target.value)} placeholder="__Secure-1PSIDTS  (opsional)" className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-violet-400 focus:border-violet-400 outline-none font-mono" />
+                          <input type="password" value={geminiPsid} onChange={e => setGeminiPsid(e.target.value)} placeholder="__Secure-1PSID (Wajib)" className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-violet-400 focus:border-violet-400 outline-none font-mono" />
+                          <input type="password" value={geminiPsidts} onChange={e => setGeminiPsidts(e.target.value)} placeholder="__Secure-1PSIDTS (Wajib untuk Generate Gambar)" className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-violet-400 focus:border-violet-400 outline-none font-mono" />
                           <button type="button" onClick={handleGeminiConnect} disabled={isConnectingGemini || !geminiPsid.trim()} className="w-full py-2.5 rounded-xl bg-gradient-to-r from-violet-600 to-purple-600 text-white text-xs font-bold flex items-center justify-center gap-2 shadow-md shadow-violet-500/20 hover:scale-[1.01] disabled:opacity-60 disabled:cursor-not-allowed transition-all">
                             {isConnectingGemini ? <><RefreshCw className="w-3.5 h-3.5 animate-spin" /> Menghubungkan...</> : <><Wifi className="w-3.5 h-3.5" /> Connect ke Gemini</>}
                           </button>
