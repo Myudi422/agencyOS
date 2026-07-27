@@ -730,9 +730,6 @@ class GeminiConfigRequest(BaseModel):
 class GeminiImageRequest(BaseModel):
     prompt: str
     aspect_ratio: str = "1:1"  # 1:1, 9:16, 16:9, 4:3, 4:5
-    # IMPORTANT: Thinking models (gemini-3-flash-thinking, gemini-3-pro) do NOT support
-    # image output. Always use gemini-3-flash for image generation.
-    model: str = "gemini-3-flash"
 
 
 class GeminiScriptRequest(BaseModel):
@@ -803,227 +800,117 @@ def gemini_status():
     return {"connected": connected, "status": "online" if connected else "offline"}
 
 
-def prepare_gemini_image_prompt(prompt_text: str, aspect_ratio: str = "16:9"):
-    """Cleans Indonesian meta-phrases and structures prompt for Imagen 3 on Gemini Web."""
+def prepare_gemini_image_prompt(prompt_text: str) -> str:
+    """Bersihkan meta-command pembuka dan pastikan prompt memiliki trigger phrase 'Generate an image of ...'
+    Sesuai dokumentasi gemini-webapi, Gemini Web membutuhkan kata kunci 'Generate an image'
+    agar sistem mengenali instruksi pembuatan gambar AI (Imagen 3) dan tidak menganggapnya pencarian teks/web biasa.
+    """
     text = prompt_text.strip()
-    
-    # Remove leading meta commands like "buatkan gambar", "bikin foto", "tolong buatkan gambar", etc.
-    pattern = r'^(?:buatkan|bikin|tolong\s+buatkan|tolong|desainkan|desain|generate|create|draw)\s+(?:gambar|foto|image|lukisan|desain|thumbnail)?\s*'
+    pattern = r'^(?:tolong\s+)?(?:buatkan|bikin|desainkan|desain|generate|create|draw|buat)\s+(?:gambar|foto|image|lukisan|desain|thumbnail|ilustrasi)?\s*'
     cleaned = re.sub(pattern, '', text, flags=re.IGNORECASE).strip()
     if not cleaned:
         cleaned = text
 
-    # Common Indonesian word replacements for better Imagen 3 understanding
-    translations = [
-        (r'\bkucing\b', 'cat'),
-        (r'\banjing\b', 'dog'),
-        (r'\blucu\b', 'cute'),
-        (r'\bthubnail\b', 'thumbnail'),
-        (r'\bthumbnail\b', 'thumbnail'),
-        (r'\bpemandangan\b', 'scenery'),
-        (r'\bmobil\b', 'car'),
-        (r'\bmalam\b', 'at night'),
-        (r'\bsiang\b', 'daytime'),
-        (r'\bsenja\b', 'sunset'),
-        (r'\bpantai\b', 'beach'),
-        (r'\bgunung\b', 'mountain'),
-        (r'\bhutan\b', 'forest'),
-        (r'\bwanita\b', 'woman'),
-        (r'\bpria\b', 'man'),
-        (r'\banak\b', 'child'),
-        (r'\brealistis\b', 'photorealistic'),
-        (r'\bkeren\b', 'cool'),
-        (r'\bmewah\b', 'luxurious'),
-    ]
-    
-    translated_text = cleaned
-    for pattern_word, eng_word in translations:
-        translated_text = re.sub(pattern_word, eng_word, translated_text, flags=re.IGNORECASE)
-
-    aspect_desc = {
-        "1:1": "1:1 square aspect ratio",
-        "9:16": "9:16 vertical aspect ratio",
-        "16:9": "16:9 widescreen aspect ratio",
-        "4:3": "4:3 aspect ratio",
-        "4:5": "4:5 portrait aspect ratio",
-    }.get(aspect_ratio, "16:9 widescreen aspect ratio")
-
-    final_prompt = f"Generate an image of {translated_text}, {aspect_desc}."
-    return final_prompt, translated_text
+    # Jika prompt belum memiliki kata pemicu generate image, tambahkan "Generate an image of "
+    if not re.search(r'\b(?:generate|create|draw)\s+(?:an?\s+)?(?:image|picture|photo|illustration)\b', cleaned, re.IGNORECASE):
+        return f"Generate an image of {cleaned}"
+    return cleaned
 
 
 @app.post("/api/gemini/generate-image")
 def gemini_generate_image(req: GeminiImageRequest):
-    """Generate image using Gemini. Returns saved image URL."""
+    """Generate image menggunakan Gemini Web API. Mengembalikan URL gambar yang tersimpan."""
     global _gemini_client
     if _gemini_client is None:
-        raise HTTPException(status_code=400, detail="Gemini belum terhubung. Masukkan cookie __Secure-1PSID terlebih dahulu.")
+        raise HTTPException(
+            status_code=400,
+            detail="Gemini belum terhubung. Masukkan cookie __Secure-1PSID terlebih dahulu."
+        )
 
-    full_prompt, clean_keyword = prepare_gemini_image_prompt(req.prompt, req.aspect_ratio)
+    clean_prompt = prepare_gemini_image_prompt(req.prompt)
+    print(f"[Gemini] Generating image, prompt: '{clean_prompt}'")
 
     async def _do_generate():
-        from gemini_webapi.constants import Model
-        print(f"[Gemini] Generating image with Model.BASIC_FLASH, prompt: '{full_prompt}'")
-        response = None
-        try:
-            response = await _gemini_client.generate_content(full_prompt, model=Model.BASIC_FLASH)
-        except Exception as primary_err:
-            print(f"[Gemini] Primary generate_content error (Model.BASIC_FLASH): {primary_err}")
-            # Fallback retry with Model.PLUS_FLASH
-            try:
-                print(f"[Gemini] Retrying generate_content with Model.PLUS_FLASH...")
-                response = await _gemini_client.generate_content(full_prompt, model=Model.PLUS_FLASH)
-            except Exception as retry_err:
-                print(f"[Gemini] Retry with Model.PLUS_FLASH error: {retry_err}")
-                raise primary_err
-
-        # Check if response produced images; if not, retry with Model.BASIC_FLASH & simplified prompt "Draw <keyword>"
-        if not hasattr(response, "images") or not response.images:
-            alt_prompt = f"Draw {clean_keyword}"
-            print(f"[Gemini] No images in primary response. Retrying with Model.BASIC_FLASH & simplified prompt: '{alt_prompt}'...")
-            try:
-                alt_response = await _gemini_client.generate_content(alt_prompt, model=Model.BASIC_FLASH)
-                if hasattr(alt_response, "images") and alt_response.images:
-                    response = alt_response
-            except Exception as alt_err:
-                print(f"[Gemini] Fallback retry error: {alt_err}")
+        # Buat ChatSession baru agar request memiliki metadata percakapan resmi (bukan anonymous RPC)
+        chat = _gemini_client.start_chat()
+        response = await chat.send_message(clean_prompt)
 
         saved_images = []
-        
-        # Save generated images to disk
-        if hasattr(response, "images") and response.images:
-            print(f"[Gemini] Ditemukan {len(response.images)} gambar dalam respon.")
+
+        if response.images:
+            print(f"[Gemini] Ditemukan {len(response.images)} gambar dalam respons.")
             for idx, img in enumerate(response.images):
                 filename = f"gemini_img_{uuid.uuid4().hex[:8]}.png"
-                saved = False
-                
-                # Method 1: Built-in img.save()
                 try:
-                    await img.save(path=str(GENERATED_DIR), filename=filename, verbose=True)
-                    target_file = GENERATED_DIR / filename
+                    saved_path = await img.save(
+                        path=str(GENERATED_DIR),
+                        filename=filename,
+                        verbose=True,
+                        client=_gemini_client.client,
+                    )
+                    # Verifikasi file berhasil disimpan
+                    target_file = Path(saved_path) if saved_path else GENERATED_DIR / filename
                     if target_file.exists() and target_file.stat().st_size > 0:
                         saved_images.append({
-                            "url": f"http://127.0.0.1:5000/generated/{filename}",
-                            "filename": filename
+                            "filename": target_file.name,
+                            "url": f"http://127.0.0.1:5000/generated/{target_file.name}"
                         })
-                        saved = True
-                        print(f"[Gemini] Berhasil menyimpan gambar {idx} ke {filename}")
+                        print(f"[Gemini] Gambar {idx + 1} berhasil disimpan: {target_file.name}")
+                    else:
+                        print(f"[Gemini] Gambar {idx + 1}: file tidak ditemukan setelah save()")
                 except Exception as save_err:
-                    print(f"[Gemini] Gagal menyimpan gambar {idx} via save(): {save_err}")
-                
-                # Method 2: Fallback download using client session or requests with browser headers
-                if not saved and hasattr(img, "url") and img.url:
-                    try:
-                        target_file = GENERATED_DIR / filename
-                        # Try async client session
-                        if hasattr(_gemini_client, "client") and _gemini_client.client:
-                            resp = await _gemini_client.client.get(img.url)
-                            if resp.status_code == 200:
-                                target_file.write_bytes(resp.content)
-                                saved_images.append({
-                                    "url": f"http://127.0.0.1:5000/generated/{filename}",
-                                    "filename": filename
-                                })
-                                saved = True
-                                print(f"[Gemini] Fallback async download berhasil untuk {filename}")
-                        
-                        if not saved:
-                            # Try synchronous requests
-                            headers = {
-                                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-                                "Referer": "https://gemini.google.com/"
-                            }
-                            res = requests.get(img.url, headers=headers, timeout=15)
-                            if res.status_code == 200:
-                                target_file.write_bytes(res.content)
-                                saved_images.append({
-                                    "url": f"http://127.0.0.1:5000/generated/{filename}",
-                                    "filename": filename
-                                })
-                                saved = True
-                                print(f"[Gemini] Fallback requests download berhasil untuk {filename}")
-                    except Exception as fallback_err:
-                        print(f"[Gemini] Fallback download gagal: {fallback_err}")
+                    print(f"[Gemini] Gagal menyimpan gambar {idx + 1}: {save_err}")
         else:
-            print("[Gemini] Tidak ada gambar dalam object response.images.")
-            if hasattr(response, "text") and response.text:
-                print(f"[Gemini Respon Teks]: {response.text}")
+            print("[Gemini] Tidak ada gambar dalam respons.")
+            if response.text:
+                print(f"[Gemini Teks]: {response.text}")
 
-            # Fallback Regex Extractor: Scan full response text and stringified candidates for googleusercontent image URLs
-            raw_str = str(response)
-            extracted_urls = re.findall(r'https?://[^\s\'\"\)\>]*googleusercontent[^\s\'\"\)\>]+', raw_str)
-            if extracted_urls:
-                # Deduplicate
-                seen_urls = set()
-                unique_urls = []
-                for u in extracted_urls:
-                    u_clean = u.rstrip('.,;)]')
-                    if u_clean not in seen_urls:
-                        seen_urls.add(u_clean)
-                        unique_urls.append(u_clean)
-
-                print(f"[Gemini] Ditemukan {len(unique_urls)} URL gambar via Regex Fallback! Mengunduh...")
-                for idx, clean_url in enumerate(unique_urls):
-                    filename = f"gemini_img_{uuid.uuid4().hex[:8]}.png"
-                    target_file = GENERATED_DIR / filename
-                    saved = False
-                    
-                    # Try downloading with client session if available
-                    try:
-                        if hasattr(_gemini_client, "client") and _gemini_client.client:
-                            resp = await _gemini_client.client.get(clean_url)
-                            if resp.status_code == 200 and len(resp.content) > 100:
-                                target_file.write_bytes(resp.content)
-                                saved_images.append({
-                                    "url": f"http://127.0.0.1:5000/generated/{filename}",
-                                    "filename": filename
-                                })
-                                saved = True
-                                print(f"[Gemini] Regex fallback client download berhasil untuk {filename}")
-                    except Exception as ex:
-                        print(f"[Gemini] Regex fallback client download error: {ex}")
-
-                    if not saved:
-                        try:
-                            headers = {
-                                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-                                "Referer": "https://gemini.google.com/"
-                            }
-                            res = requests.get(clean_url, headers=headers, timeout=15)
-                            if res.status_code == 200 and len(res.content) > 100:
-                                target_file.write_bytes(res.content)
-                                saved_images.append({
-                                    "url": f"http://127.0.0.1:5000/generated/{filename}",
-                                    "filename": filename
-                                })
-                                print(f"[Gemini] Regex fallback requests download berhasil untuk {filename}")
-                        except Exception as ex:
-                            print(f"[Gemini] Regex fallback requests download error: {ex}")
-            
         return response, saved_images
 
     try:
         response, saved_images = _run_in_gemini_loop(_do_generate())
     except Exception as e:
         err_msg = str(e)
-        if any(term in err_msg.lower() for term in ["cookie", "auth", "login", "400", "401", "403"]):
-            err_msg += " (Sesi cookie mungkin kadaluarsa. Silakan perbarui cookie __Secure-1PSID dan __Secure-1PSIDTS Gemini)."
+        if any(term in err_msg.lower() for term in ["cookie", "auth", "login", "400", "401", "403", "expired", "psid"]):
+            raise HTTPException(
+                status_code=401,
+                detail=f"Cookie Gemini kadaluarsa atau tidak valid. Silakan perbarui __Secure-1PSID dan __Secure-1PSIDTS dari gemini.google.com. Detail: {err_msg}"
+            )
         raise HTTPException(status_code=500, detail=f"Gemini generate image error: {err_msg}")
 
-    resp_text = response.text if hasattr(response, "text") else ""
+    resp_text = response.text if response.text else ""
 
-    # Check if Gemini returned text indicating missing __Secure-1PSIDTS or guest session restriction
-    if not saved_images and any(phrase in resp_text.lower() for phrase in ["signed out", "can't create any for you", "not be available", "create any for you"]):
+    # Periksa jika Google Gemini mengembalikan pesan limit kuota harian/sesi
+    if not saved_images and any(
+        phrase in resp_text.lower()
+        for phrase in ["limit resets", "check your usage", "create more images", "reach your limit", "usage in settings"]
+    ):
         raise HTTPException(
-            status_code=400,
-            detail="Google Gemini menolak pembuatan gambar karena cookie __Secure-1PSIDTS tidak valid atau belum diisi. Silakan disconnect di atas dan masukkan KEDUA cookie (__Secure-1PSID dan __Secure-1PSIDTS) yang baru dari gemini.google.com."
+            status_code=429,
+            detail="Batas kuota pembuatan gambar (Imagen 3) pada akun Google Gemini Anda telah tercapai untuk saat ini. "
+                   "Tunggu hingga kuota di-reset oleh Google atau coba gunakan akun Google lain dengan memperbarui cookie __Secure-1PSID."
+        )
+
+    # Periksa apakah Gemini menolak karena cookie tidak valid / signed out
+    if not saved_images and any(
+        phrase in resp_text.lower()
+        for phrase in ["signed out", "can't create any for you", "not be available", "create any for you"]
+    ):
+        raise HTTPException(
+            status_code=401,
+            detail="Google Gemini menolak pembuatan gambar karena sesi cookie tidak valid. "
+                   "Silakan masukkan kembali KEDUA cookie (__Secure-1PSID dan __Secure-1PSIDTS) yang baru dari gemini.google.com."
+        )
+
+    if not saved_images:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Gemini tidak menghasilkan gambar. Respons dari Gemini: \"{resp_text[:200] if resp_text else '(kosong)'}\""
         )
 
     return {
         "status": "success",
-        "text": resp_text,
         "images": saved_images,
-        "prompt_used": full_prompt
     }
 
 
