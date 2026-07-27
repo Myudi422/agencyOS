@@ -862,27 +862,27 @@ def gemini_generate_image(req: GeminiImageRequest):
     full_prompt, clean_keyword = prepare_gemini_image_prompt(req.prompt, req.aspect_ratio)
 
     async def _do_generate():
-        # NOTE: Model.UNSPECIFIED sends NO model headers, allowing Gemini Web to use native default pipeline with Imagen 3 enabled!
-        print(f"[Gemini] Generating image with model='unspecified', prompt: '{full_prompt}'")
+        from gemini_webapi.constants import Model
+        print(f"[Gemini] Generating image with Model.BASIC_FLASH, prompt: '{full_prompt}'")
         response = None
         try:
-            response = await _gemini_client.generate_content(full_prompt, model="unspecified")
+            response = await _gemini_client.generate_content(full_prompt, model=Model.BASIC_FLASH)
         except Exception as primary_err:
-            print(f"[Gemini] Primary generate_content error (model='unspecified'): {primary_err}")
-            # Fallback retry with model="gemini-3-flash"
+            print(f"[Gemini] Primary generate_content error (Model.BASIC_FLASH): {primary_err}")
+            # Fallback retry with Model.PLUS_FLASH
             try:
-                print(f"[Gemini] Retrying generate_content with model='gemini-3-flash'...")
-                response = await _gemini_client.generate_content(full_prompt, model="gemini-3-flash")
+                print(f"[Gemini] Retrying generate_content with Model.PLUS_FLASH...")
+                response = await _gemini_client.generate_content(full_prompt, model=Model.PLUS_FLASH)
             except Exception as retry_err:
-                print(f"[Gemini] Retry with model='gemini-3-flash' error: {retry_err}")
+                print(f"[Gemini] Retry with Model.PLUS_FLASH error: {retry_err}")
                 raise primary_err
 
-        # Check if response produced images; if not, retry with simplified prompt "Draw <keyword>"
+        # Check if response produced images; if not, retry with Model.BASIC_FLASH & simplified prompt "Draw <keyword>"
         if not hasattr(response, "images") or not response.images:
             alt_prompt = f"Draw {clean_keyword}"
-            print(f"[Gemini] No images in primary response. Retrying with simplified prompt: '{alt_prompt}'...")
+            print(f"[Gemini] No images in primary response. Retrying with Model.BASIC_FLASH & simplified prompt: '{alt_prompt}'...")
             try:
-                alt_response = await _gemini_client.generate_content(alt_prompt, model="unspecified")
+                alt_response = await _gemini_client.generate_content(alt_prompt, model=Model.BASIC_FLASH)
                 if hasattr(alt_response, "images") and alt_response.images:
                     response = alt_response
             except Exception as alt_err:
