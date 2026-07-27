@@ -1,12 +1,14 @@
 "use client";
 
-import React, { useEffect } from "react";
+export const dynamic = "force-dynamic";
+
+import React, { useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuthStore } from "@/store/authStore";
 import { CheckCircle2, ArrowRight, Sparkles } from "lucide-react";
 import { fetchApi } from "@/lib/api";
 
-export default function BillingSuccessPage() {
+function BillingSuccessContent() {
   const router = useRouter();
   const params = useSearchParams();
   const plan = params.get("plan") || "";
@@ -32,10 +34,9 @@ export default function BillingSuccessPage() {
         console.error("Sync checkout error:", err);
       }
     };
-    
+
     syncAndRefresh();
   }, [sessionId, setSubscription]);
-
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-purple-50 flex items-center justify-center p-4">
@@ -78,5 +79,17 @@ export default function BillingSuccessPage() {
         </button>
       </div>
     </div>
+  );
+}
+
+export default function BillingSuccessPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <p className="text-xs text-slate-400 font-medium">Memuat konfirmasi pembayaran...</p>
+      </div>
+    }>
+      <BillingSuccessContent />
+    </Suspense>
   );
 }
