@@ -1,4 +1,20 @@
 import os
+from pathlib import Path
+
+# Load env variables from .env.local if present
+env_path = Path(__file__).resolve().parent / ".env.local"
+if env_path.exists():
+    with open(env_path, "r", encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if not line or line.startswith("#"):
+                continue
+            if "=" in line:
+                key, val = line.split("=", 1)
+                # Strip quotes if present
+                val = val.strip("'\"")
+                os.environ[key.strip()] = val
+
 from typing import Optional
 
 class Settings:
@@ -47,6 +63,18 @@ class Settings:
     META_CLIENT_SECRET: str = os.getenv("META_CLIENT_SECRET", "64a65b12da82c841961be33c03826456")
     META_CALLBACK_URL: str = os.getenv("META_CALLBACK_URL", "https://localhost:3000/auth/callback")
     META_API_VERSION: str = "v25.0"
+
+    # Firebase (Google Auth)
+    FIREBASE_PROJECT_ID: str = os.getenv("FIREBASE_PROJECT_ID", "shiera-fb0f2")
+    FIREBASE_API_KEY: str = os.getenv("FIREBASE_API_KEY", "AIzaSyDiCCYSZVMSKMjkpx7QYZvUSxGYr-bQSdc")
+
+    # Stripe (Sandbox / Test Mode)
+    STRIPE_SECRET_KEY: str = os.getenv("STRIPE_SECRET_KEY", "")  # sk_test_...
+    STRIPE_PUBLISHABLE_KEY: str = os.getenv("STRIPE_PUBLISHABLE_KEY", "")  # pk_test_...
+    STRIPE_WEBHOOK_SECRET: str = os.getenv("STRIPE_WEBHOOK_SECRET", "")  # whsec_...
+
+    # Admin
+    ADMIN_EMAIL: str = os.getenv("ADMIN_EMAIL", "myudi422@gmail.com")
 
     # Set mock mode to False for real DB/B2/Redis production connections
     USE_MOCK_SERVICES: bool = os.getenv("USE_MOCK_SERVICES", "false").lower() == "true"

@@ -90,18 +90,48 @@ def get_posts(
 
     return results
 
+from backend.routers.firebase_auth import require_user
+from backend.models.models import User, UserSubscription
+
 @router.post("/")
 async def create_post(
     data: PostCreate, 
     background_tasks: BackgroundTasks,
+    current_user: User = Depends(require_user),
     db: Session = Depends(get_db)
 ):
     """
     Creates a new post and generates publish jobs for each selected account.
     Supports Publish Now, Schedule, and Save Draft actions.
+    Enforces subscription plans and posts quota.
     """
     if not data.account_ids and data.action != "save_draft":
         raise HTTPException(status_code=400, detail="At least one target social account must be selected.")
+
+    # Quota validation for non-admin users
+    if not current_user.is_admin and data.action in ("publish_now", "schedule"):
+        sub = current_user.subscription
+        if not sub or sub.status not in ("active", "trial"):
+            raise HTTPException(
+                status_code=402, 
+                detail="Anda tidak memiliki paket aktif. Silakan berlangganan terlebih dahulu."
+            )
+        if sub.expires_at and sub.expires_at < datetime.utcnow():
+            raise HTTPException(
+                status_code=402, 
+                detail="Paket Anda telah kedaluwarsa. Silakan perpanjang paket Anda."
+            )
+        required_quota = len(data.account_ids)
+        if sub.posts_used + required_quota > sub.posts_limit:
+            remaining = max(0, sub.posts_limit - sub.posts_used)
+            raise HTTPException(
+                status_code=402, 
+                detail=f"Kuota post tidak mencukupi. Sisa kuota Anda adalah {remaining} post, sedangkan aksi ini membutuhkan {required_quota} post."
+            )
+        
+        # Deduct quota
+        sub.posts_used += required_quota
+        db.add(sub)
 
     # Parse scheduled_at if provided
     sched_dt = None
@@ -132,7 +162,7 @@ async def create_post(
         platform_configurations=data.platform_configurations,
         scheduled_at=sched_dt,
         status=initial_status,
-        created_by="Agency Admin"
+        created_by=current_user.full_name
     )
     db.add(post)
     db.flush()
@@ -163,6 +193,7 @@ async def create_post(
         background_tasks.add_task(queue_service.enqueue_post_publishing, db, post.id)
 
     return {"status": "success", "post_id": post.id, "post_status": post.status.value}
+
 
 @router.put("/{post_id}")
 def update_post(post_id: str, data: PostUpdate, db: Session = Depends(get_db)):

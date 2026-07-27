@@ -2,13 +2,26 @@ import enum
 import uuid
 from datetime import datetime
 from sqlalchemy import (
-    Column, String, Text, DateTime, ForeignKey, Integer, Boolean, Enum, JSON
+    Column, String, Text, DateTime, ForeignKey, Integer, Boolean, Enum, JSON, Float
 )
 from sqlalchemy.orm import relationship
 from backend.database import Base
 
 def generate_uuid():
     return str(uuid.uuid4())
+
+class PlanTier(str, enum.Enum):
+    TRIAL = "trial"
+    CREATOR = "creator"
+    AGENCY = "agency"
+    STUDIO = "studio"
+
+class SubscriptionStatus(str, enum.Enum):
+    ACTIVE = "active"
+    TRIAL = "trial"
+    EXPIRED = "expired"
+    CANCELLED = "cancelled"
+    PAST_DUE = "past_due"
 
 class RoleEnum(str, enum.Enum):
     OWNER = "owner"
@@ -64,11 +77,15 @@ class User(Base):
     email = Column(String(255), unique=True, nullable=False, index=True)
     full_name = Column(String(255), nullable=False)
     avatar_url = Column(Text, nullable=True)
+    firebase_uid = Column(String(255), unique=True, nullable=True, index=True)
+    is_admin = Column(Boolean, default=False, nullable=False)
     meta_user_id = Column(String(255), nullable=True)
+    stripe_customer_id = Column(String(255), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     memberships = relationship("WorkspaceMember", back_populates="user", cascade="all, delete-orphan")
+    subscription = relationship("UserSubscription", back_populates="user", uselist=False, cascade="all, delete-orphan")
 
 class Workspace(Base):
     __tablename__ = "workspaces"
@@ -244,3 +261,45 @@ class Setting(Base):
     value = Column(JSON, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class SubscriptionPlan(Base):
+    """Paket langganan — semua plan unlimited akun sosmed, beda di quota post."""
+    __tablename__ = "subscription_plans"
+
+    id = Column(String(36), primary_key=True, default=generate_uuid)
+    tier = Column(Enum(PlanTier), unique=True, nullable=False)
+    name = Column(String(100), nullable=False)  # e.g. "Starter Trial"
+    description = Column(Text, nullable=True)
+    price_usd = Column(Float, nullable=False)   # e.g. 3.00
+    duration_days = Column(Integer, nullable=False)  # 3 for trial, 30 for monthly
+    post_quota = Column(Integer, nullable=False)     # max posts allowed per period
+    # All plans: UNLIMITED social accounts (no account_limit field)
+    stripe_price_id = Column(String(255), nullable=True)  # set after Stripe product created
+    is_active = Column(Boolean, default=True)
+    features = Column(JSON, default=list)  # list of feature strings for UI display
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    subscriptions = relationship("UserSubscription", back_populates="plan")
+
+
+class UserSubscription(Base):
+    """Subscription aktif milik satu user."""
+    __tablename__ = "user_subscriptions"
+
+    id = Column(String(36), primary_key=True, default=generate_uuid)
+    user_id = Column(String(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, unique=True)
+    plan_id = Column(String(36), ForeignKey("subscription_plans.id"), nullable=False)
+    status = Column(Enum(SubscriptionStatus), default=SubscriptionStatus.TRIAL, nullable=False)
+    posts_used = Column(Integer, default=0, nullable=False)  # posts sent this period
+    posts_limit = Column(Integer, nullable=False)             # copied from plan at subscribe time
+    started_at = Column(DateTime, default=datetime.utcnow)
+    expires_at = Column(DateTime, nullable=True)              # None = never (admin override)
+    stripe_subscription_id = Column(String(255), nullable=True)
+    stripe_invoice_id = Column(String(255), nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    user = relationship("User", back_populates="subscription")
+    plan = relationship("SubscriptionPlan", back_populates="subscriptions")

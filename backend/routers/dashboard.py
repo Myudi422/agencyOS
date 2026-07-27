@@ -1,23 +1,27 @@
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, Header
 # pyrefly: ignore [missing-import]
 from sqlalchemy.orm import Session
 from datetime import datetime, time
 from backend.database import get_db
 from backend.models.models import (
-    SocialAccount, Post, PostTarget, Client, ActivityLog, PublishJob, PostStatus, AccountStatus, JobStatus
+    SocialAccount, Post, PostTarget, Client, ActivityLog, PublishJob, PostStatus, AccountStatus, JobStatus, User
 )
+from backend.routers.firebase_auth import require_user, get_user_workspace
 
 router = APIRouter(prefix="/dashboard", tags=["Dashboard Overview"])
 
 @router.get("/")
 def get_dashboard_overview(
     workspace_id: str = Query(..., description="Workspace ID"),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_user)
 ):
     """
     Sub-300ms fast executive dashboard endpoint returning real-time metrics,
     queue health, active client stats, and recent activity logs.
+    Validates workspace belongs to the authenticated user.
     """
+    get_user_workspace(current_user, workspace_id, db)  # raises 403/404 if not allowed
     today_start = datetime.combine(datetime.utcnow().date(), time.min)
     today_end = datetime.combine(datetime.utcnow().date(), time.max)
 

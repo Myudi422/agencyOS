@@ -25,7 +25,12 @@ def reset_and_seed_database():
     print("2. Re-creating clean database schema...")
     Base.metadata.create_all(bind=engine)
 
+    print("2b. Seeding subscription plans...")
+    from backend.seed_plans import seed_plans
+    seed_plans()
+
     db = SessionLocal()
+
 
     print("3. Seeding Default Workspace & Client...")
     ws = Workspace(

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Header
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from typing import Dict, Any, Optional, List
@@ -10,6 +10,7 @@ from backend.models.models import User, Workspace, WorkspaceMember, Client, Soci
 from backend.services.meta_adapter import meta_adapter
 from backend.services.instagrapi_service import instagrapi_service
 from backend.config import settings
+from backend.routers.firebase_auth import require_user, get_user_workspace, get_current_user_from_token
 
 logger = logging.getLogger("AuthRouter")
 
@@ -34,7 +35,7 @@ class ChallengeResolveRequest(BaseModel):
     client_id: Optional[str] = None
 
 class PostForMeAuthUrlRequest(BaseModel):
-    platform: str # instagram, facebook, x, tiktok, tiktok_business, youtube, pinterest, linkedin, threads, bluesky
+    platform: str
     redirect_url_override: Optional[str] = None
     platform_data: Optional[Dict[str, Any]] = None
     permissions: Optional[List[str]] = None
@@ -44,6 +45,62 @@ class BlueskyConnectRequest(BaseModel):
     app_password: str
     workspace_id: Optional[str] = None
     client_id: Optional[str] = None
+
+def _get_user_target_workspace(
+    db: Session,
+    current_user: Optional[User],
+    workspace_id: Optional[str],
+    client_id: Optional[str]
+):
+    """
+    Returns (workspace, client) for the current user.
+    Priority: explicit workspace_id (validated) > user's first workspace > create new.
+    """
+    target_ws = None
+    if workspace_id and workspace_id != "ws-default":
+        target_ws = db.query(Workspace).filter(Workspace.id == workspace_id).first()
+
+    if not target_ws and current_user:
+        # Find user's own workspace
+        membership = db.query(WorkspaceMember).filter(
+            WorkspaceMember.user_id == current_user.id
+        ).first()
+        if membership:
+            target_ws = db.query(Workspace).filter(Workspace.id == membership.workspace_id).first()
+
+    if not target_ws:
+        if current_user:
+            name_part = current_user.full_name.split()[0] if current_user.full_name else "My"
+            target_ws = Workspace(
+                name=f"{name_part}'s Workspace",
+                slug=f"ws-{current_user.id[:8]}",
+                timezone="Asia/Jakarta"
+            )
+        else:
+            target_ws = Workspace(name="Main Agency Workspace", slug="main-agency", timezone="Asia/Jakarta")
+        db.add(target_ws)
+        db.flush()
+        if current_user:
+            db.add(WorkspaceMember(workspace_id=target_ws.id, user_id=current_user.id, role="owner"))
+
+    # Resolve client
+    target_client = None
+    if client_id and client_id != "client-1":
+        target_client = db.query(Client).filter(Client.id == client_id).first()
+    if not target_client:
+        target_client = db.query(Client).filter(Client.workspace_id == target_ws.id).first()
+    if not target_client:
+        target_client = Client(
+            workspace_id=target_ws.id,
+            name="Primary Client",
+            description="Default client",
+            brand_color="#6366f1",
+            timezone="Asia/Jakarta"
+        )
+        db.add(target_client)
+        db.flush()
+
+    return target_ws, target_client
 
 @router.post("/postforme/auth-url")
 async def postforme_auth_url(req: PostForMeAuthUrlRequest):
@@ -67,15 +124,15 @@ async def postforme_auth_url(req: PostForMeAuthUrlRequest):
 @router.post("/postforme/connect-bluesky")
 async def postforme_connect_bluesky(
     req: BlueskyConnectRequest,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: Optional[User] = Depends(get_current_user_from_token)
 ):
     """Connects Bluesky account using handle & app_password in PostForMe."""
     try:
         from backend.services.postforme_service import postforme_service
         handle_clean = req.handle.strip().lower().replace("@", "")
-        
-        target_ws = db.query(Workspace).first()
-        target_client = db.query(Client).first()
+
+        target_ws, target_client = _get_user_target_workspace(db, current_user, req.workspace_id, req.client_id)
 
         acc_res = await postforme_service.create_social_account({
             "platform": "bluesky",
@@ -88,16 +145,16 @@ async def postforme_connect_bluesky(
 
         pf_acc_id = acc_res.get("id") or f"spc_bluesky_{handle_clean}"
 
-        # Create or update in DB
         acc = db.query(SocialAccount).filter(
+            SocialAccount.workspace_id == target_ws.id,
             SocialAccount.platform == AccountPlatform.BLUESKY,
             SocialAccount.username == handle_clean
         ).first()
 
         if not acc:
             acc = SocialAccount(
-                workspace_id=target_ws.id if target_ws else "ws-default",
-                client_id=target_client.id if target_client else "client-1",
+                workspace_id=target_ws.id,
+                client_id=target_client.id,
                 platform=AccountPlatform.BLUESKY,
                 platform_account_id=handle_clean,
                 postforme_account_id=pf_acc_id,
@@ -153,7 +210,8 @@ async def instagram_connect():
 @router.post("/instagram/cookie-login")
 async def instagram_cookie_login(
     req: CookieLoginRequest,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: Optional[User] = Depends(get_current_user_from_token)
 ):
     """
     Connects Instagram Account directly using sessionid cookie via instagrapi.
@@ -175,14 +233,12 @@ async def instagram_cookie_login(
                 except Exception as dec_err:
                     logger.warning(f"Could not decrypt existing token: {dec_err}")
 
-        # Connect using aiograpi preserving existing settings if available
         info = await instagrapi_service.connect_with_sessionid(
             req.sessionid,
             req.username,
             existing_settings=existing_settings
         )
         
-        # Verify requested username matches actual session username to prevent cross-account session contamination
         if req.username:
             expected_user = req.username.strip().lower().replace("@", "")
             actual_user = info["username"].lower()
@@ -193,28 +249,7 @@ async def instagram_cookie_login(
                            f"Buka Incognito Window di browser ➡️ login ke @{req.username} ➡️ salin sessionid untuk akun ini."
                 )
 
-        # Get or create workspace & client
-        target_ws = None
-        if req.workspace_id and req.workspace_id != "ws-default":
-            target_ws = db.query(Workspace).filter(Workspace.id == req.workspace_id).first()
-
-        if not target_ws:
-            target_ws = db.query(Workspace).first()
-            if not target_ws:
-                target_ws = Workspace(name="Main Agency Workspace", slug="main-agency", timezone="Asia/Jakarta")
-                db.add(target_ws)
-                db.flush()
-
-        target_client = None
-        if req.client_id and req.client_id != "client-1":
-            target_client = db.query(Client).filter(Client.id == req.client_id).first()
-
-        if not target_client:
-            target_client = db.query(Client).filter(Client.workspace_id == target_ws.id).first()
-            if not target_client:
-                target_client = Client(workspace_id=target_ws.id, name="Primary Client", description="Default client", brand_color="#6366f1", timezone="Asia/Jakarta")
-                db.add(target_client)
-                db.flush()
+        target_ws, target_client = _get_user_target_workspace(db, current_user, req.workspace_id, req.client_id)
 
         # Store session settings as JSON encrypted token
         session_json = json.dumps(info["session_settings"])
@@ -272,7 +307,8 @@ async def instagram_cookie_login(
 @router.post("/instagram/credential-login")
 async def instagram_credential_login(
     req: CredentialLoginRequest,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: Optional[User] = Depends(get_current_user_from_token)
 ):
     """
     Connects Instagram Account using username + password via instagrapi mobile login.
@@ -282,7 +318,7 @@ async def instagram_credential_login(
     """
     try:
         info = await instagrapi_service.connect_with_credentials(req.username, req.password)
-        return _save_instagram_account(db, info, req.workspace_id, req.client_id, method="Credentials")
+        return _save_instagram_account(db, info, req.workspace_id, req.client_id, method="Credentials", current_user=current_user)
 
     except Exception as e:
         err_str = str(e)
@@ -302,7 +338,8 @@ async def instagram_credential_login(
 @router.post("/instagram/challenge-resolve")
 async def instagram_challenge_resolve(
     req: ChallengeResolveRequest,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: Optional[User] = Depends(get_current_user_from_token)
 ):
     """
     Completes a pending Instagram login challenge by submitting the 6-digit code.
@@ -310,7 +347,7 @@ async def instagram_challenge_resolve(
     """
     try:
         info = await instagrapi_service.resolve_challenge(req.username, req.code)
-        return _save_instagram_account(db, info, req.workspace_id, req.client_id, method="Credentials (Challenge)")
+        return _save_instagram_account(db, info, req.workspace_id, req.client_id, method="Credentials (Challenge)", current_user=current_user)
     except Exception as e:
         db.rollback()
         logger.error(f"Instagram Challenge Resolve Error: {e}", exc_info=True)
@@ -322,28 +359,13 @@ def _save_instagram_account(
     info: dict,
     workspace_id: Optional[str],
     client_id: Optional[str],
-    method: str = "Cookie"
+    method: str = "Cookie",
+    current_user: Optional[User] = None
 ) -> dict:
-    """Helper: saves/updates Instagram account in DB after a successful login."""
-    target_ws = None
-    if workspace_id and workspace_id != "ws-default":
-        target_ws = db.query(Workspace).filter(Workspace.id == workspace_id).first()
-    if not target_ws:
-        target_ws = db.query(Workspace).first()
-        if not target_ws:
-            target_ws = Workspace(name="Main Agency Workspace", slug="main-agency", timezone="Asia/Jakarta")
-            db.add(target_ws)
-            db.flush()
-
-    target_client = None
-    if client_id and client_id != "client-1":
-        target_client = db.query(Client).filter(Client.id == client_id).first()
-    if not target_client:
-        target_client = db.query(Client).filter(Client.workspace_id == target_ws.id).first()
-        if not target_client:
-            target_client = Client(workspace_id=target_ws.id, name="Primary Client", description="Default client", brand_color="#6366f1", timezone="Asia/Jakarta")
-            db.add(target_client)
-            db.flush()
+    """Helper: saves/updates Instagram account in DB after a successful login.
+    Routes new account to the current user's workspace (not the global first workspace).
+    """
+    target_ws, target_client = _get_user_target_workspace(db, current_user, workspace_id, client_id)
 
     session_json = json.dumps(info["session_settings"])
     encrypted_token = meta_adapter.encrypt_token(session_json)
@@ -398,42 +420,12 @@ async def meta_callback(
     code: str = Query(..., description="Authorization code from Meta/Instagram"),
     workspace_id: Optional[str] = Query(None, description="Target workspace ID"),
     client_id: Optional[str] = Query(None, description="Target client ID"),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: Optional[User] = Depends(get_current_user_from_token)
 ):
     """Processes Meta / Instagram OAuth callback code, exchanges token, and saves accounts."""
     try:
-        # Validate Workspace & Client IDs (Auto-create or fallback to existing active workspace if ID is invalid/default)
-        target_ws = None
-        if workspace_id and workspace_id != "ws-default":
-            target_ws = db.query(Workspace).filter(Workspace.id == workspace_id).first()
-        
-        if not target_ws:
-            target_ws = db.query(Workspace).first()
-            if not target_ws:
-                target_ws = Workspace(
-                    name="Main Agency Workspace",
-                    slug="main-agency",
-                    timezone="Asia/Jakarta"
-                )
-                db.add(target_ws)
-                db.flush()
-
-        target_client = None
-        if client_id and client_id != "client-1":
-            target_client = db.query(Client).filter(Client.id == client_id).first()
-
-        if not target_client:
-            target_client = db.query(Client).filter(Client.workspace_id == target_ws.id).first()
-            if not target_client:
-                target_client = Client(
-                    workspace_id=target_ws.id,
-                    name="Primary Client",
-                    description="Default client",
-                    brand_color="#6366f1",
-                    timezone="Asia/Jakarta"
-                )
-                db.add(target_client)
-                db.flush()
+        target_ws, target_client = _get_user_target_workspace(db, current_user, workspace_id, client_id)
 
         # Execute Meta Token Exchange
         token_data = await meta_adapter.exchange_code_for_token(code)

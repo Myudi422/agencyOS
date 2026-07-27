@@ -2,12 +2,25 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 export async function fetchApi<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   const url = `${API_BASE_URL}${endpoint}`;
-  
+
   const headers: Record<string, string> = {};
+
   // Only set application/json if body is not FormData
   if (!(options.body instanceof FormData)) {
     headers["Content-Type"] = "application/json";
   }
+
+  // Attach Firebase ID Token from localStorage persisted store
+  try {
+    const stored = localStorage.getItem("agencyos-auth");
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      const token = parsed?.state?.idToken;
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
+    }
+  } catch {}
 
   try {
     const res = await fetch(url, {

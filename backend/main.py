@@ -27,14 +27,16 @@ try:
     from backend.config import settings
     from backend.database import engine, Base
     from backend.routers import (
-        auth, workspaces, clients, accounts, media, posts, calendar, queue, activity, dashboard
+        auth, workspaces, clients, accounts, media, posts, calendar, queue, activity, dashboard,
+        firebase_auth, billing, admin
     )
     from backend.seed import seed_database
 except ModuleNotFoundError:
     from config import settings
     from database import engine, Base
     from routers import (
-        auth, workspaces, clients, accounts, media, posts, calendar, queue, activity, dashboard
+        auth, workspaces, clients, accounts, media, posts, calendar, queue, activity, dashboard,
+        firebase_auth, billing, admin
     )
     from seed import seed_database
 
@@ -62,6 +64,9 @@ app.add_middleware(
 )
 
 # Include Routers
+app.include_router(firebase_auth.router)
+app.include_router(billing.router)
+app.include_router(admin.router)
 app.include_router(auth.router)
 app.include_router(workspaces.router)
 app.include_router(clients.router)

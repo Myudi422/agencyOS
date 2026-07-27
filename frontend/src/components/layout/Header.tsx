@@ -1,12 +1,21 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Search, Briefcase, Plus, Sparkles, Menu, X, ShieldCheck } from "lucide-react";
+import { Search, Briefcase, Plus, Sparkles, Menu, X, ShieldCheck, Zap, Rocket, Crown, Building2 } from "lucide-react";
 import { useStore } from "@/store/useStore";
+import { useAuthStore } from "@/store/authStore";
 import { fetchApi } from "@/lib/api";
 
+const TIER_COLORS: Record<string, string> = {
+  trial: "bg-slate-100 text-slate-600 border-slate-200",
+  creator: "bg-blue-100 text-blue-700 border-blue-200",
+  agency: "bg-purple-100 text-purple-700 border-purple-200",
+  studio: "bg-amber-100 text-amber-700 border-amber-200",
+};
+
 export default function Header({ onToggleMobileSidebar }: { onToggleMobileSidebar?: () => void }) {
-  const { activeWorkspace, clients, activeClientId, setClients, setActiveClientId, openComposer } = useStore();
+  const { activeWorkspace, clients, activeClientId, setClients, setActiveClientId, openComposer, openSettings } = useStore();
+  const { user, subscription, isAdmin } = useAuthStore();
 
   useEffect(() => {
     if (!activeWorkspace?.id) return;
@@ -49,16 +58,34 @@ export default function Header({ onToggleMobileSidebar }: { onToggleMobileSideba
         </div>
       </div>
 
-      {/* Right section: Search & Action Button */}
-      <div className="flex items-center gap-3">
-        <div className="relative hidden md:block w-48 sm:w-64">
-          <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-          <input
-            type="text"
-            placeholder="Search channels, posts..."
-            className="w-full glass-input rounded-xl pl-9 pr-3 py-1.5 text-xs placeholder-slate-400 focus:outline-none"
-          />
-        </div>
+      {/* Right section: Active Plan, User Avatar & Create Post */}
+      <div className="flex items-center gap-4">
+        {/* Subscription Plan Badge */}
+        {subscription && (
+          <div className="hidden sm:flex">
+            <span className={`inline-flex items-center px-2.5 py-1 rounded-full border text-[10px] font-bold ${TIER_COLORS[subscription.plan_tier]}`}>
+              {subscription.plan_name}
+              {isAdmin && " (Admin)"}
+            </span>
+          </div>
+        )}
+
+        {/* User Profile Mini Card (Clickable to open Settings Modal) */}
+        <button
+          onClick={openSettings}
+          className="flex items-center gap-2 border-l border-slate-200 pl-4 hover:opacity-80 transition-opacity focus:outline-none"
+        >
+          {user?.avatar_url ? (
+            <img src={user.avatar_url} className="w-7 h-7 rounded-full border border-slate-200 object-cover shrink-0" alt="" />
+          ) : (
+            <div className="w-7 h-7 rounded-full bg-purple-600 flex items-center justify-center text-xs font-bold text-white shadow-sm shrink-0">
+              {user?.full_name?.charAt(0) || "U"}
+            </div>
+          )}
+          <span className="hidden lg:inline text-xs font-semibold text-slate-700 text-left truncate max-w-[120px]">
+            {user?.full_name || "User"}
+          </span>
+        </button>
 
         <button
           onClick={() => openComposer()}
@@ -72,3 +99,4 @@ export default function Header({ onToggleMobileSidebar }: { onToggleMobileSideba
     </header>
   );
 }
+

@@ -30,6 +30,7 @@ interface StoreState {
   clients: Client[];
   activeClientId: string | null; // 'all' or client ID
   isComposerOpen: boolean;
+  isSettingsOpen: boolean;
   composerPreselectedAccounts: string[];
   uploadTasks: UploadTask[];
 
@@ -39,6 +40,8 @@ interface StoreState {
   setActiveClientId: (id: string | null) => void;
   openComposer: (accountIds?: string[]) => void;
   closeComposer: () => void;
+  openSettings: () => void;
+  closeSettings: () => void;
 
   addUploadTasks: (tasks: UploadTask[]) => void;
   updateUploadTask: (id: string, updates: Partial<UploadTask>) => void;
@@ -52,6 +55,7 @@ export const useStore = create<StoreState>((set) => ({
   clients: [],
   activeClientId: null,
   isComposerOpen: false,
+  isSettingsOpen: false,
   composerPreselectedAccounts: [],
   uploadTasks: [],
 
@@ -64,6 +68,9 @@ export const useStore = create<StoreState>((set) => ({
   setActiveClientId: (activeClientId) => set({ activeClientId }),
   openComposer: (accountIds = []) => set({ isComposerOpen: true, composerPreselectedAccounts: accountIds }),
   closeComposer: () => set({ isComposerOpen: false, composerPreselectedAccounts: [] }),
+  openSettings: () => set({ isSettingsOpen: true }),
+  closeSettings: () => set({ isSettingsOpen: false }),
+
 
   addUploadTasks: (newTasks) => set((state) => ({ uploadTasks: [...state.uploadTasks, ...newTasks] })),
   updateUploadTask: (id, updates) => set((state) => ({

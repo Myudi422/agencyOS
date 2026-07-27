@@ -1,9 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Header
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from typing import List, Optional
 from backend.database import get_db
-from backend.models.models import Client, SocialAccount
+from backend.models.models import Client, SocialAccount, User
+from backend.routers.firebase_auth import require_user, get_user_workspace
 
 router = APIRouter(prefix="/clients", tags=["Clients"])
 
@@ -18,9 +19,12 @@ class ClientCreate(BaseModel):
 @router.get("/")
 def get_clients(
     workspace_id: str = Query(..., description="Workspace filter"),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_user)
 ):
-    """Retrieves all clients under a workspace with social account counts."""
+    """Retrieves all clients under a workspace owned by the current user."""
+    get_user_workspace(current_user, workspace_id, db)
+
     clients = db.query(Client).filter(Client.workspace_id == workspace_id).all()
     results = []
     for c in clients:
@@ -49,8 +53,14 @@ def get_clients(
     return results
 
 @router.post("/")
-def create_client(data: ClientCreate, db: Session = Depends(get_db)):
-    """Creates a new client under a workspace."""
+def create_client(
+    data: ClientCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_user)
+):
+    """Creates a new client under a workspace owned by the current user."""
+    get_user_workspace(current_user, data.workspace_id, db)
+
     client = Client(
         workspace_id=data.workspace_id,
         name=data.name,
@@ -65,10 +75,15 @@ def create_client(data: ClientCreate, db: Session = Depends(get_db)):
     return client
 
 @router.delete("/{client_id}")
-def delete_client(client_id: str, db: Session = Depends(get_db)):
+def delete_client(
+    client_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_user)
+):
     client = db.query(Client).filter(Client.id == client_id).first()
     if not client:
         raise HTTPException(status_code=404, detail="Client not found")
+    get_user_workspace(current_user, client.workspace_id, db)
     db.delete(client)
     db.commit()
     return {"status": "success", "message": "Client deleted"}

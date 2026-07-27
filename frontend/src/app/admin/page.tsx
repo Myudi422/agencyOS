@@ -1,0 +1,449 @@
+"use client";
+
+import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useAuthStore } from "@/store/authStore";
+import {
+  Settings, Users, CreditCard, Key, RefreshCw,
+  Save, Edit2, ChevronRight, Shield, Trash2, Plus,
+  CheckCircle, AlertTriangle, Zap, Crown, Rocket, Building2
+} from "lucide-react";
+import { fetchApi } from "@/lib/api";
+
+type TabType = "plans" | "users" | "settings";
+
+const TIER_ICONS: Record<string, any> = {
+  trial: Zap,
+  creator: Rocket,
+  agency: Crown,
+  studio: Building2,
+};
+
+const TIER_COLORS: Record<string, string> = {
+  trial: "text-slate-600 bg-slate-100",
+  creator: "text-blue-600 bg-blue-100",
+  agency: "text-purple-600 bg-purple-100",
+  studio: "text-amber-600 bg-amber-100",
+};
+
+export default function AdminPage() {
+  const router = useRouter();
+  const { isAdmin, isLoading } = useAuthStore();
+  const [activeTab, setActiveTab] = useState<TabType>("plans");
+
+  // Plans state
+  const [plans, setPlans] = useState<any[]>([]);
+  const [editingPlan, setEditingPlan] = useState<string | null>(null);
+  const [planEdits, setPlanEdits] = useState<any>({});
+  const [planSaving, setPlanSaving] = useState(false);
+
+  // Users state
+  const [users, setUsers] = useState<any[]>([]);
+  const [usersLoading, setUsersLoading] = useState(false);
+
+  // Settings state
+  const [appSettings, setAppSettings] = useState<Record<string, any>>({});
+  const [newSettingKey, setNewSettingKey] = useState("");
+  const [newSettingValue, setNewSettingValue] = useState("");
+  const [settingsSaving, setSettingsSaving] = useState(false);
+
+  const [msg, setMsg] = useState<{ type: "ok" | "err"; text: string } | null>(null);
+
+  useEffect(() => {
+    if (!isLoading && !isAdmin) {
+      router.replace("/");
+    }
+  }, [isAdmin, isLoading, router]);
+
+  useEffect(() => {
+    if (isAdmin) {
+      loadPlans();
+    }
+  }, [isAdmin]);
+
+  const flash = (type: "ok" | "err", text: string) => {
+    setMsg({ type, text });
+    setTimeout(() => setMsg(null), 3000);
+  };
+
+  // ── Plans ──────────────────────────────────────────────────────────────────
+
+  const loadPlans = async () => {
+    try {
+      const data: any = await fetchApi("/admin/plans");
+      setPlans(data);
+    } catch { }
+  };
+
+  const savePlan = async (planId: string) => {
+    setPlanSaving(true);
+    try {
+      await fetchApi(`/admin/plans/${planId}`, {
+        method: "PUT",
+        body: JSON.stringify(planEdits[planId] || {}),
+      });
+      flash("ok", "Plan updated!");
+      setEditingPlan(null);
+      loadPlans();
+    } catch (e: any) {
+      flash("err", "Failed to save plan");
+    } finally {
+      setPlanSaving(false);
+    }
+  };
+
+  const createStripePrice = async (planTier: string) => {
+    try {
+      await fetchApi(`/admin/plans/${planTier}/create-stripe-price`, { method: "POST" });
+      flash("ok", `Stripe price created for ${planTier}!`);
+      loadPlans();
+    } catch (e: any) {
+      flash("err", "Failed to create Stripe price. Check STRIPE_SECRET_KEY.");
+    }
+  };
+
+  // ── Users ──────────────────────────────────────────────────────────────────
+
+  const loadUsers = async () => {
+    setUsersLoading(true);
+    try {
+      const data: any = await fetchApi("/admin/users");
+      setUsers(data.users || []);
+    } catch { } finally {
+      setUsersLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === "users" && isAdmin) loadUsers();
+    if (activeTab === "settings" && isAdmin) loadAppSettings();
+  }, [activeTab]);
+
+  // ── App Settings ───────────────────────────────────────────────────────────
+
+  const loadAppSettings = async () => {
+    try {
+      const data: any = await fetchApi("/admin/settings");
+      setAppSettings(data);
+    } catch { }
+  };
+
+  const saveSetting = async (key: string, value: any) => {
+    setSettingsSaving(true);
+    try {
+      await fetchApi("/admin/settings", {
+        method: "PUT",
+        body: JSON.stringify({ key, value }),
+      });
+      flash("ok", `Setting "${key}" saved!`);
+      loadAppSettings();
+    } catch { flash("err", "Failed to save setting"); } finally {
+      setSettingsSaving(false);
+    }
+  };
+
+  const deleteSetting = async (key: string) => {
+    try {
+      await fetchApi(`/admin/settings/${key}`, { method: "DELETE" });
+      flash("ok", `Setting "${key}" deleted`);
+      loadAppSettings();
+    } catch { flash("err", "Delete failed"); }
+  };
+
+  if (isLoading || !isAdmin) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-purple-600 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  const tabs: { key: TabType; label: string; icon: any }[] = [
+    { key: "plans", label: "Subscription Plans", icon: CreditCard },
+    { key: "users", label: "User Management", icon: Users },
+    { key: "settings", label: "App Settings & API Keys", icon: Key },
+  ];
+
+  return (
+    <div className="space-y-6 pb-12">
+      {/* Header */}
+      <div className="p-6 rounded-3xl bg-gradient-to-br from-slate-900 to-purple-900 text-white shadow-xl">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center">
+            <Shield className="w-5 h-5 text-purple-200" />
+          </div>
+          <div>
+            <h1 className="text-xl font-bold font-['Outfit']">Admin Control Panel</h1>
+            <p className="text-xs text-purple-300">Full access · myudi422@gmail.com</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Flash message */}
+      {msg && (
+        <div className={`flex items-center gap-2 p-3 rounded-xl text-sm font-medium ${
+          msg.type === "ok"
+            ? "bg-emerald-50 border border-emerald-200 text-emerald-700"
+            : "bg-red-50 border border-red-200 text-red-700"
+        }`}>
+          {msg.type === "ok" ? <CheckCircle className="w-4 h-4" /> : <AlertTriangle className="w-4 h-4" />}
+          {msg.text}
+        </div>
+      )}
+
+      {/* Tabs */}
+      <div className="flex gap-2 p-1 bg-slate-100 rounded-2xl">
+        {tabs.map((t) => {
+          const Icon = t.icon;
+          return (
+            <button
+              key={t.key}
+              id={`admin-tab-${t.key}`}
+              onClick={() => setActiveTab(t.key)}
+              className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs font-semibold transition-all ${
+                activeTab === t.key
+                  ? "bg-white shadow text-purple-700 border border-purple-100"
+                  : "text-slate-500 hover:text-slate-800"
+              }`}
+            >
+              <Icon className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">{t.label}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* ── PLANS TAB ── */}
+      {activeTab === "plans" && (
+        <div className="space-y-4">
+          <p className="text-xs text-slate-500 bg-purple-50 border border-purple-100 p-3 rounded-xl">
+            💡 Semua paket memiliki <strong>Unlimited Social Accounts</strong>. Perbedaan hanya di kuota post.
+            Setelah edit, kamu juga perlu setup Stripe Price ID untuk payment.
+          </p>
+          {plans.map((plan) => {
+            const Icon = TIER_ICONS[plan.tier] || Zap;
+            const isEditing = editingPlan === plan.id;
+            const edits = planEdits[plan.id] || {};
+
+            return (
+              <div key={plan.id} className="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-9 h-9 rounded-xl ${TIER_COLORS[plan.tier]} flex items-center justify-center`}>
+                      <Icon className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <p className="font-bold text-slate-900 text-sm">{plan.name}</p>
+                      <p className="text-xs text-slate-400 capitalize">{plan.tier} · ${plan.price_usd} · {plan.post_quota} posts · {plan.duration_days} days</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {!isEditing && (
+                      <button
+                        onClick={() => { setEditingPlan(plan.id); setPlanEdits((p: any) => ({ ...p, [plan.id]: { ...plan } })); }}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium transition-all"
+                      >
+                        <Edit2 className="w-3 h-3" /> Edit
+                      </button>
+                    )}
+                    {isEditing && (
+                      <>
+                        <button onClick={() => setEditingPlan(null)} className="px-3 py-1.5 rounded-xl bg-slate-100 text-slate-600 text-xs font-medium">Cancel</button>
+                        <button
+                          onClick={() => savePlan(plan.id)}
+                          disabled={planSaving}
+                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-purple-600 text-white text-xs font-medium hover:bg-purple-700 transition-all disabled:opacity-60"
+                        >
+                          <Save className="w-3 h-3" /> Save
+                        </button>
+                      </>
+                    )}
+                  </div>
+                </div>
+
+                {isEditing && (
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 pt-2 border-t border-slate-100">
+                    {[
+                      { label: "Name", field: "name", type: "text" },
+                      { label: "Price (USD)", field: "price_usd", type: "number" },
+                      { label: "Post Quota", field: "post_quota", type: "number" },
+                      { label: "Duration (days)", field: "duration_days", type: "number" },
+                      { label: "Stripe Price ID", field: "stripe_price_id", type: "text" },
+                    ].map(({ label, field, type }) => (
+                      <div key={field} className="col-span-1">
+                        <label className="block text-[10px] text-slate-500 font-medium mb-1">{label}</label>
+                        <input
+                          type={type}
+                          value={edits[field] ?? ""}
+                          onChange={(e) => setPlanEdits((p: any) => ({
+                            ...p,
+                            [plan.id]: { ...p[plan.id], [field]: type === "number" ? Number(e.target.value) : e.target.value }
+                          }))}
+                          className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-purple-400 bg-white"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Stripe Price ID status */}
+                <div className="flex items-center justify-between pt-2 border-t border-slate-100">
+                  <div className="flex items-center gap-2">
+                    <span className={`w-2 h-2 rounded-full ${plan.stripe_price_id ? "bg-emerald-500" : "bg-amber-400"}`} />
+                    <span className="text-xs text-slate-500">
+                      {plan.stripe_price_id ? `Stripe: ${plan.stripe_price_id}` : "Stripe Price ID belum dikonfigurasi"}
+                    </span>
+                  </div>
+                  {!plan.stripe_price_id && (
+                    <button
+                      onClick={() => createStripePrice(plan.tier)}
+                      className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 text-[11px] font-medium hover:bg-emerald-100 transition-all"
+                    >
+                      <Plus className="w-3 h-3" /> Auto-Create Stripe Price
+                    </button>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* ── USERS TAB ── */}
+      {activeTab === "users" && (
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <p className="text-xs text-slate-500">{users.length} users registered</p>
+            <button onClick={loadUsers} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 text-slate-700 text-xs font-medium hover:bg-slate-200">
+              <RefreshCw className="w-3 h-3" /> Refresh
+            </button>
+          </div>
+          {usersLoading ? (
+            <div className="flex justify-center py-12"><div className="w-6 h-6 border-2 border-purple-600 border-t-transparent rounded-full animate-spin" /></div>
+          ) : users.map((u) => (
+            <div key={u.id} className="p-4 rounded-2xl bg-white border border-slate-200 shadow-sm flex items-center gap-4">
+              <img src={u.avatar_url || `https://api.dicebear.com/7.x/initials/svg?seed=${u.email}`} className="w-9 h-9 rounded-full border border-slate-200 object-cover" alt="" />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-slate-900 truncate">{u.full_name}</p>
+                <p className="text-xs text-slate-400 truncate">{u.email}</p>
+              </div>
+              <div className="text-right shrink-0">
+                {u.subscription ? (
+                  <>
+                    <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold ${TIER_COLORS[u.subscription.plan_tier]}`}>
+                      {u.subscription.plan_name}
+                    </span>
+                    <p className="text-[10px] text-slate-400 mt-0.5">
+                      {u.subscription.posts_used}/{u.subscription.posts_limit} posts · {u.subscription.status}
+                    </p>
+                  </>
+                ) : (
+                  <span className="text-[10px] text-slate-400">No subscription</span>
+                )}
+                {u.is_admin && (
+                  <span className="ml-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 text-[10px] font-bold">
+                    <Shield className="w-2.5 h-2.5" /> Admin
+                  </span>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* ── SETTINGS TAB ── */}
+      {activeTab === "settings" && (
+        <div className="space-y-4">
+          <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-800 text-xs">
+            ⚠️ API Keys tersimpan di database. Untuk production, gunakan environment variables di Vercel.
+          </div>
+
+          {/* Quick-add common settings */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {[
+              { key: "POSTFORME_API_KEY", label: "PostForMe API Key", hint: "Dari dashboard postforme.dev" },
+              { key: "STRIPE_SECRET_KEY", label: "Stripe Secret Key", hint: "sk_test_... (sandbox)" },
+              { key: "STRIPE_PUBLISHABLE_KEY", label: "Stripe Publishable Key", hint: "pk_test_... (sandbox)" },
+              { key: "STRIPE_WEBHOOK_SECRET", label: "Stripe Webhook Secret", hint: "whsec_..." },
+            ].map((s) => (
+              <div key={s.key} className="p-4 rounded-2xl bg-white border border-slate-200 space-y-2">
+                <div>
+                  <label className="text-xs font-bold text-slate-800">{s.label}</label>
+                  <p className="text-[10px] text-slate-400">{s.hint}</p>
+                </div>
+                <div className="flex gap-2">
+                  <input
+                    type="password"
+                    defaultValue={appSettings[s.key] || ""}
+                    id={`setting-${s.key}`}
+                    placeholder="Belum dikonfigurasi..."
+                    className="flex-1 px-3 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-purple-400 bg-white"
+                  />
+                  <button
+                    onClick={() => {
+                      const el = document.getElementById(`setting-${s.key}`) as HTMLInputElement;
+                      if (el) saveSetting(s.key, el.value);
+                    }}
+                    disabled={settingsSaving}
+                    className="px-3 py-2 rounded-xl bg-purple-600 text-white text-xs font-medium hover:bg-purple-700 disabled:opacity-60"
+                  >
+                    <Save className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* All settings list */}
+          <div className="p-5 rounded-2xl bg-white border border-slate-200 space-y-3">
+            <h3 className="text-sm font-bold text-slate-800">All Saved Settings</h3>
+            {Object.keys(appSettings).length === 0 ? (
+              <p className="text-xs text-slate-400">No settings saved yet.</p>
+            ) : (
+              Object.entries(appSettings).map(([key, value]) => (
+                <div key={key} className="flex items-center justify-between gap-3 p-3 rounded-xl bg-slate-50 border border-slate-100">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs font-mono font-bold text-slate-700">{key}</p>
+                    <p className="text-[10px] text-slate-400 truncate">
+                      {typeof value === "string" && value.length > 10
+                        ? `${value.slice(0, 6)}${"*".repeat(8)}${value.slice(-4)}`
+                        : JSON.stringify(value)}
+                    </p>
+                  </div>
+                  <button onClick={() => deleteSetting(key)} className="p-1.5 rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-500 transition-all">
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              ))
+            )}
+          </div>
+
+          {/* Custom setting */}
+          <div className="p-5 rounded-2xl bg-white border border-slate-200 space-y-3">
+            <h3 className="text-sm font-bold text-slate-800">Add Custom Setting</h3>
+            <div className="flex gap-2">
+              <input
+                value={newSettingKey}
+                onChange={(e) => setNewSettingKey(e.target.value)}
+                placeholder="KEY_NAME"
+                className="flex-1 px-3 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-purple-400 font-mono"
+              />
+              <input
+                value={newSettingValue}
+                onChange={(e) => setNewSettingValue(e.target.value)}
+                placeholder="value"
+                className="flex-1 px-3 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-purple-400"
+              />
+              <button
+                onClick={() => { if (newSettingKey) { saveSetting(newSettingKey, newSettingValue); setNewSettingKey(""); setNewSettingValue(""); } }}
+                className="px-4 py-2 rounded-xl bg-purple-600 text-white text-xs font-medium hover:bg-purple-700 flex items-center gap-1"
+              >
+                <Plus className="w-3.5 h-3.5" /> Add
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
