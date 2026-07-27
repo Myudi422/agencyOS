@@ -769,6 +769,11 @@ async def _init_gemini_client(psid: str, psidts: str):
     """Initialize or re-initialize the Gemini client with given cookies."""
     global _gemini_client
     try:
+        if _gemini_client is not None:
+            try:
+                await _gemini_client.close()
+            except Exception:
+                pass
         from gemini_webapi import GeminiClient
         client = GeminiClient(psid, psidts if psidts else None, proxy=None)
         await client.init(timeout=120, auto_close=False, auto_refresh=True)
@@ -803,7 +808,7 @@ def gemini_generate_image(req: GeminiImageRequest):
     """Generate image using Gemini. Returns saved image URL."""
     global _gemini_client
     if _gemini_client is None:
-        raise HTTPException(status_code=400, detail="Gemini belum terhubung. Masukkan cookie terlebih dahulu.")
+        raise HTTPException(status_code=400, detail="Gemini belum terhubung. Masukkan cookie __Secure-1PSID terlebih dahulu.")
 
     size_prompts = {
         "1:1": "square 1:1 aspect ratio",
@@ -812,13 +817,38 @@ def gemini_generate_image(req: GeminiImageRequest):
         "4:3": "standard 4:3 aspect ratio",
         "4:5": "portrait 4:5 aspect ratio",
     }
-    size_hint = size_prompts.get(req.aspect_ratio, "")
-    full_prompt = f"Create an image: {req.prompt}. Aspect ratio: {size_hint}."
+    size_hint = size_prompts.get(req.aspect_ratio, "square 1:1 aspect ratio")
+    full_prompt = f"Generate an image of {req.prompt}. Aspect ratio: {size_hint}."
 
     async def _do_generate():
-        # Pass model parameter explicitly to trigger image generation engine
-        req_model = req.model if req.model and "thinking" not in req.model else "gemini-1.5-flash"
-        response = await _gemini_client.generate_content(full_prompt, model=req_model)
+        # Clean model name for image generation (must use flash or unspecified, never thinking or obsolete 1.5)
+        target_model = req.model if (req.model and "thinking" not in req.model and "1.5" not in req.model) else "gemini-3-flash"
+        
+        print(f"[Gemini] Generating image with model '{target_model}', prompt: {full_prompt}")
+        response = None
+        try:
+            response = await _gemini_client.generate_content(full_prompt, model=target_model)
+        except Exception as primary_err:
+            print(f"[Gemini] Primary generate_content error with model '{target_model}': {primary_err}")
+            # Fallback retry with model="unspecified"
+            try:
+                print(f"[Gemini] Retrying generate_content with model='unspecified'...")
+                response = await _gemini_client.generate_content(full_prompt, model="unspecified")
+            except Exception as retry_err:
+                print(f"[Gemini] Retry with model='unspecified' error: {retry_err}")
+                raise primary_err
+
+        # Check if primary response produced images; if not, retry with model='unspecified' and simplified prompt
+        if (not hasattr(response, "images") or not response.images) and target_model != "unspecified":
+            print("[Gemini] No images in primary response. Retrying with model='unspecified' & simplified prompt...")
+            alt_prompt = f"Generate an image: {req.prompt}"
+            try:
+                alt_response = await _gemini_client.generate_content(alt_prompt, model="unspecified")
+                if hasattr(alt_response, "images") and alt_response.images:
+                    response = alt_response
+            except Exception as alt_err:
+                print(f"[Gemini] Fallback retry error: {alt_err}")
+
         saved_images = []
         
         # Save generated images to disk
@@ -826,28 +856,55 @@ def gemini_generate_image(req: GeminiImageRequest):
             print(f"[Gemini] Ditemukan {len(response.images)} gambar dalam respon.")
             for idx, img in enumerate(response.images):
                 filename = f"gemini_img_{uuid.uuid4().hex[:8]}.png"
+                saved = False
+                
+                # Method 1: Built-in img.save()
                 try:
-                    # Using the built-in async save method from gemini-webapi
                     await img.save(path=str(GENERATED_DIR), filename=filename, verbose=True)
-                    saved_images.append({
-                        "url": f"http://127.0.0.1:5000/generated/{filename}",
-                        "filename": filename
-                    })
-                    print(f"[Gemini] Berhasil menyimpan gambar {idx} ke {filename}")
+                    target_file = GENERATED_DIR / filename
+                    if target_file.exists() and target_file.stat().st_size > 0:
+                        saved_images.append({
+                            "url": f"http://127.0.0.1:5000/generated/{filename}",
+                            "filename": filename
+                        })
+                        saved = True
+                        print(f"[Gemini] Berhasil menyimpan gambar {idx} ke {filename}")
                 except Exception as save_err:
                     print(f"[Gemini] Gagal menyimpan gambar {idx} via save(): {save_err}")
-                    # Fallback to direct download
+                
+                # Method 2: Fallback download using client session or requests with browser headers
+                if not saved and hasattr(img, "url") and img.url:
                     try:
-                        if hasattr(img, "url") and img.url:
-                            import urllib.request
-                            urllib.request.urlretrieve(img.url, str(GENERATED_DIR / filename))
-                            saved_images.append({
-                                "url": f"http://127.0.0.1:5000/generated/{filename}",
-                                "filename": filename
-                            })
-                            print(f"[Gemini] Fallback urlretrieve berhasil untuk {filename}")
+                        target_file = GENERATED_DIR / filename
+                        # Try async client session
+                        if hasattr(_gemini_client, "client") and _gemini_client.client:
+                            resp = await _gemini_client.client.get(img.url)
+                            if resp.status_code == 200:
+                                target_file.write_bytes(resp.content)
+                                saved_images.append({
+                                    "url": f"http://127.0.0.1:5000/generated/{filename}",
+                                    "filename": filename
+                                })
+                                saved = True
+                                print(f"[Gemini] Fallback async download berhasil untuk {filename}")
+                        
+                        if not saved:
+                            # Try synchronous requests
+                            headers = {
+                                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                                "Referer": "https://gemini.google.com/"
+                            }
+                            res = requests.get(img.url, headers=headers, timeout=15)
+                            if res.status_code == 200:
+                                target_file.write_bytes(res.content)
+                                saved_images.append({
+                                    "url": f"http://127.0.0.1:5000/generated/{filename}",
+                                    "filename": filename
+                                })
+                                saved = True
+                                print(f"[Gemini] Fallback requests download berhasil untuk {filename}")
                     except Exception as fallback_err:
-                        print(f"[Gemini] Fallback urlretrieve gagal: {fallback_err}")
+                        print(f"[Gemini] Fallback download gagal: {fallback_err}")
         else:
             print("[Gemini] Tidak ada gambar dalam respon.")
             
@@ -856,7 +913,10 @@ def gemini_generate_image(req: GeminiImageRequest):
     try:
         response, saved_images = _run_in_gemini_loop(_do_generate())
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Gemini generate image error: {str(e)}")
+        err_msg = str(e)
+        if any(term in err_msg.lower() for term in ["cookie", "auth", "login", "400", "401", "403"]):
+            err_msg += " (Sesi cookie mungkin kadaluarsa. Silakan perbarui cookie __Secure-1PSID Gemini)."
+        raise HTTPException(status_code=500, detail=f"Gemini generate image error: {err_msg}")
 
     return {
         "status": "success",

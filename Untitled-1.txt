@@ -1,0 +1,973 @@
+[Skip to content](https://github.com/0xACAB666/yt-heatmap-clipper#start-of-content)
+
+## Navigation Menu
+
+[Sign in](https://github.com/login?return_to=https%3A%2F%2Fgithub.com%2F0xACAB666%2Fyt-heatmap-clipper)
+- PlatformAI CODE CREATION[GitHub CopilotWrite better code with AI](https://github.com/features/copilot)[GitHub Copilot appDirect agents from issue to merge](https://github.com/features/ai/github-app)[MCP RegistryNewIntegrate external tools](https://github.com/mcp)DEVELOPER WORKFLOWS[ActionsAutomate any workflow](https://github.com/features/actions)[CodespacesInstant dev environments](https://github.com/features/codespaces)[IssuesPlan and track work](https://github.com/features/issues)[Code ReviewManage code changes](https://github.com/features/code-review)[Code QualityEnforce quality at merge](https://github.com/features/code-quality)APPLICATION SECURITY[GitHub Advanced SecurityFind and fix vulnerabilities](https://github.com/security/advanced-security)[Code securitySecure your code as you build](https://github.com/security/advanced-security/code-security)[Secret protectionStop leaks before they start](https://github.com/security/advanced-security/secret-protection)EXPLORE[Why GitHub](https://github.com/why-github)[Documentation](https://docs.github.com)[Blog](https://github.blog)[Changelog](https://github.blog/changelog)[Marketplace](https://github.com/marketplace)[View all features](https://github.com/features)
+- AI CODE CREATION[GitHub CopilotWrite better code with AI](https://github.com/features/copilot)[GitHub Copilot appDirect agents from issue to merge](https://github.com/features/ai/github-app)[MCP RegistryNewIntegrate external tools](https://github.com/mcp)
+- [GitHub CopilotWrite better code with AI](https://github.com/features/copilot)
+- [GitHub Copilot appDirect agents from issue to merge](https://github.com/features/ai/github-app)
+- [MCP RegistryNewIntegrate external tools](https://github.com/mcp)
+- DEVELOPER WORKFLOWS[ActionsAutomate any workflow](https://github.com/features/actions)[CodespacesInstant dev environments](https://github.com/features/codespaces)[IssuesPlan and track work](https://github.com/features/issues)[Code ReviewManage code changes](https://github.com/features/code-review)[Code QualityEnforce quality at merge](https://github.com/features/code-quality)
+- [ActionsAutomate any workflow](https://github.com/features/actions)
+- [CodespacesInstant dev environments](https://github.com/features/codespaces)
+- [IssuesPlan and track work](https://github.com/features/issues)
+- [Code ReviewManage code changes](https://github.com/features/code-review)
+- [Code QualityEnforce quality at merge](https://github.com/features/code-quality)
+- APPLICATION SECURITY[GitHub Advanced SecurityFind and fix vulnerabilities](https://github.com/security/advanced-security)[Code securitySecure your code as you build](https://github.com/security/advanced-security/code-security)[Secret protectionStop leaks before they start](https://github.com/security/advanced-security/secret-protection)
+- [GitHub Advanced SecurityFind and fix vulnerabilities](https://github.com/security/advanced-security)
+- [Code securitySecure your code as you build](https://github.com/security/advanced-security/code-security)
+- [Secret protectionStop leaks before they start](https://github.com/security/advanced-security/secret-protection)
+- EXPLORE[Why GitHub](https://github.com/why-github)[Documentation](https://docs.github.com)[Blog](https://github.blog)[Changelog](https://github.blog/changelog)[Marketplace](https://github.com/marketplace)
+- [Why GitHub](https://github.com/why-github)
+- [Documentation](https://docs.github.com)
+- [Blog](https://github.blog)
+- [Changelog](https://github.blog/changelog)
+- [Marketplace](https://github.com/marketplace)
+
+## Navigation Menu
+
+- SolutionsBY COMPANY SIZE[Enterprises](https://github.com/enterprise)[Small and medium teams](https://github.com/team)[Startups](https://github.com/enterprise/startups)[Nonprofits](https://github.com/solutions/industry/nonprofits)BY USE CASE[App Modernization](https://github.com/solutions/use-case/app-modernization)[DevSecOps](https://github.com/solutions/use-case/devsecops)[DevOps](https://github.com/solutions/use-case/devops)[CI/CD](https://github.com/solutions/use-case/ci-cd)[View all use cases](https://github.com/solutions/use-case)BY INDUSTRY[Healthcare](https://github.com/solutions/industry/healthcare)[Financial services](https://github.com/solutions/industry/financial-services)[Manufacturing](https://github.com/solutions/industry/manufacturing)[Government](https://github.com/solutions/industry/government)[View all industries](https://github.com/solutions/industry)[View all solutions](https://github.com/solutions)
+- BY COMPANY SIZE[Enterprises](https://github.com/enterprise)[Small and medium teams](https://github.com/team)[Startups](https://github.com/enterprise/startups)[Nonprofits](https://github.com/solutions/industry/nonprofits)
+- [Enterprises](https://github.com/enterprise)
+- [Small and medium teams](https://github.com/team)
+- [Startups](https://github.com/enterprise/startups)
+- [Nonprofits](https://github.com/solutions/industry/nonprofits)
+- BY USE CASE[App Modernization](https://github.com/solutions/use-case/app-modernization)[DevSecOps](https://github.com/solutions/use-case/devsecops)[DevOps](https://github.com/solutions/use-case/devops)[CI/CD](https://github.com/solutions/use-case/ci-cd)[View all use cases](https://github.com/solutions/use-case)
+- [App Modernization](https://github.com/solutions/use-case/app-modernization)
+- [DevSecOps](https://github.com/solutions/use-case/devsecops)
+- [DevOps](https://github.com/solutions/use-case/devops)
+- [CI/CD](https://github.com/solutions/use-case/ci-cd)
+- [View all use cases](https://github.com/solutions/use-case)
+- BY INDUSTRY[Healthcare](https://github.com/solutions/industry/healthcare)[Financial services](https://github.com/solutions/industry/financial-services)[Manufacturing](https://github.com/solutions/industry/manufacturing)[Government](https://github.com/solutions/industry/government)[View all industries](https://github.com/solutions/industry)
+- [Healthcare](https://github.com/solutions/industry/healthcare)
+- [Financial services](https://github.com/solutions/industry/financial-services)
+- [Manufacturing](https://github.com/solutions/industry/manufacturing)
+- [Government](https://github.com/solutions/industry/government)
+- [View all industries](https://github.com/solutions/industry)
+- ResourcesEXPLORE BY TOPIC[AI](https://github.com/resources/articles?topic=ai)[Software Development](https://github.com/resources/articles?topic=software-development)[DevOps](https://github.com/resources/articles?topic=devops)[Security](https://github.com/resources/articles?topic=security)[View all topics](https://github.com/resources/articles)EXPLORE BY TYPE[Customer stories](https://github.com/customer-stories)[Events & webinars](https://github.com/resources/events)[Ebooks & reports](https://github.com/resources/whitepapers)[Business insights](https://github.com/solutions/executive-insights)[GitHub Skills](https://skills.github.com)SUPPORT & SERVICES[Documentation](https://docs.github.com)[Customer support](https://support.github.com)[Community forum](https://github.com/orgs/community/discussions)[Trust center](https://github.com/trust-center)[Partners](https://github.com/partners)[View all resources](https://github.com/resources)
+- EXPLORE BY TOPIC[AI](https://github.com/resources/articles?topic=ai)[Software Development](https://github.com/resources/articles?topic=software-development)[DevOps](https://github.com/resources/articles?topic=devops)[Security](https://github.com/resources/articles?topic=security)[View all topics](https://github.com/resources/articles)
+- [AI](https://github.com/resources/articles?topic=ai)
+- [Software Development](https://github.com/resources/articles?topic=software-development)
+- [DevOps](https://github.com/resources/articles?topic=devops)
+- [Security](https://github.com/resources/articles?topic=security)
+- [View all topics](https://github.com/resources/articles)
+
+## Navigation Menu
+
+- EXPLORE BY TYPE[Customer stories](https://github.com/customer-stories)[Events & webinars](https://github.com/resources/events)[Ebooks & reports](https://github.com/resources/whitepapers)[Business insights](https://github.com/solutions/executive-insights)[GitHub Skills](https://skills.github.com)
+- [Customer stories](https://github.com/customer-stories)
+- [Events & webinars](https://github.com/resources/events)
+- [Ebooks & reports](https://github.com/resources/whitepapers)
+- [Business insights](https://github.com/solutions/executive-insights)
+- [GitHub Skills](https://skills.github.com)
+- SUPPORT & SERVICES[Documentation](https://docs.github.com)[Customer support](https://support.github.com)[Community forum](https://github.com/orgs/community/discussions)[Trust center](https://github.com/trust-center)[Partners](https://github.com/partners)
+- [Documentation](https://docs.github.com)
+- [Customer support](https://support.github.com)
+- [Community forum](https://github.com/orgs/community/discussions)
+- [Trust center](https://github.com/trust-center)
+- [Partners](https://github.com/partners)
+- Open SourceCOMMUNITY[GitHub SponsorsFund open source developers](https://github.com/open-source/sponsors)PROGRAMS[Security Lab](https://securitylab.github.com)[Maintainer Community](https://maintainers.github.com)[Accelerator](https://github.com/open-source/accelerator)[GitHub Stars](https://stars.github.com)[Archive Program](https://archiveprogram.github.com)REPOSITORIES[Topics](https://github.com/topics)[Trending](https://github.com/trending)[Collections](https://github.com/collections)
+- COMMUNITY[GitHub SponsorsFund open source developers](https://github.com/open-source/sponsors)
+- [GitHub SponsorsFund open source developers](https://github.com/open-source/sponsors)
+- PROGRAMS[Security Lab](https://securitylab.github.com)[Maintainer Community](https://maintainers.github.com)[Accelerator](https://github.com/open-source/accelerator)[GitHub Stars](https://stars.github.com)[Archive Program](https://archiveprogram.github.com)
+- [Security Lab](https://securitylab.github.com)
+- [Maintainer Community](https://maintainers.github.com)
+- [Accelerator](https://github.com/open-source/accelerator)
+- [GitHub Stars](https://stars.github.com)
+- [Archive Program](https://archiveprogram.github.com)
+- REPOSITORIES[Topics](https://github.com/topics)[Trending](https://github.com/trending)[Collections](https://github.com/collections)
+- [Topics](https://github.com/topics)
+- [Trending](https://github.com/trending)
+- [Collections](https://github.com/collections)
+- EnterpriseENTERPRISE SOLUTIONS[Enterprise platformAI-powered developer platform](https://github.com/enterprise)AVAILABLE ADD-ONS[GitHub Advanced SecurityEnterprise-grade security features](https://github.com/security/advanced-security)[Copilot for BusinessEnterprise-grade AI features](https://github.com/features/copilot/copilot-business)[Premium SupportEnterprise-grade 24/7 support](https://github.com/enterprise/premium-support)
+- ENTERPRISE SOLUTIONS[Enterprise platformAI-powered developer platform](https://github.com/enterprise)
+- [Enterprise platformAI-powered developer platform](https://github.com/enterprise)
+- AVAILABLE ADD-ONS[GitHub Advanced SecurityEnterprise-grade security features](https://github.com/security/advanced-security)[Copilot for BusinessEnterprise-grade AI features](https://github.com/features/copilot/copilot-business)[Premium SupportEnterprise-grade 24/7 support](https://github.com/enterprise/premium-support)
+- [GitHub Advanced SecurityEnterprise-grade security features](https://github.com/security/advanced-security)
+- [Copilot for BusinessEnterprise-grade AI features](https://github.com/features/copilot/copilot-business)
+- [Premium SupportEnterprise-grade 24/7 support](https://github.com/enterprise/premium-support)
+- [Pricing](https://github.com/pricing)
+- AI CODE CREATION[GitHub CopilotWrite better code with AI](https://github.com/features/copilot)[GitHub Copilot appDirect agents from issue to merge](https://github.com/features/ai/github-app)[MCP RegistryNewIntegrate external tools](https://github.com/mcp)
+- [GitHub CopilotWrite better code with AI](https://github.com/features/copilot)
+- [GitHub Copilot appDirect agents from issue to merge](https://github.com/features/ai/github-app)
+- [MCP RegistryNewIntegrate external tools](https://github.com/mcp)
+
+## Navigation Menu
+
+- DEVELOPER WORKFLOWS[ActionsAutomate any workflow](https://github.com/features/actions)[CodespacesInstant dev environments](https://github.com/features/codespaces)[IssuesPlan and track work](https://github.com/features/issues)[Code ReviewManage code changes](https://github.com/features/code-review)[Code QualityEnforce quality at merge](https://github.com/features/code-quality)
+- [ActionsAutomate any workflow](https://github.com/features/actions)
+- [CodespacesInstant dev environments](https://github.com/features/codespaces)
+- [IssuesPlan and track work](https://github.com/features/issues)
+- [Code ReviewManage code changes](https://github.com/features/code-review)
+- [Code QualityEnforce quality at merge](https://github.com/features/code-quality)
+- APPLICATION SECURITY[GitHub Advanced SecurityFind and fix vulnerabilities](https://github.com/security/advanced-security)[Code securitySecure your code as you build](https://github.com/security/advanced-security/code-security)[Secret protectionStop leaks before they start](https://github.com/security/advanced-security/secret-protection)
+- [GitHub Advanced SecurityFind and fix vulnerabilities](https://github.com/security/advanced-security)
+- [Code securitySecure your code as you build](https://github.com/security/advanced-security/code-security)
+- [Secret protectionStop leaks before they start](https://github.com/security/advanced-security/secret-protection)
+- EXPLORE[Why GitHub](https://github.com/why-github)[Documentation](https://docs.github.com)[Blog](https://github.blog)[Changelog](https://github.blog/changelog)[Marketplace](https://github.com/marketplace)
+- [Why GitHub](https://github.com/why-github)
+- [Documentation](https://docs.github.com)
+- [Blog](https://github.blog)
+- [Changelog](https://github.blog/changelog)
+- [Marketplace](https://github.com/marketplace)
+- [GitHub CopilotWrite better code with AI](https://github.com/features/copilot)
+- [GitHub Copilot appDirect agents from issue to merge](https://github.com/features/ai/github-app)
+- [MCP RegistryNewIntegrate external tools](https://github.com/mcp)
+[GitHub CopilotWrite better code with AI](https://github.com/features/copilot)
+[GitHub Copilot appDirect agents from issue to merge](https://github.com/features/ai/github-app)
+[MCP RegistryNewIntegrate external tools](https://github.com/mcp)
+- [ActionsAutomate any workflow](https://github.com/features/actions)
+- [CodespacesInstant dev environments](https://github.com/features/codespaces)
+- [IssuesPlan and track work](https://github.com/features/issues)
+- [Code ReviewManage code changes](https://github.com/features/code-review)
+- [Code QualityEnforce quality at merge](https://github.com/features/code-quality)
+[ActionsAutomate any workflow](https://github.com/features/actions)
+[CodespacesInstant dev environments](https://github.com/features/codespaces)
+[IssuesPlan and track work](https://github.com/features/issues)
+[Code ReviewManage code changes](https://github.com/features/code-review)
+[Code QualityEnforce quality at merge](https://github.com/features/code-quality)
+- [GitHub Advanced SecurityFind and fix vulnerabilities](https://github.com/security/advanced-security)
+- [Code securitySecure your code as you build](https://github.com/security/advanced-security/code-security)
+- [Secret protectionStop leaks before they start](https://github.com/security/advanced-security/secret-protection)
+[GitHub Advanced SecurityFind and fix vulnerabilities](https://github.com/security/advanced-security)
+[Code securitySecure your code as you build](https://github.com/security/advanced-security/code-security)
+[Secret protectionStop leaks before they start](https://github.com/security/advanced-security/secret-protection)
+- [Why GitHub](https://github.com/why-github)
+- [Documentation](https://docs.github.com)
+- [Blog](https://github.blog)
+- [Changelog](https://github.blog/changelog)
+- [Marketplace](https://github.com/marketplace)
+[Why GitHub](https://github.com/why-github)
+[Documentation](https://docs.github.com)
+[Blog](https://github.blog)
+[Changelog](https://github.blog/changelog)
+[Marketplace](https://github.com/marketplace)
+[View all features](https://github.com/features)
+- BY COMPANY SIZE[Enterprises](https://github.com/enterprise)[Small and medium teams](https://github.com/team)[Startups](https://github.com/enterprise/startups)[Nonprofits](https://github.com/solutions/industry/nonprofits)
+- [Enterprises](https://github.com/enterprise)
+
+## Navigation Menu
+
+- [Small and medium teams](https://github.com/team)
+- [Startups](https://github.com/enterprise/startups)
+- [Nonprofits](https://github.com/solutions/industry/nonprofits)
+- BY USE CASE[App Modernization](https://github.com/solutions/use-case/app-modernization)[DevSecOps](https://github.com/solutions/use-case/devsecops)[DevOps](https://github.com/solutions/use-case/devops)[CI/CD](https://github.com/solutions/use-case/ci-cd)[View all use cases](https://github.com/solutions/use-case)
+- [App Modernization](https://github.com/solutions/use-case/app-modernization)
+- [DevSecOps](https://github.com/solutions/use-case/devsecops)
+- [DevOps](https://github.com/solutions/use-case/devops)
+- [CI/CD](https://github.com/solutions/use-case/ci-cd)
+- [View all use cases](https://github.com/solutions/use-case)
+- BY INDUSTRY[Healthcare](https://github.com/solutions/industry/healthcare)[Financial services](https://github.com/solutions/industry/financial-services)[Manufacturing](https://github.com/solutions/industry/manufacturing)[Government](https://github.com/solutions/industry/government)[View all industries](https://github.com/solutions/industry)
+- [Healthcare](https://github.com/solutions/industry/healthcare)
+- [Financial services](https://github.com/solutions/industry/financial-services)
+- [Manufacturing](https://github.com/solutions/industry/manufacturing)
+- [Government](https://github.com/solutions/industry/government)
+- [View all industries](https://github.com/solutions/industry)
+- [Enterprises](https://github.com/enterprise)
+- [Small and medium teams](https://github.com/team)
+- [Startups](https://github.com/enterprise/startups)
+- [Nonprofits](https://github.com/solutions/industry/nonprofits)
+[Enterprises](https://github.com/enterprise)
+[Small and medium teams](https://github.com/team)
+[Startups](https://github.com/enterprise/startups)
+[Nonprofits](https://github.com/solutions/industry/nonprofits)
+- [App Modernization](https://github.com/solutions/use-case/app-modernization)
+- [DevSecOps](https://github.com/solutions/use-case/devsecops)
+- [DevOps](https://github.com/solutions/use-case/devops)
+- [CI/CD](https://github.com/solutions/use-case/ci-cd)
+- [View all use cases](https://github.com/solutions/use-case)
+[App Modernization](https://github.com/solutions/use-case/app-modernization)
+[DevSecOps](https://github.com/solutions/use-case/devsecops)
+[DevOps](https://github.com/solutions/use-case/devops)
+[CI/CD](https://github.com/solutions/use-case/ci-cd)
+[View all use cases](https://github.com/solutions/use-case)
+- [Healthcare](https://github.com/solutions/industry/healthcare)
+- [Financial services](https://github.com/solutions/industry/financial-services)
+- [Manufacturing](https://github.com/solutions/industry/manufacturing)
+- [Government](https://github.com/solutions/industry/government)
+- [View all industries](https://github.com/solutions/industry)
+[Healthcare](https://github.com/solutions/industry/healthcare)
+[Financial services](https://github.com/solutions/industry/financial-services)
+[Manufacturing](https://github.com/solutions/industry/manufacturing)
+[Government](https://github.com/solutions/industry/government)
+[View all industries](https://github.com/solutions/industry)
+[View all solutions](https://github.com/solutions)
+- EXPLORE BY TOPIC[AI](https://github.com/resources/articles?topic=ai)[Software Development](https://github.com/resources/articles?topic=software-development)[DevOps](https://github.com/resources/articles?topic=devops)[Security](https://github.com/resources/articles?topic=security)[View all topics](https://github.com/resources/articles)
+- [AI](https://github.com/resources/articles?topic=ai)
+- [Software Development](https://github.com/resources/articles?topic=software-development)
+- [DevOps](https://github.com/resources/articles?topic=devops)
+- [Security](https://github.com/resources/articles?topic=security)
+- [View all topics](https://github.com/resources/articles)
+- EXPLORE BY TYPE[Customer stories](https://github.com/customer-stories)[Events & webinars](https://github.com/resources/events)[Ebooks & reports](https://github.com/resources/whitepapers)[Business insights](https://github.com/solutions/executive-insights)[GitHub Skills](https://skills.github.com)
+- [Customer stories](https://github.com/customer-stories)
+- [Events & webinars](https://github.com/resources/events)
+- [Ebooks & reports](https://github.com/resources/whitepapers)
+- [Business insights](https://github.com/solutions/executive-insights)
+
+## Navigation Menu
+
+- [GitHub Skills](https://skills.github.com)
+- SUPPORT & SERVICES[Documentation](https://docs.github.com)[Customer support](https://support.github.com)[Community forum](https://github.com/orgs/community/discussions)[Trust center](https://github.com/trust-center)[Partners](https://github.com/partners)
+- [Documentation](https://docs.github.com)
+- [Customer support](https://support.github.com)
+- [Community forum](https://github.com/orgs/community/discussions)
+- [Trust center](https://github.com/trust-center)
+- [Partners](https://github.com/partners)
+- [AI](https://github.com/resources/articles?topic=ai)
+- [Software Development](https://github.com/resources/articles?topic=software-development)
+- [DevOps](https://github.com/resources/articles?topic=devops)
+- [Security](https://github.com/resources/articles?topic=security)
+- [View all topics](https://github.com/resources/articles)
+[AI](https://github.com/resources/articles?topic=ai)
+[Software Development](https://github.com/resources/articles?topic=software-development)
+[DevOps](https://github.com/resources/articles?topic=devops)
+[Security](https://github.com/resources/articles?topic=security)
+[View all topics](https://github.com/resources/articles)
+- [Customer stories](https://github.com/customer-stories)
+- [Events & webinars](https://github.com/resources/events)
+- [Ebooks & reports](https://github.com/resources/whitepapers)
+- [Business insights](https://github.com/solutions/executive-insights)
+- [GitHub Skills](https://skills.github.com)
+[Customer stories](https://github.com/customer-stories)
+[Events & webinars](https://github.com/resources/events)
+[Ebooks & reports](https://github.com/resources/whitepapers)
+[Business insights](https://github.com/solutions/executive-insights)
+[GitHub Skills](https://skills.github.com)
+- [Documentation](https://docs.github.com)
+- [Customer support](https://support.github.com)
+- [Community forum](https://github.com/orgs/community/discussions)
+- [Trust center](https://github.com/trust-center)
+- [Partners](https://github.com/partners)
+[Documentation](https://docs.github.com)
+[Customer support](https://support.github.com)
+[Community forum](https://github.com/orgs/community/discussions)
+[Trust center](https://github.com/trust-center)
+[Partners](https://github.com/partners)
+[View all resources](https://github.com/resources)
+- COMMUNITY[GitHub SponsorsFund open source developers](https://github.com/open-source/sponsors)
+- [GitHub SponsorsFund open source developers](https://github.com/open-source/sponsors)
+- PROGRAMS[Security Lab](https://securitylab.github.com)[Maintainer Community](https://maintainers.github.com)[Accelerator](https://github.com/open-source/accelerator)[GitHub Stars](https://stars.github.com)[Archive Program](https://archiveprogram.github.com)
+- [Security Lab](https://securitylab.github.com)
+- [Maintainer Community](https://maintainers.github.com)
+- [Accelerator](https://github.com/open-source/accelerator)
+- [GitHub Stars](https://stars.github.com)
+- [Archive Program](https://archiveprogram.github.com)
+- REPOSITORIES[Topics](https://github.com/topics)[Trending](https://github.com/trending)[Collections](https://github.com/collections)
+- [Topics](https://github.com/topics)
+- [Trending](https://github.com/trending)
+- [Collections](https://github.com/collections)
+- [GitHub SponsorsFund open source developers](https://github.com/open-source/sponsors)
+[GitHub SponsorsFund open source developers](https://github.com/open-source/sponsors)
+- [Security Lab](https://securitylab.github.com)
+- [Maintainer Community](https://maintainers.github.com)
+- [Accelerator](https://github.com/open-source/accelerator)
+- [GitHub Stars](https://stars.github.com)
+- [Archive Program](https://archiveprogram.github.com)
+[Security Lab](https://securitylab.github.com)
+[Maintainer Community](https://maintainers.github.com)
+[Accelerator](https://github.com/open-source/accelerator)
+[GitHub Stars](https://stars.github.com)
+[Archive Program](https://archiveprogram.github.com)
+- [Topics](https://github.com/topics)
+- [Trending](https://github.com/trending)
+- [Collections](https://github.com/collections)
+[Topics](https://github.com/topics)
+[Trending](https://github.com/trending)
+[Collections](https://github.com/collections)
+- ENTERPRISE SOLUTIONS[Enterprise platformAI-powered developer platform](https://github.com/enterprise)
+- [Enterprise platformAI-powered developer platform](https://github.com/enterprise)
+
+## Navigation Menu
+
+- AVAILABLE ADD-ONS[GitHub Advanced SecurityEnterprise-grade security features](https://github.com/security/advanced-security)[Copilot for BusinessEnterprise-grade AI features](https://github.com/features/copilot/copilot-business)[Premium SupportEnterprise-grade 24/7 support](https://github.com/enterprise/premium-support)
+- [GitHub Advanced SecurityEnterprise-grade security features](https://github.com/security/advanced-security)
+- [Copilot for BusinessEnterprise-grade AI features](https://github.com/features/copilot/copilot-business)
+- [Premium SupportEnterprise-grade 24/7 support](https://github.com/enterprise/premium-support)
+- [Enterprise platformAI-powered developer platform](https://github.com/enterprise)
+[Enterprise platformAI-powered developer platform](https://github.com/enterprise)
+- [GitHub Advanced SecurityEnterprise-grade security features](https://github.com/security/advanced-security)
+- [Copilot for BusinessEnterprise-grade AI features](https://github.com/features/copilot/copilot-business)
+- [Premium SupportEnterprise-grade 24/7 support](https://github.com/enterprise/premium-support)
+[GitHub Advanced SecurityEnterprise-grade security features](https://github.com/security/advanced-security)
+[Copilot for BusinessEnterprise-grade AI features](https://github.com/features/copilot/copilot-business)
+[Premium SupportEnterprise-grade 24/7 support](https://github.com/enterprise/premium-support)
+[Pricing](https://github.com/pricing)
+
+# Search code, repositories, users, issues, pull requests...
+[Search syntax tips](https://docs.github.com/search-github/github-code-search/understanding-github-code-search-syntax)
+
+# Provide feedback
+We read every piece of feedback, and take your input very seriously.
+
+## Use saved searches to filter your results more quickly
+
+To see all available qualifiers, see our [documentation](https://docs.github.com/search-github/github-code-search/understanding-github-code-search-syntax).
+[Sign in](https://github.com/login?return_to=https%3A%2F%2Fgithub.com%2F0xACAB666%2Fyt-heatmap-clipper)
+[Sign up](https://github.com/signup?ref_cta=Sign+up&ref_loc=header+logged+out&ref_page=%2F%3Cuser-name%3E%2F%3Crepo-name%3E&source=header-repo&source_repo=0xACAB666%2Fyt-heatmap-clipper)
+[Reload](https://github.com/0xACAB666/yt-heatmap-clipper)
+[Reload](https://github.com/0xACAB666/yt-heatmap-clipper)
+[Reload](https://github.com/0xACAB666/yt-heatmap-clipper)
+[0xACAB666](https://github.com/0xACAB666)
+[yt-heatmap-clipper](https://github.com/0xACAB666/yt-heatmap-clipper)
+- 
+            [Notifications](https://github.com/login?return_to=%2F0xACAB666%2Fyt-heatmap-clipper)    You must be signed in to change notification settings
+
+
+- 
+          [Fork
+    40](https://github.com/login?return_to=%2F0xACAB666%2Fyt-heatmap-clipper)
+
+- 
+
+        [Star
+          83](https://github.com/login?return_to=%2F0xACAB666%2Fyt-heatmap-clipper)
+
+[Notifications](https://github.com/login?return_to=%2F0xACAB666%2Fyt-heatmap-clipper)
+[Fork
+    40](https://github.com/login?return_to=%2F0xACAB666%2Fyt-heatmap-clipper)
+[Star
+          83](https://github.com/login?return_to=%2F0xACAB666%2Fyt-heatmap-clipper)
+- 
+  [Code](https://github.com/0xACAB666/yt-heatmap-clipper)
+- 
+  [Issues
+          0](https://github.com/0xACAB666/yt-heatmap-clipper/issues)
+- 
+  [Pull requests
+          0](https://github.com/0xACAB666/yt-heatmap-clipper/pulls)
+- 
+  [Actions](https://github.com/0xACAB666/yt-heatmap-clipper/actions)
+- 
+  [Projects](https://github.com/0xACAB666/yt-heatmap-clipper/projects)
+- 
+  [Security and quality
+          0](https://github.com/0xACAB666/yt-heatmap-clipper/security)
+- 
+  [Insights](https://github.com/0xACAB666/yt-heatmap-clipper/pulse)
+[Code](https://github.com/0xACAB666/yt-heatmap-clipper)
+[Issues
+          0](https://github.com/0xACAB666/yt-heatmap-clipper/issues)
+[Pull requests
+          0](https://github.com/0xACAB666/yt-heatmap-clipper/pulls)
+[Actions](https://github.com/0xACAB666/yt-heatmap-clipper/actions)
+[Projects](https://github.com/0xACAB666/yt-heatmap-clipper/projects)
+[Security and quality
+          0](https://github.com/0xACAB666/yt-heatmap-clipper/security)
+[Insights](https://github.com/0xACAB666/yt-heatmap-clipper/pulse)
+- 
+
+
+    [Code](https://github.com/0xACAB666/yt-heatmap-clipper)
+
+
+- 
+
+
+    [Issues](https://github.com/0xACAB666/yt-heatmap-clipper/issues)
+
+
+- 
+
+
+    [Pull requests](https://github.com/0xACAB666/yt-heatmap-clipper/pulls)
+
+
+- 
+
+
+    [Actions](https://github.com/0xACAB666/yt-heatmap-clipper/actions)
+
+
+- 
+
+
+    [Projects](https://github.com/0xACAB666/yt-heatmap-clipper/projects)
+
+
+- 
+
+
+    [Security and quality](https://github.com/0xACAB666/yt-heatmap-clipper/security)
+
+
+- 
+
+
+    [Insights](https://github.com/0xACAB666/yt-heatmap-clipper/pulse)
+
+
+[Code](https://github.com/0xACAB666/yt-heatmap-clipper)
+[Issues](https://github.com/0xACAB666/yt-heatmap-clipper/issues)
+[Pull requests](https://github.com/0xACAB666/yt-heatmap-clipper/pulls)
+[Actions](https://github.com/0xACAB666/yt-heatmap-clipper/actions)
+[Projects](https://github.com/0xACAB666/yt-heatmap-clipper/projects)
+[Security and quality](https://github.com/0xACAB666/yt-heatmap-clipper/security)
+[Insights](https://github.com/0xACAB666/yt-heatmap-clipper/pulse)
+
+# 0xACAB666/yt-heatmap-clipper
+
+[Branches](https://github.com/0xACAB666/yt-heatmap-clipper/branches)
+[Tags](https://github.com/0xACAB666/yt-heatmap-clipper/tags)
+
+## History
+[15 Commits](https://github.com/0xACAB666/yt-heatmap-clipper/commits/main/)
+[clips](https://github.com/0xACAB666/yt-heatmap-clipper/tree/main/clips)
+[clips](https://github.com/0xACAB666/yt-heatmap-clipper/tree/main/clips)
+[.gitignore](https://github.com/0xACAB666/yt-heatmap-clipper/blob/main/.gitignore)
+[.gitignore](https://github.com/0xACAB666/yt-heatmap-clipper/blob/main/.gitignore)
+[LICENSE](https://github.com/0xACAB666/yt-heatmap-clipper/blob/main/LICENSE)
+[LICENSE](https://github.com/0xACAB666/yt-heatmap-clipper/blob/main/LICENSE)
+[README.md](https://github.com/0xACAB666/yt-heatmap-clipper/blob/main/README.md)
+[README.md](https://github.com/0xACAB666/yt-heatmap-clipper/blob/main/README.md)
+[check_setup.py](https://github.com/0xACAB666/yt-heatmap-clipper/blob/main/check_setup.py)
+[check_setup.py](https://github.com/0xACAB666/yt-heatmap-clipper/blob/main/check_setup.py)
+[requirements.txt](https://github.com/0xACAB666/yt-heatmap-clipper/blob/main/requirements.txt)
+[requirements.txt](https://github.com/0xACAB666/yt-heatmap-clipper/blob/main/requirements.txt)
+[run.py](https://github.com/0xACAB666/yt-heatmap-clipper/blob/main/run.py)
+[run.py](https://github.com/0xACAB666/yt-heatmap-clipper/blob/main/run.py)
+
+## Repository files navigation
+- 
+- [README](https://github.com/0xACAB666/yt-heatmap-clipper)
+- [MIT license](https://github.com/0xACAB666/yt-heatmap-clipper)
+[README](https://github.com/0xACAB666/yt-heatmap-clipper)
+[MIT license](https://github.com/0xACAB666/yt-heatmap-clipper)
+
+# yt-heatmap-clipper
+
+Automatically extract the most engaging segments from YouTube videos using Most Replayed (heatmap) data and convert them into vertical-ready clips with AI-powered subtitles.
+This tool parses YouTube audience engagement markers to detect high-interest moments and generates short vertical videos suitable for YouTube Shorts, Instagram Reels, and TikTok.
+
+### Core Features
+- Extracts YouTube Most Replayed (heatmap) segments
+- Automatically selects high-engagement moments
+- Configurable pre and post padding for each clip
+- Outputs 9:16 vertical video format (720x1280)
+- No YouTube API key required
+- Supports standard YouTube videos and Shorts
+
+### Advanced Features
+- 3 Crop Modes:
+
+Default: Center crop from original video
+Split Left: Top = center content, Bottom = bottom-left (facecam)
+Split Right: Top = center content, Bottom = bottom-right (facecam)
+
+
+- Default: Center crop from original video
+- Split Left: Top = center content, Bottom = bottom-left (facecam)
+- Split Right: Top = center content, Bottom = bottom-right (facecam)
+- AI Auto Subtitle (Faster-Whisper):
+
+4-5x faster than standard Whisper
+Support for Indonesian language (and 99+ languages)
+Multiple model sizes: tiny, base, small, medium, large
+Automatic transcription and subtitle burning
+Customizable subtitle style
+
+
+- 4-5x faster than standard Whisper
+- Support for Indonesian language (and 99+ languages)
+- Multiple model sizes: tiny, base, small, medium, large
+- Automatic transcription and subtitle burning
+- Customizable subtitle style
+- Default: Center crop from original video
+- Split Left: Top = center content, Bottom = bottom-left (facecam)
+- Split Right: Top = center content, Bottom = bottom-right (facecam)
+- 4-5x faster than standard Whisper
+- Support for Indonesian language (and 99+ languages)
+- Multiple model sizes: tiny, base, small, medium, large
+- Automatic transcription and subtitle burning
+- Customizable subtitle style
+
+## ⚙️ How It Works
+1. Parse Heatmap Data: Fetches YouTube watch page and extracts "Most Replayed" markers.
+2. Filter Segments: Identifies high-engagement moments based on score threshold.
+3. User Selection: Interactive menu for crop mode and subtitle preferences.
+4. Smart Download: Downloads only the required time ranges (with padding).
+5. Video Processing:
+
+Scales to 1920px width (maintains aspect ratio).
+Applies selected crop mode (center, split-left, or split-right).
+Converts to 720x1280 vertical format.
+
+
+6. Scales to 1920px width (maintains aspect ratio).
+7. Applies selected crop mode (center, split-left, or split-right).
+8. Converts to 720x1280 vertical format.
+9. AI Transcription (optional):
+
+Transcribes audio using Faster-Whisper.
+Generates SRT subtitle file.
+Burns subtitles with customizable style.
+
+
+10. Transcribes audio using Faster-Whisper.
+11. Generates SRT subtitle file.
+12. Burns subtitles with customizable style.
+13. Export: Saves optimized MP4 clips ready for social media.
+- Scales to 1920px width (maintains aspect ratio).
+- Applies selected crop mode (center, split-left, or split-right).
+- Converts to 720x1280 vertical format.
+- Transcribes audio using Faster-Whisper.
+- Generates SRT subtitle file.
+- Burns subtitles with customizable style.
+
+## 🛠️ Requirements
+- Python 3.8 or higher
+- FFmpeg (must be installed and available in PATH)
+- Internet connection
+
+### Python Dependencies:
+- requests - HTTP requests
+- yt-dlp - YouTube video downloader
+- faster-whisper - AI transcription (optional, for subtitles)
+
+```
+requests
+```
+
+
+```
+yt-dlp
+```
+
+
+```
+faster-whisper
+```
+
+### Hardware Requirements:
+- Minimum: 2 GB RAM, 1 GB free disk space
+- Recommended (with subtitle): 4 GB RAM, 2 GB free disk space
+- Internet bandwidth: ~10 MB/s for smooth downloading
+
+### Clone Repository
+```
+git clone https://github.com/0xACAB666/yt-heatmap-clipper.git cd yt-heatmap-clipper
+```
+
+### Install Python Dependencies
+Basic installation (without subtitle support):
+
+```
+pip install requests yt-dlp
+```
+
+Full installation (with AI subtitle support):
+
+```
+pip install requests yt-dlp faster-whisper
+```
+
+Or use requirements file if available:
+
+```
+pip install -r requirements.txt
+```
+
+### Install FFmpeg
+FFmpeg is the core engine for video processing and must be installed.
+
+#### 🪟 Windows
+
+```
+1. Download from https://ffmpeg.org/download.html 2. Extract to `C:\ffmpeg` 3. Add `C:\ffmpeg\bin` to system PATH 4. Restart terminal
+```
+
+
+#### 🍎 macOS
+
+```
+brew install ffmpeg
+```
+
+
+#### 🐧 Linux
+
+```
+sudo apt update && sudo apt install ffmpeg
+```
+
+### 🩺 Verify Installation (Optional)
+We have included a script (check_setup.py) to verify if FFmpeg and all Python dependencies are correctly installed.
+
+```
+check_setup.py
+```
+
+Simply run:
+
+```
+python check_setup.py
+```
+
+Expected Output: If your environment is ready, you should see green checkmarks like this:
+
+```
+✅ FFmpeg is installed and recognized. ✅ Library 'requests' is installed. ✅ Library 'yt_dlp' is installed. ✅ Library 'faster_whisper' is installed.
+```
+
+
+```
+✅ FFmpeg is installed and recognized. ✅ Library 'requests' is installed. ✅ Library 'yt_dlp' is installed. ✅ Library 'faster_whisper' is installed.
+```
+
+### Basic Usage
+```
+python run.py
+```
+
+### Interactive Workflow
+The script will guide you through an interactive setup:
+1. 
+Select Crop Mode (1-3):
+
+1 - Default (center crop)
+2 - Split 1 (top: center, bottom: bottom-left facecam)
+3 - Split 2 (top: center, bottom: bottom-right facecam)
+
+
+2. 1 - Default (center crop)
+3. 2 - Split 1 (top: center, bottom: bottom-left facecam)
+4. 3 - Split 2 (top: center, bottom: bottom-right facecam)
+5. 
+Enable Auto Subtitle (y/n):
+
+y - Generate AI-powered subtitles
+n - Skip subtitle generation
+
+
+6. y - Generate AI-powered subtitles
+7. n - Skip subtitle generation
+8. 
+Enter YouTube URL: Paste the link.
+
+9. 
+Processing: The script takes over from here.
+
+Select Crop Mode (1-3):
+- 1 - Default (center crop)
+- 2 - Split 1 (top: center, bottom: bottom-left facecam)
+- 3 - Split 2 (top: center, bottom: bottom-right facecam)
+
+```
+1
+```
+
+
+```
+2
+```
+
+
+```
+3
+```
+
+Enable Auto Subtitle (y/n):
+- y - Generate AI-powered subtitles
+- n - Skip subtitle generation
+
+```
+y
+```
+
+
+```
+n
+```
+
+Enter YouTube URL: Paste the link.
+Processing: The script takes over from here.
+
+### 💻 Example Session
+```
+=== Crop Mode === 1. Default (center crop) 2. Split 1 (top: center, bottom: bottom-left (facecam)) 3. Split 2 (top: center, bottom: bottom-right (facecam)) Select crop mode (1-3): 3 Selected: Split crop (bottom-right facecam) === Auto Subtitle === Available model: tiny (~75 MB) Add auto subtitle using Faster-Whisper? (y/n): y ✅ Subtitle enabled (Model: tiny, Bahasa Indonesia) ✅ Faster-Whisper package installed. ✅ Model 'tiny' already cached and ready. Link YT: [https://www.youtube.com/watch?v=dQw4w9WgXcQ](https://www.youtube.com/watch?v=dQw4w9WgXcQ) Reading YouTube heatmap data... Found 6 high-engagement segments. Processing clips with 10s pre-padding and 10s post-padding. [Clip 1] Processing segment (230s - 268s, padding 10s) Cropping video... Generating subtitle... ✅ Model loaded. Transcribing audio... Burning subtitle to video... Clip successfully generated.
+```
+
+
+```
+=== Crop Mode === 1. Default (center crop) 2. Split 1 (top: center, bottom: bottom-left (facecam)) 3. Split 2 (top: center, bottom: bottom-right (facecam)) Select crop mode (1-3): 3 Selected: Split crop (bottom-right facecam) === Auto Subtitle === Available model: tiny (~75 MB) Add auto subtitle using Faster-Whisper? (y/n): y ✅ Subtitle enabled (Model: tiny, Bahasa Indonesia) ✅ Faster-Whisper package installed. ✅ Model 'tiny' already cached and ready. Link YT: [https://www.youtube.com/watch?v=dQw4w9WgXcQ](https://www.youtube.com/watch?v=dQw4w9WgXcQ) Reading YouTube heatmap data... Found 6 high-engagement segments. Processing clips with 10s pre-padding and 10s post-padding. [Clip 1] Processing segment (230s - 268s, padding 10s) Cropping video... Generating subtitle... ✅ Model loaded. Transcribing audio... Burning subtitle to video... Clip successfully generated.
+```
+
+Generated clips will be saved in the clips/ directory.
+
+```
+clips/
+```
+
+## 🔧 Configuration
+
+You can modify these settings at the top of run.py:
+
+```
+run.py
+```
+
+### Basic Settings
+```
+OUTPUT_DIR = "clips" # Output directory for generated clips MAX_DURATION = 60 # Maximum clip duration (seconds) MIN_SCORE = 0.40 # Minimum heatmap score threshold (0.0-1.0) MAX_CLIPS = 10 # Maximum number of clips per video PADDING = 10 # Seconds added before and after each segment
+```
+
+### Crop Mode Settings
+```
+TOP_HEIGHT = 960 # Height for top section in split mode (px) BOTTOM_HEIGHT = 320 # Height for bottom section (facecam) in split mode (px)
+```
+
+Note: TOP_HEIGHT + BOTTOM_HEIGHT = 1280 (total vertical resolution)
+
+```
+TOP_HEIGHT + BOTTOM_HEIGHT = 1280
+```
+
+### Subtitle Settings
+```
+USE_SUBTITLE = True # Enable auto subtitle (can be overridden at runtime) WHISPER_MODEL = "tiny" # Whisper model: tiny, base, small, medium, large
+```
+
+### Whisper Model Comparison
+Recommendation: Use tiny for speed, small for quality balance.
+
+```
+tiny
+```
+
+
+```
+small
+```
+
+### Video Specifications
+- Format: MP4 (H.264 video + AAC audio)
+- Resolution: 720x1280 (9:16 vertical)
+- Video Codec: libx264, CRF 26, ultrafast preset
+- Audio Codec: AAC, 128 kbps
+- Subtitle: Burned-in (if enabled), white text with black outline
+
+### File Naming
+```
+clips/ ├── clip_1.mp4 ├── clip_2.mp4 └── clip_3.mp4
+```
+
+
+```
+clips/ ├── clip_1.mp4 ├── clip_2.mp4 └── clip_3.mp4
+```
+
+### Mode 1: Default (Center Crop)
+Best for Vlogs, Podcasts, or general videos. Output Resolution: 720 x 1280 px.
+
+```
+[ Original 16:9 ] [ Output 9:16 ] ┌───────────────────────┐ ┌───────────┐ │ │ │ │ │ │ │ │ │ │ │ CONTENT │ ──► │ CONTENT │ ↕ 1280px │ │ │ │ │ │ │ │ │ │ └───────────────────────┘ └───────────┘ (Center)
+```
+
+
+```
+[ Original 16:9 ] [ Output 9:16 ] ┌───────────────────────┐ ┌───────────┐ │ │ │ │ │ │ │ │ │ │ │ CONTENT │ ──► │ CONTENT │ ↕ 1280px │ │ │ │ │ │ │ │ │ │ └───────────────────────┘ └───────────┘ (Center)
+```
+
+### Mode 2: Split Left (Gaming/Reaction)
+Best for streamers with Facecam on the Bottom-Left. Output Resolution: 720 x 1280 px.
+
+```
+[ Original 16:9 ] [ Output 9:16 ] ┌───────────────────────┐ ┌───────────┐ │ │ │ │ CONTENT │ ↕ 960px │ CONTENT │ ──► │ (Center) │ │ │ │ ├───────────┤ ├───┐ │ │ FACECAM │ ↕ 320px │CAM│ │ │ (Bot-Left)│ └───┴───────────────────┘ └───────────┘
+```
+
+
+```
+[ Original 16:9 ] [ Output 9:16 ] ┌───────────────────────┐ ┌───────────┐ │ │ │ │ CONTENT │ ↕ 960px │ CONTENT │ ──► │ (Center) │ │ │ │ ├───────────┤ ├───┐ │ │ FACECAM │ ↕ 320px │CAM│ │ │ (Bot-Left)│ └───┴───────────────────┘ └───────────┘
+```
+
+### Mode 3: Split Right (Gaming/Reaction)
+Best for streamers with Facecam on the Bottom-Right. Output Resolution: 720 x 1280 px.
+
+```
+[ Original 16:9 ] [ Output 9:16 ] ┌───────────────────────┐ ┌───────────┐ │ │ │ │ CONTENT │ ↕ 960px │ CONTENT │ ──► │ (Center) │ │ │ │ ├───────────┤ │ ┌───┤ │ FACECAM │ ↕ 320px │ │CAM│ │(Bot-Right)│ └───────────────────┴───┘ └───────────┘
+```
+
+
+```
+[ Original 16:9 ] [ Output 9:16 ] ┌───────────────────────┐ ┌───────────┐ │ │ │ │ CONTENT │ ↕ 960px │ CONTENT │ ──► │ (Center) │ │ │ │ ├───────────┤ │ ┌───┤ │ FACECAM │ ↕ 320px │ │CAM│ │(Bot-Right)│ └───────────────────┴───┘ └───────────┘
+```
+
+### FFmpeg not found
+- Windows: Download from [ffmpeg.org](https://ffmpeg.org/download.html), add bin folder to PATH.
+- macOS: brew install ffmpeg
+- Linux: sudo apt install ffmpeg
+[ffmpeg.org](https://ffmpeg.org/download.html)
+
+```
+bin
+```
+
+
+```
+brew install ffmpeg
+```
+
+
+```
+sudo apt install ffmpeg
+```
+
+### No high-engagement segments found
+- Video might not have "Most Replayed" data yet (needs views/engagement).
+- Try lowering MIN_SCORE (e.g., from 0.40 to 0.30).
+- Check if video URL is correct.
+
+```
+MIN_SCORE
+```
+
+### Subtitle generation fails
+- Ensure internet connection for first-time model download.
+- Check available RAM (Whisper needs ~500MB-2GB depending on model).
+- Try smaller model: change WHISPER_MODEL from small to tiny.
+
+```
+WHISPER_MODEL
+```
+
+
+```
+small
+```
+
+
+```
+tiny
+```
+
+### For Gaming Content
+- Use Split Right or Split Left mode (facecam in corner).
+- Keep PADDING = 10 for context before/after action.
+- Use small or base model for accurate gaming terminology.
+
+```
+PADDING = 10
+```
+
+
+```
+small
+```
+
+
+```
+base
+```
+
+### For Tutorial/Vlog Content
+- Use Default center crop mode.
+- Increase MAX_DURATION = 90 for longer explanations.
+- Enable subtitles with tiny model for fast processing.
+
+```
+MAX_DURATION = 90
+```
+
+
+```
+tiny
+```
+
+### Subtitle Customization
+Edit line ~368 in run.py to customize subtitle style:
+
+```
+run.py
+```
+
+
+```
+# Current style (white text, black outline): BorderStyle=1,Outline=3,Shadow=2,MarginV=30 # Large text: FontSize=28,Outline=4 # Position higher (avoid facecam): MarginV=400 # Different color (yellow): PrimaryColour=&H00FFFF
+```
+
+## 🤝 Contribution
+Contributions are welcome! Feel free to:
+- Report bugs
+- Suggest features
+- Submit pull requests
+- Improve documentation
+
+## 📜 License
+MIT License
+
+## 🙏 Credits
+- [yt-dlp](https://github.com/yt-dlp/yt-dlp) - YouTube video downloader
+- [FFmpeg](https://ffmpeg.org/) - Video processing
+- [Faster-Whisper](https://github.com/guillaumekln/faster-whisper) - AI transcription
+- [OpenAI Whisper](https://github.com/openai/whisper) - Speech recognition model
+[yt-dlp](https://github.com/yt-dlp/yt-dlp)
+[FFmpeg](https://ffmpeg.org/)
+[Faster-Whisper](https://github.com/guillaumekln/faster-whisper)
+[OpenAI Whisper](https://github.com/openai/whisper)
+
+## 🌟 Support
+If you find this tool useful, please ⭐ star this repository!
+For issues and questions, please open an issue on GitHub.
+
+## About
+Automatically find and clip the most engaging parts of YouTube videos using heatmap-based viewer interaction data.
+
+### Resources
+[Readme](https://github.com/0xACAB666/yt-heatmap-clipper#readme-ov-file)
+[MIT license](https://github.com/0xACAB666/yt-heatmap-clipper#MIT-1-ov-file)
+[Activity](https://github.com/0xACAB666/yt-heatmap-clipper/activity)
+
+### Stars
+[83 stars](https://github.com/0xACAB666/yt-heatmap-clipper/stargazers)
+
+### Watchers
+[0 watching](https://github.com/0xACAB666/yt-heatmap-clipper/watchers)
+
+### Forks
+[40 forks](https://github.com/0xACAB666/yt-heatmap-clipper/forks)
+[Report repository](https://github.com/contact/report-content?content_url=https%3A%2F%2Fgithub.com%2F0xACAB666%2Fyt-heatmap-clipper&report=0xACAB666+%28user%29)
+
+### Footer navigation
+
+- 
+            [Terms](https://docs.github.com/site-policy/github-terms/github-terms-of-service)
+
+- 
+            [Privacy](https://docs.github.com/site-policy/privacy-policies/github-privacy-statement)
+
+- 
+            [Security](https://github.com/security)
+
+- 
+            [Status](https://www.githubstatus.com/)
+
+- 
+            [Community](https://github.community/)
+
+- 
+            [Docs](https://docs.github.com/)
+
+- 
+            [Contact](https://support.github.com?tags=dotcom-footer)
+
+- 
+
+
+       Manage cookies
+
+
+
+- 
+
+
+      Do not share my personal information
+
+
+
+[Terms](https://docs.github.com/site-policy/github-terms/github-terms-of-service)
+[Privacy](https://docs.github.com/site-policy/privacy-policies/github-privacy-statement)
+[Security](https://github.com/security)
+[Status](https://www.githubstatus.com/)
+[Community](https://github.community/)
+[Docs](https://docs.github.com/)
+[Contact](https://support.github.com?tags=dotcom-footer)

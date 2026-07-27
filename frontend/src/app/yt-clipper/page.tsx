@@ -498,9 +498,11 @@ export default function YtClipperPage() {
             ...newImgs.map(i => ({ ...i, created_at: Date.now() / 1000 })),
             ...prev
           ]);
+        } else {
+          alert("Gemini merespon tanpa gambar. Coba persingkat atau gunakan Bahasa Inggris untuk prompt gambar (contoh: 'A futuristic electric car in Tokyo at night').");
         }
       } else { alert("Error: " + (data.detail || "Generate gagal")); }
-    } catch { alert("Tidak bisa terhubung ke agent."); }
+    } catch { alert("Tidak bisa terhubung ke agent. Pastikan Local Agent berjalan."); }
     finally { setIsGeneratingImage(false); }
   };
 
