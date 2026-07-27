@@ -803,6 +803,55 @@ def gemini_status():
     return {"connected": connected, "status": "online" if connected else "offline"}
 
 
+def prepare_gemini_image_prompt(prompt_text: str, aspect_ratio: str = "16:9"):
+    """Cleans Indonesian meta-phrases and structures prompt for Imagen 3 on Gemini Web."""
+    text = prompt_text.strip()
+    
+    # Remove leading meta commands like "buatkan gambar", "bikin foto", "tolong buatkan gambar", etc.
+    pattern = r'^(?:buatkan|bikin|tolong\s+buatkan|tolong|desainkan|desain|generate|create|draw)\s+(?:gambar|foto|image|lukisan|desain|thumbnail)?\s*'
+    cleaned = re.sub(pattern, '', text, flags=re.IGNORECASE).strip()
+    if not cleaned:
+        cleaned = text
+
+    # Common Indonesian word replacements for better Imagen 3 understanding
+    translations = [
+        (r'\bkucing\b', 'cat'),
+        (r'\banjing\b', 'dog'),
+        (r'\blucu\b', 'cute'),
+        (r'\bthubnail\b', 'thumbnail'),
+        (r'\bthumbnail\b', 'thumbnail'),
+        (r'\bpemandangan\b', 'scenery'),
+        (r'\bmobil\b', 'car'),
+        (r'\bmalam\b', 'at night'),
+        (r'\bsiang\b', 'daytime'),
+        (r'\bsenja\b', 'sunset'),
+        (r'\bpantai\b', 'beach'),
+        (r'\bgunung\b', 'mountain'),
+        (r'\bhutan\b', 'forest'),
+        (r'\bwanita\b', 'woman'),
+        (r'\bpria\b', 'man'),
+        (r'\banak\b', 'child'),
+        (r'\brealistis\b', 'photorealistic'),
+        (r'\bkeren\b', 'cool'),
+        (r'\bmewah\b', 'luxurious'),
+    ]
+    
+    translated_text = cleaned
+    for pattern_word, eng_word in translations:
+        translated_text = re.sub(pattern_word, eng_word, translated_text, flags=re.IGNORECASE)
+
+    aspect_desc = {
+        "1:1": "1:1 square aspect ratio",
+        "9:16": "9:16 vertical aspect ratio",
+        "16:9": "16:9 widescreen aspect ratio",
+        "4:3": "4:3 aspect ratio",
+        "4:5": "4:5 portrait aspect ratio",
+    }.get(aspect_ratio, "16:9 widescreen aspect ratio")
+
+    final_prompt = f"Generate an image of {translated_text}, {aspect_desc}."
+    return final_prompt, translated_text
+
+
 @app.post("/api/gemini/generate-image")
 def gemini_generate_image(req: GeminiImageRequest):
     """Generate image using Gemini. Returns saved image URL."""
@@ -810,38 +859,28 @@ def gemini_generate_image(req: GeminiImageRequest):
     if _gemini_client is None:
         raise HTTPException(status_code=400, detail="Gemini belum terhubung. Masukkan cookie __Secure-1PSID terlebih dahulu.")
 
-    size_prompts = {
-        "1:1": "square 1:1 aspect ratio",
-        "9:16": "vertical 9:16 aspect ratio",
-        "16:9": "wide 16:9 aspect ratio",
-        "4:3": "standard 4:3 aspect ratio",
-        "4:5": "portrait 4:5 aspect ratio",
-    }
-    size_hint = size_prompts.get(req.aspect_ratio, "square 1:1 aspect ratio")
-    full_prompt = f"Generate an image of {req.prompt}. Aspect ratio: {size_hint}."
+    full_prompt, clean_keyword = prepare_gemini_image_prompt(req.prompt, req.aspect_ratio)
 
     async def _do_generate():
-        # Clean model name for image generation (must use flash or unspecified, never thinking or obsolete 1.5)
-        target_model = req.model if (req.model and "thinking" not in req.model and "1.5" not in req.model) else "gemini-3-flash"
-        
-        print(f"[Gemini] Generating image with model '{target_model}', prompt: {full_prompt}")
+        # NOTE: Model.UNSPECIFIED sends NO model headers, allowing Gemini Web to use native default pipeline with Imagen 3 enabled!
+        print(f"[Gemini] Generating image with model='unspecified', prompt: '{full_prompt}'")
         response = None
         try:
-            response = await _gemini_client.generate_content(full_prompt, model=target_model)
+            response = await _gemini_client.generate_content(full_prompt, model="unspecified")
         except Exception as primary_err:
-            print(f"[Gemini] Primary generate_content error with model '{target_model}': {primary_err}")
-            # Fallback retry with model="unspecified"
+            print(f"[Gemini] Primary generate_content error (model='unspecified'): {primary_err}")
+            # Fallback retry with model="gemini-3-flash"
             try:
-                print(f"[Gemini] Retrying generate_content with model='unspecified'...")
-                response = await _gemini_client.generate_content(full_prompt, model="unspecified")
+                print(f"[Gemini] Retrying generate_content with model='gemini-3-flash'...")
+                response = await _gemini_client.generate_content(full_prompt, model="gemini-3-flash")
             except Exception as retry_err:
-                print(f"[Gemini] Retry with model='unspecified' error: {retry_err}")
+                print(f"[Gemini] Retry with model='gemini-3-flash' error: {retry_err}")
                 raise primary_err
 
-        # Check if primary response produced images; if not, retry with model='unspecified' and simplified prompt
-        if (not hasattr(response, "images") or not response.images) and target_model != "unspecified":
-            print("[Gemini] No images in primary response. Retrying with model='unspecified' & simplified prompt...")
-            alt_prompt = f"Generate an image: {req.prompt}"
+        # Check if response produced images; if not, retry with simplified prompt "Draw <keyword>"
+        if not hasattr(response, "images") or not response.images:
+            alt_prompt = f"Draw {clean_keyword}"
+            print(f"[Gemini] No images in primary response. Retrying with simplified prompt: '{alt_prompt}'...")
             try:
                 alt_response = await _gemini_client.generate_content(alt_prompt, model="unspecified")
                 if hasattr(alt_response, "images") and alt_response.images:
@@ -906,7 +945,60 @@ def gemini_generate_image(req: GeminiImageRequest):
                     except Exception as fallback_err:
                         print(f"[Gemini] Fallback download gagal: {fallback_err}")
         else:
-            print("[Gemini] Tidak ada gambar dalam respon.")
+            print("[Gemini] Tidak ada gambar dalam object response.images.")
+            if hasattr(response, "text") and response.text:
+                print(f"[Gemini Respon Teks]: {response.text}")
+
+            # Fallback Regex Extractor: Scan full response text and stringified candidates for googleusercontent image URLs
+            raw_str = str(response)
+            extracted_urls = re.findall(r'https?://[^\s\'\"\)\>]*googleusercontent[^\s\'\"\)\>]+', raw_str)
+            if extracted_urls:
+                # Deduplicate
+                seen_urls = set()
+                unique_urls = []
+                for u in extracted_urls:
+                    u_clean = u.rstrip('.,;)]')
+                    if u_clean not in seen_urls:
+                        seen_urls.add(u_clean)
+                        unique_urls.append(u_clean)
+
+                print(f"[Gemini] Ditemukan {len(unique_urls)} URL gambar via Regex Fallback! Mengunduh...")
+                for idx, clean_url in enumerate(unique_urls):
+                    filename = f"gemini_img_{uuid.uuid4().hex[:8]}.png"
+                    target_file = GENERATED_DIR / filename
+                    saved = False
+                    
+                    # Try downloading with client session if available
+                    try:
+                        if hasattr(_gemini_client, "client") and _gemini_client.client:
+                            resp = await _gemini_client.client.get(clean_url)
+                            if resp.status_code == 200 and len(resp.content) > 100:
+                                target_file.write_bytes(resp.content)
+                                saved_images.append({
+                                    "url": f"http://127.0.0.1:5000/generated/{filename}",
+                                    "filename": filename
+                                })
+                                saved = True
+                                print(f"[Gemini] Regex fallback client download berhasil untuk {filename}")
+                    except Exception as ex:
+                        print(f"[Gemini] Regex fallback client download error: {ex}")
+
+                    if not saved:
+                        try:
+                            headers = {
+                                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                                "Referer": "https://gemini.google.com/"
+                            }
+                            res = requests.get(clean_url, headers=headers, timeout=15)
+                            if res.status_code == 200 and len(res.content) > 100:
+                                target_file.write_bytes(res.content)
+                                saved_images.append({
+                                    "url": f"http://127.0.0.1:5000/generated/{filename}",
+                                    "filename": filename
+                                })
+                                print(f"[Gemini] Regex fallback requests download berhasil untuk {filename}")
+                        except Exception as ex:
+                            print(f"[Gemini] Regex fallback requests download error: {ex}")
             
         return response, saved_images
 
