@@ -226,7 +226,7 @@ export default function YtClipperPage() {
   const [geminiPsidts, setGeminiPsidts] = useState<string>("");
   const [geminiConnected, setGeminiConnected] = useState<boolean>(false);
   const [isConnectingGemini, setIsConnectingGemini] = useState<boolean>(false);
-  const [aiSubTab, setAiSubTab] = useState<"image" | "script">("image");
+  const [aiSubTab, setAiSubTab] = useState<"image" | "script" | "gallery">("image");
   // Image gen state
   const [imagePrompt, setImagePrompt] = useState<string>("");
   const [imageAspect, setImageAspect] = useState<string>("16:9");
@@ -240,7 +240,12 @@ export default function YtClipperPage() {
   const [isGeneratingScript, setIsGeneratingScript] = useState<boolean>(false);
   const [generatedScript, setGeneratedScript] = useState<string>("");
   const [scriptCopied, setScriptCopied] = useState<boolean>(false);
-  const [geminiModel, setGeminiModel] = useState<string>("gemini-3-flash");
+  const [geminiModel, setGeminiModel] = useState<string>("gemini-3-flash"); // for image — flash only
+  const [scriptModel, setScriptModel] = useState<string>("gemini-3-flash-thinking"); // for script — can use thinking
+  // Gallery state
+  const [galleryImages, setGalleryImages] = useState<Array<{ url: string; filename: string; created_at?: number }>>([]);
+  const [galleryClips, setGalleryClips] = useState<Array<{ url: string; filename: string; size?: number; created_at?: number }>>([]);
+  const [isLoadingGallery, setIsLoadingGallery] = useState<boolean>(false);
 
   // Detect Mobile User Agent & Screen Width
   useEffect(() => {
@@ -264,6 +269,32 @@ export default function YtClipperPage() {
     document.head.appendChild(tag);
     window.onYouTubeIframeAPIReady = () => setYtApiReady(true);
   }, []);
+
+  // Restore persisted state from localStorage
+  useEffect(() => {
+    try {
+      const savedPsid = localStorage.getItem("tools_geminiPsid") || "";
+      const savedPsidts = localStorage.getItem("tools_geminiPsidts") || "";
+      const savedScriptModel = localStorage.getItem("tools_scriptModel");
+      const savedScript = localStorage.getItem("tools_lastScript") || "";
+      const savedConnected = localStorage.getItem("tools_geminiConnected") === "true";
+      if (savedPsid) setGeminiPsid(savedPsid);
+      if (savedPsidts) setGeminiPsidts(savedPsidts);
+      if (savedScriptModel) setScriptModel(savedScriptModel);
+      if (savedScript) setGeneratedScript(savedScript);
+      if (savedConnected) setGeminiConnected(true);
+    } catch {}
+  }, []);
+
+  // Persist cookies and model whenever they change
+  useEffect(() => {
+    try {
+      if (geminiPsid) localStorage.setItem("tools_geminiPsid", geminiPsid);
+      if (geminiPsidts) localStorage.setItem("tools_geminiPsidts", geminiPsidts);
+      localStorage.setItem("tools_scriptModel", scriptModel);
+      localStorage.setItem("tools_geminiConnected", geminiConnected ? "true" : "false");
+    } catch {}
+  }, [geminiPsid, geminiPsidts, scriptModel, geminiConnected]);
 
   // Extract YouTube video ID from URL
   const extractVideoId = useCallback((url: string): string => {
@@ -414,6 +445,37 @@ export default function YtClipperPage() {
     finally { setIsConnectingGemini(false); }
   };
 
+  const fetchGallery = async () => {
+    setIsLoadingGallery(true);
+    try {
+      const [imgRes, clipRes] = await Promise.all([
+        fetch("http://127.0.0.1:5000/api/gallery/images"),
+        fetch("http://127.0.0.1:5000/api/gallery/clips")
+      ]);
+      if (imgRes.ok) { const d = await imgRes.json(); setGalleryImages(d.images || []); }
+      if (clipRes.ok) { const d = await clipRes.json(); setGalleryClips(d.clips || []); }
+    } catch { /* silent */ }
+    finally { setIsLoadingGallery(false); }
+  };
+
+  const handleDeleteGalleryImage = async (filename: string) => {
+    if (!confirm(`Hapus gambar "${filename}"?`)) return;
+    try {
+      const res = await fetch(`http://127.0.0.1:5000/api/gallery/images/${encodeURIComponent(filename)}`, { method: "DELETE" });
+      if (res.ok) setGalleryImages(prev => prev.filter(i => i.filename !== filename));
+      else alert("Gagal menghapus gambar.");
+    } catch { alert("Tidak bisa terhubung ke agent."); }
+  };
+
+  const handleDeleteClip = async (filename: string) => {
+    if (!confirm(`Hapus klip "${filename}"?`)) return;
+    try {
+      const res = await fetch(`http://127.0.0.1:5000/api/gallery/clips/${encodeURIComponent(filename)}`, { method: "DELETE" });
+      if (res.ok) setGalleryClips(prev => prev.filter(c => c.filename !== filename));
+      else alert("Gagal menghapus klip.");
+    } catch { alert("Tidak bisa terhubung ke agent."); }
+  };
+
   const handleGenerateImage = async () => {
     if (!imagePrompt.trim()) return;
     setIsGeneratingImage(true);
@@ -427,8 +489,16 @@ export default function YtClipperPage() {
       });
       const data = await res.json();
       if (res.ok) {
-        setGeneratedImages(data.images || []);
+        const newImgs: Array<{ url: string; filename: string }> = data.images || [];
+        setGeneratedImages(newImgs);
         setImageGenText(data.text || "");
+        // Append to gallery
+        if (newImgs.length > 0) {
+          setGalleryImages(prev => [
+            ...newImgs.map(i => ({ ...i, created_at: Date.now() / 1000 })),
+            ...prev
+          ]);
+        }
       } else { alert("Error: " + (data.detail || "Generate gagal")); }
     } catch { alert("Tidak bisa terhubung ke agent."); }
     finally { setIsGeneratingImage(false); }
@@ -442,10 +512,14 @@ export default function YtClipperPage() {
       const res = await fetch("http://127.0.0.1:5000/api/gemini/generate-script", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ topic: scriptTopic.trim(), tone: scriptTone, length: scriptLength, model: geminiModel })
+        body: JSON.stringify({ topic: scriptTopic.trim(), tone: scriptTone, length: scriptLength, model: scriptModel })
       });
       const data = await res.json();
-      if (res.ok) { setGeneratedScript(data.script || ""); }
+      if (res.ok) {
+        setGeneratedScript(data.script || "");
+        // Save to localStorage
+        try { localStorage.setItem("tools_lastScript", data.script || ""); } catch {}
+      }
       else { alert("Error: " + (data.detail || "Generate gagal")); }
     } catch { alert("Tidak bisa terhubung ke agent."); }
     finally { setIsGeneratingScript(false); }
@@ -478,6 +552,7 @@ export default function YtClipperPage() {
   // Continuous Auto-polling connection every 2 seconds
   useEffect(() => {
     checkAgentHealth();
+    fetchGallery(); // Load gallery on mount
     const interval = setInterval(checkAgentHealth, 2000);
     return () => clearInterval(interval);
   }, []);
@@ -968,22 +1043,34 @@ export default function YtClipperPage() {
                   {/* Sub-tab selector */}
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div className="flex gap-1 p-1 bg-slate-100 rounded-xl border border-slate-200 w-fit">
-                      <button type="button" onClick={() => setAiSubTab("image")} className={`px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 ${aiSubTab === "image" ? "bg-white text-violet-700 shadow-sm border border-slate-200" : "text-slate-500 hover:text-slate-700"}`}>
+                      <button type="button" onClick={() => setAiSubTab("image")} className={`px-3.5 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 ${aiSubTab === "image" ? "bg-white text-violet-700 shadow-sm border border-slate-200" : "text-slate-500 hover:text-slate-700"}`}>
                         <ImageIcon className="w-3.5 h-3.5" /> Generate Image
                       </button>
-                      <button type="button" onClick={() => setAiSubTab("script")} className={`px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 ${aiSubTab === "script" ? "bg-white text-violet-700 shadow-sm border border-slate-200" : "text-slate-500 hover:text-slate-700"}`}>
-                        <FileText className="w-3.5 h-3.5" /> Generate Script Konten
+                      <button type="button" onClick={() => setAiSubTab("script")} className={`px-3.5 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 ${aiSubTab === "script" ? "bg-white text-violet-700 shadow-sm border border-slate-200" : "text-slate-500 hover:text-slate-700"}`}>
+                        <FileText className="w-3.5 h-3.5" /> Generate Script
+                      </button>
+                      <button type="button" onClick={() => { setAiSubTab("gallery"); fetchGallery(); }} className={`px-3.5 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 ${aiSubTab === "gallery" ? "bg-white text-violet-700 shadow-sm border border-slate-200" : "text-slate-500 hover:text-slate-700"}`}>
+                        <Folder className="w-3.5 h-3.5" /> Gallery
+                        {(galleryImages.length + galleryClips.length) > 0 && <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-violet-100 text-violet-700 font-extrabold">{galleryImages.length + galleryClips.length}</span>}
                       </button>
                     </div>
 
-                    <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 rounded-xl border border-slate-200">
-                      <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Model:</span>
-                      <select value={geminiModel} onChange={e => setGeminiModel(e.target.value)} className="bg-transparent border-none text-xs font-extrabold text-violet-700 focus:outline-none cursor-pointer">
-                        <option value="gemini-3-flash">Gemini 1.5 Flash</option>
-                        <option value="gemini-3-pro">Gemini 1.5 Pro</option>
-                        <option value="gemini-3-flash-thinking">Flash Thinking</option>
-                      </select>
-                    </div>
+                    {aiSubTab === "image" && (
+                      <div className="flex items-center gap-2 px-3 py-1.5 bg-violet-50 rounded-xl border border-violet-200">
+                        <span className="text-[10px] font-bold text-violet-600 uppercase tracking-wider">Model Gambar:</span>
+                        <span className="text-xs font-extrabold text-violet-800">Gemini 1.5 Flash (Image Engine)</span>
+                      </div>
+                    )}
+                    {aiSubTab === "script" && (
+                      <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 rounded-xl border border-slate-200">
+                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Model:</span>
+                        <select value={scriptModel} onChange={e => setScriptModel(e.target.value)} className="bg-transparent border-none text-xs font-extrabold text-violet-700 focus:outline-none cursor-pointer">
+                          <option value="gemini-3-flash-thinking">Flash Thinking ✦ (Rekomendasi)</option>
+                          <option value="gemini-3-flash">Gemini 1.5 Flash</option>
+                          <option value="gemini-3-pro">Gemini 1.5 Pro</option>
+                        </select>
+                      </div>
+                    )}
                   </div>
 
                   {/* ── Generate Image ── */}
@@ -1001,11 +1088,12 @@ export default function YtClipperPage() {
 
                       <div className="space-y-1.5">
                         <label className="text-xs font-bold text-slate-700">Ukuran / Rasio Gambar</label>
-                        <div className="grid grid-cols-4 gap-2">
+                        <div className="grid grid-cols-5 gap-2">
                           {[
                             { val: "1:1", label: "1:1", desc: "Square" },
                             { val: "16:9", label: "16:9", desc: "YouTube" },
-                            { val: "9:16", label: "9:16", desc: "Reels/TikTok" },
+                            { val: "9:16", label: "9:16", desc: "TikTok" },
+                            { val: "4:5", label: "4:5", desc: "Instagram" },
                             { val: "4:3", label: "4:3", desc: "Standard" },
                           ].map(r => (
                             <button key={r.val} type="button" onClick={() => setImageAspect(r.val)} className={`p-2.5 rounded-xl border text-center transition-all ${imageAspect === r.val ? "bg-violet-50 border-violet-300 text-violet-800" : "bg-slate-50 border-slate-200 text-slate-600 hover:border-slate-300"}`}>
@@ -1108,6 +1196,89 @@ export default function YtClipperPage() {
                           </div>
                         </div>
                       )}
+                    </div>
+                  )}
+                  {/* ── Gallery ── */}
+                  {aiSubTab === "gallery" && (
+                    <div className="space-y-5">
+
+                      {/* AI Images Gallery */}
+                      <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs space-y-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <ImageIcon className="w-4 h-4 text-violet-600" />
+                            <h4 className="text-sm font-bold text-slate-900">Galeri AI Image</h4>
+                            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-violet-100 text-violet-700 font-extrabold border border-violet-200/60">{galleryImages.length} file</span>
+                          </div>
+                          <button type="button" onClick={fetchGallery} className="p-1.5 rounded-lg text-slate-400 hover:text-violet-600 hover:bg-violet-50 transition-colors" title="Refresh gallery">
+                            <RefreshCw className={`w-3.5 h-3.5 ${isLoadingGallery ? "animate-spin" : ""}`} />
+                          </button>
+                        </div>
+                        {galleryImages.length === 0 ? (
+                          <div className="py-8 text-center text-slate-400 text-xs">
+                            <ImageIcon className="w-8 h-8 mx-auto mb-2 opacity-30" />
+                            Belum ada gambar yang di-generate.
+                          </div>
+                        ) : (
+                          <div className="grid grid-cols-2 gap-3">
+                            {galleryImages.map((img, i) => (
+                              <div key={img.filename + i} className="relative group rounded-xl overflow-hidden border border-slate-200 shadow-xs bg-slate-50">
+                                <img src={img.url} alt={img.filename} className="w-full h-44 object-cover" onError={e => { (e.target as HTMLImageElement).src = "/placeholder.png"; }} />
+                                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                  <a href={img.url} download={img.filename} className="px-2.5 py-1.5 rounded-lg bg-white text-slate-800 text-[10px] font-bold flex items-center gap-1 hover:bg-slate-100">
+                                    <Download className="w-3 h-3" /> Download
+                                  </a>
+                                  <button type="button" onClick={() => handleDeleteGalleryImage(img.filename)} className="px-2.5 py-1.5 rounded-lg bg-rose-500 text-white text-[10px] font-bold flex items-center gap-1 hover:bg-rose-600">
+                                    <Trash2 className="w-3 h-3" /> Hapus
+                                  </button>
+                                </div>
+                                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-2">
+                                  <p className="text-[9px] text-white/80 truncate font-mono">{img.filename}</p>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Clips Gallery */}
+                      <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs space-y-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <Scissors className="w-4 h-4 text-purple-600" />
+                            <h4 className="text-sm font-bold text-slate-900">Galeri Video Klip</h4>
+                            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-purple-100 text-purple-700 font-extrabold border border-purple-200/60">{galleryClips.length} klip</span>
+                          </div>
+                        </div>
+                        {galleryClips.length === 0 ? (
+                          <div className="py-8 text-center text-slate-400 text-xs">
+                            <Video className="w-8 h-8 mx-auto mb-2 opacity-30" />
+                            Belum ada klip yang diproses.
+                          </div>
+                        ) : (
+                          <div className="space-y-2">
+                            {galleryClips.map((clip, i) => (
+                              <div key={clip.filename + i} className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200 hover:border-purple-200 hover:bg-purple-50/30 transition-all group">
+                                <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center shrink-0">
+                                  <Video className="w-4.5 h-4.5 text-purple-600" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-xs font-bold text-slate-800 truncate">{clip.filename}</p>
+                                  {clip.size && <p className="text-[10px] text-slate-400">{(clip.size / (1024 * 1024)).toFixed(1)} MB</p>}
+                                </div>
+                                <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                                  <a href={clip.url} download={clip.filename} className="px-2.5 py-1.5 rounded-lg bg-purple-100 hover:bg-purple-200 text-purple-700 text-[10px] font-bold flex items-center gap-1 transition-colors">
+                                    <Download className="w-3 h-3" /> Download
+                                  </a>
+                                  <button type="button" onClick={() => handleDeleteClip(clip.filename)} className="px-2.5 py-1.5 rounded-lg bg-rose-100 hover:bg-rose-200 text-rose-600 text-[10px] font-bold flex items-center gap-1 transition-colors">
+                                    <Trash2 className="w-3 h-3" /> Hapus
+                                  </button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   )}
                 </div>

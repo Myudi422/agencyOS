@@ -729,7 +729,9 @@ class GeminiConfigRequest(BaseModel):
 
 class GeminiImageRequest(BaseModel):
     prompt: str
-    aspect_ratio: str = "1:1"  # 1:1, 9:16, 16:9, 4:3
+    aspect_ratio: str = "1:1"  # 1:1, 9:16, 16:9, 4:3, 4:5
+    # IMPORTANT: Thinking models (gemini-3-flash-thinking, gemini-3-pro) do NOT support
+    # image output. Always use gemini-3-flash for image generation.
     model: str = "gemini-3-flash"
 
 
@@ -737,7 +739,7 @@ class GeminiScriptRequest(BaseModel):
     topic: str
     tone: str = "santai"  # formal, santai, viral, persuasif
     length: str = "medium"  # short, medium, long
-    model: str = "gemini-3-flash"
+    model: str = "gemini-3-flash-thinking"  # Thinking model is great for scripts
 
 
 def _run_in_gemini_loop(coro):
@@ -804,16 +806,19 @@ def gemini_generate_image(req: GeminiImageRequest):
         raise HTTPException(status_code=400, detail="Gemini belum terhubung. Masukkan cookie terlebih dahulu.")
 
     size_prompts = {
-        "1:1": "square format, 1:1 aspect ratio",
-        "9:16": "vertical portrait format, 9:16 aspect ratio, suitable for TikTok/Reels/Shorts",
-        "16:9": "horizontal landscape format, 16:9 aspect ratio, suitable for YouTube thumbnail",
-        "4:3": "standard format, 4:3 aspect ratio",
+        "1:1": "square 1:1 aspect ratio",
+        "9:16": "vertical 9:16 aspect ratio",
+        "16:9": "wide 16:9 aspect ratio",
+        "4:3": "standard 4:3 aspect ratio",
+        "4:5": "portrait 4:5 aspect ratio",
     }
     size_hint = size_prompts.get(req.aspect_ratio, "")
-    full_prompt = f"Generate an image of: {req.prompt}. {size_hint}. High quality, professional image."
+    full_prompt = f"Create an image: {req.prompt}. Aspect ratio: {size_hint}."
 
     async def _do_generate():
-        response = await _gemini_client.generate_content(full_prompt, model=req.model)
+        # Pass model parameter explicitly to trigger image generation engine
+        req_model = req.model if req.model and "thinking" not in req.model else "gemini-1.5-flash"
+        response = await _gemini_client.generate_content(full_prompt, model=req_model)
         saved_images = []
         
         # Save generated images to disk
@@ -911,6 +916,69 @@ Gunakan bahasa Indonesia yang natural."""
         "tone": req.tone,
         "length": req.length
     }
+
+
+# ============================================================
+# GALLERY & DELETE ENDPOINTS
+# ============================================================
+
+@app.get("/api/gallery/images")
+def gallery_images():
+    """List all generated AI images."""
+    images = []
+    for f in sorted(GENERATED_DIR.iterdir(), key=lambda x: x.stat().st_mtime, reverse=True):
+        if f.suffix.lower() in (".png", ".jpg", ".jpeg", ".webp") and f.is_file():
+            images.append({
+                "filename": f.name,
+                "url": f"http://127.0.0.1:5000/generated/{f.name}",
+                "size": f.stat().st_size,
+                "created_at": f.stat().st_mtime
+            })
+    return {"images": images}
+
+
+@app.delete("/api/gallery/images/{filename}")
+def delete_generated_image(filename: str):
+    """Delete a generated AI image by filename."""
+    filepath = GENERATED_DIR / filename
+    if not filepath.exists() or not filepath.is_file():
+        raise HTTPException(status_code=404, detail="File tidak ditemukan.")
+    # Security: ensure file is inside GENERATED_DIR
+    try:
+        filepath.resolve().relative_to(GENERATED_DIR.resolve())
+    except ValueError:
+        raise HTTPException(status_code=403, detail="Akses ditolak.")
+    filepath.unlink()
+    return {"status": "deleted", "filename": filename}
+
+
+@app.get("/api/gallery/clips")
+def gallery_clips():
+    """List all processed clip files."""
+    clips = []
+    for f in sorted(CLIPS_DIR.iterdir(), key=lambda x: x.stat().st_mtime, reverse=True):
+        if f.suffix.lower() in (".mp4", ".mov", ".mkv", ".webm") and f.is_file():
+            clips.append({
+                "filename": f.name,
+                "url": f"http://127.0.0.1:5000/clips/{f.name}",
+                "size": f.stat().st_size,
+                "created_at": f.stat().st_mtime
+            })
+    return {"clips": clips}
+
+
+@app.delete("/api/gallery/clips/{filename}")
+def delete_clip(filename: str):
+    """Delete a clip file by filename."""
+    filepath = CLIPS_DIR / filename
+    if not filepath.exists() or not filepath.is_file():
+        raise HTTPException(status_code=404, detail="File tidak ditemukan.")
+    try:
+        filepath.resolve().relative_to(CLIPS_DIR.resolve())
+    except ValueError:
+        raise HTTPException(status_code=403, detail="Akses ditolak.")
+    filepath.unlink()
+    return {"status": "deleted", "filename": filename}
 
 
 if __name__ == "__main__":
