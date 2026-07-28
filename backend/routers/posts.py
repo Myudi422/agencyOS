@@ -6,13 +6,31 @@ from datetime import datetime
 from backend.database import get_db
 from backend.models.models import Post, PostTarget, SocialAccount, PostType, PostStatus, ActivityLog
 from backend.services.queue_service import queue_service
+from backend.services.postforme_service import postforme_service
 
 router = APIRouter(prefix="/posts", tags=["Posts"])
+
+class UploadUrlRequest(BaseModel):
+    content_type: str = "image/jpeg"
+
+@router.post("/media/create-upload-url")
+async def create_media_upload_url(data: UploadUrlRequest):
+    """
+    Requests a signed upload URL from PostForMe API (/v1/media/create-upload-url).
+    Returns { media_url, upload_url }.
+    """
+    try:
+        res = await postforme_service.create_upload_url(content_type=data.content_type)
+        return res
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 class PostCreate(BaseModel):
     workspace_id: str
     client_id: Optional[str] = None
-    account_ids: List[str] # List of selected target social account IDs
+    account_ids: Optional[List[str]] = None # List of selected target social account IDs
+    target_account_ids: Optional[List[str]] = None # Alias field support
     post_type: str = "image" # image, carousel, video
     caption: Optional[str] = ""
     hashtags: Optional[str] = ""
@@ -22,7 +40,8 @@ class PostCreate(BaseModel):
     media_urls: List[str] = []
     platform_configurations: Optional[Dict[str, Any]] = None # PostForMe platform configs
     scheduled_at: Optional[str] = None # ISO format string
-    action: str = "publish_now" # publish_now, schedule, save_draft
+    action: Optional[str] = "publish_now" # publish_now, schedule, save_draft
+    publish_now: Optional[bool] = None
 
 class PostUpdate(BaseModel):
     caption: Optional[str] = None
@@ -102,14 +121,17 @@ async def create_post(
 ):
     """
     Creates a new post and generates publish jobs for each selected account.
-    Supports Publish Now, Schedule, and Save Draft actions.
+    Supports Publish Now, Schedule, and Save Draft actions via PostForMe API.
     Enforces subscription plans and posts quota.
     """
-    if not data.account_ids and data.action != "save_draft":
+    selected_account_ids = data.account_ids or data.target_account_ids or []
+    action_type = data.action or ("publish_now" if data.publish_now else ("schedule" if data.scheduled_at else "save_draft"))
+
+    if not selected_account_ids and action_type != "save_draft":
         raise HTTPException(status_code=400, detail="At least one target social account must be selected.")
 
     # Quota validation for non-admin users
-    if not current_user.is_admin and data.action in ("publish_now", "schedule"):
+    if not current_user.is_admin and action_type in ("publish_now", "schedule"):
         sub = current_user.subscription
         if not sub or sub.status not in ("active", "trial"):
             raise HTTPException(
@@ -121,7 +143,7 @@ async def create_post(
                 status_code=402, 
                 detail="Paket Anda telah kedaluwarsa. Silakan perpanjang paket Anda."
             )
-        required_quota = len(data.account_ids)
+        required_quota = len(selected_account_ids)
         if sub.posts_used + required_quota > sub.posts_limit:
             remaining = max(0, sub.posts_limit - sub.posts_used)
             raise HTTPException(
@@ -142,9 +164,9 @@ async def create_post(
             sched_dt = datetime.utcnow()
 
     # Determine status
-    if data.action == "save_draft":
+    if action_type == "save_draft":
         initial_status = PostStatus.DRAFT
-    elif data.action == "schedule":
+    elif action_type == "schedule":
         initial_status = PostStatus.SCHEDULED
     else:
         initial_status = PostStatus.PUBLISHING
@@ -168,7 +190,7 @@ async def create_post(
     db.flush()
 
     # Create targets for each selected social account
-    for acc_id in data.account_ids:
+    for acc_id in selected_account_ids:
         target = PostTarget(
             post_id=post.id,
             social_account_id=acc_id,
@@ -179,8 +201,8 @@ async def create_post(
     # Activity Log
     db.add(ActivityLog(
         workspace_id=data.workspace_id,
-        action=f"CREATE_POST_{data.action.upper()}",
-        details=f"Created post ({data.post_type}) targeting {len(data.account_ids)} accounts.",
+        action=f"CREATE_POST_{action_type.upper()}",
+        details=f"Created post ({data.post_type}) targeting {len(selected_account_ids)} accounts.",
         entity_type="Post",
         entity_id=post.id
     ))
@@ -188,8 +210,8 @@ async def create_post(
     db.commit()
     db.refresh(post)
 
-    # If Publish Now, dispatch background queue task immediately
-    if data.action == "publish_now":
+    # If Publish Now or Schedule, dispatch background queue task to send post to PostForMe API
+    if action_type in ("publish_now", "schedule"):
         background_tasks.add_task(queue_service.enqueue_post_publishing, db, post.id)
 
     return {"status": "success", "post_id": post.id, "post_status": post.status.value}

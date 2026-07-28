@@ -86,15 +86,6 @@ export default function Header({ onToggleMobileSidebar }: { onToggleMobileSideba
             {user?.full_name || "User"}
           </span>
         </button>
-
-        <button
-          onClick={() => openComposer()}
-          className="py-2 px-4 rounded-xl gradient-brand text-white font-semibold text-xs flex items-center gap-2 shadow-md shadow-purple-500/25 hover:shadow-lg hover:shadow-purple-500/35 hover:scale-[1.02] active:scale-[0.98] transition-all"
-        >
-          <Plus className="w-4 h-4" />
-          <span className="hidden sm:inline">Create Post</span>
-          <span className="sm:hidden">Post</span>
-        </button>
       </div>
     </header>
   );

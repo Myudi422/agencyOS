@@ -27,6 +27,38 @@ const PLATFORM_BADGES: Record<string, { name: string; color: string; bg: string 
   threads: { name: "Threads", color: "from-zinc-700 to-zinc-900", bg: "bg-slate-100 text-slate-800 border-slate-200" },
 };
 
+const AccountPlatformIcon = ({ platform, className = "w-3.5 h-3.5" }: { platform: string; className?: string }) => {
+  const p = (platform || "").toLowerCase();
+  if (p.includes("instagram")) {
+    return <InstagramIcon className={`${className} text-pink-600`} />;
+  }
+  if (p.includes("facebook")) {
+    return <FacebookIcon className={`${className} text-blue-600`} />;
+  }
+  if (p === "x" || p.includes("twitter")) {
+    return <Twitter className={`${className} text-slate-800`} />;
+  }
+  if (p.includes("tiktok")) {
+    return <Video className={`${className} text-cyan-500`} />;
+  }
+  if (p.includes("youtube")) {
+    return <Youtube className={`${className} text-red-600`} />;
+  }
+  if (p.includes("pinterest")) {
+    return <Share2 className={`${className} text-rose-600`} />;
+  }
+  if (p.includes("linkedin")) {
+    return <Share2 className={`${className} text-sky-600`} />;
+  }
+  if (p.includes("threads")) {
+    return <MessageSquare className={`${className} text-zinc-800`} />;
+  }
+  if (p.includes("bluesky")) {
+    return <Share2 className={`${className} text-sky-500`} />;
+  }
+  return <Share2 className={`${className} text-purple-600`} />;
+};
+
 export default function PostComposerModal() {
   const { isComposerOpen, closeComposer, activeWorkspace, composerPreselectedAccounts } = useStore();
 
@@ -41,6 +73,8 @@ export default function PostComposerModal() {
     "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1200&auto=format&fit=crop&q=80"
   ]);
   const [newMediaInput, setNewMediaInput] = useState("");
+  const [showUrlInput, setShowUrlInput] = useState(false);
+  const [isDragOver, setIsDragOver] = useState(false);
   const [scheduledAt, setScheduledAt] = useState("");
   const [actionType, setActionType] = useState<"publish_now" | "schedule" | "save_draft">("publish_now");
 
@@ -245,6 +279,73 @@ export default function PostComposerModal() {
     }
   };
 
+  const uploadViaB2Fallback = async (file: File, workspaceId: string) => {
+    const formData = new FormData();
+    formData.append("workspace_id", workspaceId);
+    formData.append("folder", "General");
+    formData.append("file", file);
+
+    const res = await fetchApi<any>("/media/", {
+      method: "POST",
+      body: formData
+    });
+
+    if (res?.url) {
+      toast.success(`Berhasil mengunggah '${file.name}'!`);
+      setMediaUrls((prev) => [...prev, res.url]);
+    }
+  };
+
+  const handlePostForMeUploadFiles = async (files: FileList | File[]) => {
+    if (!files || files.length === 0) return;
+    setIsUploadingMedia(true);
+    const targetWsId = activeWorkspace?.id || "ws-default";
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const contentType = file.type || (file.name.endsWith(".mp4") ? "video/mp4" : "image/jpeg");
+
+      try {
+        // Step 1: Request signed upload URL from PostForMe API (POST /v1/media/create-upload-url)
+        const res = await fetchApi<any>("/posts/media/create-upload-url", {
+          method: "POST",
+          body: JSON.stringify({ content_type: contentType })
+        });
+
+        if (res?.upload_url && res?.media_url) {
+          if (res.upload_url.includes("simulated")) {
+            await uploadViaB2Fallback(file, targetWsId);
+          } else {
+            // Step 2: Upload file directly to signed upload_url using PUT
+            const putRes = await fetch(res.upload_url, {
+              method: "PUT",
+              headers: {
+                "Content-Type": contentType
+              },
+              body: file
+            });
+
+            if (putRes.ok || putRes.status === 200 || putRes.status === 204) {
+              // Step 3: Append media_url to post media attachments
+              setMediaUrls((prev) => [...prev, res.media_url]);
+              toast.success(`Berhasil upload '${file.name}' via PostForMe Media!`);
+            } else {
+              await uploadViaB2Fallback(file, targetWsId);
+            }
+          }
+        } else {
+          await uploadViaB2Fallback(file, targetWsId);
+        }
+      } catch (err: any) {
+        console.warn("PostForMe signed upload fallback to B2:", err);
+        await uploadViaB2Fallback(file, targetWsId);
+      }
+    }
+
+    setIsUploadingMedia(false);
+  };
+
+
   const openMediaPicker = () => {
     setIsMediaPickerOpen(true);
     loadMediaLibrary();
@@ -333,6 +434,7 @@ export default function PostComposerModal() {
 
     const payload = {
       workspace_id: activeWorkspace?.id || "ws-default",
+      account_ids: selectedAccountIds,
       target_account_ids: selectedAccountIds,
       post_type: postType,
       caption: caption,
@@ -340,6 +442,7 @@ export default function PostComposerModal() {
       first_comment: firstComment,
       media_urls: mediaUrls,
       scheduled_at: actionType === "schedule" ? scheduledAt : null,
+      action: actionType,
       publish_now: actionType === "publish_now",
       platform_configurations: platformConfigs
     };
@@ -349,14 +452,19 @@ export default function PostComposerModal() {
         method: "POST",
         body: JSON.stringify(payload)
       });
-      toast.success(actionType === "publish_now" ? "Post published instantly across channels!" : "Post scheduled successfully!");
+      toast.success(
+        actionType === "publish_now"
+          ? "Post published instantly across channels!"
+          : actionType === "schedule"
+          ? "Post scheduled successfully via PostForMe!"
+          : "Draft saved successfully!"
+      );
       setIsSubmitting(false);
       closeComposer();
     } catch (err: any) {
-      console.log("Mock post submitted successfully", err);
-      toast.success("Post created successfully!");
+      console.error("Post submit error:", err);
+      toast.error(`Gagal membuat post: ${err.message || err}`);
       setIsSubmitting(false);
-      closeComposer();
     }
   };
 
@@ -438,30 +546,47 @@ export default function PostComposerModal() {
               </div>
 
               {/* Flex Wrap Container for Desktop & Touch-Scroll for Mobile */}
-              <div className="flex flex-wrap items-center gap-2 max-h-44 overflow-y-auto p-2 rounded-2xl bg-slate-50 border border-slate-200/80 shadow-2xs">
+              <div className="flex flex-wrap items-center gap-2 max-h-48 overflow-y-auto p-2 rounded-2xl bg-slate-50 border border-slate-200/80 shadow-2xs">
                 {availableAccounts.map((acc) => {
                   const isSelected = selectedAccountIds.includes(acc.id);
                   const compat = checkPlatformCompatibility(acc.platform);
+                  const badgeInfo = PLATFORM_BADGES[acc.platform] || { name: acc.platform, color: "", bg: "bg-purple-100 text-purple-700 border-purple-200" };
                   return (
                     <button
                       key={acc.id}
                       type="button"
                       onClick={() => toggleAccountSelection(acc)}
-                      title={!compat.compatible ? compat.reason : `@${acc.username}`}
-                      className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs font-medium shrink-0 transition-all cursor-pointer ${
+                      title={!compat.compatible ? compat.reason : `@${acc.username} (${badgeInfo.name})`}
+                      className={`flex items-center gap-2.5 px-3 py-2 rounded-2xl border text-xs font-medium shrink-0 transition-all cursor-pointer ${
                         !compat.compatible
                           ? "bg-slate-100 border-slate-200 text-slate-400 opacity-60 cursor-not-allowed"
                           : isSelected
-                          ? "bg-purple-600 text-white border-purple-600 font-semibold shadow-xs"
-                          : "bg-white border-slate-200 text-slate-700 hover:text-purple-700 hover:border-purple-300 hover:bg-purple-50/50"
+                          ? "bg-purple-600 text-white border-purple-600 font-semibold shadow-sm ring-2 ring-purple-500/20"
+                          : "bg-white border-slate-200 text-slate-700 hover:text-purple-700 hover:border-purple-300 hover:bg-purple-50/50 shadow-2xs"
                       }`}
                     >
-                      <img
-                        src={acc.avatar_url || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150"}
-                        alt={acc.username}
-                        className={`w-5 h-5 rounded-full object-cover border border-white/40 ${!compat.compatible ? "grayscale" : ""}`}
-                      />
-                      <span>@{acc.username}</span>
+                      {/* Avatar with Platform Badge Overlay */}
+                      <div className="relative shrink-0">
+                        <img
+                          src={acc.avatar_url || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150"}
+                          alt={acc.username}
+                          className={`w-6 h-6 rounded-full object-cover border border-white/60 ${!compat.compatible ? "grayscale" : ""}`}
+                        />
+                        <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full bg-white flex items-center justify-center shadow-xs">
+                          <AccountPlatformIcon platform={acc.platform} className="w-2.5 h-2.5" />
+                        </div>
+                      </div>
+
+                      {/* Username & Platform Label */}
+                      <div className="flex flex-col items-start leading-tight">
+                        <span className="font-bold text-[11px]">@{acc.username}</span>
+                        <span className={`text-[9px] font-extrabold uppercase px-1.5 py-0.2 rounded-md ${
+                          isSelected ? "bg-white/20 text-white" : badgeInfo.bg
+                        }`}>
+                          {badgeInfo.name}
+                        </span>
+                      </div>
+
                       {!compat.compatible ? (
                         <AlertTriangle className="w-3.5 h-3.5 text-amber-500 ml-0.5" />
                       ) : isSelected ? (
@@ -570,8 +695,8 @@ export default function PostComposerModal() {
               </div>
             </div>
 
-            {/* 5. Attached Media & Media Library Picker */}
-            <div className="space-y-2.5 p-4 rounded-2xl bg-slate-50 border border-slate-200/80">
+            {/* 5. Attached Media & Direct Upload Dropzone */}
+            <div className="space-y-3 p-4 rounded-2xl bg-slate-50 border border-slate-200/80">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <label className="text-xs font-bold text-slate-800">Media Attachments</label>
@@ -582,30 +707,61 @@ export default function PostComposerModal() {
                 <button
                   type="button"
                   onClick={openMediaPicker}
-                  className="py-1.5 px-3 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-md shadow-purple-500/20 transition-all cursor-pointer"
+                  className="py-1.5 px-3 bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 rounded-xl text-[11px] font-bold flex items-center gap-1.5 transition-all cursor-pointer"
                 >
                   <Folder className="w-3.5 h-3.5" />
-                  Pilih dari Media Library
+                  Media Vault
                 </button>
               </div>
 
-              <div className="flex items-center gap-2">
+              {/* Ruang Upload Langsung Berukuran Besar (Large Upload Dropzone) */}
+              <label
+                onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }}
+                onDragLeave={() => setIsDragOver(false)}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  setIsDragOver(false);
+                  if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                    handlePostForMeUploadFiles(e.dataTransfer.files);
+                  }
+                }}
+                className={`relative border-2 border-dashed rounded-2xl p-5 flex flex-col items-center justify-center text-center cursor-pointer transition-all ${
+                  isDragOver
+                    ? "border-purple-500 bg-purple-50/80 ring-4 ring-purple-500/10 scale-[0.99]"
+                    : "border-purple-300 hover:border-purple-500 bg-white hover:bg-purple-50/40"
+                }`}
+              >
                 <input
-                  type="text"
-                  value={newMediaInput}
-                  onChange={(e) => setNewMediaInput(e.target.value)}
-                  placeholder="Or paste direct image/video URL..."
-                  className="flex-1 glass-input rounded-xl px-3 py-1.5 text-xs focus:outline-none bg-white"
+                  type="file"
+                  multiple
+                  accept="image/*,video/*"
+                  onChange={(e) => e.target.files && handlePostForMeUploadFiles(e.target.files)}
+                  className="hidden"
+                  disabled={isUploadingMedia}
                 />
-                <button
-                  type="button"
-                  onClick={addMediaUrl}
-                  className="px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 rounded-xl text-xs font-semibold cursor-pointer"
-                >
-                  Add URL
-                </button>
-              </div>
 
+                {isUploadingMedia ? (
+                  <div className="py-2 flex flex-col items-center gap-2 text-purple-700">
+                    <RefreshCw className="w-8 h-8 animate-spin text-purple-600" />
+                    <p className="text-xs font-bold">Mengunggah media via PostForMe Cloud...</p>
+                    <p className="text-[10px] text-slate-400">Menyalin file ke signed URL PostForMe</p>
+                  </div>
+                ) : (
+                  <>
+                    <div className="w-12 h-12 rounded-2xl bg-purple-100 text-purple-600 flex items-center justify-center mb-2 shadow-xs group-hover:scale-110 transition-transform">
+                      <UploadCloud className="w-6 h-6" />
+                    </div>
+                    <p className="text-xs font-bold text-slate-800">
+                      Unggah File Media Langsung
+                    </p>
+                    <p className="text-[11px] text-slate-500 mt-0.5">
+                      Klik atau Seret &amp; Lepas Gambar (JPG, PNG) atau Video (MP4) di sini
+                    </p>
+                  </>
+                )}
+              </label>
+
+              {/* Attached Media Thumbnails */}
               {mediaUrls.length > 0 && (
                 <div className="flex items-center gap-2 overflow-x-auto pb-1 pt-1">
                   {mediaUrls.map((url, idx) => (
@@ -626,6 +782,47 @@ export default function PostComposerModal() {
                   ))}
                 </div>
               )}
+
+              {/* Compact Add URL Option Toggle */}
+              <div className="pt-1">
+                {!showUrlInput ? (
+                  <button
+                    type="button"
+                    onClick={() => setShowUrlInput(true)}
+                    className="text-[11px] text-slate-500 hover:text-purple-600 font-semibold flex items-center gap-1 hover:underline cursor-pointer"
+                  >
+                    <LinkIcon className="w-3 h-3 text-slate-400" />
+                    <span>+ Atau tambah media via Direct URL</span>
+                  </button>
+                ) : (
+                  <div className="flex items-center gap-2 animate-fadeIn">
+                    <input
+                      type="text"
+                      value={newMediaInput}
+                      onChange={(e) => setNewMediaInput(e.target.value)}
+                      placeholder="Paste image/video URL (https://...)"
+                      className="flex-1 glass-input rounded-xl px-3 py-1.5 text-xs focus:outline-none bg-white border border-slate-200"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        addMediaUrl();
+                        setShowUrlInput(false);
+                      }}
+                      className="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-semibold cursor-pointer shadow-xs"
+                    >
+                      Add URL
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowUrlInput(false)}
+                      className="p-1.5 text-slate-400 hover:text-slate-600 cursor-pointer"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* 6. Scheduling Controls when Schedule Selected */}
