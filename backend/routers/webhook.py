@@ -58,28 +58,46 @@ async def _process_post_result_event(data: dict, source: str = "webhook"):
             logger.warning(f"Webhook payload missing post_id. Data: {data}")
             return
 
-        # Cari PostTarget berdasarkan postforme_post_id di kolom platform_post_id
-        # (queue_service menyimpan postforme_post_id ke target.platform_post_id saat create_post sukses)
+        # Cari PostTarget berdasarkan postforme_post_id
         target = (
             db.query(PostTarget)
             .join(Post, PostTarget.post_id == Post.id)
             .filter(
-                PostTarget.platform_post_id == postforme_post_id
+                (PostTarget.platform_post_id == postforme_post_id) | (Post.postforme_post_id == postforme_post_id)
             )
             .first()
         )
 
-        if not target:
-            # Fallback: cari via post.postforme_post_id
-            post = db.query(Post).filter(Post.postforme_post_id == postforme_post_id).first()
-            if post:
-                account = db.query(PostTarget).filter(
-                    PostTarget.post_id == post.id
-                ).first()
-                target = account
+        if not target and social_account_id:
+            # Fallback 1: match via PostForMe social_account_id & status PUBLISHING
+            from backend.models.models import SocialAccount
+            target = (
+                db.query(PostTarget)
+                .join(SocialAccount, PostTarget.social_account_id == SocialAccount.id)
+                .filter(
+                    SocialAccount.postforme_account_id == social_account_id,
+                    PostTarget.status == PostStatus.PUBLISHING
+                )
+                .order_by(PostTarget.created_at.desc())
+                .first()
+            )
 
         if not target:
-            logger.warning(f"Tidak bisa menemukan PostTarget untuk postforme_post_id={postforme_post_id}. Mungkin sudah diproses.")
+            # Fallback 2: grab most recent target in PUBLISHING status
+            target = (
+                db.query(PostTarget)
+                .filter(PostTarget.status == PostStatus.PUBLISHING)
+                .order_by(PostTarget.created_at.desc())
+                .first()
+            )
+
+        if target and not target.platform_post_id:
+            target.platform_post_id = postforme_post_id
+            if target.post:
+                target.post.postforme_post_id = postforme_post_id
+
+        if not target:
+            logger.warning(f"Tidak bisa menemukan PostTarget untuk postforme_post_id={postforme_post_id}.")
             return
 
         # Cek apakah result ini sudah diproses
@@ -110,25 +128,39 @@ async def _process_post_result_event(data: dict, source: str = "webhook"):
 
         if success:
             target.status = PostStatus.PUBLISHED
-            target.platform_post_id = platform_post_id_from_result or target.platform_post_id
+            target.platform_post_id = platform_post_id_from_result or target.platform_post_id or postforme_post_id
             target.error_message = None
             logger.info(f"✅ Webhook: PostTarget {target.id} published. URL: {platform_url}")
 
             # ⭐ Deduct kredit — hanya setelah PostForMe konfirmasi sukses
-            if post and post.created_by_user_id:
+            user_id = post.created_by_user_id if post else None
+            if not user_id and post:
+                from backend.models.models import WorkspaceMember
+                wm = db.query(WorkspaceMember).filter(WorkspaceMember.workspace_id == post.workspace_id).first()
+                if wm:
+                    user_id = wm.user_id
+
+            if user_id:
                 sub = db.query(UserSubscription).filter(
-                    UserSubscription.user_id == post.created_by_user_id
+                    UserSubscription.user_id == user_id
                 ).first()
                 if sub:
                     sub.posts_used = (sub.posts_used or 0) + 1
                     db.add(sub)
                     publish_result.credit_deducted = True
-                    logger.info(f"💳 Webhook deduct 1 kredit dari user {post.created_by_user_id}. Total used: {sub.posts_used}/{sub.posts_limit}")
+                    logger.info(f"💳 Webhook deduct 1 kredit dari user {user_id}. Total used: {sub.posts_used}/{sub.posts_limit}")
         else:
             error_info = data.get("error") or {}
             target.status = PostStatus.FAILED
             target.error_message = str(error_info) if error_info else "PostForMe reported failure via webhook"
             logger.warning(f"❌ Webhook: PostTarget {target.id} gagal. Error: {error_info}")
+
+        # Update PublishJob status
+        from backend.models.models import PublishJob, JobStatus
+        job = db.query(PublishJob).filter(PublishJob.post_target_id == target.id).first()
+        if job:
+            job.status = JobStatus.SUCCESS if success else JobStatus.FAILED
+            job.completed_at = __import__("datetime").datetime.utcnow()
 
         db.commit()
 

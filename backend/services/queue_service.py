@@ -83,25 +83,28 @@ class QueueService:
                     external_id=post.id
                 )
 
-                # Simpan PostForMe post ID ke PostTarget untuk sinkronisasi hasil nanti
                 postforme_post_id = res.get("id") or f"pf_{account.platform.value}_{account.id}"
-                target.platform_post_id = postforme_post_id
-                post.postforme_post_id = postforme_post_id  # update juga di post utama
 
-                # Job berhasil dikirim ke PostForMe — tapi belum tentu dipublish di platform
-                # Status tetap PUBLISHING sampai sync_post_results konfirmasi
+                # ⭐ COMMIT PENTING: Simpan platform_post_id & status SUCCESS ke DB SEGERA!
+                target.platform_post_id = postforme_post_id
+                post.postforme_post_id = postforme_post_id
                 job.status = JobStatus.SUCCESS
                 job.completed_at = datetime.utcnow()
 
-                # Untuk post yang dipublish sekarang (bukan terjadwal), langsung cek hasilnya
-                if not post.scheduled_at:
-                    # Tunggu sebentar agar PostForMe memproses, lalu ambil hasil
-                    await asyncio.sleep(5)
-                    await self.sync_post_result_for_target(db, target.id, postforme_post_id)
-                else:
-                    # Post terjadwal: tandai sebagai SCHEDULED, sync nanti via webhook/manual
+                if post.scheduled_at:
                     target.status = PostStatus.SCHEDULED
-                    db.commit()
+
+                db.commit()  # <-- TERPERCAYA: Disimpan ke database sekarang!
+                logger.info(f"✅ Job {job_id} sent to PostForMe. postforme_post_id={postforme_post_id}")
+
+                # Jika dipublish sekarang (bukan terjadwal), coba sync hasilnya beberapa kali
+                if not post.scheduled_at:
+                    # Coba sync pada detik 3, 8, dan 15 untuk memberikan waktu bagi PostForMe memproses
+                    for delay in [3, 5, 7]:
+                        await asyncio.sleep(delay)
+                        synced = await self.sync_post_result_for_target(db, target.id, postforme_post_id)
+                        if synced:
+                            break  # Berhasil dapat hasil, tidak perlu retry sleep lagi
 
             except Exception as e:
                 err_msg = str(e)
@@ -128,86 +131,84 @@ class QueueService:
         finally:
             db.close()
 
-    async def sync_post_result_for_target(self, db: Session, target_id: str, postforme_post_id: str, source: str = "sync"):
+    async def sync_post_result_for_target(self, db: Session, target_id: str, postforme_post_id: str, source: str = "sync") -> bool:
         """
         Sinkronisasi hasil publish dari PostForMe untuk satu target.
         Mengambil data dari /v1/social-post-results, update status, dan deduct kredit jika sukses.
+        Returns True jika ada hasil yang diproses, False jika belum ada.
         """
         target = db.query(PostTarget).filter(PostTarget.id == target_id).first()
         if not target:
             logger.warning(f"PostTarget {target_id} not found for sync.")
-            return
+            return False
 
         post = target.post
-        account = target.social_account
 
         try:
-            postforme_account_id = account.postforme_account_id if account else None
+            # Ambil hasil dari PostForMe tanpa filter social_account_id agar pasti dapat
             results = await postforme_service.get_post_results(
-                post_id=[postforme_post_id],
-                social_account_id=[postforme_account_id] if postforme_account_id else None
+                post_id=[postforme_post_id]
             )
 
             result_list = results.get("data", [])
             if not result_list:
-                logger.info(f"No results yet from PostForMe for post {postforme_post_id}. Will retry on next sync.")
-                return
+                logger.info(f"No results yet from PostForMe for post {postforme_post_id}.")
+                return False
 
+            processed_any = False
             for result_data in result_list:
-                # Cek apakah sudah ada record hasil untuk target ini
                 existing = db.query(PostPublishResult).filter(
                     PostPublishResult.post_target_id == target_id,
                     PostPublishResult.postforme_result_id == result_data.get("id")
                 ).first()
-
-                if existing:
-                    continue  # Sudah diproses sebelumnya
 
                 success = result_data.get("success", False)
                 platform_data = result_data.get("platform_data") or {}
                 platform_url = platform_data.get("url")
                 platform_post_id = platform_data.get("id")
 
-                # Simpan hasil ke database
-                publish_result = PostPublishResult(
-                    post_target_id=target_id,
-                    postforme_result_id=result_data.get("id"),
-                    postforme_post_id=postforme_post_id,
-                    social_account_id=result_data.get("social_account_id"),
-                    success=success,
-                    platform_url=platform_url,
-                    platform_post_id=platform_post_id,
-                    error_data=result_data.get("error"),
-                    raw_result=result_data,
-                    credit_deducted=False,
-                    source=source
-                )
-                db.add(publish_result)
+                if not existing:
+                    publish_result = PostPublishResult(
+                        post_target_id=target_id,
+                        postforme_result_id=result_data.get("id"),
+                        postforme_post_id=postforme_post_id,
+                        social_account_id=result_data.get("social_account_id"),
+                        success=success,
+                        platform_url=platform_url,
+                        platform_post_id=platform_post_id,
+                        error_data=result_data.get("error"),
+                        raw_result=result_data,
+                        credit_deducted=False,
+                        source=source
+                    )
+                    db.add(publish_result)
+                    db.flush()
+                else:
+                    publish_result = existing
 
                 if success:
-                    # Update target status ke PUBLISHED
                     target.status = PostStatus.PUBLISHED
                     target.platform_post_id = platform_post_id or target.platform_post_id
                     target.error_message = None
 
                     # ⭐ DEDUCT KREDIT — hanya saat PostForMe konfirmasi sukses
                     self._deduct_user_credit(db, post, publish_result)
-
                     logger.info(f"✅ Target {target_id} published successfully. URL: {platform_url}")
                 else:
-                    # Update target status ke FAILED
                     error_info = result_data.get("error") or {}
                     target.status = PostStatus.FAILED
                     target.error_message = str(error_info) if error_info else "PostForMe reported failure"
                     logger.warning(f"❌ Target {target_id} failed. Error: {error_info}")
 
                 db.commit()
+                processed_any = True
 
-            # Update status post utama
             self._update_parent_post_status(db, post.id)
+            return processed_any
 
         except Exception as e:
             logger.error(f"Error syncing PostForMe results for target {target_id}: {e}")
+            return False
 
     def _deduct_user_credit(self, db: Session, post: Post, publish_result: PostPublishResult):
         """
@@ -217,50 +218,161 @@ class QueueService:
         if publish_result.credit_deducted:
             return
 
-        if not post.created_by_user_id:
-            logger.warning(f"Post {post.id} has no created_by_user_id. Cannot deduct credit.")
+        user_id = post.created_by_user_id
+        if not user_id:
+            # Fallback: ambil user pertama di workspace
+            from backend.models.models import WorkspaceMember
+            wm = db.query(WorkspaceMember).filter(WorkspaceMember.workspace_id == post.workspace_id).first()
+            if wm:
+                user_id = wm.user_id
+
+        if not user_id:
+            logger.warning(f"Post {post.id} has no user_id to deduct credit.")
             return
 
         sub = db.query(UserSubscription).filter(
-            UserSubscription.user_id == post.created_by_user_id
+            UserSubscription.user_id == user_id
         ).first()
 
         if sub:
             sub.posts_used = (sub.posts_used or 0) + 1
             db.add(sub)
             publish_result.credit_deducted = True
-            logger.info(f"💳 Deducted 1 credit from user {post.created_by_user_id}. Total used: {sub.posts_used}/{sub.posts_limit}")
+            logger.info(f"💳 Deducted 1 credit from user {user_id}. Total used: {sub.posts_used}/{sub.posts_limit}")
         else:
-            logger.warning(f"No subscription found for user {post.created_by_user_id}. Credit not deducted.")
+            logger.warning(f"No subscription found for user {user_id}. Credit not deducted.")
 
     async def sync_all_publishing_posts(self, db: Session, workspace_id: str) -> Dict[str, Any]:
         """
-        Sinkronisasi manual semua post yang masih dalam status PUBLISHING untuk sebuah workspace.
-        Dipanggil dari endpoint /queue/sync-results.
+        Sinkronisasi manual komprehensif:
+        Ambil 100 hasil publikasi terbaru dari PostForMe API,
+        cocokkan dengan target/post di database kita, update status dan buat riwayat.
         """
-        from sqlalchemy import or_
-        publishing_targets = (
-            db.query(PostTarget)
-            .join(Post, PostTarget.post_id == Post.id)
-            .filter(
-                Post.workspace_id == workspace_id,
-                PostTarget.status == PostStatus.PUBLISHING
-            )
-            .all()
-        )
-
         synced = 0
         errors = 0
-        for target in publishing_targets:
-            if target.platform_post_id:
-                try:
-                    await self.sync_post_result_for_target(db, target.id, target.platform_post_id, source="manual_sync")
-                    synced += 1
-                except Exception as e:
-                    errors += 1
-                    logger.error(f"Error syncing target {target.id}: {e}")
 
-        return {"synced": synced, "errors": errors, "total": len(publishing_targets)}
+        try:
+            # Fetch 100 latest results from PostForMe
+            pf_results = await postforme_service.get_post_results(limit=100)
+            data_list = pf_results.get("data", [])
+            logger.info(f"Fetched {len(data_list)} results from PostForMe API for workspace sync.")
+
+            for res_item in data_list:
+                pf_post_id = res_item.get("post_id")
+                pf_result_id = res_item.get("id")
+                if not pf_post_id:
+                    continue
+
+                # Cari target di DB kita
+                target = (
+                    db.query(PostTarget)
+                    .join(Post, PostTarget.post_id == Post.id)
+                    .filter(
+                        Post.workspace_id == workspace_id,
+                        (PostTarget.platform_post_id == pf_post_id) | (Post.postforme_post_id == pf_post_id)
+                    )
+                    .first()
+                )
+
+                if not target:
+                    # Fallback: cari post berdasarkan workspace_id yang statusnya PUBLISHING/FAILED
+                    target = (
+                        db.query(PostTarget)
+                        .join(Post, PostTarget.post_id == Post.id)
+                        .filter(
+                            Post.workspace_id == workspace_id,
+                            PostTarget.status == PostStatus.PUBLISHING
+                        )
+                        .order_by(PostTarget.created_at.desc())
+                        .first()
+                    )
+                    if target and not target.platform_post_id:
+                        target.platform_post_id = pf_post_id
+                        target.post.postforme_post_id = pf_post_id
+                        db.commit()
+
+                if target:
+                    try:
+                        await self._apply_result_to_target(db, target, res_item, source="manual_sync")
+                        synced += 1
+                    except Exception as e:
+                        errors += 1
+                        logger.error(f"Error applying result {pf_result_id} to target {target.id}: {e}")
+
+            # Pastikan semua job yang targetnya sudah PUBLISHED/FAILED diupdate status job-nya
+            publishing_jobs = (
+                db.query(PublishJob)
+                .join(PostTarget, PublishJob.post_target_id == PostTarget.id)
+                .join(Post, PostTarget.post_id == Post.id)
+                .filter(
+                    Post.workspace_id == workspace_id,
+                    PublishJob.status == JobStatus.PROCESSING
+                )
+                .all()
+            )
+            for j in publishing_jobs:
+                if j.post_target.status in (PostStatus.PUBLISHED, PostStatus.FAILED):
+                    j.status = JobStatus.SUCCESS if j.post_target.status == PostStatus.PUBLISHED else JobStatus.FAILED
+                    j.completed_at = datetime.utcnow()
+            db.commit()
+
+        except Exception as e:
+            logger.error(f"Error in sync_all_publishing_posts: {e}", exc_info=True)
+
+        return {"synced": synced, "errors": errors}
+
+    async def _apply_result_to_target(self, db: Session, target: PostTarget, res_item: dict, source: str = "sync"):
+        """Applies a single PostForMe result to a PostTarget and creates PostPublishResult."""
+        post = target.post
+        pf_result_id = res_item.get("id")
+        pf_post_id = res_item.get("post_id")
+        success = res_item.get("success", False)
+        platform_data = res_item.get("platform_data") or {}
+        platform_url = platform_data.get("url")
+        platform_post_id = platform_data.get("id")
+
+        existing = db.query(PostPublishResult).filter(
+            PostPublishResult.post_target_id == target.id,
+            PostPublishResult.postforme_result_id == pf_result_id
+        ).first()
+
+        if not existing:
+            publish_result = PostPublishResult(
+                post_target_id=target.id,
+                postforme_result_id=pf_result_id,
+                postforme_post_id=pf_post_id,
+                social_account_id=res_item.get("social_account_id"),
+                success=success,
+                platform_url=platform_url,
+                platform_post_id=platform_post_id,
+                error_data=res_item.get("error"),
+                raw_result=res_item,
+                credit_deducted=False,
+                source=source
+            )
+            db.add(publish_result)
+            db.flush()
+        else:
+            publish_result = existing
+
+        if success:
+            target.status = PostStatus.PUBLISHED
+            target.platform_post_id = platform_post_id or target.platform_post_id or pf_post_id
+            target.error_message = None
+            self._deduct_user_credit(db, post, publish_result)
+        else:
+            error_info = res_item.get("error") or {}
+            target.status = PostStatus.FAILED
+            target.error_message = str(error_info) if error_info else "PostForMe reported failure"
+
+        # Simpan job status juga
+        job = db.query(PublishJob).filter(PublishJob.post_target_id == target.id).first()
+        if job:
+            job.status = JobStatus.SUCCESS if success else JobStatus.FAILED
+            job.completed_at = datetime.utcnow()
+
+        db.commit()
+        self._update_parent_post_status(db, post.id)
 
     def _update_parent_post_status(self, db: Session, post_id: str):
         post = db.query(Post).filter(Post.id == post_id).first()
