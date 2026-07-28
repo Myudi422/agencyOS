@@ -137,7 +137,8 @@ export default function PricingPage() {
             },
             onPending: function (result: any) {
               console.log("Midtrans pending:", result);
-              alert("Pembayaran kamu sedang diproses. Mohon selesaikan sesuai instruksi.");
+              const orderId = result?.order_id || data?.order_id;
+              router.push(`/billing/success?plan=${tier}&order_id=${orderId}`);
             },
             onError: function (result: any) {
               console.error("Midtrans error:", result);

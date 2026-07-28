@@ -398,9 +398,15 @@ async def sync_checkout(
             detail=f"Transaksi status Midtrans: '{transaction_status}'. Pembayaran belum selesai."
         )
 
-    # Extract info from custom fields or metadata
-    customer_email = status_data.get("custom_field1") or user.email
-    plan_tier = status_data.get("custom_field2") or "creator"
+    # Extract info from custom fields or order_id
+    customer_email = user.email
+    plan_tier = status_data.get("custom_field2")
+    if not plan_tier and req.order_id and "SHI-" in req.order_id:
+        parts = req.order_id.split("-")
+        if len(parts) >= 3:
+            plan_tier = parts[2]
+    if not plan_tier:
+        plan_tier = "creator"
 
     _activate_user_subscription(
         email=customer_email,
