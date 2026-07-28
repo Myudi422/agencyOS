@@ -63,11 +63,16 @@ class PostForMeService:
         """
         url = f"{self.base_url}/v1/social-accounts/auth-url"
 
-        # Auto-inject connection_type for Meta/Threads platforms if not already provided
-        meta_platforms = ("instagram", "facebook", "threads")
-        if platform in meta_platforms and not platform_data:
-            platform_data = {"connection_type": platform}
-            logger.info(f"Auto-injected platform_data for {platform}: {platform_data}")
+        # Auto-format platform_data for Instagram (PostForMe API requires nesting under 'instagram' key)
+        if platform == "instagram":
+            conn_type = "instagram"
+            if platform_data:
+                if "instagram" in platform_data and "connection_type" in platform_data["instagram"]:
+                    conn_type = platform_data["instagram"]["connection_type"]
+                elif "connection_type" in platform_data:
+                    conn_type = platform_data["connection_type"]
+            platform_data = {"instagram": {"connection_type": conn_type}}
+            logger.info(f"Formatted platform_data for Instagram: {platform_data}")
 
         payload: Dict[str, Any] = {"platform": platform}
         if platform_data:
@@ -89,7 +94,7 @@ class PostForMeService:
         logger.info(f"Calling PostForMe auth-url for platform={platform}, payload={payload}")
         async with httpx.AsyncClient(timeout=30.0) as client:
             res = await client.post(url, json=payload, headers=self._get_headers())
-            if res.status_code != 200:
+            if res.status_code not in (200, 201):
                 logger.error(f"PostForMe auth-url error {res.status_code}: {res.text}")
             res.raise_for_status()
             return res.json()
