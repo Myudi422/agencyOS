@@ -905,13 +905,13 @@ export default function PostComposerModal() {
               </div>
             </div>
 
-            {/* 6. Video / Reels Cover Thumbnail Setup (SocialPostMediaDto) */}
+            {/* 6. Video / Reels Cover Thumbnail Setup */}
             {(postType === "video" || mediaUrls.some(u => isVideoMedia({ url: u }))) && (
               <div className="p-4 rounded-2xl bg-purple-50/60 border border-purple-200 space-y-3 animate-fadeIn">
                 <div className="flex items-center justify-between">
                   <label className="text-xs font-bold text-purple-900 flex items-center">
                     <span>Video / Reels Cover Thumbnail</span>
-                    <FieldTooltip text="Upload atau tempel URL gambar sampul (cover) untuk thumbnail video Reels. Bisa diaktifkan/nonaktifkan di Live Preview." />
+                    <FieldTooltip text="Upload atau tempel URL gambar sampul untuk thumbnail video Reels. Toggle ON/OFF di Live Preview untuk cek hasilnya." />
                   </label>
                   <div className="flex items-center gap-2">
                     {reelsThumbnailUrl && (
@@ -939,19 +939,18 @@ export default function PostComposerModal() {
                   </div>
                 </div>
 
-                {/* Thumbnail Upload Area */}
+                {/* Upload + URL — same pattern as media attachment */}
                 {!reelsThumbnailUrl ? (
                   <div className="space-y-2">
+                    {/* Dropzone */}
                     <label
-                      htmlFor="thumbnail-upload-input"
-                      className={`flex flex-col items-center justify-center gap-2 p-4 border-2 border-dashed rounded-xl cursor-pointer transition-all ${
+                      className={`relative border-2 border-dashed rounded-2xl p-4 flex flex-col items-center justify-center text-center cursor-pointer transition-all ${
                         isUploadingThumbnail
-                          ? "border-purple-400 bg-purple-50 cursor-wait"
-                          : "border-purple-200 hover:border-purple-400 hover:bg-purple-50/80 bg-white"
+                          ? "border-purple-400 bg-purple-50/80 cursor-wait"
+                          : "border-purple-300 hover:border-purple-500 bg-white hover:bg-purple-50/40"
                       }`}
                     >
                       <input
-                        id="thumbnail-upload-input"
                         type="file"
                         accept="image/*"
                         className="hidden"
@@ -960,16 +959,38 @@ export default function PostComposerModal() {
                           if (!e.target.files || e.target.files.length === 0) return;
                           setIsUploadingThumbnail(true);
                           const file = e.target.files[0];
-                          const formData = new FormData();
-                          formData.append("workspace_id", activeWorkspace?.id || "ws-default");
-                          formData.append("folder", "Thumbnails");
-                          formData.append("file", file);
+                          const contentType = file.type || "image/jpeg";
                           try {
-                            const res = await fetchApi<any>("/media/", { method: "POST", body: formData });
-                            if (res?.url) {
-                              setReelsThumbnailUrl(res.url);
-                              setShowThumbnailInPreview(true);
-                              toast.success(`Cover thumbnail '${file.name}' berhasil diunggah!`);
+                            // Use PostForMe signed upload URL (same as main media)
+                            const res = await fetchApi<any>("/posts/media/create-upload-url", {
+                              method: "POST",
+                              body: JSON.stringify({ content_type: contentType })
+                            });
+                            if (res?.upload_url && res?.media_url && !res.upload_url.includes("simulated")) {
+                              const putRes = await fetch(res.upload_url, {
+                                method: "PUT",
+                                headers: { "Content-Type": contentType },
+                                body: file
+                              });
+                              if (putRes.ok || putRes.status === 200 || putRes.status === 204) {
+                                setReelsThumbnailUrl(res.media_url);
+                                setShowThumbnailInPreview(true);
+                                toast.success(`Cover thumbnail '${file.name}' berhasil diunggah!`);
+                              } else {
+                                throw new Error("Upload gagal");
+                              }
+                            } else if (res?.media_url) {
+                              // Simulated / fallback: use B2
+                              const fd = new FormData();
+                              fd.append("workspace_id", activeWorkspace?.id || "ws-default");
+                              fd.append("folder", "Thumbnails");
+                              fd.append("file", file);
+                              const b2Res = await fetchApi<any>("/media/", { method: "POST", body: fd });
+                              if (b2Res?.url) {
+                                setReelsThumbnailUrl(b2Res.url);
+                                setShowThumbnailInPreview(true);
+                                toast.success(`Cover thumbnail '${file.name}' berhasil diunggah!`);
+                              }
                             }
                           } catch (err: any) {
                             toast.error(`Gagal upload thumbnail: ${err.message || err}`);
@@ -980,67 +1001,67 @@ export default function PostComposerModal() {
                         }}
                       />
                       {isUploadingThumbnail ? (
-                        <>
-                          <div className="w-6 h-6 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
-                          <p className="text-xs text-purple-600 font-semibold">Mengunggah thumbnail...</p>
-                        </>
+                        <div className="py-1 flex flex-col items-center gap-2 text-purple-700">
+                          <RefreshCw className="w-6 h-6 animate-spin text-purple-600" />
+                          <p className="text-xs font-bold">Mengunggah thumbnail via PostForMe...</p>
+                        </div>
                       ) : (
                         <>
-                          <div className="w-8 h-8 rounded-xl bg-purple-100 flex items-center justify-center">
-                            <UploadCloud className="w-4 h-4 text-purple-500" />
+                          <div className="w-10 h-10 rounded-2xl bg-purple-100 text-purple-600 flex items-center justify-center mb-1.5 shadow-xs">
+                            <UploadCloud className="w-5 h-5" />
                           </div>
-                          <p className="text-xs font-semibold text-slate-700">Klik untuk upload Cover Image</p>
-                          <p className="text-[10px] text-slate-400">JPG, PNG — maks 10MB</p>
+                          <p className="text-xs font-bold text-slate-800">Upload Cover Image</p>
+                          <p className="text-[10px] text-slate-500 mt-0.5">Klik atau seret JPG / PNG ke sini</p>
                         </>
                       )}
                     </label>
-                    {/* URL Fallback */}
+
+                    {/* URL Fallback — same style as media attachment */}
                     <div className="flex items-center gap-2">
                       <div className="flex-1 h-px bg-slate-200" />
-                      <span className="text-[10px] text-slate-400 font-semibold">atau tempel URL</span>
+                      <span className="text-[10px] text-slate-400 font-semibold shrink-0">atau tempel URL</span>
                       <div className="flex-1 h-px bg-slate-200" />
                     </div>
-                    <input
-                      type="text"
-                      placeholder="https://.../cover.jpg"
-                      onBlur={(e) => {
-                        if (e.target.value.trim()) {
-                          setReelsThumbnailUrl(e.target.value.trim());
-                          setShowThumbnailInPreview(true);
-                        }
-                      }}
-                      className="w-full glass-input rounded-xl px-3 py-1.5 text-xs focus:outline-none bg-white border border-purple-200"
-                    />
+                    <div className="flex items-center gap-2">
+                      <input
+                        id="thumbnail-url-input"
+                        type="text"
+                        placeholder="https://.../cover.jpg"
+                        className="flex-1 glass-input rounded-xl px-3 py-1.5 text-xs focus:outline-none bg-white border border-purple-200"
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            const val = (e.target as HTMLInputElement).value.trim();
+                            if (val) { setReelsThumbnailUrl(val); setShowThumbnailInPreview(true); }
+                          }
+                        }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const el = document.getElementById("thumbnail-url-input") as HTMLInputElement;
+                          const val = el?.value.trim();
+                          if (val) { setReelsThumbnailUrl(val); setShowThumbnailInPreview(true); }
+                        }}
+                        className="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-semibold cursor-pointer shadow-xs shrink-0"
+                      >
+                        Set Cover
+                      </button>
+                    </div>
                   </div>
                 ) : (
-                  /* Thumbnail Preview when set */
+                  /* Thumbnail set — show preview row */
                   <div className="flex items-center gap-3 p-2 bg-white rounded-xl border border-purple-200">
                     <img
                       src={reelsThumbnailUrl}
                       alt="Thumbnail preview"
-                      className="w-16 h-16 rounded-lg object-cover border border-purple-100 shrink-0"
+                      className="w-16 h-12 rounded-lg object-cover border border-purple-100 shrink-0"
                     />
                     <div className="flex-1 min-w-0">
-                      <p className="text-[11px] font-semibold text-slate-800 truncate">Cover Thumbnail Set</p>
+                      <p className="text-[11px] font-semibold text-slate-800">Cover Thumbnail Set ✓</p>
                       <p className="text-[10px] text-slate-400 truncate mt-0.5">{reelsThumbnailUrl}</p>
                     </div>
                   </div>
                 )}
-
-                {/* Frame Timestamp */}
-                <div>
-                  <label className="text-[11px] font-semibold text-slate-600 block mb-1">
-                    Frame Timestamp (ms) — alternatif cover
-                  </label>
-                  <input
-                    type="number"
-                    value={reelsThumbnailTimestampMs}
-                    onChange={(e) => setReelsThumbnailTimestampMs(e.target.value ? Number(e.target.value) : "")}
-                    placeholder="2000 (Detik ke-2)"
-                    className="w-full glass-input rounded-xl px-3 py-1.5 text-xs focus:outline-none bg-white border border-purple-200 font-mono"
-                  />
-                  <p className="text-[10px] text-slate-400 mt-0.5">Jika tidak ada Cover URL, PostForMe akan mengambil frame pada waktu ini sebagai thumbnail.</p>
-                </div>
               </div>
             )}
 
