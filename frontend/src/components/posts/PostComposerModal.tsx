@@ -78,7 +78,6 @@ export default function PostComposerModal() {
   const [postType, setPostType] = useState<"image" | "carousel" | "video">("image");
   const [caption, setCaption] = useState("");
   const [hashtags, setHashtags] = useState("#Shiera #SocialMedia #Marketing");
-  const [firstComment, setFirstComment] = useState("");
   const [mediaUrls, setMediaUrls] = useState<string[]>([
     "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1200&auto=format&fit=crop&q=80"
   ]);
@@ -88,8 +87,13 @@ export default function PostComposerModal() {
   const [scheduledAt, setScheduledAt] = useState("");
   const [actionType, setActionType] = useState<"publish_now" | "schedule" | "save_draft">("publish_now");
 
-  // Live Feed Preview Carousel Slide Index
+  // Live Feed Preview Carousel Slide Index & Aspect Ratio
   const [previewSlideIndex, setPreviewSlideIndex] = useState(0);
+  const [previewAspect, setPreviewAspect] = useState<"1:1" | "4:5" | "16:9" | "9:16">("1:1");
+
+  // Video / Reels Cover Thumbnail Setup (SocialPostMediaDto)
+  const [reelsThumbnailUrl, setReelsThumbnailUrl] = useState("");
+  const [reelsThumbnailTimestampMs, setReelsThumbnailTimestampMs] = useState<number | "">(2000);
 
   // Platform Customization Tab
   const [activePlatformTab, setActivePlatformTab] = useState<string>("instagram");
@@ -434,14 +438,28 @@ export default function PostComposerModal() {
 
     setIsSubmitting(true);
 
+    // Format hashtags (max 5) and merge directly into caption
+    const tagsArray = hashtags.trim().split(/\s+/).filter(h => h.length > 0).slice(0, 5);
+    const hashtagsFormatted = tagsArray.map(h => h.startsWith("#") ? h : `#${h}`).join(" ");
+    const fullCaption = caption.trim() + (hashtagsFormatted ? `\n\n${hashtagsFormatted}` : "");
+
+    const mediaThumbnails: Record<string, any> = {};
+    if (reelsThumbnailUrl.trim() || reelsThumbnailTimestampMs !== "") {
+      mediaThumbnails["0"] = {
+        thumbnail_url: reelsThumbnailUrl.trim() || null,
+        thumbnail_timestamp_ms: reelsThumbnailTimestampMs !== "" ? Number(reelsThumbnailTimestampMs) : null
+      };
+    }
+
     const platformConfigs: Record<string, any> = {
+      media_thumbnails: Object.keys(mediaThumbnails).length > 0 ? mediaThumbnails : null,
       instagram: {
         placement: postType === "video" ? "reels" : instaPlacement,
-        share_to_feed: instaShareToFeed,
+        share_to_feed: postType === "video" ? instaShareToFeed : false,
         location: instaLocation.trim() || null,
         collaborators: instaCollaborators ? instaCollaborators.split(",").map(s => s.trim().replace(/^@/, "")).filter(Boolean) : null,
         audio_name: instaAudioName.trim() || null,
-        trial_reel_type: instaTrialReelType || null
+        trial_reel_type: postType === "video" ? (instaTrialReelType || null) : null
       },
       youtube: {
         title: youtubeTitle || (caption ? caption.slice(0, 80) : "Social Video Post"),
@@ -479,15 +497,13 @@ export default function PostComposerModal() {
       }
     };
 
-
     const payload = {
       workspace_id: activeWorkspace?.id || "ws-default",
       account_ids: selectedAccountIds,
       target_account_ids: selectedAccountIds,
       post_type: postType,
-      caption: caption,
-      hashtags: hashtags,
-      first_comment: firstComment,
+      caption: fullCaption,
+      hashtags: hashtagsFormatted,
       media_urls: mediaUrls,
       scheduled_at: actionType === "schedule" ? scheduledAt : null,
       action: actionType,
@@ -605,7 +621,7 @@ export default function PostComposerModal() {
                       type="button"
                       onClick={() => toggleAccountSelection(acc)}
                       title={!compat.compatible ? compat.reason : `@${acc.username} (${badgeInfo.name})`}
-                      className={`flex items-center gap-2.5 px-3 py-2 rounded-2xl border text-xs font-medium shrink-0 transition-all cursor-pointer ${
+                      className={`flex items-center gap-2 px-2.5 py-1.5 rounded-xl border text-xs font-medium shrink-0 transition-all cursor-pointer ${
                         !compat.compatible
                           ? "bg-slate-100 border-slate-200 text-slate-400 opacity-60 cursor-not-allowed"
                           : isSelected
@@ -618,17 +634,17 @@ export default function PostComposerModal() {
                         <img
                           src={acc.avatar_url || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150"}
                           alt={acc.username}
-                          className={`w-6 h-6 rounded-full object-cover border border-white/60 ${!compat.compatible ? "grayscale" : ""}`}
+                          className={`w-5.5 h-5.5 rounded-full object-cover border border-white/60 ${!compat.compatible ? "grayscale" : ""}`}
                         />
-                        <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full bg-white flex items-center justify-center shadow-xs">
-                          <AccountPlatformIcon platform={acc.platform} className="w-2.5 h-2.5" />
+                        <div className="absolute -bottom-1 -right-1 w-3 h-3 rounded-full bg-white flex items-center justify-center shadow-xs">
+                          <AccountPlatformIcon platform={acc.platform} className="w-2 h-2" />
                         </div>
                       </div>
 
                       {/* Username & Platform Label */}
-                      <div className="flex flex-col items-start leading-tight">
-                        <span className="font-bold text-[11px]">@{acc.username}</span>
-                        <span className={`text-[9px] font-extrabold uppercase px-1.5 py-0.2 rounded-md ${
+                      <div className="flex flex-col items-start leading-none max-w-[95px]">
+                        <span className="font-bold text-[10px] truncate w-full">@{acc.username}</span>
+                        <span className={`text-[8px] font-extrabold uppercase px-1 py-0.2 rounded mt-0.5 ${
                           isSelected ? "bg-white/20 text-white" : badgeInfo.bg
                         }`}>
                           {badgeInfo.name}
@@ -719,28 +735,42 @@ export default function PostComposerModal() {
               />
             </div>
 
-            {/* 4. Hashtags & First Comment */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label className="text-xs font-bold text-slate-800 block mb-1">Hashtags</label>
-                <input
-                  type="text"
-                  value={hashtags}
-                  onChange={(e) => setHashtags(e.target.value)}
-                  placeholder="#Shiera #SocialMedia"
-                  className="w-full glass-input rounded-xl px-3 py-2 text-xs focus:outline-none"
-                />
+            {/* 4. Hashtags (Maksimal 5 - otomatis digabung ke Caption saat dikirim) */}
+            <div className="space-y-1">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-bold text-slate-800 flex items-center">
+                  <span>Hashtags (Maksimal 5 Hashtag)</span>
+                  <FieldTooltip text="Ketik hingga 5 hashtag (pisahkan dengan spasi). Hashtag akan otomatis digabungkan di bagian bawah Caption saat posting dikirim." />
+                </label>
+                {(() => {
+                  const tagCount = hashtags.trim().split(/\s+/).filter(h => h.length > 0).length;
+                  return (
+                    <span className={`text-[10px] font-bold font-mono px-2 py-0.5 rounded-full ${
+                      tagCount > 5 ? "bg-rose-100 text-rose-700" : "bg-purple-100 text-purple-700"
+                    }`}>
+                      {tagCount} / 5 Hashtags
+                    </span>
+                  );
+                })()}
               </div>
-              <div>
-                <label className="text-xs font-bold text-slate-800 block mb-1">First Comment</label>
-                <input
-                  type="text"
-                  value={firstComment}
-                  onChange={(e) => setFirstComment(e.target.value)}
-                  placeholder="Automatic first comment..."
-                  className="w-full glass-input rounded-xl px-3 py-2 text-xs focus:outline-none"
-                />
-              </div>
+              <input
+                type="text"
+                value={hashtags}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  const tags = val.trim().split(/\s+/).filter(h => h.length > 0);
+                  if (tags.length <= 5 || !val.endsWith(" ")) {
+                    setHashtags(val);
+                  } else {
+                    toast.warning("Maksimal 5 hashtag diperbolehkan.");
+                  }
+                }}
+                placeholder="#Shiera #SocialMedia #Marketing #Agency #Post"
+                className="w-full glass-input rounded-xl px-3 py-2 text-xs focus:outline-none"
+              />
+              <p className="text-[10px] text-slate-400">
+                Hashtag ini akan dimasukkan langsung di akhir teks Caption saat dikirim ke PostForMe.
+              </p>
             </div>
 
             {/* 5. Attached Media & Direct Upload Dropzone */}
@@ -872,6 +902,48 @@ export default function PostComposerModal() {
                 )}
               </div>
             </div>
+
+            {/* 6. Video / Reels Cover Thumbnail Setup (SocialPostMediaDto) */}
+            {(postType === "video" || mediaUrls.some(u => isVideoMedia({ url: u }))) && (
+              <div className="p-4 rounded-2xl bg-purple-50/60 border border-purple-200 space-y-3 animate-fadeIn">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-bold text-purple-950 flex items-center">
+                    <span>Video / Reels Cover Thumbnail Setup</span>
+                    <FieldTooltip text="Atur foto sampul (Cover URL) atau detik frame video (Timestamp ms) untuk thumbnail video Reels Anda." />
+                  </label>
+                  <span className="text-[10px] bg-purple-200 text-purple-800 px-2 py-0.5 rounded-full font-bold font-mono">
+                    SocialPostMediaDto
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-[11px] font-semibold text-slate-700 block mb-1">
+                      Custom Cover Image URL (Thumbnail URL)
+                    </label>
+                    <input
+                      type="text"
+                      value={reelsThumbnailUrl}
+                      onChange={(e) => setReelsThumbnailUrl(e.target.value)}
+                      placeholder="https://.../cover-image.jpg"
+                      className="w-full glass-input rounded-xl px-3 py-1.5 text-xs focus:outline-none bg-white border border-purple-200"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[11px] font-semibold text-slate-700 block mb-1">
+                      Frame Timestamp (ms)
+                    </label>
+                    <input
+                      type="number"
+                      value={reelsThumbnailTimestampMs}
+                      onChange={(e) => setReelsThumbnailTimestampMs(e.target.value ? Number(e.target.value) : "")}
+                      placeholder="2000 (Detik ke-2)"
+                      className="w-full glass-input rounded-xl px-3 py-1.5 text-xs focus:outline-none bg-white border border-purple-200 font-mono"
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* 6. Scheduling Controls when Schedule Selected */}
             {actionType === "schedule" && (
@@ -1040,31 +1112,40 @@ export default function PostComposerModal() {
                       <div>
                         <label className="text-[11px] font-semibold text-slate-600 flex items-center mb-1">
                           <span>Trial Reel Type (Uji Coba Konten)</span>
-                          <FieldTooltip text="Uji coba Reels ke non-followers dulu tanpa muncul di profil kamu. Jika ramai, bisa diluluskan (Graduated) ke followers." />
+                          <FieldTooltip text="Uji coba Reels ke non-followers dulu tanpa muncul di profil kamu. Khusus format Video Reels." />
                         </label>
                         <select
-                          value={instaTrialReelType}
+                          value={postType !== "video" ? "" : instaTrialReelType}
+                          disabled={postType !== "video"}
                           onChange={(e) => setInstaTrialReelType(e.target.value as any)}
-                          className="w-full glass-input rounded-xl px-3 py-1.5 text-xs focus:outline-none bg-white cursor-pointer"
+                          className={`w-full glass-input rounded-xl px-3 py-1.5 text-xs focus:outline-none ${
+                            postType !== "video" ? "bg-slate-100 text-slate-400 cursor-not-allowed opacity-60" : "bg-white cursor-pointer"
+                          }`}
                         >
                           <option value="">Standard Post (Bukan Trial)</option>
                           <option value="manual">Trial Reel (Manual Graduation)</option>
                           <option value="performance">Trial Reel (Performance Auto Graduation)</option>
                         </select>
+                        {postType !== "video" && (
+                          <p className="text-[10px] text-slate-400 mt-0.5">*Trial Reel khusus untuk format Video.</p>
+                        )}
                       </div>
 
                       <div className="flex flex-col justify-end">
-                        <label className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer font-medium">
+                        <label className={`flex items-center gap-2 text-xs font-medium ${
+                          postType !== "video" ? "text-slate-400 cursor-not-allowed" : "text-slate-700 cursor-pointer"
+                        }`}>
                           <input
                             type="checkbox"
-                            checked={instaShareToFeed}
+                            checked={postType === "video" ? instaShareToFeed : false}
+                            disabled={postType !== "video"}
                             onChange={(e) => setInstaShareToFeed(e.target.checked)}
-                            className="rounded border-slate-300 text-pink-600 focus:ring-pink-500 cursor-pointer"
+                            className="rounded border-slate-300 text-pink-600 focus:ring-pink-500 cursor-pointer disabled:opacity-50"
                           />
                           <span>Tampilkan Reels di Grid Utama Profil (Share to Feed)</span>
                         </label>
                         <p className="text-[10px] text-slate-400 mt-0.5 pl-5">
-                          Jika di-uncheck, video Reels hanya ada di tab khusus Reels.
+                          {postType !== "video" ? "*Share to Feed khusus untuk Video Reels." : "Jika di-uncheck, video Reels hanya ada di tab khusus Reels."}
                         </p>
                       </div>
                     </div>
@@ -1330,9 +1411,21 @@ export default function PostComposerModal() {
           }`}>
             <div className="flex items-center justify-between pb-2 border-b border-slate-200">
               <span className="text-xs font-bold text-slate-900 uppercase tracking-wider">Live Feed Preview</span>
-              <span className="text-[10px] bg-purple-100 text-purple-700 px-2 py-0.5 rounded-md font-bold uppercase">
-                {activePlatformTab}
-              </span>
+              <div className="flex items-center gap-1">
+                <span className="text-[10px] text-slate-400 font-semibold mr-1">Rasio:</span>
+                {(["1:1", "4:5", "16:9", "9:16"] as const).map(aspect => (
+                  <button
+                    key={aspect}
+                    type="button"
+                    onClick={() => setPreviewAspect(aspect)}
+                    className={`px-2 py-0.5 rounded-lg text-[10px] font-bold transition-all cursor-pointer ${
+                      previewAspect === aspect ? "bg-purple-600 text-white shadow-xs" : "bg-slate-200/80 text-slate-600 hover:bg-slate-300"
+                    }`}
+                  >
+                    {aspect}
+                  </button>
+                ))}
+              </div>
             </div>
 
             {/* Live Feed Card Preview */}
@@ -1347,21 +1440,30 @@ export default function PostComposerModal() {
                 </div>
               </div>
 
-              {/* Multi-Media Interactive Carousel & Video Feed Preview */}
+              {/* Multi-Media Interactive Carousel & Video Feed Preview with Dynamic Aspect Ratio */}
               {mediaUrls.length > 0 ? (
-                <div className="relative group rounded-xl overflow-hidden border border-slate-100 shadow-2xs bg-black/5">
-                  {/* Active Slide Rendering */}
+                <div className="relative group rounded-xl overflow-hidden border border-slate-100 shadow-2xs bg-black/5 flex items-center justify-center">
+                  {/* Active Slide Rendering with Dynamic Aspect Ratio */}
                   {isVideoMedia({ url: mediaUrls[previewSlideIndex] || mediaUrls[0] }) ? (
                     <video
                       src={mediaUrls[previewSlideIndex] || mediaUrls[0]}
-                      className="w-full h-48 sm:h-56 object-cover bg-black"
+                      poster={reelsThumbnailUrl || undefined}
+                      className={`w-full object-cover bg-black ${
+                        previewAspect === "1:1" ? "aspect-square max-h-72" :
+                        previewAspect === "4:5" ? "aspect-[4/5] max-h-80" :
+                        previewAspect === "16:9" ? "aspect-[16/9] max-h-56" : "aspect-[9/16] max-h-[380px]"
+                      }`}
                       controls
                     />
                   ) : (
                     <img
                       src={mediaUrls[previewSlideIndex] || mediaUrls[0]}
                       alt={`Preview slide ${previewSlideIndex + 1}`}
-                      className="w-full h-48 sm:h-56 object-cover"
+                      className={`w-full object-cover ${
+                        previewAspect === "1:1" ? "aspect-square max-h-72" :
+                        previewAspect === "4:5" ? "aspect-[4/5] max-h-80" :
+                        previewAspect === "16:9" ? "aspect-[16/9] max-h-56" : "aspect-[9/16] max-h-[380px]"
+                      }`}
                     />
                   )}
 

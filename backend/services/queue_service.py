@@ -70,7 +70,22 @@ class QueueService:
             db.commit()
 
             target_account_id = account.postforme_account_id or account.platform_account_id or account.id
-            media_list = [{"url": u} for u in (post.media_urls or [])]
+
+            # Format SocialPostMediaDto (URL, thumbnail_url, thumbnail_timestamp_ms)
+            media_list = []
+            media_thumbs = (post.platform_configurations or {}).get("media_thumbnails") or {}
+            for idx, u in enumerate(post.media_urls or []):
+                item: Dict[str, Any] = {"url": u}
+                thumb_info = media_thumbs.get(str(idx)) or media_thumbs.get("0")
+                if thumb_info:
+                    if thumb_info.get("thumbnail_url"):
+                        item["thumbnail_url"] = thumb_info["thumbnail_url"]
+                    if thumb_info.get("thumbnail_timestamp_ms") is not None:
+                        try:
+                            item["thumbnail_timestamp_ms"] = int(thumb_info["thumbnail_timestamp_ms"])
+                        except (ValueError, TypeError):
+                            pass
+                media_list.append(item)
 
             try:
                 logger.info(f"Publishing via PostForMe API targeting account @{account.username} ({account.platform.value})...")
