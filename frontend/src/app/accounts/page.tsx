@@ -187,6 +187,8 @@ export default function AccountsPage() {
           method: "POST",
           body: JSON.stringify({
             platform: selectedPlatform,
+            workspace_id: activeWorkspace?.id,
+            client_id: activeClientId,
             permissions: ["posts", "feeds"]
           })
         });
@@ -199,12 +201,8 @@ export default function AccountsPage() {
         }
       }
     } catch (err: any) {
-      console.log("Mock OAuth fallback triggered", err);
-      setModalSuccess(`Mock Channel Connected!`);
-      setTimeout(() => {
-        setIsConnectModalOpen(false);
-        loadAccounts();
-      }, 1000);
+      console.error("Connect platform error:", err);
+      setModalError(err.message || "Gagal menghubungkan channel media sosial.");
     } finally {
       setIsConnecting(false);
     }

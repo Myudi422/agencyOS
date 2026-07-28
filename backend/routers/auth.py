@@ -36,6 +36,8 @@ class ChallengeResolveRequest(BaseModel):
 
 class PostForMeAuthUrlRequest(BaseModel):
     platform: str
+    workspace_id: Optional[str] = None
+    client_id: Optional[str] = None
     platform_data: Optional[Dict[str, Any]] = None
     permissions: Optional[List[str]] = None
 
@@ -57,7 +59,16 @@ def _get_user_target_workspace(
     """
     target_ws = None
     if workspace_id and workspace_id != "ws-default":
-        target_ws = db.query(Workspace).filter(Workspace.id == workspace_id).first()
+        if current_user:
+            if current_user.is_admin:
+                target_ws = db.query(Workspace).filter(Workspace.id == workspace_id).first()
+            else:
+                member = db.query(WorkspaceMember).filter(
+                    WorkspaceMember.workspace_id == workspace_id,
+                    WorkspaceMember.user_id == current_user.id
+                ).first()
+                if member:
+                    target_ws = db.query(Workspace).filter(Workspace.id == workspace_id).first()
 
     if not target_ws and current_user:
         # Find user's own workspace
@@ -85,7 +96,7 @@ def _get_user_target_workspace(
     # Resolve client
     target_client = None
     if client_id and client_id != "client-1":
-        target_client = db.query(Client).filter(Client.id == client_id).first()
+        target_client = db.query(Client).filter(Client.id == client_id, Client.workspace_id == target_ws.id).first()
     if not target_client:
         target_client = db.query(Client).filter(Client.workspace_id == target_ws.id).first()
     if not target_client:
@@ -102,7 +113,11 @@ def _get_user_target_workspace(
     return target_ws, target_client
 
 @router.post("/postforme/auth-url")
-async def postforme_auth_url(req: PostForMeAuthUrlRequest):
+async def postforme_auth_url(
+    req: PostForMeAuthUrlRequest,
+    db: Session = Depends(get_db),
+    current_user: Optional[User] = Depends(get_current_user_from_token)
+):
     """
     Generates OAuth authorization URL for any supported platform via PostForMe API:
     facebook, instagram, x, tiktok, tiktok_business, youtube, pinterest, linkedin, threads.
@@ -112,9 +127,12 @@ async def postforme_auth_url(req: PostForMeAuthUrlRequest):
     """
     try:
         from backend.services.postforme_service import postforme_service
+        target_ws, _ = _get_user_target_workspace(db, current_user, req.workspace_id, req.client_id)
+
         res = await postforme_service.generate_auth_url(
             platform=req.platform,
             platform_data=req.platform_data,
+            external_id=target_ws.id,
             permissions=req.permissions
         )
         return res
@@ -136,16 +154,23 @@ async def postforme_sync_accounts(
 ):
     """
     Fetches connected accounts from PostForMe API and syncs them into user's workspace in DB.
+    Strictly scoped to current user's target workspace via external_id.
     """
     try:
         from backend.services.postforme_service import postforme_service
-        pf_res = await postforme_service.get_social_accounts()
-        pf_accounts = pf_res.get("data", [])
-        
         target_ws, target_client = _get_user_target_workspace(db, current_user, req.workspace_id, req.client_id)
+        
+        # Only fetch PostForMe accounts registered under target_ws.id
+        pf_res = await postforme_service.get_social_accounts(external_id=[target_ws.id])
+        pf_accounts = pf_res.get("data", [])
         synced_list = []
 
         for acc in pf_accounts:
+            # Multi-tenancy guard: check external_id matches target_ws.id
+            acc_ext_id = acc.get("external_id")
+            if acc_ext_id and acc_ext_id != target_ws.id:
+                continue
+
             pf_id = acc.get("id")
             platform_str = acc.get("platform", "instagram").lower()
             username = acc.get("username") or acc.get("name") or "user"

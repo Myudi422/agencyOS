@@ -21,10 +21,8 @@ export default function ClientsPage() {
     fetchApi<any[]>(`/clients/?workspace_id=${activeWorkspace.id}`)
       .then((data) => setClients(data || []))
       .catch((err) => {
-        setClients([
-          { id: "c1", name: "Luxe Fashion Co", description: "Premium lifestyle and apparel brand", brand_color: "#9333ea", timezone: "Asia/Jakarta", account_count: 10 },
-          { id: "c2", name: "Velox Tech Enterprise", description: "SaaS software & AI platform", brand_color: "#2563eb", timezone: "Asia/Jakarta", account_count: 8 }
-        ]);
+        console.error("Failed to load clients:", err);
+        setClients([]);
       });
   };
 

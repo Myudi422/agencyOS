@@ -28,7 +28,10 @@ def get_clients(
     clients = db.query(Client).filter(Client.workspace_id == workspace_id).all()
     results = []
     for c in clients:
-        accounts = db.query(SocialAccount).filter(SocialAccount.client_id == c.id).all()
+        accounts = db.query(SocialAccount).filter(
+            SocialAccount.client_id == c.id,
+            SocialAccount.workspace_id == workspace_id
+        ).all()
         results.append({
             "id": c.id,
             "workspace_id": c.workspace_id,
