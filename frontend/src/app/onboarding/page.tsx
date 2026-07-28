@@ -73,7 +73,7 @@ export default function OnboardingPage() {
         <div className="text-center space-y-3 mb-8">
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-300 text-xs font-semibold">
             <Sparkles className="w-3.5 h-3.5" />
-            <span>Selamat Datang di AgencyOS</span>
+            <span>Selamat Datang di Shiera</span>
           </div>
           <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight font-['Outfit'] bg-gradient-to-r from-white via-slate-100 to-purple-200 bg-clip-text text-transparent">
             Buat Workspace Pertama Anda

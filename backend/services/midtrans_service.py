@@ -66,7 +66,7 @@ def create_snap_transaction(
             }
         ],
         "callbacks": {
-            "finish": finish_url or "http://localhost:3000/billing/success",
+            "finish": finish_url or f"{settings.FRONTEND_URL.rstrip('/')}/billing/success",
         },
         "custom_field1": customer_email,
         "custom_field2": plan_tier,

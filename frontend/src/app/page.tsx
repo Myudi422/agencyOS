@@ -84,7 +84,7 @@ export default function DashboardPage() {
         <div className="space-y-2 z-10">
           <div className="flex items-center gap-2">
             <span className="px-3 py-1 rounded-full bg-purple-100/90 text-purple-700 text-[11px] font-bold tracking-wide uppercase border border-purple-200/80 shadow-xs">
-              AgencyOS Multi-Platform Core
+              Shiera Multi-Platform Core
             </span>
             <span className="text-xs text-slate-500 font-mono font-medium">10 Platforms Supported</span>
           </div>
@@ -245,7 +245,7 @@ export default function DashboardPage() {
                 </div>
                 <div>
                   <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
-                    AgencyOS Queue Engine
+                    Shiera Queue Engine
                   </h3>
                   <p className="text-[11px] text-slate-500">Real-time async job status</p>
                 </div>

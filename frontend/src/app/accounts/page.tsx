@@ -107,7 +107,7 @@ export default function AccountsPage() {
   const handleDeleteSingleAccount = (account: any) => {
     confirmModal({
       title: "Disconnect Social Account",
-      message: `Are you sure you want to disconnect @${account.username} (${account.name || account.platform}) from AgencyOS?`,
+      message: `Are you sure you want to disconnect @${account.username} (${account.name || account.platform}) from Shiera?`,
       variant: "danger",
       confirmText: "Disconnect Account",
       onConfirm: async () => {
@@ -227,7 +227,7 @@ export default function AccountsPage() {
             <span className="px-3 py-1 rounded-full bg-purple-100 text-purple-700 text-[11px] font-bold tracking-wide uppercase border border-purple-200">
               10 Platforms Unified
             </span>
-            <span className="text-xs text-slate-500 font-mono">AgencyOS Core</span>
+            <span className="text-xs text-slate-500 font-mono">Shiera Core</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight font-['Outfit'] gradient-text">
             Social Account Manager

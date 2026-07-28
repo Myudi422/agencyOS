@@ -18,7 +18,8 @@ if env_path.exists():
 from typing import Optional
 
 class Settings:
-    APP_NAME: str = "AgencyOS API"
+    APP_NAME: str = "Shiera API"
+    FRONTEND_URL: str = os.getenv("FRONTEND_URL", "http://localhost:3000")
     ENV: str = os.getenv("ENV", "development")
     SECRET_KEY: str = os.getenv("SECRET_KEY", "agencyos-super-secret-jwt-key-2026-enterprise")
     

@@ -20,7 +20,35 @@ from backend.config import settings
 logger = logging.getLogger("BillingRouter")
 router = APIRouter(prefix="/billing", tags=["Billing"])
 
-FRONTEND_URL = "http://localhost:3000"
+def get_frontend_url(request: Request) -> str:
+    """
+    Dynamically determines the frontend base URL based on incoming HTTP request headers
+    (Origin, Referer, X-Forwarded-Host) or settings.FRONTEND_URL config fallback.
+    This ensures Vercel deployments redirect to the Vercel domain instead of localhost.
+    """
+    origin = request.headers.get("origin")
+    if origin and "localhost" not in origin:
+        return origin.rstrip("/")
+
+    referer = request.headers.get("referer")
+    if referer:
+        from urllib.parse import urlparse
+        parsed = urlparse(referer)
+        if parsed.scheme and parsed.netloc and "localhost" not in parsed.netloc:
+            return f"{parsed.scheme}://{parsed.netloc}"
+
+    forwarded_host = request.headers.get("x-forwarded-host") or request.headers.get("host")
+    if forwarded_host and "localhost" not in forwarded_host:
+        proto = request.headers.get("x-forwarded-proto", "https")
+        return f"{proto}://{forwarded_host}".rstrip("/")
+
+    if settings.FRONTEND_URL and settings.FRONTEND_URL != "http://localhost:3000":
+        return settings.FRONTEND_URL.rstrip("/")
+
+    if origin:
+        return origin.rstrip("/")
+
+    return settings.FRONTEND_URL.rstrip("/")
 
 
 class CheckoutRequest(BaseModel):
@@ -67,10 +95,11 @@ def list_plans(db: Session = Depends(get_db)):
 @router.post("/checkout")
 async def create_checkout(
     req: CheckoutRequest,
+    request: Request,
     authorization: Optional[str] = Header(None),
     db: Session = Depends(get_db)
 ):
-    """Creates a Midtrans Snap transaction token & redirect URL."""
+    """Creates a Midtrans Snap transaction token & redirect URL dynamically pointing to frontend origin."""
     user = _get_user_from_auth(authorization, db)
     if not user:
         raise HTTPException(status_code=401, detail="Authentication required.")
@@ -78,6 +107,8 @@ async def create_checkout(
     plan = db.query(SubscriptionPlan).filter(SubscriptionPlan.tier == req.plan_tier).first()
     if not plan:
         raise HTTPException(status_code=404, detail=f"Plan '{req.plan_tier}' not found.")
+
+    frontend_url = get_frontend_url(request)
 
     # Free Trial handling (no payment required)
     if req.plan_tier == "trial":
@@ -101,21 +132,23 @@ async def create_checkout(
             )
             db.add(sub)
         db.commit()
+
+        redirect_url = req.finish_url or f"{frontend_url}/billing/success?plan=trial"
         return {
             "is_trial": True,
             "message": "Trial plan activated!",
-            "redirect_url": f"{FRONTEND_URL}/billing/success?plan=trial",
+            "redirect_url": redirect_url,
         }
 
     # Midtrans Paid Plan Checkout
-    order_id = f"AOS-{user.id[:8]}-{plan.tier}-{int(time.time())}"
-    finish_url = req.finish_url or f"{FRONTEND_URL}/billing/success?plan={req.plan_tier}&order_id={order_id}"
+    order_id = f"SHI-{user.id[:8]}-{plan.tier}-{int(time.time())}"
+    finish_url = req.finish_url or f"{frontend_url}/billing/success?plan={req.plan_tier}&order_id={order_id}"
 
     try:
         snap_res = ms.create_snap_transaction(
             order_id=order_id,
             gross_amount=plan.price_idr,
-            item_name=f"AgencyOS {plan.name} Plan ({plan.post_quota} Posts)",
+            item_name=f"Shiera {plan.name} Plan ({plan.post_quota} Posts)",
             customer_email=user.email,
             customer_name=user.full_name,
             plan_tier=plan.tier.value if hasattr(plan.tier, "value") else str(plan.tier),

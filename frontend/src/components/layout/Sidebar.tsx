@@ -108,9 +108,12 @@ export default function Sidebar({ isMobileOpen = false, onCloseMobile }: Sidebar
                 <Sparkles className="w-4 h-4 text-white" />
               </div>
               <div>
-                <h1 className="font-extrabold text-base tracking-tight text-slate-900 font-['Outfit']">
-                  AgencyOS
+                <h1 className="font-extrabold text-base tracking-tight text-slate-900 font-['Outfit'] leading-none">
+                  Shiera
                 </h1>
+                <p className="text-[9px] text-purple-600 font-semibold tracking-tight mt-0.5">
+                  Kelola Sosmed Dalam Satu Tempat
+                </p>
               </div>
             </div>
             <button
@@ -301,7 +304,7 @@ export default function Sidebar({ isMobileOpen = false, onCloseMobile }: Sidebar
                       <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                     )}
                     <span className="text-[10px] text-slate-500 font-medium truncate">
-                      {isAdmin ? "Admin" : user?.email?.split("@")[0] || "AgencyOS"}
+                      {isAdmin ? "Admin" : user?.email?.split("@")[0] || "Shiera"}
                     </span>
                   </div>
                 </div>

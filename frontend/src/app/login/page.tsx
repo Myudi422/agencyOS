@@ -56,8 +56,8 @@ export default function LoginPage() {
               <Sparkles className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h1 className="text-2xl font-extrabold text-white tracking-tight font-['Outfit']">AgencyOS</h1>
-              <p className="text-xs text-purple-300 font-medium">Social Media Command Center</p>
+              <h1 className="text-2xl font-extrabold text-white tracking-tight font-['Outfit']">Shiera</h1>
+              <p className="text-xs text-purple-300 font-medium">Kelola Sosmed Dalam Satu Tempat</p>
             </div>
           </div>
 

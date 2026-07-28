@@ -74,14 +74,14 @@ interface JobStatus {
 const AUTO_SETUP_BAT_CODE = `@echo off
 setlocal EnableDelayedExpansion
 
-title AgencyOS YT-Clipper Auto Setup
+title Shiera YT-Clipper Auto Setup
 color 0A
 
 REM Selalu pindah ke folder BAT
 cd /d "%~dp0"
 
 echo ========================================================
-echo    AgencyOS YT-Clipper Auto Setup Installer
+echo    Shiera YT-Clipper Auto Setup Installer
 echo ========================================================
 echo.
 

@@ -5,8 +5,8 @@ import Providers from "@/components/providers/Providers";
 import AppLayout from "@/components/layout/AppLayout";
 
 export const metadata: Metadata = {
-  title: "AgencyOS AI | Enterprise Social Media Command Center",
-  description: "Unified multi-platform social media orchestration platform for Instagram, Facebook, X, TikTok, YouTube, Pinterest, LinkedIn, Bluesky, & Threads.",
+  title: "Shiera | Kelola Sosmed Dalam Satu Tempat",
+  description: "Shiera - Kelola Sosmed Dalam Satu Tempat. Platform otomatisasi dan penjadwalan sosial media multi-platform (Instagram, Facebook, TikTok, YouTube, X, Threads, LinkedIn, Pinterest, Bluesky).",
 };
 
 export default function RootLayout({

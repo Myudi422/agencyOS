@@ -35,7 +35,7 @@ export default function PostComposerModal() {
 
   const [postType, setPostType] = useState<"image" | "carousel" | "video">("image");
   const [caption, setCaption] = useState("");
-  const [hashtags, setHashtags] = useState("#AgencyOS #SocialMedia #Marketing");
+  const [hashtags, setHashtags] = useState("#Shiera #SocialMedia #Marketing");
   const [firstComment, setFirstComment] = useState("");
   const [mediaUrls, setMediaUrls] = useState<string[]>([
     "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1200&auto=format&fit=crop&q=80"
@@ -325,7 +325,7 @@ export default function PostComposerModal() {
             </div>
             <div>
               <h2 className="font-extrabold text-sm sm:text-base text-slate-900 tracking-tight font-['Outfit']">
-                AgencyOS Post Composer
+                Shiera Post Composer
               </h2>
               <p className="text-[10px] sm:text-[11px] text-slate-500 hidden sm:block">Unified Publishing Across All 10 Social Media Platforms</p>
             </div>
@@ -503,7 +503,7 @@ export default function PostComposerModal() {
                   type="text"
                   value={hashtags}
                   onChange={(e) => setHashtags(e.target.value)}
-                  placeholder="#AgencyOS #SocialMedia"
+                  placeholder="#Shiera #SocialMedia"
                   className="w-full glass-input rounded-xl px-3 py-2 text-xs focus:outline-none"
                 />
               </div>
