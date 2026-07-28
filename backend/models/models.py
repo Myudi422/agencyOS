@@ -81,11 +81,32 @@ class User(Base):
     is_admin = Column(Boolean, default=False, nullable=False)
     meta_user_id = Column(String(255), nullable=True)
     midtrans_customer_id = Column(String(255), nullable=True)
+    # WhatsApp OTP Verification
+    phone_number = Column(String(20), unique=True, nullable=True, index=True)  # format: 628xxx
+    phone_verified = Column(Boolean, default=False, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     memberships = relationship("WorkspaceMember", back_populates="user", cascade="all, delete-orphan")
     subscription = relationship("UserSubscription", back_populates="user", uselist=False, cascade="all, delete-orphan")
+    otp_verifications = relationship("WaOtpVerification", back_populates="user", cascade="all, delete-orphan")
+
+class WaOtpVerification(Base):
+    """Menyimpan OTP WhatsApp sementara untuk verifikasi sebelum claim trial."""
+    __tablename__ = "wa_otp_verifications"
+
+    id = Column(String(36), primary_key=True, default=generate_uuid)
+    user_id = Column(String(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    phone_number = Column(String(20), nullable=False, index=True)  # format: 628xxx
+    otp_code = Column(String(6), nullable=False)
+    is_used = Column(Boolean, default=False, nullable=False)       # OTP sudah dipakai
+    is_verified = Column(Boolean, default=False, nullable=False)   # OTP sukses diverifikasi
+    expires_at = Column(DateTime, nullable=False)                  # OTP berlaku 5 menit
+    last_sent_at = Column(DateTime, nullable=False, default=datetime.utcnow)  # untuk rate limit
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    user = relationship("User", back_populates="otp_verifications")
+
 
 class Workspace(Base):
     __tablename__ = "workspaces"

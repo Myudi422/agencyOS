@@ -1,6 +1,7 @@
 """
 Billing Router — /billing
-Manages Midtrans Snap payment gateway integration, subscription plans, and webhook processing.
+Manages Midtrans Snap payment gateway integration, subscription plans, webhook processing,
+and WhatsApp OTP verification for free trial claim.
 """
 from fastapi import APIRouter, Depends, HTTPException, Request, Header
 from pydantic import BaseModel
@@ -9,12 +10,15 @@ from typing import Optional, List
 from datetime import datetime, timedelta
 import logging
 import time
+import uuid
 
 from backend.database import get_db
 from backend.models.models import (
-    User, SubscriptionPlan, UserSubscription, SubscriptionStatus, PlanTier
+    User, SubscriptionPlan, UserSubscription, SubscriptionStatus, PlanTier,
+    WaOtpVerification
 )
 from backend.services import midtrans_service as ms
+from backend.services import fonnte_service as fs
 from backend.config import settings
 
 logger = logging.getLogger("BillingRouter")
@@ -90,6 +94,172 @@ def list_plans(db: Session = Depends(get_db)):
     ]
 
 
+# ─── WhatsApp OTP Endpoints ────────────────────────────────────────────────────
+
+OTP_RATE_LIMIT_SECONDS = 60   # Jeda minimum antar kirim OTP
+OTP_EXPIRY_MINUTES = 5        # OTP berlaku 5 menit
+
+
+class OtpSendRequest(BaseModel):
+    phone: str  # nomor WA (format bebas: 08xx / +62xx / 62xx)
+
+
+class OtpVerifyRequest(BaseModel):
+    phone: str
+    otp_code: str
+
+
+@router.post("/otp/send")
+async def send_wa_otp(
+    req: OtpSendRequest,
+    authorization: Optional[str] = Header(None),
+    db: Session = Depends(get_db)
+):
+    """
+    Kirim OTP ke nomor WhatsApp user untuk verifikasi sebelum claim trial.
+    Rate limit: 1x per 60 detik per nomor.
+    """
+    user = _get_user_from_auth(authorization, db)
+    if not user:
+        raise HTTPException(status_code=401, detail="Authentication required.")
+
+    # Normalisasi nomor
+    phone_normalized = fs.normalize_phone(req.phone)
+
+    # Validasi panjang nomor WA Indonesia (62 + 8-12 digit)
+    digits_after_62 = phone_normalized[2:]
+    if not phone_normalized.startswith("62") or not digits_after_62.isdigit() or not (8 <= len(digits_after_62) <= 13):
+        raise HTTPException(status_code=400, detail="Format nomor WhatsApp tidak valid. Contoh: 08123456789")
+
+    # Cek apakah nomor WA sudah dipakai akun lain (yang sudah verified)
+    existing_user_with_phone = (
+        db.query(User)
+        .filter(User.phone_number == phone_normalized, User.id != user.id, User.phone_verified == True)
+        .first()
+    )
+    if existing_user_with_phone:
+        raise HTTPException(
+            status_code=409,
+            detail="Nomor WhatsApp ini sudah terdaftar di akun lain. Gunakan nomor WA yang berbeda."
+        )
+
+    # Rate limit — cek OTP terakhir yang dikirim ke nomor ini untuk user ini
+    now = datetime.utcnow()
+    recent_otp = (
+        db.query(WaOtpVerification)
+        .filter(
+            WaOtpVerification.user_id == user.id,
+            WaOtpVerification.phone_number == phone_normalized,
+        )
+        .order_by(WaOtpVerification.last_sent_at.desc())
+        .first()
+    )
+
+    if recent_otp:
+        seconds_since_last = (now - recent_otp.last_sent_at).total_seconds()
+        if seconds_since_last < OTP_RATE_LIMIT_SECONDS:
+            wait = int(OTP_RATE_LIMIT_SECONDS - seconds_since_last)
+            raise HTTPException(
+                status_code=429,
+                detail=f"Tunggu {wait} detik sebelum kirim OTP lagi."
+            )
+
+    # Generate OTP baru
+    otp_code = fs.generate_otp(6)
+    expires_at = now + timedelta(minutes=OTP_EXPIRY_MINUTES)
+
+    # Simpan ke DB (hapus OTP lama untuk user + nomor ini jika ada)
+    db.query(WaOtpVerification).filter(
+        WaOtpVerification.user_id == user.id,
+        WaOtpVerification.phone_number == phone_normalized,
+        WaOtpVerification.is_used == False,
+    ).delete()
+
+    otp_record = WaOtpVerification(
+        id=str(uuid.uuid4()),
+        user_id=user.id,
+        phone_number=phone_normalized,
+        otp_code=otp_code,
+        is_used=False,
+        is_verified=False,
+        expires_at=expires_at,
+        last_sent_at=now,
+    )
+    db.add(otp_record)
+    db.commit()
+
+    # Kirim OTP via Fonnte
+    send_result = fs.send_otp_whatsapp(phone_normalized, otp_code)
+    if not send_result["success"]:
+        logger.error(f"Fonnte send failed for {phone_normalized}: {send_result['message']}")
+        raise HTTPException(status_code=502, detail=send_result["message"])
+
+    logger.info(f"OTP sent to {phone_normalized} for user {user.email}")
+    return {
+        "success": True,
+        "message": f"OTP berhasil dikirim ke WhatsApp {req.phone}. Berlaku 5 menit.",
+        "expires_in_seconds": OTP_EXPIRY_MINUTES * 60,
+        "rate_limit_seconds": OTP_RATE_LIMIT_SECONDS,
+    }
+
+
+@router.post("/otp/verify")
+async def verify_wa_otp(
+    req: OtpVerifyRequest,
+    authorization: Optional[str] = Header(None),
+    db: Session = Depends(get_db)
+):
+    """
+    Verifikasi OTP WhatsApp.
+    Setelah sukses: user.phone_number & user.phone_verified disimpan ke DB.
+    """
+    user = _get_user_from_auth(authorization, db)
+    if not user:
+        raise HTTPException(status_code=401, detail="Authentication required.")
+
+    phone_normalized = fs.normalize_phone(req.phone)
+    now = datetime.utcnow()
+
+    # Cari OTP yang valid
+    otp_record = (
+        db.query(WaOtpVerification)
+        .filter(
+            WaOtpVerification.user_id == user.id,
+            WaOtpVerification.phone_number == phone_normalized,
+            WaOtpVerification.is_used == False,
+            WaOtpVerification.expires_at > now,
+        )
+        .order_by(WaOtpVerification.created_at.desc())
+        .first()
+    )
+
+    if not otp_record:
+        raise HTTPException(
+            status_code=400,
+            detail="OTP tidak valid atau sudah kedaluwarsa. Minta OTP baru."
+        )
+
+    if otp_record.otp_code != req.otp_code.strip():
+        raise HTTPException(status_code=400, detail="Kode OTP salah. Periksa kembali.")
+
+    # Tandai OTP sebagai terpakai
+    otp_record.is_used = True
+    otp_record.is_verified = True
+
+    # Update user: simpan nomor WA yang sudah terverifikasi
+    user.phone_number = phone_normalized
+    user.phone_verified = True
+
+    db.commit()
+
+    logger.info(f"WA OTP verified for user {user.email}, phone {phone_normalized}")
+    return {
+        "success": True,
+        "message": "Nomor WhatsApp berhasil diverifikasi!",
+        "phone": phone_normalized,
+    }
+
+
 # ─── Checkout ─────────────────────────────────────────────────────────────────
 
 @router.post("/checkout")
@@ -110,27 +280,55 @@ async def create_checkout(
 
     frontend_url = get_frontend_url(request)
 
-    # Free Trial handling (no payment required)
+    # ── Free Trial handling ──────────────────────────────────────────────────
     if req.plan_tier == "trial":
-        expires_at = datetime.utcnow() + timedelta(days=plan.duration_days)
         sub = user.subscription
-        if sub:
-            sub.plan_id = plan.id
-            sub.status = SubscriptionStatus.TRIAL
-            sub.posts_used = 0
-            sub.posts_limit = plan.post_quota
-            sub.started_at = datetime.utcnow()
-            sub.expires_at = expires_at
-        else:
-            sub = UserSubscription(
-                user_id=user.id,
-                plan_id=plan.id,
-                status=SubscriptionStatus.TRIAL,
-                posts_used=0,
-                posts_limit=plan.post_quota,
-                expires_at=expires_at,
+
+        # Guard 1: Cek sudah pernah claim trial sebelumnya
+        if sub is not None:
+            raise HTTPException(
+                status_code=403,
+                detail="Kamu sudah pernah menggunakan free trial. Silakan pilih paket berbayar untuk melanjutkan."
             )
-            db.add(sub)
+
+        # Guard 2: Wajib verifikasi WA dulu
+        if not user.phone_verified:
+            raise HTTPException(
+                status_code=403,
+                detail="Verifikasi nomor WhatsApp diperlukan sebelum claim free trial."
+            )
+
+        # Guard 3: Cek nomor WA tidak dipakai trial di akun lain
+        # (phone_number sudah UNIQUE di DB, tapi kita tambah cek eksplisit)
+        other_trial_user = (
+            db.query(User)
+            .filter(
+                User.phone_number == user.phone_number,
+                User.id != user.id,
+                User.phone_verified == True,
+            )
+            .first()
+        )
+        if other_trial_user:
+            # Cek apakah akun lain itu pernah trial
+            other_sub = other_trial_user.subscription
+            if other_sub is not None:
+                raise HTTPException(
+                    status_code=403,
+                    detail="Nomor WhatsApp ini sudah digunakan untuk trial di akun lain."
+                )
+
+        # Aktifkan trial
+        expires_at = datetime.utcnow() + timedelta(days=plan.duration_days)
+        new_sub = UserSubscription(
+            user_id=user.id,
+            plan_id=plan.id,
+            status=SubscriptionStatus.TRIAL,
+            posts_used=0,
+            posts_limit=plan.post_quota,
+            expires_at=expires_at,
+        )
+        db.add(new_sub)
         db.commit()
 
         redirect_url = req.finish_url or f"{frontend_url}/billing/success?plan=trial"
@@ -140,7 +338,7 @@ async def create_checkout(
             "redirect_url": redirect_url,
         }
 
-    # Midtrans Paid Plan Checkout
+    # ── Midtrans Paid Plan Checkout ──────────────────────────────────────────
     order_id = f"SHI-{user.id[:8]}-{plan.tier}-{int(time.time())}"
     finish_url = req.finish_url or f"{frontend_url}/billing/success?plan={req.plan_tier}&order_id={order_id}"
 

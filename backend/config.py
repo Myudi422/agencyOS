@@ -75,6 +75,9 @@ class Settings:
     MIDTRANS_SERVER_KEY: str = os.getenv("MIDTRANS_SERVER_KEY", "SB-Mid-server-GmF6kILCY0UcSnUAXnHP3Y6-")
     MIDTRANS_IS_PRODUCTION: bool = os.getenv("MIDTRANS_IS_PRODUCTION", "false").lower() == "true"
 
+    # Fonnte WhatsApp OTP API
+    FONNTE_TOKEN: str = os.getenv("FONNTE_TOKEN", "9Ptcpu9PDJ9RpWgYKxSY")
+
     # Admin
     ADMIN_EMAIL: str = os.getenv("ADMIN_EMAIL", "myudi422@gmail.com")
 
