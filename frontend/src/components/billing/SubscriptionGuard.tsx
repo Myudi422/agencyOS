@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/authStore";
-import { CreditCard, Zap, Rocket, Crown, Building2, ChevronRight } from "lucide-react";
+import { CreditCard, Zap, Rocket, Crown, Building2, ChevronRight, AlertTriangle, Lock } from "lucide-react";
 
 const TIER_META: Record<string, { name: string; price: string; posts: string; Icon: any; color: string }> = {
   trial: { name: "Starter Trial", price: "Rp 0/3hari", posts: "6 posts", Icon: Zap, color: "text-slate-600" },
@@ -13,7 +13,8 @@ const TIER_META: Record<string, { name: string; price: string; posts: string; Ic
 };
 
 /**
- * SubscriptionGuard — overlays the app when user has no active subscription.
+ * SubscriptionGuard — overlays and locks the app when user has no active subscription,
+ * when subscription is expired, or when post quota is exhausted.
  * Admin users bypass this guard entirely.
  */
 export default function SubscriptionGuard({ children }: { children: React.ReactNode }) {
@@ -36,60 +37,86 @@ export default function SubscriptionGuard({ children }: { children: React.ReactN
   // Admin bypasses all guards
   if (isAdmin) return <>{children}</>;
 
-  // User has valid subscription → show app
-  const hasActiveSub =
-    subscription &&
-    !subscription.is_expired &&
-    (subscription.status === "active" || subscription.status === "trial");
+  // Subscription evaluation
+  const isExpired = !subscription || subscription.is_expired || subscription.status === "expired" || subscription.status === "cancelled";
+  const isQuotaExhausted = subscription ? (subscription.posts_remaining <= 0 || (subscription.posts_limit > 0 && subscription.posts_used >= subscription.posts_limit)) : false;
+  const hasActiveSub = subscription && !isExpired && !isQuotaExhausted && (subscription.status === "active" || subscription.status === "trial");
 
+  // User has active subscription and available quota → allow access
   if (hasActiveSub) return <>{children}</>;
 
-  // No active subscription — show pricing overlay
+  // Determine block reason for user guidance
+  let blockTitle = "Pilih Paket Untuk Mulai";
+  let blockMessage = "Kamu belum memiliki paket aktif. Silakan pilih paket untuk menikmati akses penuh.";
+  let badgeText = "Akses Terkunci";
+
+  if (isQuotaExhausted) {
+    blockTitle = "Kuota Posting Telah Habis ⚠️";
+    blockMessage = `Kamu telah menggunakan ${subscription?.posts_used ?? 0} dari ${subscription?.posts_limit ?? 0} posting. Silakan perpanjang atau upgrade paket untuk menambah kuota.`;
+    badgeText = "Kuota 0 Remaining";
+  } else if (isExpired) {
+    blockTitle = "Masa Langganan Telah Berakhir ⌛";
+    blockMessage = "Paket langganan kamu sudah kedaluwarsa. Silakan perpanjang paket untuk melanjutkan akses ke Shiera.";
+    badgeText = "Langganan Expired";
+  }
+
+  // Locked overlay block
   return (
     <div className="relative">
-      {/* Blurred background */}
-      <div className="pointer-events-none select-none blur-sm opacity-30 overflow-hidden max-h-screen">
+      {/* Blurred background — strictly non-interactive */}
+      <div className="pointer-events-none select-none blur-md opacity-25 overflow-hidden max-h-screen">
         {children}
       </div>
 
-      {/* Overlay */}
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-sm">
-        <div className="w-full max-w-lg bg-white rounded-3xl shadow-2xl overflow-hidden">
-          {/* Header */}
-          <div className="bg-gradient-to-br from-purple-600 to-violet-700 p-6 text-white text-center">
-            <div className="w-12 h-12 rounded-2xl bg-white/20 border border-white/30 flex items-center justify-center mx-auto mb-3">
-              <CreditCard className="w-6 h-6" />
+      {/* Full-screen blocking modal overlay */}
+      <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
+        <div className="w-full max-w-lg bg-white rounded-3xl shadow-2xl overflow-hidden border border-purple-100 animate-in fade-in zoom-in-95 duration-200">
+          {/* Header Banner */}
+          <div className="bg-gradient-to-br from-purple-700 via-purple-800 to-indigo-900 p-6 text-white text-center relative overflow-hidden">
+            <div className="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-white/10 backdrop-blur-md text-[10px] font-bold tracking-wider text-purple-200 border border-white/20 flex items-center gap-1">
+              <Lock className="w-3 h-3 text-amber-400" />
+              <span>{badgeText}</span>
             </div>
-            <h2 className="text-xl font-bold font-['Outfit']">Pilih Paket Untuk Mulai</h2>
-            <p className="text-sm text-purple-200 mt-1">
-              {subscription?.is_expired
-                ? "Paket kamu sudah habis. Perpanjang untuk lanjut posting."
-                : "Kamu belum punya paket aktif. Pilih paket untuk akses penuh."}
+
+            <div className="w-14 h-14 rounded-2xl bg-white/15 border border-white/30 flex items-center justify-center mx-auto mb-3 shadow-lg">
+              {isQuotaExhausted ? (
+                <AlertTriangle className="w-7 h-7 text-amber-300" />
+              ) : (
+                <CreditCard className="w-7 h-7 text-purple-200" />
+              )}
+            </div>
+            <h2 className="text-xl font-extrabold font-['Outfit']">{blockTitle}</h2>
+            <p className="text-xs text-purple-200 mt-1.5 leading-relaxed max-w-md mx-auto">
+              {blockMessage}
             </p>
           </div>
 
-          {/* Plans mini-list */}
-          <div className="p-5 space-y-2">
+          {/* Subscription Tier List */}
+          <div className="p-5 space-y-2 bg-slate-50/50">
+            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">
+              Pilih Paket Langganan Baru:
+            </p>
             {Object.entries(TIER_META).map(([tier, meta]) => {
               const Icon = meta.Icon;
               return (
                 <button
                   key={tier}
+                  type="button"
                   id={`sub-guard-plan-${tier}`}
                   onClick={() => router.push("/pricing")}
-                  className="w-full flex items-center justify-between p-3.5 rounded-2xl border border-slate-200 hover:border-purple-300 hover:bg-purple-50 transition-all group"
+                  className="w-full flex items-center justify-between p-3.5 rounded-2xl bg-white border border-slate-200 hover:border-purple-400 hover:bg-purple-50/60 shadow-2xs hover:shadow-sm transition-all group cursor-pointer"
                 >
                   <div className="flex items-center gap-3">
-                    <div className={`w-8 h-8 rounded-xl bg-slate-100 flex items-center justify-center ${meta.color}`}>
-                      <Icon className="w-4 h-4" />
+                    <div className={`w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center ${meta.color}`}>
+                      <Icon className="w-4.5 h-4.5" />
                     </div>
                     <div className="text-left">
-                      <p className="text-sm font-semibold text-slate-900">{meta.name}</p>
-                      <p className="text-xs text-slate-400">{meta.posts} · Unlimited akun sosmed</p>
+                      <p className="text-xs font-bold text-slate-900">{meta.name}</p>
+                      <p className="text-[10px] text-slate-500">{meta.posts} · Unlimited sosial akun</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-sm font-bold text-slate-900">{meta.price}</span>
+                    <span className="text-xs font-extrabold text-slate-900">{meta.price}</span>
                     <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-purple-600 transition-colors" />
                   </div>
                 </button>
@@ -97,21 +124,27 @@ export default function SubscriptionGuard({ children }: { children: React.ReactN
             })}
           </div>
 
-          <div className="px-5 pb-5 flex flex-col gap-2">
+          {/* Modal Actions */}
+          <div className="px-5 pb-5 pt-2 bg-white flex flex-col gap-2.5 border-t border-slate-100">
             <button
+              type="button"
               onClick={() => router.push("/pricing")}
-              className="w-full py-3 rounded-2xl bg-gradient-to-r from-purple-600 to-violet-600 text-white font-semibold text-sm shadow-lg hover:shadow-xl transition-all hover:scale-[1.02]"
+              className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-bold text-xs shadow-md hover:shadow-lg transition-all hover:scale-[1.01] cursor-pointer flex items-center justify-center gap-2"
             >
-              Lihat Semua Paket & Mulai Berlangganan
+              <CreditCard className="w-4 h-4" />
+              <span>Bayar & Perpanjang Sekarang (Midtrans)</span>
             </button>
+
             <button
+              type="button"
               onClick={handleLogout}
-              className="w-full py-2.5 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs transition-all hover:scale-[1.01]"
+              className="w-full py-2.5 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs transition-all cursor-pointer"
             >
               Keluar dari Akun
             </button>
-            <p className="text-center text-[10px] text-slate-400 mt-1">
-              🇮🇩 Midtrans Sandbox Payment Gateway (QRIS, GoPay, ShopeePay, Virtual Account, Credit Card)
+
+            <p className="text-center text-[10px] text-slate-400 mt-0.5">
+              🔒 Pembayaran aman via Midtrans (QRIS, GoPay, ShopeePay, Virtual Account, Credit Card)
             </p>
           </div>
         </div>
@@ -119,3 +152,4 @@ export default function SubscriptionGuard({ children }: { children: React.ReactN
     </div>
   );
 }
+

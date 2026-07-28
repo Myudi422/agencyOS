@@ -5,7 +5,8 @@ import {
   Cpu, RefreshCw, AlertTriangle, CheckCircle2,
   Clock, RotateCcw, Trash2, History, ExternalLink,
   Zap, XCircle, ChevronRight, Filter, Search,
-  ArrowUpRight, CreditCard, Loader2, Globe, Hourglass
+  ArrowUpRight, CreditCard, Loader2, Globe, Hourglass,
+  Play, X, Eye, Video
 } from "lucide-react";
 import { useStore } from "@/store/useStore";
 import { toast } from "@/store/useToastStore";
@@ -40,6 +41,26 @@ export default function QueuePage() {
   const [filterPlatform, setFilterPlatform] = useState<string>("");
   const [filterSuccess, setFilterSuccess] = useState<string>("");
   const [historyOffset, setHistoryOffset] = useState(0);
+
+  // Media preview popup & error tracking
+  const [previewMediaModal, setPreviewMediaModal] = useState<{
+    url: string;
+    type: "video" | "image";
+    caption?: string;
+  } | null>(null);
+  const [failedMediaUrls, setFailedMediaUrls] = useState<Record<string, boolean>>({});
+
+  const checkIsVideoMedia = (url?: string, postType?: string) => {
+    if (!url) return false;
+    if (postType === "video" || postType === "reel") return true;
+    const cleanUrl = url.split("?")[0].split("#")[0].toLowerCase();
+    return (
+      cleanUrl.startsWith("blob:") ||
+      cleanUrl.includes("video") ||
+      cleanUrl.includes("reels") ||
+      /\.(mp4|mov|webm|avi|mkv|flv|m4v|3gp)(\?|$)/i.test(cleanUrl)
+    );
+  };
 
   const loadQueue = useCallback(() => {
     if (!activeWorkspace?.id) return;
@@ -265,121 +286,255 @@ export default function QueuePage() {
                 <p className="text-xs text-slate-400">Klik "Sync Riwayat" untuk mengambil hasil terbaru</p>
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs text-slate-700">
-                  <thead>
-                    <tr className="border-b border-slate-200 text-slate-400 font-bold uppercase text-[10px]">
-                      <th className="py-3 px-3">Waktu</th>
-                      <th className="py-3 px-3">Platform & Akun</th>
-                      <th className="py-3 px-3">Post</th>
-                      <th className="py-3 px-3">Status</th>
-                      <th className="py-3 px-3">Kredit</th>
-                      <th className="py-3 px-3">Link</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100">
-                    {historyData.map((r: any) => (
-                      <tr key={r.result_id} className="hover:bg-purple-50/30 transition-colors group">
-                        {/* Waktu */}
-                        <td className="py-3.5 px-3">
-                          <div className="text-[11px] text-slate-600 font-medium whitespace-nowrap">
-                            {r.result_at ? new Date(r.result_at).toLocaleDateString("id-ID", { day: "2-digit", month: "short" }) : "-"}
-                          </div>
-                          <div className="text-[10px] text-slate-400">
-                            {r.result_at ? new Date(r.result_at).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }) : ""}
-                          </div>
-                        </td>
+              <div>
+                {/* 📱 Mobile Card View (shown only on small screens) */}
+                <div className="block md:hidden space-y-3">
+                  {historyData.map((r: any) => {
+                    const mediaUrl = r.media_urls?.[0];
+                    const hasValidMedia = mediaUrl && !failedMediaUrls[mediaUrl];
+                    const isVid = checkIsVideoMedia(mediaUrl, r.post_type);
 
-                        {/* Platform & Akun */}
-                        <td className="py-3.5 px-3">
+                    return (
+                      <div key={r.result_id || Math.random()} className="p-3.5 rounded-2xl bg-white border border-slate-200 shadow-2xs space-y-2.5">
+                        {/* Header: Platform & Time */}
+                        <div className="flex items-center justify-between border-b border-slate-100 pb-2">
                           <div className="flex items-center gap-2">
                             {r.avatar_url ? (
-                              <img src={r.avatar_url} alt={r.username} className="w-7 h-7 rounded-full object-cover border border-slate-200" />
+                              <img src={r.avatar_url} alt={r.username} className="w-6 h-6 rounded-full object-cover border border-slate-200" />
                             ) : (
-                              <div className="w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center text-base">
-                                {PLATFORM_ICONS[r.platform] || "📱"}
-                              </div>
+                              <span className="text-sm">{PLATFORM_ICONS[r.platform] || "📱"}</span>
                             )}
-                            <div>
-                              <p className="font-bold text-slate-800 text-[11px]">@{r.username}</p>
-                              <span className={`text-[9px] px-1.5 py-0.5 rounded-full border font-bold uppercase ${PLATFORM_COLORS[r.platform] || "bg-slate-50 text-slate-600 border-slate-200"}`}>
-                                {r.platform}
+                            <p className="font-bold text-slate-800 text-[11px]">@{r.username}</p>
+                            <span className={`text-[9px] px-1.5 py-0.2 rounded-full border font-bold uppercase ${PLATFORM_COLORS[r.platform] || "bg-slate-50 text-slate-600 border-slate-200"}`}>
+                              {r.platform}
+                            </span>
+                          </div>
+                          <span className="text-[10px] text-slate-400 font-medium">
+                            {r.result_at ? new Date(r.result_at).toLocaleDateString("id-ID", { day: "2-digit", month: "short" }) : "-"}
+                          </span>
+                        </div>
+
+                        {/* Content & Media Snippet */}
+                        <div className="flex items-start gap-2.5">
+                          {hasValidMedia && (
+                            isVid ? (
+                              <button
+                                type="button"
+                                onClick={() => setPreviewMediaModal({ url: mediaUrl, type: "video", caption: r.post_caption })}
+                                className="flex items-center gap-1 px-2 py-1 rounded-xl bg-purple-900 text-white font-bold text-[10px] hover:bg-purple-800 transition-all shrink-0 shadow-2xs border border-purple-400/30 cursor-pointer"
+                              >
+                                <Play className="w-3 h-3 fill-white" />
+                                <span>Video</span>
+                              </button>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={() => setPreviewMediaModal({ url: mediaUrl, type: "image", caption: r.post_caption })}
+                                className="w-10 h-10 rounded-xl overflow-hidden border border-slate-200 shrink-0 bg-slate-100 cursor-pointer hover:scale-105 transition-transform"
+                              >
+                                <img
+                                  src={mediaUrl}
+                                  alt="thumb"
+                                  className="w-full h-full object-cover"
+                                  onError={() => setFailedMediaUrls(prev => ({ ...prev, [mediaUrl]: true }))}
+                                />
+                              </button>
+                            )
+                          )}
+                          <p className="text-slate-700 text-xs leading-snug line-clamp-2">
+                            {r.post_caption || <span className="italic text-slate-400">Konten media</span>}
+                          </p>
+                        </div>
+
+                        {/* Footer: Status, Credit, Link */}
+                        <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-[11px]">
+                          <div>
+                            {r.status === "processing" || (r.success === null && r.result_id === null) ? (
+                              <span className="flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full font-bold bg-blue-100 text-blue-700 animate-pulse">
+                                <Loader2 className="w-3 h-3 animate-spin" /> Proses...
                               </span>
-                            </div>
-                          </div>
-                        </td>
-
-                        {/* Post Snippet */}
-                        <td className="py-3.5 px-3 max-w-[200px]">
-                          <div className="flex items-center gap-2">
-                            {r.media_urls?.[0] && (
-                              <img src={r.media_urls[0]} alt="thumb" className="w-9 h-9 rounded-lg object-cover border border-slate-200 shrink-0" />
-                            )}
-                            <p className="text-slate-600 truncate text-[11px] leading-tight">
-                              {r.post_caption || <span className="italic text-slate-400">Konten media</span>}
-                            </p>
-                          </div>
-                        </td>
-
-                        {/* Status */}
-                        <td className="py-3.5 px-3">
-                          {r.status === "processing" || (r.success === null && r.result_id === null) ? (
-                            <span className="flex items-center gap-1.5 text-[11px] px-2.5 py-1.5 rounded-full font-bold bg-blue-100 text-blue-700 border border-blue-200 w-fit whitespace-nowrap animate-pulse">
-                              <Loader2 className="w-3 h-3 animate-spin" />
-                              <span>Proses...</span>
-                            </span>
-                          ) : r.success === true ? (
-                            <span className="flex items-center gap-1 text-[11px] px-2.5 py-1.5 rounded-full font-bold bg-emerald-100 text-emerald-700 border border-emerald-200 w-fit whitespace-nowrap">
-                              <CheckCircle2 className="w-3 h-3" /> Berhasil
-                            </span>
-                          ) : r.success === false ? (
-                            <div>
-                              <span className="flex items-center gap-1 text-[11px] px-2.5 py-1.5 rounded-full font-bold bg-rose-100 text-rose-700 border border-rose-200 w-fit whitespace-nowrap">
+                            ) : r.success === true ? (
+                              <span className="flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full font-bold bg-emerald-100 text-emerald-700">
+                                <CheckCircle2 className="w-3 h-3" /> Berhasil
+                              </span>
+                            ) : (
+                              <span className="flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full font-bold bg-rose-100 text-rose-700">
                                 <XCircle className="w-3 h-3" /> Gagal
                               </span>
-                              {r.error_data && (
-                                <p className="text-[10px] text-rose-500 mt-1 max-w-[160px] truncate" title={JSON.stringify(r.error_data)}>
-                                  {typeof r.error_data === "string" ? r.error_data : JSON.stringify(r.error_data)}
-                                </p>
-                              )}
-                            </div>
-                          ) : (
-                            <span className="flex items-center gap-1 text-[11px] px-2.5 py-1.5 rounded-full font-bold bg-amber-100 text-amber-700 border border-amber-200 w-fit whitespace-nowrap">
-                              <Clock className="w-3 h-3" /> Pending
-                            </span>
-                          )}
-                        </td>
+                            )}
+                          </div>
 
-                        {/* Kredit */}
-                        <td className="py-3.5 px-3">
-                          {r.credit_deducted ? (
-                            <span className="flex items-center gap-1 text-[11px] font-bold text-purple-600 whitespace-nowrap">
-                              <CreditCard className="w-3 h-3" /> -1 kredit
-                            </span>
-                          ) : (
-                            <span className="text-[11px] text-slate-400 font-medium">—</span>
-                          )}
-                        </td>
+                          <div className="flex items-center gap-3">
+                            {r.credit_deducted && (
+                              <span className="font-bold text-purple-600 text-[10px] flex items-center gap-1">
+                                <CreditCard className="w-3 h-3" /> -1
+                              </span>
+                            )}
+                            {r.platform_url && (
+                              <a
+                                href={r.platform_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="font-bold text-blue-600 hover:underline flex items-center gap-0.5 text-[11px]"
+                              >
+                                <span>Lihat</span>
+                                <ArrowUpRight className="w-3 h-3" />
+                              </a>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
 
-                        {/* Link */}
-                        <td className="py-3.5 px-3">
-                          {r.platform_url ? (
-                            <a
-                              href={r.platform_url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="flex items-center gap-1 text-[11px] font-bold text-blue-600 hover:text-blue-800 hover:underline whitespace-nowrap"
-                            >
-                              <ArrowUpRight className="w-3.5 h-3.5" /> Lihat Post
-                            </a>
-                          ) : (
-                            <span className="text-[11px] text-slate-300 font-medium">—</span>
-                          )}
-                        </td>
+                {/* 🖥️ Desktop Table View (hidden on mobile, responsive scroll on desktop) */}
+                <div className="hidden md:block overflow-x-auto">
+                  <table className="w-full text-left text-xs text-slate-700 min-w-[680px]">
+                    <thead>
+                      <tr className="border-b border-slate-200 text-slate-400 font-bold uppercase text-[10px]">
+                        <th className="py-3 px-3">Waktu</th>
+                        <th className="py-3 px-3">Platform & Akun</th>
+                        <th className="py-3 px-3">Post & Media</th>
+                        <th className="py-3 px-3">Status</th>
+                        <th className="py-3 px-3">Kredit</th>
+                        <th className="py-3 px-3">Link</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {historyData.map((r: any) => {
+                        const mediaUrl = r.media_urls?.[0];
+                        const hasValidMedia = mediaUrl && !failedMediaUrls[mediaUrl];
+                        const isVid = checkIsVideoMedia(mediaUrl, r.post_type);
+
+                        return (
+                          <tr key={r.result_id || Math.random()} className="hover:bg-purple-50/30 transition-colors group">
+                            {/* Waktu */}
+                            <td className="py-3.5 px-3">
+                              <div className="text-[11px] text-slate-600 font-medium whitespace-nowrap">
+                                {r.result_at ? new Date(r.result_at).toLocaleDateString("id-ID", { day: "2-digit", month: "short" }) : "-"}
+                              </div>
+                              <div className="text-[10px] text-slate-400">
+                                {r.result_at ? new Date(r.result_at).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }) : ""}
+                              </div>
+                            </td>
+
+                            {/* Platform & Akun */}
+                            <td className="py-3.5 px-3">
+                              <div className="flex items-center gap-2">
+                                {r.avatar_url ? (
+                                  <img src={r.avatar_url} alt={r.username} className="w-7 h-7 rounded-full object-cover border border-slate-200" />
+                                ) : (
+                                  <div className="w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center text-base">
+                                    {PLATFORM_ICONS[r.platform] || "📱"}
+                                  </div>
+                                )}
+                                <div>
+                                  <p className="font-bold text-slate-800 text-[11px]">@{r.username}</p>
+                                  <span className={`text-[9px] px-1.5 py-0.5 rounded-full border font-bold uppercase ${PLATFORM_COLORS[r.platform] || "bg-slate-50 text-slate-600 border-slate-200"}`}>
+                                    {r.platform}
+                                  </span>
+                                </div>
+                              </div>
+                            </td>
+
+                            {/* Post Snippet & Media */}
+                            <td className="py-3.5 px-3 max-w-[220px]">
+                              <div className="flex items-center gap-2">
+                                {hasValidMedia && (
+                                  isVid ? (
+                                    <button
+                                      type="button"
+                                      onClick={() => setPreviewMediaModal({ url: mediaUrl, type: "video", caption: r.post_caption })}
+                                      className="flex items-center gap-1 px-2 py-1 rounded-xl bg-purple-900 text-white font-bold text-[10px] hover:bg-purple-800 hover:scale-105 transition-all border border-purple-400/40 shrink-0 cursor-pointer shadow-2xs group/vid"
+                                      title="Klik untuk memutar video"
+                                    >
+                                      <Play className="w-3 h-3 fill-white text-white group-hover/vid:scale-110 transition-transform" />
+                                      <span>Video</span>
+                                    </button>
+                                  ) : (
+                                    <button
+                                      type="button"
+                                      onClick={() => setPreviewMediaModal({ url: mediaUrl, type: "image", caption: r.post_caption })}
+                                      className="w-9 h-9 rounded-xl overflow-hidden border border-slate-200 shrink-0 bg-slate-100 cursor-pointer hover:scale-105 transition-transform"
+                                      title="Klik untuk memperbesar gambar"
+                                    >
+                                      <img
+                                        src={mediaUrl}
+                                        alt="thumb"
+                                        className="w-full h-full object-cover"
+                                        onError={() => setFailedMediaUrls(prev => ({ ...prev, [mediaUrl]: true }))}
+                                      />
+                                    </button>
+                                  )
+                                )}
+                                <p className="text-slate-600 truncate text-[11px] leading-tight">
+                                  {r.post_caption || <span className="italic text-slate-400">Konten media</span>}
+                                </p>
+                              </div>
+                            </td>
+
+                            {/* Status */}
+                            <td className="py-3.5 px-3">
+                              {r.status === "processing" || (r.success === null && r.result_id === null) ? (
+                                <span className="flex items-center gap-1.5 text-[11px] px-2.5 py-1.5 rounded-full font-bold bg-blue-100 text-blue-700 border border-blue-200 w-fit whitespace-nowrap animate-pulse">
+                                  <Loader2 className="w-3 h-3 animate-spin" />
+                                  <span>Proses...</span>
+                                </span>
+                              ) : r.success === true ? (
+                                <span className="flex items-center gap-1 text-[11px] px-2.5 py-1.5 rounded-full font-bold bg-emerald-100 text-emerald-700 border border-emerald-200 w-fit whitespace-nowrap">
+                                  <CheckCircle2 className="w-3 h-3" /> Berhasil
+                                </span>
+                              ) : r.success === false ? (
+                                <div>
+                                  <span className="flex items-center gap-1 text-[11px] px-2.5 py-1.5 rounded-full font-bold bg-rose-100 text-rose-700 border border-rose-200 w-fit whitespace-nowrap">
+                                    <XCircle className="w-3 h-3" /> Gagal
+                                  </span>
+                                  {r.error_data && (
+                                    <p className="text-[10px] text-rose-500 mt-1 max-w-[160px] truncate" title={JSON.stringify(r.error_data)}>
+                                      {typeof r.error_data === "string" ? r.error_data : JSON.stringify(r.error_data)}
+                                    </p>
+                                  )}
+                                </div>
+                              ) : (
+                                <span className="flex items-center gap-1 text-[11px] px-2.5 py-1.5 rounded-full font-bold bg-amber-100 text-amber-700 border border-amber-200 w-fit whitespace-nowrap">
+                                  <Clock className="w-3 h-3" /> Pending
+                                </span>
+                              )}
+                            </td>
+
+                            {/* Kredit */}
+                            <td className="py-3.5 px-3">
+                              {r.credit_deducted ? (
+                                <span className="flex items-center gap-1 text-[11px] font-bold text-purple-600 whitespace-nowrap">
+                                  <CreditCard className="w-3 h-3" /> -1 kredit
+                                </span>
+                              ) : (
+                                <span className="text-[11px] text-slate-400 font-medium">—</span>
+                              )}
+                            </td>
+
+                            {/* Link */}
+                            <td className="py-3.5 px-3">
+                              {r.platform_url ? (
+                                <a
+                                  href={r.platform_url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="flex items-center gap-1 text-[11px] font-bold text-blue-600 hover:text-blue-800 hover:underline whitespace-nowrap"
+                                >
+                                  <ArrowUpRight className="w-3.5 h-3.5" /> Lihat Post
+                                </a>
+                              ) : (
+                                <span className="text-[11px] text-slate-300 font-medium">—</span>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             )}
 
@@ -502,6 +657,69 @@ export default function QueuePage() {
                 </tbody>
               </table>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ─── MEDIA PREVIEW POPUP MODAL ─── */}
+      {previewMediaModal && (
+        <div className="fixed inset-0 z-[90] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-200">
+          <div className="relative w-full max-w-2xl bg-slate-900 rounded-3xl overflow-hidden shadow-2xl border border-slate-800 flex flex-col max-h-[90vh]">
+            {/* Header */}
+            <div className="flex items-center justify-between p-4 border-b border-slate-800 bg-slate-900/90">
+              <div className="flex items-center gap-2 text-white font-bold text-xs">
+                {previewMediaModal.type === "video" ? (
+                  <Video className="w-4 h-4 text-purple-400" />
+                ) : (
+                  <Eye className="w-4 h-4 text-purple-400" />
+                )}
+                <span>{previewMediaModal.type === "video" ? "Pratinjau Video Post" : "Pratinjau Gambar Post"}</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setPreviewMediaModal(null)}
+                className="p-1.5 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Content View */}
+            <div className="relative flex-1 bg-black flex items-center justify-center min-h-[280px] sm:min-h-[380px] overflow-hidden">
+              {previewMediaModal.type === "video" ? (
+                <video
+                  src={previewMediaModal.url}
+                  controls
+                  autoPlay
+                  playsInline
+                  className="max-h-[60vh] w-full object-contain"
+                  onError={() => {
+                    toast.error("Video tidak dapat diputar atau URL expired.");
+                    setFailedMediaUrls(prev => ({ ...prev, [previewMediaModal.url]: true }));
+                    setPreviewMediaModal(null);
+                  }}
+                />
+              ) : (
+                <img
+                  src={previewMediaModal.url}
+                  alt="Preview"
+                  className="max-h-[60vh] w-full object-contain"
+                  onError={() => {
+                    toast.error("Gambar tidak dapat dimuat.");
+                    setFailedMediaUrls(prev => ({ ...prev, [previewMediaModal.url]: true }));
+                    setPreviewMediaModal(null);
+                  }}
+                />
+              )}
+            </div>
+
+            {/* Caption Footer */}
+            {previewMediaModal.caption && (
+              <div className="p-4 bg-slate-900 text-slate-300 text-xs border-t border-slate-800 max-h-24 overflow-y-auto leading-relaxed">
+                <p className="font-semibold text-slate-400 text-[10px] uppercase mb-1">Caption:</p>
+                <p>{previewMediaModal.caption}</p>
+              </div>
+            )}
           </div>
         </div>
       )}
