@@ -64,7 +64,7 @@ export default function Sidebar({ isMobileOpen = false, onCloseMobile }: Sidebar
   };
 
   const handleOpenBillingPortal = () => {
-    setIsProfileMenuOpen(false);
+    if (onCloseMobile) onCloseMobile();
     router.push("/pricing");
   };
 
