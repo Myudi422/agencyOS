@@ -156,9 +156,16 @@ export default function PostComposerModal() {
   // Helper to check if media is video
   const isVideoMedia = (media: any) => {
     if (!media) return false;
-    const fileType = media.file_type || media.media_type || "";
-    const filename = media.filename || media.original_filename || media.url || "";
-    return fileType.startsWith("video/") || filename.match(/\.(mp4|mov|webm|avi|mkv)$/i);
+    const urlStr = typeof media === "string" ? media : (media.url || media.filename || media.original_filename || "");
+    if (!urlStr) return false;
+    const cleanPath = urlStr.split("?")[0].split("#")[0].toLowerCase();
+    const fileType = (typeof media === "object" ? media.file_type || media.media_type || media.type || "" : "").toLowerCase();
+
+    if (fileType.startsWith("video/")) return true;
+    if (cleanPath.match(/\.(mp4|mov|webm|avi|mkv|m4v|3gp|flv|ogv)$/i)) return true;
+    if (urlStr.startsWith("blob:") && (fileType.includes("video") || urlStr.includes("video"))) return true;
+    if (urlStr.toLowerCase().includes("video") || urlStr.toLowerCase().includes("reel")) return true;
+    return false;
   };
 
   // Check Platform Compatibility
@@ -844,22 +851,30 @@ export default function PostComposerModal() {
               {/* Attached Media Thumbnails */}
               {mediaUrls.length > 0 && (
                 <div className="flex items-center gap-2 overflow-x-auto pb-1 pt-1">
-                  {mediaUrls.map((url, idx) => (
-                    <div key={idx} className="relative group shrink-0">
-                      {isVideoMedia({ url }) ? (
-                        <video src={url} className="w-14 h-14 rounded-xl object-cover border border-slate-200 shadow-2xs bg-black" />
-                      ) : (
-                        <img src={url} alt="media" className="w-14 h-14 rounded-xl object-cover border border-slate-200 shadow-2xs" />
-                      )}
-                      <button
-                        type="button"
-                        onClick={() => removeMediaUrl(idx)}
-                        className="absolute -top-1.5 -right-1.5 bg-rose-600 text-white rounded-full p-1 shadow-sm hover:scale-110 transition-transform cursor-pointer"
-                      >
-                        <X className="w-3 h-3" />
-                      </button>
-                    </div>
-                  ))}
+                  {mediaUrls.map((url, idx) => {
+                    const isVid = postType === "video" || isVideoMedia({ url });
+                    return (
+                      <div key={idx} className="relative group shrink-0">
+                        {isVid ? (
+                          <div className="relative w-14 h-14 rounded-xl overflow-hidden border border-slate-200 shadow-2xs bg-black flex items-center justify-center">
+                            <video src={url} preload="metadata" muted className="w-full h-full object-cover" />
+                            <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+                              <Play className="w-3.5 h-3.5 fill-white text-white" />
+                            </div>
+                          </div>
+                        ) : (
+                          <img src={url} alt="media" className="w-14 h-14 rounded-xl object-cover border border-slate-200 shadow-2xs" />
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => removeMediaUrl(idx)}
+                          className="absolute -top-1.5 -right-1.5 bg-rose-600 text-white rounded-full p-1 shadow-sm hover:scale-110 transition-transform cursor-pointer"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
 
@@ -911,32 +926,17 @@ export default function PostComposerModal() {
                 <div className="flex items-center justify-between">
                   <label className="text-xs font-bold text-purple-900 flex items-center">
                     <span>Video / Reels Cover Thumbnail</span>
-                    <FieldTooltip text="Upload atau tempel URL gambar sampul untuk thumbnail video Reels. Toggle ON/OFF di Live Preview untuk cek hasilnya." />
+                    <FieldTooltip text="Upload atau tempel URL gambar sampul untuk thumbnail video Reels. Anda dapat mengatur Tampilan Thumbnail di panel Live Preview." />
                   </label>
-                  <div className="flex items-center gap-2">
-                    {reelsThumbnailUrl && (
-                      <button
-                        type="button"
-                        onClick={() => setShowThumbnailInPreview(p => !p)}
-                        className={`flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full transition-all cursor-pointer ${
-                          showThumbnailInPreview
-                            ? "bg-purple-600 text-white"
-                            : "bg-slate-200 text-slate-600 hover:bg-slate-300"
-                        }`}
-                      >
-                        {showThumbnailInPreview ? "👁 Preview ON" : "👁 Preview OFF"}
-                      </button>
-                    )}
-                    {reelsThumbnailUrl && (
-                      <button
-                        type="button"
-                        onClick={() => { setReelsThumbnailUrl(""); setShowThumbnailInPreview(false); }}
-                        className="text-[10px] text-rose-500 hover:text-rose-700 font-semibold cursor-pointer"
-                      >
-                        ✕ Hapus
-                      </button>
-                    )}
-                  </div>
+                  {reelsThumbnailUrl && (
+                    <button
+                      type="button"
+                      onClick={() => { setReelsThumbnailUrl(""); setShowThumbnailInPreview(false); }}
+                      className="text-[10px] text-rose-500 hover:text-rose-700 font-semibold cursor-pointer"
+                    >
+                      ✕ Hapus Cover
+                    </button>
+                  )}
                 </div>
 
                 {/* Upload + URL — same pattern as media attachment */}
@@ -1548,6 +1548,40 @@ export default function PostComposerModal() {
               </div>
             </div>
 
+            {/* Thumbnail Toggle Control directly inside Live Feed Preview */}
+            {(postType === "video" || isVideoMedia({ url: mediaUrls[previewSlideIndex] || mediaUrls[0] }) || reelsThumbnailUrl) && (
+              <div className="flex items-center justify-between p-2.5 rounded-2xl bg-purple-50 border border-purple-200 shadow-2xs">
+                <span className="text-[11px] font-extrabold text-purple-900 font-['Outfit']">Tampilan Thumbnail:</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (!reelsThumbnailUrl) {
+                      toast.info("Silakan atur atau unggah Cover Thumbnail terlebih dahulu di form editor.");
+                      return;
+                    }
+                    setShowThumbnailInPreview(p => !p);
+                  }}
+                  className={`px-3 py-1 rounded-xl text-[11px] font-bold transition-all cursor-pointer flex items-center gap-1.5 shadow-2xs ${
+                    showThumbnailInPreview
+                      ? "bg-purple-600 text-white shadow-xs"
+                      : "bg-white text-slate-700 border border-slate-200 hover:bg-slate-50"
+                  }`}
+                >
+                  {showThumbnailInPreview ? (
+                    <>
+                      <span>🖼 Full Thumbnail</span>
+                      <span className="text-[9px] bg-white/20 px-1.5 py-0.2 rounded-full font-mono">ON</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>▶ Tanpa Thumbnail (Video)</span>
+                      <span className="text-[9px] bg-slate-100 text-slate-600 px-1.5 py-0.2 rounded-full font-mono">OFF</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            )}
+
             {/* Live Feed Card Preview */}
             <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm space-y-3">
               <div className="flex items-center gap-3">
@@ -1564,44 +1598,64 @@ export default function PostComposerModal() {
               {mediaUrls.length > 0 ? (
                 <div className="relative group rounded-xl overflow-hidden border border-slate-100 shadow-2xs bg-black/5 flex items-center justify-center">
                   {/* Active Slide Rendering with Dynamic Aspect Ratio */}
-                  {isVideoMedia({ url: mediaUrls[previewSlideIndex] || mediaUrls[0] }) ? (
-                    <div className="relative w-full">
-                      <video
-                        src={mediaUrls[previewSlideIndex] || mediaUrls[0]}
-                        poster={showThumbnailInPreview && reelsThumbnailUrl ? reelsThumbnailUrl : undefined}
-                        className={`w-full object-cover bg-black ${
+                  {(() => {
+                    const currentUrl = mediaUrls[previewSlideIndex] || mediaUrls[0];
+                    const isVid = postType === "video" || isVideoMedia({ url: currentUrl });
+
+                    if (isVid) {
+                      if (showThumbnailInPreview && reelsThumbnailUrl) {
+                        return (
+                          <div className="relative w-full overflow-hidden bg-black flex items-center justify-center">
+                            <img
+                              src={reelsThumbnailUrl}
+                              alt="Full Cover Thumbnail"
+                              className={`w-full object-cover ${
+                                previewAspect === "1:1" ? "aspect-square max-h-72" :
+                                previewAspect === "4:5" ? "aspect-[4/5] max-h-80" :
+                                previewAspect === "16:9" ? "aspect-[16/9] max-h-56" : "aspect-[9/16] max-h-[380px]"
+                              }`}
+                            />
+                            <div className="absolute inset-0 bg-black/20 flex items-center justify-center pointer-events-none">
+                              <div className="w-11 h-11 rounded-full bg-black/60 backdrop-blur-md border border-white/30 flex items-center justify-center text-white shadow-xl">
+                                <Play className="w-5 h-5 fill-white ml-0.5" />
+                              </div>
+                            </div>
+                            <div className="absolute bottom-2 left-2 px-2.5 py-0.5 rounded-full bg-purple-900/90 text-white text-[9px] font-bold backdrop-blur-md shadow-md border border-purple-500/30">
+                              🖼 Full Cover Thumbnail
+                            </div>
+                          </div>
+                        );
+                      }
+
+                      return (
+                        <div className="relative w-full bg-black flex items-center justify-center">
+                          <video
+                            src={currentUrl}
+                            controls
+                            preload="metadata"
+                            playsInline
+                            className={`w-full object-cover bg-black ${
+                              previewAspect === "1:1" ? "aspect-square max-h-72" :
+                              previewAspect === "4:5" ? "aspect-[4/5] max-h-80" :
+                              previewAspect === "16:9" ? "aspect-[16/9] max-h-56" : "aspect-[9/16] max-h-[380px]"
+                            }`}
+                          />
+                        </div>
+                      );
+                    }
+
+                    return (
+                      <img
+                        src={currentUrl}
+                        alt={`Preview slide ${previewSlideIndex + 1}`}
+                        className={`w-full object-cover ${
                           previewAspect === "1:1" ? "aspect-square max-h-72" :
                           previewAspect === "4:5" ? "aspect-[4/5] max-h-80" :
                           previewAspect === "16:9" ? "aspect-[16/9] max-h-56" : "aspect-[9/16] max-h-[380px]"
                         }`}
-                        controls
                       />
-                      {/* Thumbnail mode badge */}
-                      {reelsThumbnailUrl && (
-                        <button
-                          type="button"
-                          onClick={() => setShowThumbnailInPreview(p => !p)}
-                          className={`absolute top-2 left-2 flex items-center gap-1 text-[9px] font-bold px-2 py-0.5 rounded-full backdrop-blur-sm transition-all cursor-pointer shadow-sm ${
-                            showThumbnailInPreview
-                              ? "bg-purple-600/90 text-white"
-                              : "bg-black/50 text-white/80 hover:bg-black/70"
-                          }`}
-                        >
-                          {showThumbnailInPreview ? "🖼 Cover ON" : "▶ Cover OFF"}
-                        </button>
-                      )}
-                    </div>
-                  ) : (
-                    <img
-                      src={mediaUrls[previewSlideIndex] || mediaUrls[0]}
-                      alt={`Preview slide ${previewSlideIndex + 1}`}
-                      className={`w-full object-cover ${
-                        previewAspect === "1:1" ? "aspect-square max-h-72" :
-                        previewAspect === "4:5" ? "aspect-[4/5] max-h-80" :
-                        previewAspect === "16:9" ? "aspect-[16/9] max-h-56" : "aspect-[9/16] max-h-[380px]"
-                      }`}
-                    />
-                  )}
+                    );
+                  })()}
 
                   {/* Multi-Media Carousel Controls & Badges */}
                   {mediaUrls.length > 1 && (

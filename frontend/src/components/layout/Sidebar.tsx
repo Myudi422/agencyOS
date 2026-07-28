@@ -70,11 +70,11 @@ export default function Sidebar({ isMobileOpen = false, onCloseMobile }: Sidebar
 
   const navItems = [
     { name: "Dashboard", href: "/", icon: LayoutDashboard },
+    { name: "Proses", href: "/queue", icon: Cpu, activeDot: true },
     { name: "Account Manager", href: "/accounts", icon: Users2, badge: "10 Platforms" },
     { name: "Client Roster", href: "/clients", icon: Briefcase },
     { name: "Media Library", href: "/media", icon: ImageIcon },
     { name: "Content Calendar", href: "/calendar", icon: CalendarDays },
-    { name: "Queue Engine", href: "/queue", icon: Cpu, activeDot: true },
     { name: "Activity Log", href: "/activity", icon: History },
     { name: "Tools", href: "/yt-clipper", icon: Wrench, badge: "Local AI" },
     ...(isAdmin ? [{ name: "Admin Settings", href: "/admin", icon: Settings, isAdmin: true }] : []),

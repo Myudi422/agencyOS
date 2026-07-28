@@ -175,7 +175,7 @@ export default function QueuePage() {
       <div className="flex items-center gap-1 p-1 bg-slate-100 rounded-2xl w-fit">
         {[
           { key: "history", icon: History, label: "Riwayat Publikasi" },
-          { key: "queue", icon: Cpu, label: "Queue Engine" },
+          { key: "queue", icon: Cpu, label: "Proses (Queue Engine)" },
         ].map(({ key, icon: Icon, label }) => (
           <button
             key={key}
