@@ -530,7 +530,7 @@ export default function PostComposerModal() {
           ? "Post published instantly across channels!"
           : actionType === "schedule"
           ? "Post berhasil dijadwalkan!"
-          : actionType === "draft"
+          : actionType === "save_draft"
           ? "Draft saved successfully!"
           : "Post berhasil dikirim ke antrian publishing!"
       );
