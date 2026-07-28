@@ -6,7 +6,7 @@ import {
   Send, Clock, Save, CheckCircle2, Sparkles, Folder, Check, Calendar,
   Youtube, MessageSquare, Instagram as InstagramIcon, Twitter, Facebook as FacebookIcon, Share2, 
   Eye, Edit3, Settings2, Link as LinkIcon, AlertCircle, Plus, Play, RefreshCw, AlertTriangle,
-  ChevronLeft, ChevronRight, UploadCloud
+  ChevronLeft, ChevronRight, UploadCloud, Info
 } from "lucide-react";
 import { useStore } from "@/store/useStore";
 import { toast } from "@/store/useToastStore";
@@ -58,6 +58,16 @@ const AccountPlatformIcon = ({ platform, className = "w-3.5 h-3.5" }: { platform
   }
   return <Share2 className={`${className} text-purple-600`} />;
 };
+
+const FieldTooltip = ({ text }: { text: string }) => (
+  <span className="relative inline-flex items-center ml-1 group cursor-help z-20">
+    <Info className="w-3.5 h-3.5 text-slate-400 hover:text-purple-600 transition-colors" />
+    <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 hidden group-hover:block w-52 p-2 bg-slate-900/95 text-white text-[10px] rounded-xl shadow-xl z-50 pointer-events-none leading-normal font-normal normal-case">
+      {text}
+      <span className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-900/95" />
+    </span>
+  </span>
+);
 
 export default function PostComposerModal() {
   const { isComposerOpen, closeComposer, activeWorkspace, composerPreselectedAccounts } = useStore();
@@ -961,24 +971,37 @@ export default function PostComposerModal() {
                   <div className="space-y-3 animate-fadeIn">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div>
-                        <label className="text-[11px] font-semibold text-slate-600 block mb-1">Post Placement</label>
+                        <label className="text-[11px] font-semibold text-slate-600 flex items-center mb-1">
+                          <span>Post Placement</span>
+                          <FieldTooltip text="Pilih lokasi penerbitan di Instagram: Timeline Feed (foto/video beranda), Reels (video pendek vertikal), atau Stories (tayang 24 jam)." />
+                        </label>
                         <select
-                          value={instaPlacement}
+                          value={postType !== "video" && instaPlacement === "reels" ? "timeline" : instaPlacement}
                           onChange={(e) => setInstaPlacement(e.target.value as any)}
                           className="w-full glass-input rounded-xl px-3 py-1.5 text-xs focus:outline-none bg-white cursor-pointer"
                         >
-                          <option value="timeline">Timeline Feed</option>
-                          <option value="reels">Instagram Reels</option>
-                          <option value="stories">Instagram Stories</option>
+                          <option value="timeline">Timeline Feed (Post biasa)</option>
+                          <option value="reels" disabled={postType !== "video"}>
+                            {postType !== "video" ? "Instagram Reels (Khusus Video)" : "Instagram Reels"}
+                          </option>
+                          <option value="stories">Instagram Stories (24 Jam)</option>
                         </select>
+                        {postType !== "video" && (
+                          <p className="text-[10px] text-amber-600 mt-1">
+                            *Format {postType === "carousel" ? "Carousel Foto" : "Foto Single"} diterbitkan ke Feed/Stories (Reels khusus video).
+                          </p>
+                        )}
                       </div>
                       <div>
-                        <label className="text-[11px] font-semibold text-slate-600 block mb-1">Tag Location (Page ID / City)</label>
+                        <label className="text-[11px] font-semibold text-slate-600 flex items-center mb-1">
+                          <span>Tag Location (Lokasi)</span>
+                          <FieldTooltip text="Tambahkan penanda lokasi kota/tempat pada postingan kamu untuk meningkatkan penemuan konten lokal (Local SEO)." />
+                        </label>
                         <input
                           type="text"
                           value={instaLocation}
                           onChange={(e) => setInstaLocation(e.target.value)}
-                          placeholder="Jakarta, Indonesia"
+                          placeholder="misal: Jakarta, Indonesia atau Bali"
                           className="w-full glass-input rounded-xl px-3 py-1.5 text-xs focus:outline-none"
                         />
                       </div>
@@ -986,7 +1009,10 @@ export default function PostComposerModal() {
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div>
-                        <label className="text-[11px] font-semibold text-slate-600 block mb-1">Collaborators (Instagram Usernames)</label>
+                        <label className="text-[11px] font-semibold text-slate-600 flex items-center mb-1">
+                          <span>Collaborators (Kolaborator)</span>
+                          <FieldTooltip text="Undang akun Instagram lain (e.g. @brand, @influencer) agar postingan tayang bersamaan di kedua profil." />
+                        </label>
                         <input
                           type="text"
                           value={instaCollaborators}
@@ -996,12 +1022,15 @@ export default function PostComposerModal() {
                         />
                       </div>
                       <div>
-                        <label className="text-[11px] font-semibold text-slate-600 block mb-1">Reels Original Audio Name</label>
+                        <label className="text-[11px] font-semibold text-slate-600 flex items-center mb-1">
+                          <span>Reels Original Audio Name</span>
+                          <FieldTooltip text="Beri nama trek suara original pada video Reels kamu agar pengguna lain bisa mengidentifikasi/menggunakan audio kamu." />
+                        </label>
                         <input
                           type="text"
                           value={instaAudioName}
                           onChange={(e) => setInstaAudioName(e.target.value)}
-                          placeholder="Original Audio - Brand Name"
+                          placeholder="misal: Original Sound - Brand Name"
                           className="w-full glass-input rounded-xl px-3 py-1.5 text-xs focus:outline-none"
                         />
                       </div>
@@ -1009,19 +1038,22 @@ export default function PostComposerModal() {
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
                       <div>
-                        <label className="text-[11px] font-semibold text-slate-600 block mb-1">Trial Reel Type</label>
+                        <label className="text-[11px] font-semibold text-slate-600 flex items-center mb-1">
+                          <span>Trial Reel Type (Uji Coba Konten)</span>
+                          <FieldTooltip text="Uji coba Reels ke non-followers dulu tanpa muncul di profil kamu. Jika ramai, bisa diluluskan (Graduated) ke followers." />
+                        </label>
                         <select
                           value={instaTrialReelType}
                           onChange={(e) => setInstaTrialReelType(e.target.value as any)}
                           className="w-full glass-input rounded-xl px-3 py-1.5 text-xs focus:outline-none bg-white cursor-pointer"
                         >
-                          <option value="">Standard Post (No Trial)</option>
+                          <option value="">Standard Post (Bukan Trial)</option>
                           <option value="manual">Trial Reel (Manual Graduation)</option>
-                          <option value="performance">Trial Reel (Performance Graduation)</option>
+                          <option value="performance">Trial Reel (Performance Auto Graduation)</option>
                         </select>
                       </div>
 
-                      <div className="flex items-center pt-4">
+                      <div className="flex flex-col justify-end">
                         <label className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer font-medium">
                           <input
                             type="checkbox"
@@ -1029,12 +1061,16 @@ export default function PostComposerModal() {
                             onChange={(e) => setInstaShareToFeed(e.target.checked)}
                             className="rounded border-slate-300 text-pink-600 focus:ring-pink-500 cursor-pointer"
                           />
-                          <span>Show Video Reels on Main Profile Feed (Share to Feed)</span>
+                          <span>Tampilkan Reels di Grid Utama Profil (Share to Feed)</span>
                         </label>
+                        <p className="text-[10px] text-slate-400 mt-0.5 pl-5">
+                          Jika di-uncheck, video Reels hanya ada di tab khusus Reels.
+                        </p>
                       </div>
                     </div>
                   </div>
                 )}
+
 
 
                 {activePlatformTab === "youtube" && (
