@@ -35,8 +35,13 @@ function OAuthCallbackHandler() {
 
     const processCallback = async () => {
       try {
-        // 1. Direct Meta OAuth code flow
-        if (code) {
+        // Detect if this is a PostForMe OAuth callback:
+        // PostForMe redirects back with social_account_id/platform/status — NOT a Meta code.
+        const isPostForMeCallback = !!(accountId || platform || callbackStatus);
+
+        // 1. Direct Meta OAuth code flow (only if code present AND this is NOT a PostForMe redirect)
+        if (code && !isPostForMeCallback) {
+          setMessage("Memproses Meta OAuth code...");
           let callbackUrl = `/auth/meta/callback?code=${encodeURIComponent(code)}`;
           if (activeWorkspace?.id) callbackUrl += `&workspace_id=${activeWorkspace.id}`;
           if (clients[0]?.id) callbackUrl += `&client_id=${clients[0].id}`;
@@ -44,7 +49,8 @@ function OAuthCallbackHandler() {
           await fetchApi<any>(callbackUrl, { method: "POST" });
         }
 
-        // 2. PostForMe OAuth callback flow -> sync accounts into DB
+        // 2. PostForMe OAuth callback flow → sync accounts into DB
+        setMessage("Menyinkronkan akun dari PostForMe...");
         await fetchApi<any>("/auth/postforme/sync-accounts", {
           method: "POST",
           body: JSON.stringify({
@@ -61,10 +67,13 @@ function OAuthCallbackHandler() {
 
       } catch (err: any) {
         console.error("OAuth callback sync error:", err);
-        // Fallback: If PostForMe sync or Meta callback succeeds or partials, check if we got accountId/status
+        // Graceful fallback — PostForMe might have connected the account even if sync fails
+        const accountId = searchParams.get("account_id") || searchParams.get("social_account_id");
+        const platform = searchParams.get("platform");
+        const callbackStatus = searchParams.get("status");
         if (accountId || callbackStatus === "connected" || platform) {
           setStatus("success");
-          setMessage("Koneksi saluran sosial selesai!");
+          setMessage("Koneksi saluran sosial selesai! Periksa halaman Accounts.");
           setTimeout(() => {
             router.push("/accounts");
           }, 1500);

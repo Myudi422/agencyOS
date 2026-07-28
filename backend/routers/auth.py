@@ -36,7 +36,6 @@ class ChallengeResolveRequest(BaseModel):
 
 class PostForMeAuthUrlRequest(BaseModel):
     platform: str
-    redirect_url_override: Optional[str] = None
     platform_data: Optional[Dict[str, Any]] = None
     permissions: Optional[List[str]] = None
 
@@ -107,13 +106,15 @@ async def postforme_auth_url(req: PostForMeAuthUrlRequest):
     """
     Generates OAuth authorization URL for any supported platform via PostForMe API:
     facebook, instagram, x, tiktok, tiktok_business, youtube, pinterest, linkedin, threads.
+
+    NOTE: redirect_url_override is not passed to PostForMe — configure the callback URL
+    in the PostForMe dashboard (Settings > Project Redirect URL).
     """
     try:
         from backend.services.postforme_service import postforme_service
         res = await postforme_service.generate_auth_url(
             platform=req.platform,
             platform_data=req.platform_data,
-            redirect_url_override=req.redirect_url_override,
             permissions=req.permissions
         )
         return res

@@ -51,23 +51,29 @@ class PostForMeService:
         platform: str,
         platform_data: Optional[Dict[str, Any]] = None,
         external_id: Optional[str] = None,
-        redirect_url_override: Optional[str] = None,
         permissions: Optional[List[str]] = None
     ) -> Dict[str, Any]:
         """
         Generate OAuth auth URL for connecting a social account.
         Endpoint: POST /v1/social-accounts/auth-url
+
+        NOTE: redirect_url_override is NOT supported for Quickstart projects.
+        The callback URL must be configured in the PostForMe dashboard instead.
+        For Instagram/Facebook/Threads, platform_data with connection_type is auto-injected.
         """
         url = f"{self.base_url}/v1/social-accounts/auth-url"
-        payload = {
-            "platform": platform
-        }
+
+        # Auto-inject connection_type for Meta/Threads platforms if not already provided
+        meta_platforms = ("instagram", "facebook", "threads")
+        if platform in meta_platforms and not platform_data:
+            platform_data = {"connection_type": platform}
+            logger.info(f"Auto-injected platform_data for {platform}: {platform_data}")
+
+        payload: Dict[str, Any] = {"platform": platform}
         if platform_data:
             payload["platform_data"] = platform_data
         if external_id:
             payload["external_id"] = external_id
-        if redirect_url_override:
-            payload["redirect_url_override"] = redirect_url_override
         if permissions:
             payload["permissions"] = permissions
         else:
@@ -80,8 +86,11 @@ class PostForMeService:
                 "platform": platform
             }
 
+        logger.info(f"Calling PostForMe auth-url for platform={platform}, payload={payload}")
         async with httpx.AsyncClient(timeout=30.0) as client:
             res = await client.post(url, json=payload, headers=self._get_headers())
+            if res.status_code != 200:
+                logger.error(f"PostForMe auth-url error {res.status_code}: {res.text}")
             res.raise_for_status()
             return res.json()
 

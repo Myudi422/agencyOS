@@ -183,14 +183,10 @@ export default function AccountsPage() {
           loadAccounts();
         }, 1200);
       } else {
-        const originUrl = typeof window !== "undefined" ? window.location.origin : "https://shiera.web.id";
-        const callbackUrl = `${originUrl}/auth/callback`;
-
         const res = await fetchApi<any>("/auth/postforme/auth-url", {
           method: "POST",
           body: JSON.stringify({
             platform: selectedPlatform,
-            redirect_url_override: callbackUrl,
             permissions: ["posts", "feeds"]
           })
         });
