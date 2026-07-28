@@ -59,7 +59,7 @@ class Settings:
     POSTFORME_API_KEY: str = os.getenv("POSTFORME_API_KEY", "pfm_live_7EsSZuXmrZaCqdyvkJbuDw")
     POSTFORME_BASE_URL: str = os.getenv("POSTFORME_BASE_URL", "https://api.postforme.dev")
     # Secret yang diterima saat mendaftarkan webhook ke PostForMe (isi setelah setup pertama)
-    POSTFORME_WEBHOOK_SECRET: str = os.getenv("POSTFORME_WEBHOOK_SECRET", "")
+    POSTFORME_WEBHOOK_SECRET: str = os.getenv("POSTFORME_WEBHOOK_SECRET", "whsec_b0fe7a5d0cd24c3582caa4844e55c0c1lrt7uvstp8")
     # URL publik untuk menerima webhook dari PostForMe
     POSTFORME_WEBHOOK_URL: str = os.getenv("POSTFORME_WEBHOOK_URL", "https://shiera.web.id/api/backend/webhook/postforme")
 
