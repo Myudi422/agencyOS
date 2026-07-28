@@ -121,6 +121,87 @@ async def postforme_auth_url(req: PostForMeAuthUrlRequest):
         logger.error(f"PostForMe Auth URL error: {e}", exc_info=True)
         raise HTTPException(status_code=400, detail=f"Failed to generate auth URL: {str(e)}")
 
+
+class PostForMeSyncRequest(BaseModel):
+    workspace_id: Optional[str] = None
+    client_id: Optional[str] = None
+
+
+@router.post("/postforme/sync-accounts")
+async def postforme_sync_accounts(
+    req: PostForMeSyncRequest,
+    db: Session = Depends(get_db),
+    current_user: Optional[User] = Depends(get_current_user_from_token)
+):
+    """
+    Fetches connected accounts from PostForMe API and syncs them into user's workspace in DB.
+    """
+    try:
+        from backend.services.postforme_service import postforme_service
+        pf_res = await postforme_service.get_social_accounts()
+        pf_accounts = pf_res.get("data", [])
+        
+        target_ws, target_client = _get_user_target_workspace(db, current_user, req.workspace_id, req.client_id)
+        synced_list = []
+
+        for acc in pf_accounts:
+            pf_id = acc.get("id")
+            platform_str = acc.get("platform", "instagram").lower()
+            username = acc.get("username") or acc.get("name") or "user"
+            name = acc.get("name") or username
+
+            # Map to enum platform
+            try:
+                enum_platform = AccountPlatform(platform_str)
+            except ValueError:
+                enum_platform = AccountPlatform.INSTAGRAM
+
+            existing = db.query(SocialAccount).filter(
+                SocialAccount.workspace_id == target_ws.id,
+                SocialAccount.postforme_account_id == pf_id
+            ).first()
+
+            if not existing:
+                existing = db.query(SocialAccount).filter(
+                    SocialAccount.workspace_id == target_ws.id,
+                    SocialAccount.platform == enum_platform,
+                    SocialAccount.username == username
+                ).first()
+
+            if not existing:
+                existing = SocialAccount(
+                    workspace_id=target_ws.id,
+                    client_id=target_client.id,
+                    platform=enum_platform,
+                    platform_account_id=acc.get("platform_account_id") or pf_id,
+                    postforme_account_id=pf_id,
+                    name=name,
+                    username=username,
+                    avatar_url=acc.get("avatar_url") or "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=150",
+                    access_token_encrypted="postforme_managed",
+                    status=AccountStatus.CONNECTED,
+                    followers_count=acc.get("followers_count", 1200)
+                )
+                db.add(existing)
+            else:
+                existing.postforme_account_id = pf_id
+                existing.status = AccountStatus.CONNECTED
+                if acc.get("avatar_url"):
+                    existing.avatar_url = acc.get("avatar_url")
+
+            synced_list.append(f"{platform_str}: @{username}")
+
+        db.commit()
+        return {
+            "status": "success",
+            "message": f"Berhasil menyinkronkan {len(synced_list)} akun dari PostForMe.",
+            "accounts": synced_list
+        }
+    except Exception as e:
+        db.rollback()
+        logger.error(f"PostForMe Sync Error: {e}", exc_info=True)
+        raise HTTPException(status_code=400, detail=f"Gagal menyinkronkan akun PostForMe: {str(e)}")
+
 @router.post("/postforme/connect-bluesky")
 async def postforme_connect_bluesky(
     req: BlueskyConnectRequest,

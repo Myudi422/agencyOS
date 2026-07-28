@@ -183,19 +183,23 @@ export default function AccountsPage() {
           loadAccounts();
         }, 1200);
       } else {
+        const originUrl = typeof window !== "undefined" ? window.location.origin : "https://shiera.web.id";
+        const callbackUrl = `${originUrl}/auth/callback`;
+
         const res = await fetchApi<any>("/auth/postforme/auth-url", {
           method: "POST",
           body: JSON.stringify({
-            workspace_id: activeWorkspace?.id || "ws-default",
-            platforms: [selectedPlatform],
-            client_id: activeClientId
+            platform: selectedPlatform,
+            redirect_url_override: callbackUrl,
+            permissions: ["posts", "feeds"]
           })
         });
 
-        if (res.auth_url) {
-          window.location.href = res.auth_url;
+        const targetUrl = res.url || res.auth_url;
+        if (targetUrl) {
+          window.location.href = targetUrl;
         } else {
-          setModalError("Failed to generate OAuth redirect URL.");
+          setModalError("Gagal mendapatkan URL otentikasi dari PostForMe.");
         }
       }
     } catch (err: any) {
