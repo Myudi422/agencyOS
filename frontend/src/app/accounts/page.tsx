@@ -197,7 +197,7 @@ export default function AccountsPage() {
         if (targetUrl) {
           window.location.href = targetUrl;
         } else {
-          setModalError("Gagal mendapatkan URL otentikasi dari PostForMe.");
+          setModalError("Gagal mendapatkan URL otentikasi. Silakan coba lagi.");
         }
       }
     } catch (err: any) {

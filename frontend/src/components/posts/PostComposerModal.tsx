@@ -355,7 +355,7 @@ export default function PostComposerModal() {
             if (putRes.ok || putRes.status === 200 || putRes.status === 204) {
               // Step 3: Append media_url to post media attachments
               setMediaUrls((prev) => [...prev, res.media_url]);
-              toast.success(`Berhasil upload '${file.name}' via PostForMe Media!`);
+              toast.success(`Berhasil upload '${file.name}'!`);
             } else {
               await uploadViaB2Fallback(file, targetWsId);
             }
@@ -529,7 +529,8 @@ export default function PostComposerModal() {
         actionType === "publish_now"
           ? "Post published instantly across channels!"
           : actionType === "schedule"
-          ? "Post scheduled successfully via PostForMe!"
+          ? "Post berhasil dijadwalkan!"
+          : "Post berhasil dikirim ke antrian publishing!"
           : "Draft saved successfully!"
       );
       setIsSubmitting(false);
@@ -778,7 +779,7 @@ export default function PostComposerModal() {
                 className="w-full glass-input rounded-xl px-3 py-2 text-xs focus:outline-none"
               />
               <p className="text-[10px] text-slate-400">
-                Hashtag ini akan dimasukkan langsung di akhir teks Caption saat dikirim ke PostForMe.
+                Hashtag ini akan dimasukkan langsung di akhir teks Caption.
               </p>
             </div>
 
@@ -830,8 +831,8 @@ export default function PostComposerModal() {
                 {isUploadingMedia ? (
                   <div className="py-2 flex flex-col items-center gap-2 text-purple-700">
                     <RefreshCw className="w-8 h-8 animate-spin text-purple-600" />
-                    <p className="text-xs font-bold">Mengunggah media via PostForMe Cloud...</p>
-                    <p className="text-[10px] text-slate-400">Menyalin file ke signed URL PostForMe</p>
+                    <p className="text-xs font-bold">Mengunggah media ke cloud...</p>
+                    <p className="text-[10px] text-slate-400">Menyalin file ke server media</p>
                   </div>
                 ) : (
                   <>
@@ -1003,7 +1004,7 @@ export default function PostComposerModal() {
                       {isUploadingThumbnail ? (
                         <div className="py-1 flex flex-col items-center gap-2 text-purple-700">
                           <RefreshCw className="w-6 h-6 animate-spin text-purple-600" />
-                          <p className="text-xs font-bold">Mengunggah thumbnail via PostForMe...</p>
+                          <p className="text-xs font-bold">Mengunggah thumbnail...</p>
                         </div>
                       ) : (
                         <>

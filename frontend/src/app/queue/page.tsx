@@ -157,7 +157,7 @@ export default function QueuePage() {
             Queue & Riwayat Publikasi
           </h1>
           <p className="text-xs sm:text-sm text-slate-600 max-w-2xl leading-relaxed">
-            Pantau antrian publishing, riwayat hasil aktual dari PostForMe, dan status kredit per posting.
+            Pantau antrian publishing, riwayat hasil publikasi, dan status kredit per posting.
           </p>
         </div>
 
@@ -169,7 +169,7 @@ export default function QueuePage() {
               className="py-3 px-5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs flex items-center gap-2 shadow-sm transition-all shrink-0 disabled:opacity-60"
             >
               {isSyncing ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
-              <span>{isSyncing ? "Menyinkronkan..." : "Sync dari PostForMe"}</span>
+              <span>{isSyncing ? "Menyinkronkan..." : "Sync Riwayat"}</span>
             </button>
           )}
           <button
@@ -249,7 +249,7 @@ export default function QueuePage() {
             <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
               <History className="w-4 h-4 text-purple-600" />
               <h3 className="text-xs font-extrabold text-slate-900 uppercase tracking-wider">
-                Hasil Publikasi dari PostForMe
+                Hasil Publikasi
               </h3>
             </div>
 
@@ -262,7 +262,7 @@ export default function QueuePage() {
               <div className="flex flex-col items-center justify-center py-16 gap-3 text-slate-400">
                 <History className="w-10 h-10 opacity-30" />
                 <p className="text-sm font-medium">Belum ada riwayat publikasi</p>
-                <p className="text-xs text-slate-400">Klik "Sync dari PostForMe" untuk mengambil hasil terbaru</p>
+                <p className="text-xs text-slate-400">Klik "Sync Riwayat" untuk mengambil hasil terbaru</p>
               </div>
             ) : (
               <div className="overflow-x-auto">

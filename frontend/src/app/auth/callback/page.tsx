@@ -50,7 +50,7 @@ function OAuthCallbackHandler() {
         }
 
         // 2. PostForMe OAuth callback flow → sync accounts into DB
-        setMessage("Menyinkronkan akun dari PostForMe...");
+        setMessage("Menyinkronkan akun media sosial...");
         await fetchApi<any>("/auth/postforme/sync-accounts", {
           method: "POST",
           body: JSON.stringify({
