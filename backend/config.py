@@ -56,7 +56,7 @@ class Settings:
     B2_PUBLIC_CUSTOM_DOMAIN: str = os.getenv("B2_PUBLIC_CUSTOM_DOMAIN", "https://file.legalpilar.id/file")
 
     # PostForMe API (https://api.postforme.dev)
-    POSTFORME_API_KEY: str = os.getenv("POSTFORME_API_KEY", "")
+    POSTFORME_API_KEY: str = os.getenv("POSTFORME_API_KEY", "pfm_live_7EsSZuXmrZaCqdyvkJbuDw")
     POSTFORME_BASE_URL: str = os.getenv("POSTFORME_BASE_URL", "https://api.postforme.dev")
 
     # Meta Platform (OAuth 2.0 & Graph API v25.0 with HTTPS Callback)
