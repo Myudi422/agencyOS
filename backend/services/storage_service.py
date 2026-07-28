@@ -31,14 +31,23 @@ class StorageService:
             config=Config(signature_version="s3v4")
         )
 
-    def upload_file(self, file_content: bytes, filename: str, content_type: str, folder: str = "General") -> Dict[str, Any]:
+    def upload_file(
+        self, 
+        file_content: bytes, 
+        filename: str, 
+        content_type: str, 
+        folder: str = "General",
+        workspace_id: str = None
+    ) -> Dict[str, Any]:
         """
-        Uploads file content to Backblaze B2 under AgencyOS/{folder}/{uuid}_{filename}
+        Uploads file content to Backblaze B2 under AgencyOS/users/{workspace_id}/{folder}/{uuid}_{filename}
         """
         file_id = str(uuid.uuid4())
         clean_name = filename.replace(" ", "_")
         clean_folder = folder.strip().capitalize() if folder else "General"
-        b2_key = f"{self.ROOT_PREFIX}/{clean_folder}/{file_id}_{clean_name}"
+        
+        user_segment = f"users/{workspace_id}" if workspace_id else "general"
+        b2_key = f"{self.ROOT_PREFIX}/{user_segment}/{clean_folder}/{file_id}_{clean_name}"
 
         try:
             s3 = self._get_s3_client()

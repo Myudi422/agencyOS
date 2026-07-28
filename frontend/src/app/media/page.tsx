@@ -46,12 +46,22 @@ export default function MediaPage() {
     return fileType.startsWith("video/") || filename.match(/\.(mp4|mov|webm|avi|mkv)$/i);
   };
 
+  const [storageInfo, setStorageInfo] = useState<any>({
+    used_mb: 0,
+    limit_mb: 100,
+    percentage: 0,
+    is_overflow: false
+  });
+
   const loadMedia = async () => {
     try {
       const folderParam = selectedFolder === "All" ? "" : `&folder=${encodeURIComponent(selectedFolder)}`;
       const searchParam = search ? `&search=${encodeURIComponent(search)}` : "";
       const res = await fetchApi<any>(`/media/?workspace_id=${activeWorkspace?.id || "ws-default"}${folderParam}${searchParam}`);
       setMediaItems(res.items || []);
+      if (res.storage) {
+        setStorageInfo(res.storage);
+      }
       
       const serverFolders: string[] = res.folders || [];
       setFolders((prev) => {
@@ -221,25 +231,46 @@ export default function MediaPage() {
     <div className="space-y-6 pb-12">
       {/* Top Banner - White Clean Glassmorphism */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 sm:p-8 rounded-3xl glass-panel relative overflow-hidden shadow-sm">
-        <div className="space-y-1.5 z-10">
-          <div className="flex items-center gap-2">
+        <div className="space-y-2 z-10">
+          <div className="flex items-center gap-2 flex-wrap">
             <span className="px-3 py-1 rounded-full bg-purple-100 text-purple-700 text-[11px] font-bold tracking-wide uppercase border border-purple-200">
               Backblaze B2 S3 Storage
             </span>
+            <span className={`px-3 py-1 rounded-full text-[11px] font-bold tracking-wide uppercase border ${
+              storageInfo.is_overflow 
+                ? "bg-rose-100 text-rose-700 border-rose-200" 
+                : "bg-emerald-100 text-emerald-700 border-emerald-200"
+            }`}>
+              Storage Cap: {storageInfo.used_mb || 0} MB / 100 MB
+            </span>
           </div>
+
           <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight font-['Outfit'] gradient-text">
             Media Storage Library
           </h1>
-          <p className="text-xs sm:text-sm text-slate-600 max-w-2xl leading-relaxed">
-            High performance cloud object storage connected directly to Backblaze B2 bucket <code className="font-mono text-purple-700 font-bold">ccgnimex</code> under root prefix <code className="font-mono text-purple-700 font-bold">AgencyOS/</code>.
-          </p>
+          
+          {/* Storage Capacity Bar */}
+          <div className="max-w-md pt-1 space-y-1">
+            <div className="flex items-center justify-between text-[11px] font-bold text-slate-600">
+              <span>Cloud Storage Usage</span>
+              <span className="font-mono">{storageInfo.percentage || 0}% Used</span>
+            </div>
+            <div className="w-full h-2 rounded-full bg-slate-200 overflow-hidden">
+              <div
+                className={`h-full transition-all duration-500 rounded-full ${
+                  storageInfo.is_overflow ? "bg-rose-500" : storageInfo.percentage > 80 ? "bg-amber-500" : "bg-purple-600"
+                }`}
+                style={{ width: `${Math.min(100, storageInfo.percentage || 0)}%` }}
+              />
+            </div>
+          </div>
         </div>
 
         <div className="flex items-center gap-2.5 z-10 shrink-0">
           <button
             onClick={handleSyncB2}
             disabled={isSyncing}
-            className="py-3 px-4 rounded-2xl bg-white hover:bg-purple-50/80 border border-slate-200 text-slate-700 font-semibold text-xs flex items-center gap-2 shadow-xs transition-all"
+            className="py-3 px-4 rounded-2xl bg-white hover:bg-purple-50/80 border border-slate-200 text-slate-700 font-semibold text-xs flex items-center gap-2 shadow-xs transition-all cursor-pointer"
             title="Scan & Sync Backblaze B2 Bucket"
           >
             <RefreshCw className={`w-4 h-4 ${isSyncing ? "animate-spin text-purple-600" : ""}`} />

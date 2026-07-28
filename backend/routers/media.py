@@ -185,6 +185,14 @@ def get_media_items(
         Media.workspace_id == workspace_id,
         Media.b2_key.ilike("AgencyOS/%")
     ).all()
+    
+    # Calculate 100MB storage usage
+    MAX_STORAGE_BYTES = 100 * 1024 * 1024 # 100 MB
+    used_bytes = sum(m.file_size or 0 for m in all_media)
+    used_mb = round(used_bytes / (1024 * 1024), 2)
+    limit_mb = 100.0
+    storage_pct = min(100.0, round((used_bytes / MAX_STORAGE_BYTES) * 100, 1))
+
     folders = list(set([m.folder for m in all_media if m.folder]))
     all_tags = set()
     for m in all_media:
@@ -212,7 +220,15 @@ def get_media_items(
             } for m in items
         ],
         "folders": sorted(folders),
-        "tags": sorted(list(all_tags))
+        "tags": sorted(list(all_tags)),
+        "storage": {
+            "used_bytes": used_bytes,
+            "used_mb": used_mb,
+            "limit_bytes": MAX_STORAGE_BYTES,
+            "limit_mb": limit_mb,
+            "percentage": storage_pct,
+            "is_overflow": used_bytes > MAX_STORAGE_BYTES
+        }
     }
 
 @router.post("/")
@@ -223,20 +239,37 @@ async def upload_media(
     file: UploadFile = File(...),
     db: Session = Depends(get_db)
 ):
-    """Uploads new media file to Backblaze B2 storage and saves metadata."""
+    """Uploads new media file to Backblaze B2 storage (per user/workspace folder) and saves metadata."""
     content = await file.read()
-    
+    file_size = len(content)
+
+    # 1. Calculate existing storage usage for workspace
+    MAX_STORAGE_BYTES = 100 * 1024 * 1024 # 100 MB
+    existing_media = db.query(Media).filter(
+        Media.workspace_id == workspace_id,
+        Media.b2_key.ilike("AgencyOS/%")
+    ).all()
+    current_used = sum(m.file_size or 0 for m in existing_media)
+    new_total = current_used + file_size
+    is_overflow = new_total > MAX_STORAGE_BYTES
+
+    # 2. Upload file to Backblaze B2 under per-user folder
     upload_res = storage_service.upload_file(
         file_content=content,
         filename=file.filename or "upload.png",
         content_type=file.content_type or "image/png",
-        folder=folder
+        folder=folder,
+        workspace_id=workspace_id
     )
 
     try:
         tag_list = json.loads(tags)
     except:
         tag_list = ["uploaded"]
+
+    # Mark as temp overflow if exceeding 100MB limit
+    if is_overflow:
+        tag_list.append("temp_overflow")
 
     media = Media(
         workspace_id=workspace_id,
@@ -258,7 +291,7 @@ async def upload_media(
         workspace_id=workspace_id,
         user_name="System",
         action="UPLOAD_MEDIA",
-        details=f"Uploaded '{file.filename}' to Backblaze B2 key '{upload_res['b2_key']}'",
+        details=f"Uploaded '{file.filename}' to Backblaze B2 key '{upload_res['b2_key']}' (Overflow={is_overflow})",
         entity_type="Media",
         entity_id=media.id
     )
@@ -267,7 +300,29 @@ async def upload_media(
     db.commit()
     db.refresh(media)
 
-    return media
+    res_data = {
+        "id": media.id,
+        "workspace_id": media.workspace_id,
+        "filename": media.filename,
+        "file_type": media.file_type,
+        "file_size": media.file_size,
+        "url": media.url,
+        "thumbnail_url": media.thumbnail_url,
+        "b2_key": media.b2_key,
+        "folder": media.folder,
+        "tags": media.tags or [],
+        "created_at": media.created_at,
+        "storage": {
+            "used_bytes": new_total,
+            "used_mb": round(new_total / (1024 * 1024), 2),
+            "limit_bytes": MAX_STORAGE_BYTES,
+            "limit_mb": 100.0,
+            "percentage": min(100.0, round((new_total / MAX_STORAGE_BYTES) * 100, 1)),
+            "is_overflow": is_overflow,
+            "overflow_warning": "Storage 100MB terlampaui. File diunggah sebagai file sementara (temp)." if is_overflow else None
+        }
+    }
+    return res_data
 
 @router.post("/bulk-move")
 def bulk_move_media(req: BulkMoveRequest, db: Session = Depends(get_db)):

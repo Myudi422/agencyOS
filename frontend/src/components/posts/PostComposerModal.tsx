@@ -6,7 +6,7 @@ import {
   Send, Clock, Save, CheckCircle2, Sparkles, Folder, Check, Calendar,
   Youtube, MessageSquare, Instagram as InstagramIcon, Twitter, Facebook as FacebookIcon, Share2, 
   Eye, Edit3, Settings2, Link as LinkIcon, AlertCircle, Plus, Play, RefreshCw, AlertTriangle,
-  ChevronLeft, ChevronRight
+  ChevronLeft, ChevronRight, UploadCloud
 } from "lucide-react";
 import { useStore } from "@/store/useStore";
 import { toast } from "@/store/useToastStore";
@@ -50,10 +50,17 @@ export default function PostComposerModal() {
   // Platform Customization Tab
   const [activePlatformTab, setActivePlatformTab] = useState<string>("instagram");
 
-  // Media Library Picker Modal State
+  // Media Library Picker Modal State & Storage Usage
   const [isMediaPickerOpen, setIsMediaPickerOpen] = useState(false);
   const [libraryMedia, setLibraryMedia] = useState<any[]>([]);
   const [isLoadingLibrary, setIsLoadingLibrary] = useState(false);
+  const [isUploadingMedia, setIsUploadingMedia] = useState(false);
+  const [storageInfo, setStorageInfo] = useState<any>({
+    used_mb: 0,
+    limit_mb: 100,
+    percentage: 0,
+    is_overflow: false
+  });
 
   const [availableAccounts, setAvailableAccounts] = useState<any[]>([]);
   const [selectedAccountIds, setSelectedAccountIds] = useState<string[]>([]);
@@ -178,12 +185,16 @@ export default function PostComposerModal() {
     try {
       let data = await fetchApi<any>(`/media/?workspace_id=${targetWsId}`);
       let items = data?.items || (Array.isArray(data) ? data : []);
+      if (data?.storage) {
+        setStorageInfo(data.storage);
+      }
 
       if (items.length === 0) {
         try {
           await fetchApi(`/media/sync-b2?workspace_id=${targetWsId}`, { method: "POST" });
           data = await fetchApi<any>(`/media/?workspace_id=${targetWsId}`);
           items = data?.items || (Array.isArray(data) ? data : []);
+          if (data?.storage) setStorageInfo(data.storage);
         } catch (syncErr) {
           console.log("B2 auto sync notice:", syncErr);
         }
@@ -195,6 +206,42 @@ export default function PostComposerModal() {
       setLibraryMedia([]);
     } finally {
       setIsLoadingLibrary(false);
+    }
+  };
+
+  const handleDirectUploadInModal = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) return;
+    setIsUploadingMedia(true);
+    const targetWsId = activeWorkspace?.id || "ws-default";
+    const file = e.target.files[0];
+
+    const formData = new FormData();
+    formData.append("workspace_id", targetWsId);
+    formData.append("folder", "General");
+    formData.append("file", file);
+
+    try {
+      const res = await fetchApi<any>("/media/", {
+        method: "POST",
+        body: formData
+      });
+
+      if (res?.url) {
+        toast.success(`Berhasil mengunggah '${file.name}' langsung ke Backblaze B2!`);
+        if (res.storage) {
+          setStorageInfo(res.storage);
+          if (res.storage.overflow_warning) {
+            toast.warning(res.storage.overflow_warning);
+          }
+        }
+        setMediaUrls((prev) => [...prev, res.url]);
+        loadMediaLibrary();
+      }
+    } catch (err: any) {
+      toast.error(`Gagal upload: ${err.message || err}`);
+    } finally {
+      setIsUploadingMedia(false);
+      e.target.value = "";
     }
   };
 
@@ -373,11 +420,14 @@ export default function PostComposerModal() {
             mobileTab === "editor" ? "block" : "hidden lg:block"
           }`}>
             
-            {/* 1. Target Account Selection */}
+            {/* 1. Target Account Selection - Responsive Wrapped Desktop Container */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <label className="text-xs font-bold text-slate-800">
-                  Target Channels ({selectedAccountIds.length} selected)
+                <label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                  <span>Target Channels</span>
+                  <span className="text-[10px] bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-extrabold">
+                    {selectedAccountIds.length} Selected
+                  </span>
                 </label>
                 <button
                   onClick={selectAllAccounts}
@@ -387,7 +437,8 @@ export default function PostComposerModal() {
                 </button>
               </div>
 
-              <div className="flex items-center gap-2 overflow-x-auto pb-1.5 no-scrollbar">
+              {/* Flex Wrap Container for Desktop & Touch-Scroll for Mobile */}
+              <div className="flex flex-wrap items-center gap-2 max-h-44 overflow-y-auto p-2 rounded-2xl bg-slate-50 border border-slate-200/80 shadow-2xs">
                 {availableAccounts.map((acc) => {
                   const isSelected = selectedAccountIds.includes(acc.id);
                   const compat = checkPlatformCompatibility(acc.platform);
@@ -401,20 +452,20 @@ export default function PostComposerModal() {
                         !compat.compatible
                           ? "bg-slate-100 border-slate-200 text-slate-400 opacity-60 cursor-not-allowed"
                           : isSelected
-                          ? "bg-purple-50 border-purple-300 text-purple-900 font-semibold shadow-2xs"
-                          : "bg-white border-slate-200 text-slate-600 hover:text-purple-700 hover:bg-purple-50/50"
+                          ? "bg-purple-600 text-white border-purple-600 font-semibold shadow-xs"
+                          : "bg-white border-slate-200 text-slate-700 hover:text-purple-700 hover:border-purple-300 hover:bg-purple-50/50"
                       }`}
                     >
                       <img
                         src={acc.avatar_url || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150"}
                         alt={acc.username}
-                        className={`w-5 h-5 rounded-full object-cover ${!compat.compatible ? "grayscale" : ""}`}
+                        className={`w-5 h-5 rounded-full object-cover border border-white/40 ${!compat.compatible ? "grayscale" : ""}`}
                       />
                       <span>@{acc.username}</span>
                       {!compat.compatible ? (
-                        <AlertTriangle className="w-3.5 h-3.5 text-amber-500 ml-1" />
+                        <AlertTriangle className="w-3.5 h-3.5 text-amber-500 ml-0.5" />
                       ) : isSelected ? (
-                        <CheckCircle2 className="w-3.5 h-3.5 text-purple-600 ml-1" />
+                        <CheckCircle2 className="w-3.5 h-3.5 text-white ml-0.5" />
                       ) : null}
                     </button>
                   );
@@ -1119,20 +1170,34 @@ export default function PostComposerModal() {
       {/* Internal Glassmorphic Media Library Picker Modal */}
       {isMediaPickerOpen && (
         <div className="fixed inset-0 z-[120] bg-slate-900/60 flex items-center justify-center p-3 sm:p-6 animate-fadeIn">
-          <div className="bg-white border border-slate-200 rounded-2xl sm:rounded-3xl w-full max-w-3xl max-h-[85vh] flex flex-col shadow-xl overflow-hidden">
+          <div className="bg-white border border-slate-200 rounded-2xl sm:rounded-3xl w-full max-w-3xl max-h-[88vh] flex flex-col shadow-2xl overflow-hidden">
             
-            <div className="px-4 sm:px-6 py-3.5 border-b border-slate-200/80 flex items-center justify-between bg-slate-50/80">
+            {/* Modal Header */}
+            <div className="px-4 sm:px-6 py-3.5 border-b border-slate-200/80 flex items-center justify-between bg-slate-50/90">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center">
+                <div className="w-9 h-9 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center shadow-2xs">
                   <Folder className="w-4 h-4" />
                 </div>
                 <div>
-                  <h3 className="font-extrabold text-xs sm:text-sm text-slate-900 font-['Outfit']">Media Library</h3>
-                  <p className="text-[10px] sm:text-[11px] text-slate-500">Select assets from Backblaze B2 storage</p>
+                  <h3 className="font-extrabold text-xs sm:text-sm text-slate-900 font-['Outfit']">Media Vault &amp; Direct Upload</h3>
+                  <p className="text-[10px] sm:text-[11px] text-slate-500">Backblaze B2 Direct Cloud Storage Per-User Folder</p>
                 </div>
               </div>
 
               <div className="flex items-center gap-2">
+                {/* Direct Upload Button */}
+                <label className="py-1.5 px-3 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-md shadow-purple-500/20 transition-all cursor-pointer">
+                  <UploadCloud className={`w-3.5 h-3.5 ${isUploadingMedia ? "animate-bounce" : ""}`} />
+                  <span>{isUploadingMedia ? "Uploading B2..." : "Upload Ke B2"}</span>
+                  <input
+                    type="file"
+                    onChange={handleDirectUploadInModal}
+                    className="hidden"
+                    accept="image/*,video/*"
+                    disabled={isUploadingMedia}
+                  />
+                </label>
+
                 <button
                   type="button"
                   onClick={loadMediaLibrary}
@@ -1142,6 +1207,7 @@ export default function PostComposerModal() {
                   <RefreshCw className={`w-3.5 h-3.5 ${isLoadingLibrary ? "animate-spin" : ""}`} />
                   <span>Sync B2</span>
                 </button>
+                
                 <button
                   onClick={() => setIsMediaPickerOpen(false)}
                   className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 cursor-pointer"
@@ -1151,6 +1217,33 @@ export default function PostComposerModal() {
               </div>
             </div>
 
+            {/* Storage Usage Bar Header */}
+            <div className="px-4 sm:px-6 py-2.5 bg-purple-50/60 border-b border-purple-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] font-bold text-purple-900">User Storage Cap (100MB):</span>
+                <span className={`text-[11px] font-extrabold font-mono ${storageInfo.is_overflow ? "text-rose-600" : "text-purple-700"}`}>
+                  {storageInfo.used_mb || 0} MB / 100 MB ({storageInfo.percentage || 0}%)
+                </span>
+                {storageInfo.is_overflow && (
+                  <span className="px-2 py-0.5 rounded-md bg-rose-100 text-rose-700 text-[10px] font-bold border border-rose-200 flex items-center gap-1">
+                    <AlertTriangle className="w-3 h-3" />
+                    Temp Overflow Active
+                  </span>
+                )}
+              </div>
+
+              {/* Visual Storage Progress Bar */}
+              <div className="w-full sm:w-48 h-2 rounded-full bg-purple-200/80 overflow-hidden shrink-0">
+                <div
+                  className={`h-full transition-all duration-500 rounded-full ${
+                    storageInfo.is_overflow ? "bg-rose-500" : storageInfo.percentage > 80 ? "bg-amber-500" : "bg-purple-600"
+                  }`}
+                  style={{ width: `${Math.min(100, storageInfo.percentage || 0)}%` }}
+                />
+              </div>
+            </div>
+
+            {/* Media Items Grid */}
             <div className="p-4 sm:p-6 flex-1 overflow-y-auto">
               {isLoadingLibrary ? (
                 <div className="py-12 text-center text-xs text-slate-500 space-y-2">
@@ -1158,15 +1251,19 @@ export default function PostComposerModal() {
                   <p>Fetching files from Backblaze B2 storage...</p>
                 </div>
               ) : libraryMedia.length === 0 ? (
-                <div className="py-12 text-center text-xs text-slate-500 space-y-2">
-                  <p>No media files found in Backblaze B2 storage for this workspace.</p>
-                  <button
-                    type="button"
-                    onClick={loadMediaLibrary}
-                    className="px-3 py-1.5 bg-purple-600 text-white rounded-xl text-xs font-semibold cursor-pointer"
-                  >
-                    Sync Backblaze B2 Now
-                  </button>
+                <div className="py-12 text-center text-xs text-slate-500 space-y-3">
+                  <UploadCloud className="w-8 h-8 text-purple-400 mx-auto" />
+                  <p className="font-semibold text-slate-700">Belum ada media di Backblaze B2 storage user ini.</p>
+                  <label className="inline-flex py-2 px-4 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-bold items-center gap-2 cursor-pointer shadow-md">
+                    <UploadCloud className="w-4 h-4" />
+                    <span>Upload File Pertama ke B2</span>
+                    <input
+                      type="file"
+                      onChange={handleDirectUploadInModal}
+                      className="hidden"
+                      accept="image/*,video/*"
+                    />
+                  </label>
                 </div>
               ) : (
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -1222,6 +1319,7 @@ export default function PostComposerModal() {
               )}
             </div>
 
+            {/* Modal Footer */}
             <div className="px-4 sm:px-6 py-3 border-t border-slate-200 bg-slate-50/80 flex items-center justify-between">
               <span className="text-xs text-slate-500 font-semibold">
                 {mediaUrls.length} media attached to post
