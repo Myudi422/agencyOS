@@ -100,10 +100,14 @@ export default function PostComposerModal() {
   const [selectedAccountIds, setSelectedAccountIds] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Platform Configurations
-  const [instaLocation, setInstaLocation] = useState("Jakarta, Indonesia");
-  const [instaShareFB, setInstaShareFB] = useState(false);
-  const [instaHideLikes, setInstaHideLikes] = useState(false);
+  // Platform Configurations (PostForMe InstagramConfigurationDto Schema)
+  const [instaPlacement, setInstaPlacement] = useState<"timeline" | "reels" | "stories">("timeline");
+  const [instaShareToFeed, setInstaShareToFeed] = useState<boolean>(true);
+  const [instaLocation, setInstaLocation] = useState<string>("");
+  const [instaCollaborators, setInstaCollaborators] = useState<string>("");
+  const [instaAudioName, setInstaAudioName] = useState<string>("");
+  const [instaTrialReelType, setInstaTrialReelType] = useState<"" | "manual" | "performance">("");
+
 
   const [youtubeTitle, setYoutubeTitle] = useState("");
   const [youtubePrivacy, setYoutubePrivacy] = useState<"public" | "private" | "unlisted">("public");
@@ -421,16 +425,50 @@ export default function PostComposerModal() {
     setIsSubmitting(true);
 
     const platformConfigs: Record<string, any> = {
-      instagram: { location: instaLocation, share_to_fb: instaShareFB, hide_likes: instaHideLikes },
-      youtube: { title: youtubeTitle || caption.slice(0, 80), privacy_status: youtubePrivacy, category: youtubeCategory, made_for_kids: youtubeMadeForKids, synthetic: youtubeSyntheticContent },
-      threads: { topic: threadsTopic, reply_control: threadsReplyControl },
-      tiktok: { privacy_level: tiktokPrivacy, disable_duet: tiktokDisableDuet, disable_stitch: tiktokDisableStitch },
-      x: { poll: xPollQuestion ? { question: xPollQuestion, options: xPollOptions.filter(o => o.trim()) } : null },
-      facebook: { cta: facebookCta, link: facebookLink },
-      pinterest: { title: pinterestTitle || caption.slice(0, 50), link: pinterestLink },
-      linkedin: { headline: linkedinTitle, audience: linkedinAudience },
-      bluesky: { alt_text: blueskyAltText, content_warning: blueskyContentWarning }
+      instagram: {
+        placement: postType === "video" ? "reels" : instaPlacement,
+        share_to_feed: instaShareToFeed,
+        location: instaLocation.trim() || null,
+        collaborators: instaCollaborators ? instaCollaborators.split(",").map(s => s.trim().replace(/^@/, "")).filter(Boolean) : null,
+        audio_name: instaAudioName.trim() || null,
+        trial_reel_type: instaTrialReelType || null
+      },
+      youtube: {
+        title: youtubeTitle || (caption ? caption.slice(0, 80) : "Social Video Post"),
+        privacy_status: youtubePrivacy,
+        category_id: youtubeCategory || null,
+        made_for_kids: youtubeMadeForKids,
+        contains_synthetic_media: youtubeSyntheticContent,
+        embeddable: true,
+        public_stats_viewable: true
+      },
+      tiktok: {
+        privacy_status: tiktokPrivacy === "SELF_ONLY" ? "private" : "public",
+        allow_comment: true,
+        allow_duet: !tiktokDisableDuet,
+        allow_stitch: !tiktokDisableStitch,
+        is_ai_generated: false,
+        is_draft: false,
+        auto_add_music: true
+      },
+      facebook: {
+        placement: instaPlacement === "stories" ? "stories" : (postType === "video" ? "reels" : "timeline"),
+        location: instaLocation.trim() || null,
+        set_caption_for_each_image: true
+      },
+      x: {
+        poll: xPollQuestion ? { duration_minutes: 1440, options: xPollOptions.filter(o => o.trim()) } : null,
+        reply_settings: "following"
+      },
+      pinterest: {
+        title: pinterestTitle || (caption ? caption.slice(0, 50) : null),
+        link: pinterestLink.trim() || null
+      },
+      threads: {
+        placement: postType === "video" ? "reels" : "timeline"
+      }
     };
+
 
     const payload = {
       workspace_id: activeWorkspace?.id || "ws-default",
@@ -921,38 +959,83 @@ export default function PostComposerModal() {
               <div className="pt-2">
                 {activePlatformTab === "instagram" && (
                   <div className="space-y-3 animate-fadeIn">
-                    <div>
-                      <label className="text-[11px] font-semibold text-slate-600 block mb-1">Tag Location</label>
-                      <input
-                        type="text"
-                        value={instaLocation}
-                        onChange={(e) => setInstaLocation(e.target.value)}
-                        placeholder="Jakarta, Indonesia"
-                        className="w-full glass-input rounded-xl px-3 py-1.5 text-xs focus:outline-none"
-                      />
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="text-[11px] font-semibold text-slate-600 block mb-1">Post Placement</label>
+                        <select
+                          value={instaPlacement}
+                          onChange={(e) => setInstaPlacement(e.target.value as any)}
+                          className="w-full glass-input rounded-xl px-3 py-1.5 text-xs focus:outline-none bg-white cursor-pointer"
+                        >
+                          <option value="timeline">Timeline Feed</option>
+                          <option value="reels">Instagram Reels</option>
+                          <option value="stories">Instagram Stories</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="text-[11px] font-semibold text-slate-600 block mb-1">Tag Location (Page ID / City)</label>
+                        <input
+                          type="text"
+                          value={instaLocation}
+                          onChange={(e) => setInstaLocation(e.target.value)}
+                          placeholder="Jakarta, Indonesia"
+                          className="w-full glass-input rounded-xl px-3 py-1.5 text-xs focus:outline-none"
+                        />
+                      </div>
                     </div>
-                    <div className="space-y-1.5">
-                      <label className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="text-[11px] font-semibold text-slate-600 block mb-1">Collaborators (Instagram Usernames)</label>
                         <input
-                          type="checkbox"
-                          checked={instaShareFB}
-                          onChange={(e) => setInstaShareFB(e.target.checked)}
-                          className="rounded border-slate-300 text-pink-600 focus:ring-pink-500 cursor-pointer"
+                          type="text"
+                          value={instaCollaborators}
+                          onChange={(e) => setInstaCollaborators(e.target.value)}
+                          placeholder="@username1, @username2"
+                          className="w-full glass-input rounded-xl px-3 py-1.5 text-xs focus:outline-none"
                         />
-                        <span>Automatically Crosspost to Connected Facebook Page</span>
-                      </label>
-                      <label className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
+                      </div>
+                      <div>
+                        <label className="text-[11px] font-semibold text-slate-600 block mb-1">Reels Original Audio Name</label>
                         <input
-                          type="checkbox"
-                          checked={instaHideLikes}
-                          onChange={(e) => setInstaHideLikes(e.target.checked)}
-                          className="rounded border-slate-300 text-pink-600 focus:ring-pink-500 cursor-pointer"
+                          type="text"
+                          value={instaAudioName}
+                          onChange={(e) => setInstaAudioName(e.target.value)}
+                          placeholder="Original Audio - Brand Name"
+                          className="w-full glass-input rounded-xl px-3 py-1.5 text-xs focus:outline-none"
                         />
-                        <span>Hide Like &amp; View Counts on this Post</span>
-                      </label>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                      <div>
+                        <label className="text-[11px] font-semibold text-slate-600 block mb-1">Trial Reel Type</label>
+                        <select
+                          value={instaTrialReelType}
+                          onChange={(e) => setInstaTrialReelType(e.target.value as any)}
+                          className="w-full glass-input rounded-xl px-3 py-1.5 text-xs focus:outline-none bg-white cursor-pointer"
+                        >
+                          <option value="">Standard Post (No Trial)</option>
+                          <option value="manual">Trial Reel (Manual Graduation)</option>
+                          <option value="performance">Trial Reel (Performance Graduation)</option>
+                        </select>
+                      </div>
+
+                      <div className="flex items-center pt-4">
+                        <label className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer font-medium">
+                          <input
+                            type="checkbox"
+                            checked={instaShareToFeed}
+                            onChange={(e) => setInstaShareToFeed(e.target.checked)}
+                            className="rounded border-slate-300 text-pink-600 focus:ring-pink-500 cursor-pointer"
+                          />
+                          <span>Show Video Reels on Main Profile Feed (Share to Feed)</span>
+                        </label>
+                      </div>
                     </div>
                   </div>
                 )}
+
 
                 {activePlatformTab === "youtube" && (
                   <div className="space-y-3 animate-fadeIn">
