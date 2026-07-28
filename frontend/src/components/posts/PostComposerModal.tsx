@@ -94,6 +94,8 @@ export default function PostComposerModal() {
   // Video / Reels Cover Thumbnail Setup (SocialPostMediaDto)
   const [reelsThumbnailUrl, setReelsThumbnailUrl] = useState("");
   const [reelsThumbnailTimestampMs, setReelsThumbnailTimestampMs] = useState<number | "">(2000);
+  const [isUploadingThumbnail, setIsUploadingThumbnail] = useState(false);
+  const [showThumbnailInPreview, setShowThumbnailInPreview] = useState(false);
 
   // Platform Customization Tab
   const [activePlatformTab, setActivePlatformTab] = useState<string>("instagram");
@@ -621,31 +623,31 @@ export default function PostComposerModal() {
                       type="button"
                       onClick={() => toggleAccountSelection(acc)}
                       title={!compat.compatible ? compat.reason : `@${acc.username} (${badgeInfo.name})`}
-                      className={`flex items-center gap-2 px-2.5 py-1.5 rounded-xl border text-xs font-medium shrink-0 transition-all cursor-pointer ${
+                      className={`flex items-center gap-1.5 px-2 py-1.5 rounded-xl border font-medium shrink-0 transition-all cursor-pointer ${
                         !compat.compatible
                           ? "bg-slate-100 border-slate-200 text-slate-400 opacity-60 cursor-not-allowed"
                           : isSelected
-                          ? "bg-purple-600 text-white border-purple-600 font-semibold shadow-sm ring-2 ring-purple-500/20"
+                          ? "bg-purple-600 text-white border-purple-600 shadow-sm ring-2 ring-purple-500/20"
                           : "bg-white border-slate-200 text-slate-700 hover:text-purple-700 hover:border-purple-300 hover:bg-purple-50/50 shadow-2xs"
                       }`}
                     >
-                      {/* Avatar with Platform Badge Overlay */}
+                      {/* Avatar with Platform Icon Overlay */}
                       <div className="relative shrink-0">
                         <img
                           src={acc.avatar_url || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150"}
                           alt={acc.username}
-                          className={`w-5.5 h-5.5 rounded-full object-cover border border-white/60 ${!compat.compatible ? "grayscale" : ""}`}
+                          className={`w-6 h-6 rounded-full object-cover border-2 ${isSelected ? "border-white/40" : "border-slate-100"} ${!compat.compatible ? "grayscale" : ""}`}
                         />
-                        <div className="absolute -bottom-1 -right-1 w-3 h-3 rounded-full bg-white flex items-center justify-center shadow-xs">
+                        <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-white flex items-center justify-center shadow-sm">
                           <AccountPlatformIcon platform={acc.platform} className="w-2 h-2" />
                         </div>
                       </div>
 
-                      {/* Username & Platform Label */}
-                      <div className="flex flex-col items-start leading-none max-w-[95px]">
-                        <span className="font-bold text-[10px] truncate w-full">@{acc.username}</span>
-                        <span className={`text-[8px] font-extrabold uppercase px-1 py-0.2 rounded mt-0.5 ${
-                          isSelected ? "bg-white/20 text-white" : badgeInfo.bg
+                      {/* Username & tiny platform label */}
+                      <div className="flex flex-col items-start leading-tight max-w-[80px]">
+                        <span className="font-semibold text-[10px] truncate w-full">@{acc.username}</span>
+                        <span className={`text-[7.5px] font-extrabold uppercase leading-none ${
+                          isSelected ? "text-white/70" : "text-slate-400"
                         }`}>
                           {badgeInfo.name}
                         </span>
@@ -907,40 +909,137 @@ export default function PostComposerModal() {
             {(postType === "video" || mediaUrls.some(u => isVideoMedia({ url: u }))) && (
               <div className="p-4 rounded-2xl bg-purple-50/60 border border-purple-200 space-y-3 animate-fadeIn">
                 <div className="flex items-center justify-between">
-                  <label className="text-xs font-bold text-purple-950 flex items-center">
-                    <span>Video / Reels Cover Thumbnail Setup</span>
-                    <FieldTooltip text="Atur foto sampul (Cover URL) atau detik frame video (Timestamp ms) untuk thumbnail video Reels Anda." />
+                  <label className="text-xs font-bold text-purple-900 flex items-center">
+                    <span>Video / Reels Cover Thumbnail</span>
+                    <FieldTooltip text="Upload atau tempel URL gambar sampul (cover) untuk thumbnail video Reels. Bisa diaktifkan/nonaktifkan di Live Preview." />
                   </label>
-                  <span className="text-[10px] bg-purple-200 text-purple-800 px-2 py-0.5 rounded-full font-bold font-mono">
-                    SocialPostMediaDto
-                  </span>
+                  <div className="flex items-center gap-2">
+                    {reelsThumbnailUrl && (
+                      <button
+                        type="button"
+                        onClick={() => setShowThumbnailInPreview(p => !p)}
+                        className={`flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full transition-all cursor-pointer ${
+                          showThumbnailInPreview
+                            ? "bg-purple-600 text-white"
+                            : "bg-slate-200 text-slate-600 hover:bg-slate-300"
+                        }`}
+                      >
+                        {showThumbnailInPreview ? "👁 Preview ON" : "👁 Preview OFF"}
+                      </button>
+                    )}
+                    {reelsThumbnailUrl && (
+                      <button
+                        type="button"
+                        onClick={() => { setReelsThumbnailUrl(""); setShowThumbnailInPreview(false); }}
+                        className="text-[10px] text-rose-500 hover:text-rose-700 font-semibold cursor-pointer"
+                      >
+                        ✕ Hapus
+                      </button>
+                    )}
+                  </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <label className="text-[11px] font-semibold text-slate-700 block mb-1">
-                      Custom Cover Image URL (Thumbnail URL)
+                {/* Thumbnail Upload Area */}
+                {!reelsThumbnailUrl ? (
+                  <div className="space-y-2">
+                    <label
+                      htmlFor="thumbnail-upload-input"
+                      className={`flex flex-col items-center justify-center gap-2 p-4 border-2 border-dashed rounded-xl cursor-pointer transition-all ${
+                        isUploadingThumbnail
+                          ? "border-purple-400 bg-purple-50 cursor-wait"
+                          : "border-purple-200 hover:border-purple-400 hover:bg-purple-50/80 bg-white"
+                      }`}
+                    >
+                      <input
+                        id="thumbnail-upload-input"
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        disabled={isUploadingThumbnail}
+                        onChange={async (e) => {
+                          if (!e.target.files || e.target.files.length === 0) return;
+                          setIsUploadingThumbnail(true);
+                          const file = e.target.files[0];
+                          const formData = new FormData();
+                          formData.append("workspace_id", activeWorkspace?.id || "ws-default");
+                          formData.append("folder", "Thumbnails");
+                          formData.append("file", file);
+                          try {
+                            const res = await fetchApi<any>("/media/", { method: "POST", body: formData });
+                            if (res?.url) {
+                              setReelsThumbnailUrl(res.url);
+                              setShowThumbnailInPreview(true);
+                              toast.success(`Cover thumbnail '${file.name}' berhasil diunggah!`);
+                            }
+                          } catch (err: any) {
+                            toast.error(`Gagal upload thumbnail: ${err.message || err}`);
+                          } finally {
+                            setIsUploadingThumbnail(false);
+                            e.target.value = "";
+                          }
+                        }}
+                      />
+                      {isUploadingThumbnail ? (
+                        <>
+                          <div className="w-6 h-6 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
+                          <p className="text-xs text-purple-600 font-semibold">Mengunggah thumbnail...</p>
+                        </>
+                      ) : (
+                        <>
+                          <div className="w-8 h-8 rounded-xl bg-purple-100 flex items-center justify-center">
+                            <UploadCloud className="w-4 h-4 text-purple-500" />
+                          </div>
+                          <p className="text-xs font-semibold text-slate-700">Klik untuk upload Cover Image</p>
+                          <p className="text-[10px] text-slate-400">JPG, PNG — maks 10MB</p>
+                        </>
+                      )}
                     </label>
+                    {/* URL Fallback */}
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1 h-px bg-slate-200" />
+                      <span className="text-[10px] text-slate-400 font-semibold">atau tempel URL</span>
+                      <div className="flex-1 h-px bg-slate-200" />
+                    </div>
                     <input
                       type="text"
-                      value={reelsThumbnailUrl}
-                      onChange={(e) => setReelsThumbnailUrl(e.target.value)}
-                      placeholder="https://.../cover-image.jpg"
+                      placeholder="https://.../cover.jpg"
+                      onBlur={(e) => {
+                        if (e.target.value.trim()) {
+                          setReelsThumbnailUrl(e.target.value.trim());
+                          setShowThumbnailInPreview(true);
+                        }
+                      }}
                       className="w-full glass-input rounded-xl px-3 py-1.5 text-xs focus:outline-none bg-white border border-purple-200"
                     />
                   </div>
-                  <div>
-                    <label className="text-[11px] font-semibold text-slate-700 block mb-1">
-                      Frame Timestamp (ms)
-                    </label>
-                    <input
-                      type="number"
-                      value={reelsThumbnailTimestampMs}
-                      onChange={(e) => setReelsThumbnailTimestampMs(e.target.value ? Number(e.target.value) : "")}
-                      placeholder="2000 (Detik ke-2)"
-                      className="w-full glass-input rounded-xl px-3 py-1.5 text-xs focus:outline-none bg-white border border-purple-200 font-mono"
+                ) : (
+                  /* Thumbnail Preview when set */
+                  <div className="flex items-center gap-3 p-2 bg-white rounded-xl border border-purple-200">
+                    <img
+                      src={reelsThumbnailUrl}
+                      alt="Thumbnail preview"
+                      className="w-16 h-16 rounded-lg object-cover border border-purple-100 shrink-0"
                     />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[11px] font-semibold text-slate-800 truncate">Cover Thumbnail Set</p>
+                      <p className="text-[10px] text-slate-400 truncate mt-0.5">{reelsThumbnailUrl}</p>
+                    </div>
                   </div>
+                )}
+
+                {/* Frame Timestamp */}
+                <div>
+                  <label className="text-[11px] font-semibold text-slate-600 block mb-1">
+                    Frame Timestamp (ms) — alternatif cover
+                  </label>
+                  <input
+                    type="number"
+                    value={reelsThumbnailTimestampMs}
+                    onChange={(e) => setReelsThumbnailTimestampMs(e.target.value ? Number(e.target.value) : "")}
+                    placeholder="2000 (Detik ke-2)"
+                    className="w-full glass-input rounded-xl px-3 py-1.5 text-xs focus:outline-none bg-white border border-purple-200 font-mono"
+                  />
+                  <p className="text-[10px] text-slate-400 mt-0.5">Jika tidak ada Cover URL, PostForMe akan mengambil frame pada waktu ini sebagai thumbnail.</p>
                 </div>
               </div>
             )}
@@ -1445,16 +1544,32 @@ export default function PostComposerModal() {
                 <div className="relative group rounded-xl overflow-hidden border border-slate-100 shadow-2xs bg-black/5 flex items-center justify-center">
                   {/* Active Slide Rendering with Dynamic Aspect Ratio */}
                   {isVideoMedia({ url: mediaUrls[previewSlideIndex] || mediaUrls[0] }) ? (
-                    <video
-                      src={mediaUrls[previewSlideIndex] || mediaUrls[0]}
-                      poster={reelsThumbnailUrl || undefined}
-                      className={`w-full object-cover bg-black ${
-                        previewAspect === "1:1" ? "aspect-square max-h-72" :
-                        previewAspect === "4:5" ? "aspect-[4/5] max-h-80" :
-                        previewAspect === "16:9" ? "aspect-[16/9] max-h-56" : "aspect-[9/16] max-h-[380px]"
-                      }`}
-                      controls
-                    />
+                    <div className="relative w-full">
+                      <video
+                        src={mediaUrls[previewSlideIndex] || mediaUrls[0]}
+                        poster={showThumbnailInPreview && reelsThumbnailUrl ? reelsThumbnailUrl : undefined}
+                        className={`w-full object-cover bg-black ${
+                          previewAspect === "1:1" ? "aspect-square max-h-72" :
+                          previewAspect === "4:5" ? "aspect-[4/5] max-h-80" :
+                          previewAspect === "16:9" ? "aspect-[16/9] max-h-56" : "aspect-[9/16] max-h-[380px]"
+                        }`}
+                        controls
+                      />
+                      {/* Thumbnail mode badge */}
+                      {reelsThumbnailUrl && (
+                        <button
+                          type="button"
+                          onClick={() => setShowThumbnailInPreview(p => !p)}
+                          className={`absolute top-2 left-2 flex items-center gap-1 text-[9px] font-bold px-2 py-0.5 rounded-full backdrop-blur-sm transition-all cursor-pointer shadow-sm ${
+                            showThumbnailInPreview
+                              ? "bg-purple-600/90 text-white"
+                              : "bg-black/50 text-white/80 hover:bg-black/70"
+                          }`}
+                        >
+                          {showThumbnailInPreview ? "🖼 Cover ON" : "▶ Cover OFF"}
+                        </button>
+                      )}
+                    </div>
                   ) : (
                     <img
                       src={mediaUrls[previewSlideIndex] || mediaUrls[0]}
