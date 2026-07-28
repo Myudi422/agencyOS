@@ -126,29 +126,50 @@ export default function PostComposerModal() {
 
 
   const [youtubeTitle, setYoutubeTitle] = useState("");
+  const [youtubeDescription, setYoutubeDescription] = useState("");
   const [youtubePrivacy, setYoutubePrivacy] = useState<"public" | "private" | "unlisted">("public");
   const [youtubeCategory, setYoutubeCategory] = useState("Entertainment");
   const [youtubeMadeForKids, setYoutubeMadeForKids] = useState(false);
   const [youtubeSyntheticContent, setYoutubeSyntheticContent] = useState(false);
+  const [youtubeEmbeddable, setYoutubeEmbeddable] = useState(true);
+  const [youtubePublicStatsViewable, setYoutubePublicStatsViewable] = useState(true);
+  const [youtubeLicense, setYoutubeLicense] = useState<"youtube" | "creativeCommon">("youtube");
+  const [youtubeDefaultLanguage, setYoutubeDefaultLanguage] = useState("id");
+  const [youtubeTags, setYoutubeTags] = useState("");
+  const [youtubeRecordingDate, setYoutubeRecordingDate] = useState("");
+  const [youtubePublishAt, setYoutubePublishAt] = useState("");
 
   const [threadsTopic, setThreadsTopic] = useState("");
   const [threadsReplyControl, setThreadsReplyControl] = useState("anyone");
+  const [threadsPlacement, setThreadsPlacement] = useState<"timeline" | "reels">("timeline");
 
   const [tiktokPrivacy, setTiktokPrivacy] = useState<"PUBLIC_TO_EVERYONE" | "MUTUAL_FOLLOW_FRIENDS" | "FOLLOWER_OF_CREATOR" | "SELF_ONLY">("PUBLIC_TO_EVERYONE");
-  const [tiktokDisableDuet, setTiktokDisableDuet] = useState(false);
-  const [tiktokDisableStitch, setTiktokDisableStitch] = useState(false);
+  const [tiktokAllowComment, setTiktokAllowComment] = useState(true);
+  const [tiktokAllowDuet, setTiktokAllowDuet] = useState(true);
+  const [tiktokAllowStitch, setTiktokAllowStitch] = useState(true);
+  const [tiktokAutoAddMusic, setTiktokAutoAddMusic] = useState(true);
+  const [tiktokDiscloseBrandedContent, setTiktokDiscloseBrandedContent] = useState(false);
+  const [tiktokDiscloseYourBrand, setTiktokDiscloseYourBrand] = useState(false);
+  const [tiktokIsAiGenerated, setTiktokIsAiGenerated] = useState(false);
+  const [tiktokIsDraft, setTiktokIsDraft] = useState(false);
 
   const [xPollQuestion, setXPollQuestion] = useState("");
   const [xPollOptions, setXPollOptions] = useState<string[]>(["Option 1", "Option 2"]);
 
+  const [facebookPlacement, setFacebookPlacement] = useState<"timeline" | "reels" | "stories">("timeline");
+  const [facebookLocation, setFacebookLocation] = useState("");
+  const [facebookCollaborators, setFacebookCollaborators] = useState("");
+  const [facebookSetCaptionForEachImage, setFacebookSetCaptionForEachImage] = useState(true);
   const [facebookCta, setFacebookCta] = useState("NONE");
   const [facebookLink, setFacebookLink] = useState("");
 
   const [pinterestTitle, setPinterestTitle] = useState("");
   const [pinterestLink, setPinterestLink] = useState("");
+  const [pinterestBoardIds, setPinterestBoardIds] = useState("");
 
   const [linkedinTitle, setLinkedinTitle] = useState("");
   const [linkedinAudience, setLinkedinAudience] = useState("PUBLIC");
+  const [linkedinResharePostId, setLinkedinResharePostId] = useState("");
 
   const [blueskyAltText, setBlueskyAltText] = useState("");
   const [blueskyContentWarning, setBlueskyContentWarning] = useState("NONE");
@@ -471,38 +492,52 @@ export default function PostComposerModal() {
         trial_reel_type: postType === "video" ? (instaTrialReelType || null) : null
       },
       youtube: {
-        title: youtubeTitle || (caption ? caption.slice(0, 80) : "Social Video Post"),
+        title: youtubeTitle.trim() || (caption ? caption.slice(0, 80) : "Social Video Post"),
+        description: youtubeDescription.trim() || null,
         privacy_status: youtubePrivacy,
         category_id: youtubeCategory || null,
         made_for_kids: youtubeMadeForKids,
         contains_synthetic_media: youtubeSyntheticContent,
-        embeddable: true,
-        public_stats_viewable: true
+        embeddable: youtubeEmbeddable,
+        public_stats_viewable: youtubePublicStatsViewable,
+        license: youtubeLicense,
+        default_language: youtubeDefaultLanguage.trim() || null,
+        tags: youtubeTags ? youtubeTags.split(",").map(t => t.trim()).filter(Boolean) : null,
+        recording_date: youtubeRecordingDate.trim() || null,
+        publish_at: youtubePrivacy === "private" && youtubePublishAt ? new Date(youtubePublishAt).toISOString() : null,
+        localizations: null
       },
       tiktok: {
         privacy_status: tiktokPrivacy === "SELF_ONLY" ? "private" : "public",
-        allow_comment: true,
-        allow_duet: !tiktokDisableDuet,
-        allow_stitch: !tiktokDisableStitch,
-        is_ai_generated: false,
-        is_draft: false,
-        auto_add_music: true
+        allow_comment: tiktokAllowComment,
+        allow_duet: tiktokAllowDuet,
+        allow_stitch: tiktokAllowStitch,
+        auto_add_music: tiktokAutoAddMusic,
+        disclose_branded_content: tiktokDiscloseBrandedContent,
+        disclose_your_brand: tiktokDiscloseYourBrand,
+        is_ai_generated: tiktokIsAiGenerated,
+        is_draft: tiktokIsDraft
       },
       facebook: {
-        placement: instaPlacement === "stories" ? "stories" : (postType === "video" ? "reels" : "timeline"),
-        location: instaLocation.trim() || null,
-        set_caption_for_each_image: true
+        placement: postType === "video" && facebookPlacement === "timeline" ? "reels" : facebookPlacement,
+        location: facebookLocation.trim() || null,
+        collaborators: facebookCollaborators ? facebookCollaborators.split(",").map(s => s.trim().replace(/^@/, "")).filter(Boolean) : null,
+        set_caption_for_each_image: facebookSetCaptionForEachImage
       },
       x: {
         poll: xPollQuestion ? { duration_minutes: 1440, options: xPollOptions.filter(o => o.trim()) } : null,
         reply_settings: "following"
       },
       pinterest: {
-        title: pinterestTitle || (caption ? caption.slice(0, 50) : null),
-        link: pinterestLink.trim() || null
+        title: pinterestTitle.trim() || (caption ? caption.slice(0, 50) : null),
+        link: pinterestLink.trim() || null,
+        board_ids: pinterestBoardIds ? pinterestBoardIds.split(",").map(b => b.trim()).filter(Boolean) : null
       },
       threads: {
-        placement: postType === "video" ? "reels" : "timeline"
+        placement: postType === "video" && threadsPlacement === "timeline" ? "reels" : threadsPlacement
+      },
+      linkedin: {
+        reshare_post_id: linkedinResharePostId.trim() || null
       }
     };
 
@@ -1284,17 +1319,41 @@ export default function PostComposerModal() {
                         <span>YouTube disabled: Multi-image carousel posts are not supported on YouTube.</span>
                       </div>
                     )}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="text-[11px] font-semibold text-slate-600 block mb-1">Video Title (Required for YouTube)</label>
+                        <input
+                          type="text"
+                          value={youtubeTitle}
+                          onChange={(e) => setYoutubeTitle(e.target.value)}
+                          placeholder="Title for YouTube video..."
+                          className="w-full glass-input rounded-xl px-3 py-1.5 text-xs focus:outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[11px] font-semibold text-slate-600 block mb-1">Default Language Tag</label>
+                        <input
+                          type="text"
+                          value={youtubeDefaultLanguage}
+                          onChange={(e) => setYoutubeDefaultLanguage(e.target.value)}
+                          placeholder="e.g. id, en, es"
+                          className="w-full glass-input rounded-xl px-3 py-1.5 text-xs focus:outline-none"
+                        />
+                      </div>
+                    </div>
+
                     <div>
-                      <label className="text-[11px] font-semibold text-slate-600 block mb-1">Video Title (Required for YouTube)</label>
-                      <input
-                        type="text"
-                        value={youtubeTitle}
-                        onChange={(e) => setYoutubeTitle(e.target.value)}
-                        placeholder="Title for YouTube video..."
+                      <label className="text-[11px] font-semibold text-slate-600 block mb-1">Video Description Override</label>
+                      <textarea
+                        rows={2}
+                        value={youtubeDescription}
+                        onChange={(e) => setYoutubeDescription(e.target.value)}
+                        placeholder="Khusus deskripsi YouTube (Opsional, bawaan menggunakan caption utama)"
                         className="w-full glass-input rounded-xl px-3 py-1.5 text-xs focus:outline-none"
                       />
                     </div>
-                    <div className="grid grid-cols-2 gap-3">
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                       <div>
                         <label className="text-[11px] font-semibold text-slate-600 block mb-1">Privacy Status</label>
                         <select
@@ -1318,10 +1377,58 @@ export default function PostComposerModal() {
                           <option value="Education">Education</option>
                           <option value="Tech">Science &amp; Tech</option>
                           <option value="Gaming">Gaming</option>
+                          <option value="People">People &amp; Blogs</option>
+                          <option value="Music">Music</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="text-[11px] font-semibold text-slate-600 block mb-1">License</label>
+                        <select
+                          value={youtubeLicense}
+                          onChange={(e) => setYoutubeLicense(e.target.value as any)}
+                          className="w-full glass-input rounded-xl px-3 py-1.5 text-xs focus:outline-none bg-white cursor-pointer"
+                        >
+                          <option value="youtube">Standard YouTube License</option>
+                          <option value="creativeCommon">Creative Commons</option>
                         </select>
                       </div>
                     </div>
-                    <div className="space-y-1.5 pt-1">
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="text-[11px] font-semibold text-slate-600 block mb-1">Tags (Pisahkan dengan koma)</label>
+                        <input
+                          type="text"
+                          value={youtubeTags}
+                          onChange={(e) => setYoutubeTags(e.target.value)}
+                          placeholder="e.g. tutorial, vlog, trending"
+                          className="w-full glass-input rounded-xl px-3 py-1.5 text-xs focus:outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[11px] font-semibold text-slate-600 block mb-1">Tanggal Perekaman (YYYY-MM-DD)</label>
+                        <input
+                          type="date"
+                          value={youtubeRecordingDate}
+                          onChange={(e) => setYoutubeRecordingDate(e.target.value)}
+                          className="w-full glass-input rounded-xl px-3 py-1.5 text-xs focus:outline-none bg-white"
+                        />
+                      </div>
+                    </div>
+
+                    {youtubePrivacy === "private" && (
+                      <div>
+                        <label className="text-[11px] font-semibold text-slate-600 block mb-1">Waktu Publikasi Terjadwal (Publish At for Private Video)</label>
+                        <input
+                          type="datetime-local"
+                          value={youtubePublishAt}
+                          onChange={(e) => setYoutubePublishAt(e.target.value)}
+                          className="w-full glass-input rounded-xl px-3 py-1.5 text-xs focus:outline-none bg-white"
+                        />
+                      </div>
+                    )}
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 border-t border-slate-100">
                       <label className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
                         <input
                           type="checkbox"
@@ -1340,21 +1447,52 @@ export default function PostComposerModal() {
                         />
                         <span>Contains Altered or AI Synthetic Content</span>
                       </label>
+                      <label className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={youtubeEmbeddable}
+                          onChange={(e) => setYoutubeEmbeddable(e.target.checked)}
+                          className="rounded border-slate-300 text-red-600 cursor-pointer"
+                        />
+                        <span>Izinkan Video Di-embed di Web Lain</span>
+                      </label>
+                      <label className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={youtubePublicStatsViewable}
+                          onChange={(e) => setYoutubePublicStatsViewable(e.target.checked)}
+                          className="rounded border-slate-300 text-red-600 cursor-pointer"
+                        />
+                        <span>Statistik Video Publik Dapat Dilihat</span>
+                      </label>
                     </div>
                   </div>
                 )}
 
                 {activePlatformTab === "threads" && (
                   <div className="space-y-3 animate-fadeIn">
-                    <div>
-                      <label className="text-[11px] font-semibold text-slate-600 block mb-1">Topic / Tag</label>
-                      <input
-                        type="text"
-                        value={threadsTopic}
-                        onChange={(e) => setThreadsTopic(e.target.value)}
-                        placeholder="#TechTrends or Topic..."
-                        className="w-full glass-input rounded-xl px-3 py-1.5 text-xs focus:outline-none"
-                      />
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="text-[11px] font-semibold text-slate-600 block mb-1">Threads Placement</label>
+                        <select
+                          value={threadsPlacement}
+                          onChange={(e) => setThreadsPlacement(e.target.value as any)}
+                          className="w-full glass-input rounded-xl px-3 py-1.5 text-xs focus:outline-none bg-white cursor-pointer"
+                        >
+                          <option value="timeline">Timeline Feed</option>
+                          <option value="reels">Threads Video Reels</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="text-[11px] font-semibold text-slate-600 block mb-1">Topic / Tag</label>
+                        <input
+                          type="text"
+                          value={threadsTopic}
+                          onChange={(e) => setThreadsTopic(e.target.value)}
+                          placeholder="#TechTrends or Topic..."
+                          className="w-full glass-input rounded-xl px-3 py-1.5 text-xs focus:outline-none"
+                        />
+                      </div>
                     </div>
                     <div>
                       <label className="text-[11px] font-semibold text-slate-600 block mb-1">Who can reply?</label>
@@ -1385,24 +1523,82 @@ export default function PostComposerModal() {
                         <option value="SELF_ONLY">Private (Only Me)</option>
                       </select>
                     </div>
-                    <div className="grid grid-cols-2 gap-3 pt-1">
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1 border-t border-slate-100">
                       <label className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
                         <input
                           type="checkbox"
-                          checked={tiktokDisableDuet}
-                          onChange={(e) => setTiktokDisableDuet(e.target.checked)}
+                          checked={tiktokAllowComment}
+                          onChange={(e) => setTiktokAllowComment(e.target.checked)}
                           className="rounded border-slate-300 text-cyan-600 cursor-pointer"
                         />
-                        <span>Disable Duet</span>
+                        <span>Allow Comments</span>
                       </label>
                       <label className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
                         <input
                           type="checkbox"
-                          checked={tiktokDisableStitch}
-                          onChange={(e) => setTiktokDisableStitch(e.target.checked)}
+                          checked={tiktokAllowDuet}
+                          onChange={(e) => setTiktokAllowDuet(e.target.checked)}
                           className="rounded border-slate-300 text-cyan-600 cursor-pointer"
                         />
-                        <span>Disable Stitch</span>
+                        <span>Allow Duets</span>
+                      </label>
+                      <label className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={tiktokAllowStitch}
+                          onChange={(e) => setTiktokAllowStitch(e.target.checked)}
+                          className="rounded border-slate-300 text-cyan-600 cursor-pointer"
+                        />
+                        <span>Allow Stitch</span>
+                      </label>
+                      <label className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={tiktokAutoAddMusic}
+                          onChange={(e) => setTiktokAutoAddMusic(e.target.checked)}
+                          className="rounded border-slate-300 text-cyan-600 cursor-pointer"
+                        />
+                        <span>Auto-Add Music (Photo posts)</span>
+                      </label>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-2 border-t border-slate-100">
+                      <label className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={tiktokDiscloseBrandedContent}
+                          onChange={(e) => setTiktokDiscloseBrandedContent(e.target.checked)}
+                          className="rounded border-slate-300 text-cyan-600 cursor-pointer"
+                        />
+                        <span>Disclose Branded Content</span>
+                      </label>
+                      <label className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={tiktokDiscloseYourBrand}
+                          onChange={(e) => setTiktokDiscloseYourBrand(e.target.checked)}
+                          className="rounded border-slate-300 text-cyan-600 cursor-pointer"
+                        />
+                        <span>Disclose Your Brand</span>
+                      </label>
+                      <label className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={tiktokIsAiGenerated}
+                          onChange={(e) => setTiktokIsAiGenerated(e.target.checked)}
+                          className="rounded border-slate-300 text-cyan-600 cursor-pointer"
+                        />
+                        <span>Flag as AI-Generated Content</span>
+                      </label>
+                      <label className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={tiktokIsDraft}
+                          onChange={(e) => setTiktokIsDraft(e.target.checked)}
+                          className="rounded border-slate-300 text-cyan-600 cursor-pointer"
+                        />
+                        <span>Save as TikTok Draft (Finish in App)</span>
                       </label>
                     </div>
                   </div>
@@ -1452,41 +1648,97 @@ export default function PostComposerModal() {
 
                 {activePlatformTab === "facebook" && (
                   <div className="space-y-3 animate-fadeIn">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="text-[11px] font-semibold text-slate-600 flex items-center mb-1">
+                          <span>Facebook Placement</span>
+                          <FieldTooltip text="Pilih lokasi terbit di Facebook: Timeline Feed, Video Reels, atau Facebook Stories." />
+                        </label>
+                        <select
+                          value={facebookPlacement}
+                          onChange={(e) => setFacebookPlacement(e.target.value as any)}
+                          className="w-full glass-input rounded-xl px-3 py-1.5 text-xs focus:outline-none bg-white cursor-pointer"
+                        >
+                          <option value="timeline">Timeline Feed</option>
+                          <option value="reels">Facebook Reels</option>
+                          <option value="stories">Facebook Stories</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="text-[11px] font-semibold text-slate-600 flex items-center mb-1">
+                          <span>Tag Location (Page ID)</span>
+                          <FieldTooltip text="Page ID lokasi Facebook yang ingin di-tag pada postingan gambar/video." />
+                        </label>
+                        <input
+                          type="text"
+                          value={facebookLocation}
+                          onChange={(e) => setFacebookLocation(e.target.value)}
+                          placeholder="Page ID lokasi (e.g. 102938475)"
+                          className="w-full glass-input rounded-xl px-3 py-1.5 text-xs focus:outline-none"
+                        />
+                      </div>
+                    </div>
+
                     <div>
-                      <label className="text-[11px] font-semibold text-slate-600 block mb-1">Call-To-Action Button</label>
-                      <select
-                        value={facebookCta}
-                        onChange={(e) => setFacebookCta(e.target.value)}
-                        className="w-full glass-input rounded-xl px-3 py-1.5 text-xs focus:outline-none bg-white cursor-pointer"
-                      >
-                        <option value="NONE">No Button</option>
-                        <option value="LEARN_MORE">Learn More</option>
-                        <option value="SHOP_NOW">Shop Now</option>
-                        <option value="CONTACT_US">Contact Us</option>
-                      </select>
+                      <label className="text-[11px] font-semibold text-slate-600 flex items-center mb-1">
+                        <span>Collaborators Page IDs (Khusus Video Reels)</span>
+                        <FieldTooltip text="Daftar Page ID Facebook yang diundang sebagai kolaborator Video Reel (pisahkan koma)." />
+                      </label>
+                      <input
+                        type="text"
+                        value={facebookCollaborators}
+                        onChange={(e) => setFacebookCollaborators(e.target.value)}
+                        placeholder="Page ID 1, Page ID 2"
+                        className="w-full glass-input rounded-xl px-3 py-1.5 text-xs focus:outline-none"
+                      />
+                    </div>
+
+                    <div className="pt-1">
+                      <label className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={facebookSetCaptionForEachImage}
+                          onChange={(e) => setFacebookSetCaptionForEachImage(e.target.checked)}
+                          className="rounded border-slate-300 text-blue-600 cursor-pointer"
+                        />
+                        <span>Sertakan Caption di Setiap Gambar Carousel (Set caption for each image)</span>
+                      </label>
                     </div>
                   </div>
                 )}
 
                 {activePlatformTab === "pinterest" && (
                   <div className="space-y-3 animate-fadeIn">
-                    <div>
-                      <label className="text-[11px] font-semibold text-slate-600 block mb-1">Pin Title</label>
-                      <input
-                        type="text"
-                        value={pinterestTitle}
-                        onChange={(e) => setPinterestTitle(e.target.value)}
-                        placeholder="Title for Pinterest pin..."
-                        className="w-full glass-input rounded-xl px-3 py-1.5 text-xs focus:outline-none"
-                      />
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="text-[11px] font-semibold text-slate-600 block mb-1">Pin Title (Overrides Post Title)</label>
+                        <input
+                          type="text"
+                          value={pinterestTitle}
+                          onChange={(e) => setPinterestTitle(e.target.value)}
+                          placeholder="Title for Pinterest pin..."
+                          className="w-full glass-input rounded-xl px-3 py-1.5 text-xs focus:outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[11px] font-semibold text-slate-600 block mb-1">Destination Link URL</label>
+                        <input
+                          type="text"
+                          value={pinterestLink}
+                          onChange={(e) => setPinterestLink(e.target.value)}
+                          placeholder="https://yourbrand.com/item"
+                          className="w-full glass-input rounded-xl px-3 py-1.5 text-xs focus:outline-none"
+                        />
+                      </div>
                     </div>
+
                     <div>
-                      <label className="text-[11px] font-semibold text-slate-600 block mb-1">Destination Link URL</label>
+                      <label className="text-[11px] font-semibold text-slate-600 block mb-1">Pinterest Board IDs (Pisahkan koma jika lebih dari satu)</label>
                       <input
                         type="text"
-                        value={pinterestLink}
-                        onChange={(e) => setPinterestLink(e.target.value)}
-                        placeholder="https://yourbrand.com/item"
+                        value={pinterestBoardIds}
+                        onChange={(e) => setPinterestBoardIds(e.target.value)}
+                        placeholder="board_id_1, board_id_2"
                         className="w-full glass-input rounded-xl px-3 py-1.5 text-xs focus:outline-none"
                       />
                     </div>
@@ -1502,6 +1754,19 @@ export default function PostComposerModal() {
                         value={linkedinTitle}
                         onChange={(e) => setLinkedinTitle(e.target.value)}
                         placeholder="Headline for LinkedIn..."
+                        className="w-full glass-input rounded-xl px-3 py-1.5 text-xs focus:outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[11px] font-semibold text-slate-600 flex items-center mb-1">
+                        <span>Reshare LinkedIn UGC Post ID (Optional)</span>
+                        <FieldTooltip text="ID Postingan UGC LinkedIn yang ingin di-reshare. Caption postingan ini akan menjadi komentar reshare." />
+                      </label>
+                      <input
+                        type="text"
+                        value={linkedinResharePostId}
+                        onChange={(e) => setLinkedinResharePostId(e.target.value)}
+                        placeholder="urn:li:share:123456789 atau Post ID"
                         className="w-full glass-input rounded-xl px-3 py-1.5 text-xs focus:outline-none"
                       />
                     </div>
