@@ -1,6 +1,6 @@
 """
 Billing Router — /billing
-Manages subscription plans, Stripe checkout, and webhook processing.
+Manages Midtrans Snap payment gateway integration, subscription plans, and webhook processing.
 """
 from fastapi import APIRouter, Depends, HTTPException, Request, Header
 from pydantic import BaseModel
@@ -8,12 +8,13 @@ from sqlalchemy.orm import Session
 from typing import Optional, List
 from datetime import datetime, timedelta
 import logging
+import time
 
 from backend.database import get_db
 from backend.models.models import (
-    User, SubscriptionPlan, UserSubscription, SubscriptionStatus, PlanTier, ActivityLog
+    User, SubscriptionPlan, UserSubscription, SubscriptionStatus, PlanTier
 )
-from backend.services import stripe_service as ss
+from backend.services import midtrans_service as ms
 from backend.config import settings
 
 logger = logging.getLogger("BillingRouter")
@@ -24,8 +25,7 @@ FRONTEND_URL = "http://localhost:3000"
 
 class CheckoutRequest(BaseModel):
     plan_tier: str
-    success_url: Optional[str] = None
-    cancel_url: Optional[str] = None
+    finish_url: Optional[str] = None
 
 
 def _get_user_from_auth(authorization: Optional[str], db: Session) -> Optional[User]:
@@ -44,7 +44,7 @@ def _get_user_from_auth(authorization: Optional[str], db: Session) -> Optional[U
 
 @router.get("/plans")
 def list_plans(db: Session = Depends(get_db)):
-    """Returns all active subscription plans."""
+    """Returns all active subscription plans with Midtrans IDR pricing."""
     plans = db.query(SubscriptionPlan).filter(SubscriptionPlan.is_active == True).all()
     return [
         {
@@ -53,9 +53,9 @@ def list_plans(db: Session = Depends(get_db)):
             "name": p.name,
             "description": p.description,
             "price_usd": p.price_usd,
+            "price_idr": p.price_idr,
             "duration_days": p.duration_days,
             "post_quota": p.post_quota,
-            "stripe_price_id": p.stripe_price_id,
             "features": p.features or [],
         }
         for p in plans
@@ -70,7 +70,7 @@ async def create_checkout(
     authorization: Optional[str] = Header(None),
     db: Session = Depends(get_db)
 ):
-    """Creates a Stripe Checkout Session. Returns checkout_url."""
+    """Creates a Midtrans Snap transaction token & redirect URL."""
     user = _get_user_from_auth(authorization, db)
     if not user:
         raise HTTPException(status_code=401, detail="Authentication required.")
@@ -79,37 +79,64 @@ async def create_checkout(
     if not plan:
         raise HTTPException(status_code=404, detail=f"Plan '{req.plan_tier}' not found.")
 
-    success_url = req.success_url or f"{FRONTEND_URL}/billing/success?plan={req.plan_tier}&session_id={{CHECKOUT_SESSION_ID}}"
-    cancel_url = req.cancel_url or f"{FRONTEND_URL}/pricing"
+    # Free Trial handling (no payment required)
+    if req.plan_tier == "trial":
+        expires_at = datetime.utcnow() + timedelta(days=plan.duration_days)
+        sub = user.subscription
+        if sub:
+            sub.plan_id = plan.id
+            sub.status = SubscriptionStatus.TRIAL
+            sub.posts_used = 0
+            sub.posts_limit = plan.post_quota
+            sub.started_at = datetime.utcnow()
+            sub.expires_at = expires_at
+        else:
+            sub = UserSubscription(
+                user_id=user.id,
+                plan_id=plan.id,
+                status=SubscriptionStatus.TRIAL,
+                posts_used=0,
+                posts_limit=plan.post_quota,
+                expires_at=expires_at,
+            )
+            db.add(sub)
+        db.commit()
+        return {
+            "is_trial": True,
+            "message": "Trial plan activated!",
+            "redirect_url": f"{FRONTEND_URL}/billing/success?plan=trial",
+        }
+
+    # Midtrans Paid Plan Checkout
+    order_id = f"AOS-{user.id[:8]}-{plan.tier}-{int(time.time())}"
+    finish_url = req.finish_url or f"{FRONTEND_URL}/billing/success?plan={req.plan_tier}&order_id={order_id}"
 
     try:
-        result = ss.create_checkout_session(
-            user_email=user.email,
-            stripe_price_id=plan.stripe_price_id,
-            plan_tier=req.plan_tier,
-            success_url=success_url,
-            cancel_url=cancel_url,
-            stripe_customer_id=user.stripe_customer_id,
-            plan_name=plan.name,
-            price_usd=plan.price_usd,
+        snap_res = ms.create_snap_transaction(
+            order_id=order_id,
+            gross_amount=plan.price_idr,
+            item_name=f"AgencyOS {plan.name} Plan ({plan.post_quota} Posts)",
+            customer_email=user.email,
+            customer_name=user.full_name,
+            plan_tier=plan.tier.value if hasattr(plan.tier, "value") else str(plan.tier),
+            finish_url=finish_url,
         )
 
-        # If a Stripe price ID was auto-generated, save it to DB
-        new_price_id = result.get("stripe_price_id")
-        if new_price_id and new_price_id != plan.stripe_price_id:
-            plan.stripe_price_id = new_price_id
-            db.commit()
-
-        return {"checkout_url": result["checkout_url"], "session_id": result["session_id"]}
+        return {
+            "snap_token": snap_res["token"],
+            "snap_url": snap_res["redirect_url"],
+            "order_id": order_id,
+            "is_trial": False,
+        }
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
-        logger.error(f"Stripe checkout error: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Stripe error: {str(e)}")
+        logger.error(f"Midtrans checkout error: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Midtrans error: {str(e)}")
 
 
 class SyncCheckoutRequest(BaseModel):
-    session_id: str
+    order_id: str
 
 
 @router.post("/sync-checkout")
@@ -118,34 +145,40 @@ async def sync_checkout(
     authorization: Optional[str] = Header(None),
     db: Session = Depends(get_db)
 ):
-    """Fallback endpoint: manual subscription sync if webhook is not received (e.g. in local dev)."""
+    """Manual sync endpoint if notification callback is delayed or in local dev."""
     user = _get_user_from_auth(authorization, db)
     if not user:
         raise HTTPException(status_code=401, detail="Authentication required.")
 
-    try:
-        import stripe
-        stripe.api_key = settings.STRIPE_SECRET_KEY
-        session = stripe.checkout.Session.retrieve(req.session_id)
-        session_data = session.to_dict()
-    except Exception as e:
-        logger.error(f"Failed to retrieve Stripe session: {e}", exc_info=True)
-        raise HTTPException(status_code=400, detail=f"Failed to retrieve Stripe session: {str(e)}")
+    status_data = ms.get_transaction_status(req.order_id)
+    if not status_data:
+        raise HTTPException(status_code=404, detail="Order ID tidak ditemukan di Midtrans.")
 
-    # Check that session is completed
-    is_completed = session_data.get("status") == "complete"
-    is_paid = session_data.get("payment_status") == "paid" or session_data.get("mode") == "setup"
+    transaction_status = status_data.get("transaction_status")
+    fraud_status = status_data.get("fraud_status")
 
-    if not is_completed or not is_paid:
+    is_paid = transaction_status in ("settlement", "capture")
+    if transaction_status == "capture" and fraud_status == "challenge":
+        is_paid = False
+
+    if not is_paid:
         raise HTTPException(
-            status_code=400, 
-            detail="Stripe Checkout Session belum diselesaikan atau pembayaran belum lunas."
+            status_code=400,
+            detail=f"Transaksi status Midtrans: '{transaction_status}'. Pembayaran belum selesai."
         )
 
-    # Process activation using our webhook handler logic
-    _handle_checkout_completed(session_data, db)
-    
-    # Reload user and sub
+    # Extract info from custom fields or metadata
+    customer_email = status_data.get("custom_field1") or user.email
+    plan_tier = status_data.get("custom_field2") or "creator"
+
+    _activate_user_subscription(
+        email=customer_email,
+        plan_tier=plan_tier,
+        order_id=req.order_id,
+        transaction_id=status_data.get("transaction_id"),
+        db=db
+    )
+
     db.refresh(user)
     sub = user.subscription
     if not sub:
@@ -163,42 +196,6 @@ async def sync_checkout(
     }
 
 
-class PortalRequest(BaseModel):
-    return_url: Optional[str] = None
-
-
-@router.post("/portal")
-async def create_billing_portal(
-    req: PortalRequest,
-    authorization: Optional[str] = Header(None),
-    db: Session = Depends(get_db)
-):
-    """Creates a Stripe Billing Portal session for the current user."""
-    user = _get_user_from_auth(authorization, db)
-    if not user:
-        raise HTTPException(status_code=401, detail="Authentication required.")
-
-    # Get or create Stripe customer ID
-    stripe_customer_id = user.stripe_customer_id
-    if not stripe_customer_id:
-        try:
-            stripe_customer_id = ss.get_or_create_customer(user.email, user.full_name)
-            user.stripe_customer_id = stripe_customer_id
-            db.commit()
-        except Exception as e:
-            logger.error(f"Failed to get/create customer: {e}")
-            raise HTTPException(status_code=500, detail="Gagal menyambungkan dengan Stripe.")
-
-    return_url = req.return_url or f"{FRONTEND_URL}/pricing"
-    try:
-        portal_url = ss.create_portal_session(stripe_customer_id, return_url)
-        return {"portal_url": portal_url}
-    except Exception as e:
-        logger.error(f"Failed to create portal session: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Gagal memuat portal tagihan Stripe: {str(e)}")
-
-
-
 # ─── Subscription Status ───────────────────────────────────────────────────────
 
 @router.get("/subscription")
@@ -206,7 +203,7 @@ def get_subscription(
     authorization: Optional[str] = Header(None),
     db: Session = Depends(get_db)
 ):
-    """Returns current user's subscription status, with auto-healing fallback if inactive."""
+    """Returns current user's subscription status."""
     user = _get_user_from_auth(authorization, db)
     if not user:
         raise HTTPException(status_code=401, detail="Authentication required.")
@@ -214,36 +211,6 @@ def get_subscription(
     sub = user.subscription
     is_expired = sub.expires_at and sub.expires_at < datetime.utcnow() if sub else True
     is_active = sub and sub.status in (SubscriptionStatus.ACTIVE, SubscriptionStatus.TRIAL) and not is_expired
-
-    # Auto-healing fallback: if no subscription or expired, check Stripe for recent paid sessions
-    if not is_active and settings.STRIPE_SECRET_KEY:
-        try:
-            import stripe
-            stripe.api_key = settings.STRIPE_SECRET_KEY
-            # Find Stripe customer
-            customers = stripe.Customer.list(email=user.email, limit=1)
-            if customers.data:
-                cust_id = customers.data[0].id
-                if not user.stripe_customer_id:
-                    user.stripe_customer_id = cust_id
-                    db.commit()
-
-                # List recent checkout sessions
-                sessions = stripe.checkout.Session.list(customer=cust_id, limit=5)
-                for s in sessions.data:
-                    s_data = s.to_dict()
-                    s_completed = s_data.get("status") == "complete"
-                    s_paid = s_data.get("payment_status") == "paid" or s_data.get("mode") == "setup"
-                    if s_completed and s_paid:
-                        logger.info(f"Auto-heal: Found completed checkout session {s.id} for {user.email}")
-                        _handle_checkout_completed(s_data, db)
-                        db.refresh(user)
-                        sub = user.subscription
-                        is_expired = sub.expires_at and sub.expires_at < datetime.utcnow() if sub else True
-                        break
-        except Exception as e:
-            logger.warning(f"Auto-healing Stripe sync failed: {e}", exc_info=True)
-
 
     if not sub:
         return {"subscription": None, "has_active_subscription": False}
@@ -270,122 +237,108 @@ def get_subscription(
     }
 
 
+# ─── Midtrans Webhook / Notification Callback ──────────────────────────────────
 
-# ─── Stripe Webhook ───────────────────────────────────────────────────────────
-
+@router.post("/notification")
 @router.post("/webhook")
-async def stripe_webhook(request: Request, db: Session = Depends(get_db)):
+async def midtrans_notification(request: Request, db: Session = Depends(get_db)):
     """
-    Handles Stripe webhook events.
-    Set webhook URL in Stripe Dashboard to: https://yourdomain.com/api/backend/billing/webhook
-    Events handled: checkout.session.completed, customer.subscription.deleted
+    Handles HTTP Notification callback from Midtrans.
+    Set Payment Notification URL in Midtrans Dashboard to:
+    https://your-domain.com/api/backend/billing/notification
     """
-    payload = await request.body()
-    sig_header = request.headers.get("stripe-signature", "")
-
     try:
-        event = ss.construct_webhook_event(payload, sig_header)
-    except ValueError as e:
-        logger.warning(f"Stripe webhook invalid payload: {e}")
-        raise HTTPException(status_code=400, detail="Invalid payload")
+        payload = await request.json()
     except Exception as e:
-        logger.warning(f"Stripe webhook signature error: {e}")
-        raise HTTPException(status_code=400, detail="Invalid signature")
+        logger.warning(f"Midtrans notification invalid JSON: {e}")
+        raise HTTPException(status_code=400, detail="Invalid JSON payload")
 
-    event_type = event["type"]
-    data = event["data"]["object"]
+    order_id = payload.get("order_id")
+    status_code = payload.get("status_code")
+    gross_amount = payload.get("gross_amount")
+    signature_key = payload.get("signature_key")
+    transaction_status = payload.get("transaction_status")
+    fraud_status = payload.get("fraud_status")
 
-    if event_type == "checkout.session.completed":
-        _handle_checkout_completed(data, db)
+    if not order_id or not signature_key:
+        raise HTTPException(status_code=400, detail="Missing required parameters")
 
-    elif event_type in ("customer.subscription.deleted", "customer.subscription.updated"):
-        _handle_subscription_update(data, db)
+    # Verify signature
+    if not ms.verify_signature(order_id, status_code, gross_amount, signature_key):
+        logger.warning(f"Midtrans notification signature mismatch for order {order_id}")
+        raise HTTPException(status_code=403, detail="Invalid signature key")
 
-    return {"status": "received"}
+    logger.info(f"Received Midtrans notification for order {order_id}: status={transaction_status}")
+
+    # Determine payment success
+    is_paid = False
+    if transaction_status == "capture":
+        if fraud_status == "accept":
+            is_paid = True
+    elif transaction_status == "settlement":
+        is_paid = True
+
+    customer_email = payload.get("custom_field1")
+    plan_tier = payload.get("custom_field2")
+    transaction_id = payload.get("transaction_id")
+
+    if is_paid and customer_email and plan_tier:
+        _activate_user_subscription(
+            email=customer_email,
+            plan_tier=plan_tier,
+            order_id=order_id,
+            transaction_id=transaction_id,
+            db=db
+        )
+    elif transaction_status in ("cancel", "deny", "expire"):
+        logger.info(f"Order {order_id} status changed to {transaction_status}")
+
+    return {"status": "ok"}
 
 
-def _handle_checkout_completed(session_data: dict, db: Session):
-    """Activates subscription after successful Stripe payment or credit card binding setup."""
-    customer_email = session_data.get("customer_email")
-    plan_tier = session_data.get("metadata", {}).get("plan_tier")
-    stripe_sub_id = session_data.get("subscription")
-    stripe_customer_id = session_data.get("customer")
-    stripe_invoice_id = session_data.get("invoice")
-
-    # If email is missing (common in setup mode), retrieve it from metadata or Stripe API
-    if not customer_email:
-        customer_email = session_data.get("metadata", {}).get("customer_email")
-    if not customer_email and stripe_customer_id:
-        try:
-            import stripe
-            cust = stripe.Customer.retrieve(stripe_customer_id)
-            customer_email = cust.email
-        except Exception as e:
-            logger.warning(f"Could not retrieve Stripe customer email: {e}")
-
-    if not customer_email or not plan_tier:
-        logger.warning(f"Webhook missing email ({customer_email}) or plan_tier ({plan_tier}) metadata")
-        return
-
-    user = db.query(User).filter(User.email == customer_email).first()
+def _activate_user_subscription(
+    email: str,
+    plan_tier: str,
+    order_id: str,
+    transaction_id: Optional[str],
+    db: Session
+):
+    """Helper to activate user subscription after Midtrans payment settlement."""
+    user = db.query(User).filter(User.email == email).first()
     if not user:
-        logger.warning(f"Webhook: user not found for email {customer_email}")
+        logger.warning(f"Activation failed: user with email {email} not found.")
         return
 
     plan = db.query(SubscriptionPlan).filter(SubscriptionPlan.tier == plan_tier).first()
     if not plan:
-        logger.warning(f"Webhook: plan not found for tier {plan_tier}")
+        logger.warning(f"Activation failed: plan tier '{plan_tier}' not found.")
         return
 
-    # Update customer ID
-    if stripe_customer_id:
-        user.stripe_customer_id = stripe_customer_id
-
-    # Calculate expiry
     expires_at = datetime.utcnow() + timedelta(days=plan.duration_days)
-    status = SubscriptionStatus.TRIAL if plan_tier == "trial" else SubscriptionStatus.ACTIVE
 
     sub = user.subscription
     if sub:
         sub.plan_id = plan.id
-        sub.status = status
-        sub.posts_used = 0  # reset quota on new period
+        sub.status = SubscriptionStatus.ACTIVE
+        sub.posts_used = 0  # reset quota
         sub.posts_limit = plan.post_quota
         sub.started_at = datetime.utcnow()
         sub.expires_at = expires_at
-        sub.stripe_subscription_id = stripe_sub_id
-        sub.stripe_invoice_id = stripe_invoice_id
+        sub.midtrans_order_id = order_id
+        sub.midtrans_transaction_id = transaction_id
     else:
         sub = UserSubscription(
             user_id=user.id,
             plan_id=plan.id,
-            status=status,
+            status=SubscriptionStatus.ACTIVE,
             posts_used=0,
             posts_limit=plan.post_quota,
+            started_at=datetime.utcnow(),
             expires_at=expires_at,
-            stripe_subscription_id=stripe_sub_id,
-            stripe_invoice_id=stripe_invoice_id,
+            midtrans_order_id=order_id,
+            midtrans_transaction_id=transaction_id,
         )
         db.add(sub)
 
     db.commit()
-    logger.info(f"✅ Activated {plan_tier} plan ({status.value}) for {customer_email} (expires {expires_at.date()})")
-
-
-
-def _handle_subscription_update(sub_data: dict, db: Session):
-    """Handles subscription cancellation/expiry from Stripe."""
-    stripe_sub_id = sub_data.get("id")
-    status = sub_data.get("status")
-
-    sub = db.query(UserSubscription).filter(
-        UserSubscription.stripe_subscription_id == stripe_sub_id
-    ).first()
-
-    if not sub:
-        return
-
-    if status in ("canceled", "unpaid", "past_due"):
-        sub.status = SubscriptionStatus.EXPIRED if status == "canceled" else SubscriptionStatus.PAST_DUE
-        db.commit()
-        logger.info(f"Subscription {stripe_sub_id} updated to status: {status}")
+    logger.info(f"✅ Midtrans Activated {plan_tier} plan for {email} (order {order_id}, expires {expires_at.date()})")

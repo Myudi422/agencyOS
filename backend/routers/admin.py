@@ -41,9 +41,9 @@ class PlanUpdateRequest(BaseModel):
     name: Optional[str] = None
     description: Optional[str] = None
     price_usd: Optional[float] = None
+    price_idr: Optional[int] = None
     post_quota: Optional[int] = None
     duration_days: Optional[int] = None
-    stripe_price_id: Optional[str] = None
     is_active: Optional[bool] = None
     features: Optional[List[str]] = None
 
@@ -146,9 +146,9 @@ def get_plans(admin: User = Depends(require_admin), db: Session = Depends(get_db
             "name": p.name,
             "description": p.description,
             "price_usd": p.price_usd,
+            "price_idr": p.price_idr,
             "duration_days": p.duration_days,
             "post_quota": p.post_quota,
-            "stripe_price_id": p.stripe_price_id,
             "is_active": p.is_active,
             "features": p.features or [],
         }
@@ -163,7 +163,7 @@ def update_plan(
     admin: User = Depends(require_admin),
     db: Session = Depends(get_db)
 ):
-    """Update a subscription plan's pricing, quota, or Stripe Price ID."""
+    """Update a subscription plan's pricing or quota."""
     plan = db.query(SubscriptionPlan).filter(SubscriptionPlan.id == plan_id).first()
     if not plan:
         raise HTTPException(status_code=404, detail="Plan not found.")
@@ -174,12 +174,12 @@ def update_plan(
         plan.description = req.description
     if req.price_usd is not None:
         plan.price_usd = req.price_usd
+    if req.price_idr is not None:
+        plan.price_idr = req.price_idr
     if req.post_quota is not None:
         plan.post_quota = req.post_quota
     if req.duration_days is not None:
         plan.duration_days = req.duration_days
-    if req.stripe_price_id is not None:
-        plan.stripe_price_id = req.stripe_price_id
     if req.is_active is not None:
         plan.is_active = req.is_active
     if req.features is not None:
@@ -188,38 +188,6 @@ def update_plan(
     plan.updated_at = datetime.utcnow()
     db.commit()
     return {"status": "ok", "plan_id": plan_id}
-
-
-@router.post("/plans/{plan_tier}/create-stripe-price")
-def create_stripe_price_for_plan(
-    plan_tier: str,
-    admin: User = Depends(require_admin),
-    db: Session = Depends(get_db)
-):
-    """Auto-creates Stripe Product+Price for a plan and saves the price_id to DB."""
-    plan = db.query(SubscriptionPlan).filter(SubscriptionPlan.tier == plan_tier).first()
-    if not plan:
-        raise HTTPException(status_code=404, detail="Plan not found.")
-
-    if not settings.STRIPE_SECRET_KEY:
-        raise HTTPException(status_code=400, detail="STRIPE_SECRET_KEY not configured.")
-
-    try:
-        from backend.services.stripe_service import create_stripe_price
-        amount_cents = int(plan.price_usd * 100)
-        is_one_time = plan_tier == "trial"
-        price_id = create_stripe_price(
-            plan_name=plan.name,
-            amount_cents=amount_cents,
-            interval="month",
-            is_one_time=is_one_time,
-        )
-        plan.stripe_price_id = price_id
-        plan.updated_at = datetime.utcnow()
-        db.commit()
-        return {"status": "ok", "stripe_price_id": price_id}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
 
 
 # ─── App Settings ─────────────────────────────────────────────────────────────

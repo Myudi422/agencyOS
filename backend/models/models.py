@@ -80,7 +80,7 @@ class User(Base):
     firebase_uid = Column(String(255), unique=True, nullable=True, index=True)
     is_admin = Column(Boolean, default=False, nullable=False)
     meta_user_id = Column(String(255), nullable=True)
-    stripe_customer_id = Column(String(255), nullable=True)
+    midtrans_customer_id = Column(String(255), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
@@ -271,11 +271,11 @@ class SubscriptionPlan(Base):
     tier = Column(Enum(PlanTier), unique=True, nullable=False)
     name = Column(String(100), nullable=False)  # e.g. "Starter Trial"
     description = Column(Text, nullable=True)
-    price_usd = Column(Float, nullable=False)   # e.g. 3.00
+    price_usd = Column(Float, default=0.0, nullable=False)   # e.g. 3.00
+    price_idr = Column(Integer, default=0, nullable=False)   # e.g. 49000
     duration_days = Column(Integer, nullable=False)  # 3 for trial, 30 for monthly
     post_quota = Column(Integer, nullable=False)     # max posts allowed per period
     # All plans: UNLIMITED social accounts (no account_limit field)
-    stripe_price_id = Column(String(255), nullable=True)  # set after Stripe product created
     is_active = Column(Boolean, default=True)
     features = Column(JSON, default=list)  # list of feature strings for UI display
     created_at = Column(DateTime, default=datetime.utcnow)
@@ -296,8 +296,8 @@ class UserSubscription(Base):
     posts_limit = Column(Integer, nullable=False)             # copied from plan at subscribe time
     started_at = Column(DateTime, default=datetime.utcnow)
     expires_at = Column(DateTime, nullable=True)              # None = never (admin override)
-    stripe_subscription_id = Column(String(255), nullable=True)
-    stripe_invoice_id = Column(String(255), nullable=True)
+    midtrans_order_id = Column(String(255), nullable=True)
+    midtrans_transaction_id = Column(String(255), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 

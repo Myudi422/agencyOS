@@ -68,10 +68,11 @@ class Settings:
     FIREBASE_PROJECT_ID: str = os.getenv("FIREBASE_PROJECT_ID", "shiera-fb0f2")
     FIREBASE_API_KEY: str = os.getenv("FIREBASE_API_KEY", "AIzaSyDiCCYSZVMSKMjkpx7QYZvUSxGYr-bQSdc")
 
-    # Stripe (Sandbox / Test Mode)
-    STRIPE_SECRET_KEY: str = os.getenv("STRIPE_SECRET_KEY", "")  # sk_test_...
-    STRIPE_PUBLISHABLE_KEY: str = os.getenv("STRIPE_PUBLISHABLE_KEY", "")  # pk_test_...
-    STRIPE_WEBHOOK_SECRET: str = os.getenv("STRIPE_WEBHOOK_SECRET", "")  # whsec_...
+    # Midtrans (Payment Gateway - Sandbox / Production)
+    MIDTRANS_MERCHANT_ID: str = os.getenv("MIDTRANS_MERCHANT_ID", "G631089821")
+    MIDTRANS_CLIENT_KEY: str = os.getenv("MIDTRANS_CLIENT_KEY", "SB-Mid-client-Hq-oZXhBhWzOSZzD")
+    MIDTRANS_SERVER_KEY: str = os.getenv("MIDTRANS_SERVER_KEY", "SB-Mid-server-GmF6kILCY0UcSnUAXnHP3Y6-")
+    MIDTRANS_IS_PRODUCTION: bool = os.getenv("MIDTRANS_IS_PRODUCTION", "false").lower() == "true"
 
     # Admin
     ADMIN_EMAIL: str = os.getenv("ADMIN_EMAIL", "myudi422@gmail.com")

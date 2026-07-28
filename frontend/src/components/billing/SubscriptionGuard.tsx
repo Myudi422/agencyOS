@@ -3,13 +3,13 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/authStore";
-import { CreditCard, X, Zap, Rocket, Crown, Building2, ChevronRight } from "lucide-react";
+import { CreditCard, Zap, Rocket, Crown, Building2, ChevronRight } from "lucide-react";
 
 const TIER_META: Record<string, { name: string; price: string; posts: string; Icon: any; color: string }> = {
-  trial: { name: "Starter Trial", price: "$0/3hari", posts: "6 posts", Icon: Zap, color: "text-slate-600" },
-  creator: { name: "Creator", price: "$3/bln", posts: "50 posts", Icon: Rocket, color: "text-blue-600" },
-  agency: { name: "Agency", price: "$19/bln", posts: "300 posts", Icon: Crown, color: "text-purple-600" },
-  studio: { name: "Studio", price: "$49/bln", posts: "1.000 posts", Icon: Building2, color: "text-amber-600" },
+  trial: { name: "Starter Trial", price: "Rp 0/3hari", posts: "6 posts", Icon: Zap, color: "text-slate-600" },
+  creator: { name: "Creator", price: "Rp 49rb/bln", posts: "50 posts", Icon: Rocket, color: "text-blue-600" },
+  agency: { name: "Agency", price: "Rp 299rb/bln", posts: "300 posts", Icon: Crown, color: "text-purple-600" },
+  studio: { name: "Studio", price: "Rp 749rb/bln", posts: "1.000 posts", Icon: Building2, color: "text-amber-600" },
 };
 
 /**
@@ -18,8 +18,7 @@ const TIER_META: Record<string, { name: string; price: string; posts: string; Ic
  */
 export default function SubscriptionGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter();
-  const { user, isAdmin, subscription, isAuthenticated, isLoading, logout } = useAuthStore();
-  const [dismissing, setDismissing] = useState(false);
+  const { isAdmin, subscription, isAuthenticated, isLoading, logout } = useAuthStore();
 
   const handleLogout = async () => {
     const { signOut } = await import("@/lib/auth");
@@ -112,7 +111,7 @@ export default function SubscriptionGuard({ children }: { children: React.ReactN
               Keluar dari Akun
             </button>
             <p className="text-center text-[10px] text-slate-400 mt-1">
-              💳 Stripe sandbox mode · Test card: 4242 4242 4242 4242
+              🇮🇩 Midtrans Sandbox Payment Gateway (QRIS, GoPay, ShopeePay, Virtual Account, Credit Card)
             </p>
           </div>
         </div>

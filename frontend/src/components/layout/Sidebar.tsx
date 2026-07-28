@@ -63,21 +63,9 @@ export default function Sidebar({ isMobileOpen = false, onCloseMobile }: Sidebar
     router.replace("/login");
   };
 
-  const handleOpenBillingPortal = async () => {
-    setLoadingPortal(true);
-    try {
-      const data: any = await fetchApi("/billing/portal", {
-        method: "POST",
-        body: JSON.stringify({ return_url: window.location.href }),
-      });
-      if (data?.portal_url) {
-        window.location.href = data.portal_url;
-      }
-    } catch (err) {
-      console.error("Billing portal error:", err);
-    } finally {
-      setLoadingPortal(false);
-    }
+  const handleOpenBillingPortal = () => {
+    setIsProfileMenuOpen(false);
+    router.push("/pricing");
   };
 
   const navItems = [

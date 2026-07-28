@@ -14,27 +14,9 @@ export default function AccountSettingsModal() {
 
   if (!isSettingsOpen) return null;
 
-  const handleOpenStripePortal = async () => {
-    setLoadingPortal(true);
-    setError(null);
-    try {
-      const data: any = await fetchApi("/billing/portal", {
-        method: "POST",
-        body: JSON.stringify({
-          return_url: window.location.href,
-        }),
-      });
-      if (data?.portal_url) {
-        window.location.href = data.portal_url;
-      } else {
-        setError("Gagal memuat billing portal Stripe. Silakan coba lagi.");
-      }
-    } catch (err: any) {
-      console.error(err);
-      setError(err?.message || "Koneksi gagal. Pastikan Anda terhubung ke internet.");
-    } finally {
-      setLoadingPortal(false);
-    }
+  const handleOpenStripePortal = () => {
+    closeSettings();
+    window.location.href = "/pricing";
   };
 
   const usagePercent = subscription
@@ -174,7 +156,7 @@ export default function AccountSettingsModal() {
                       <span>Menghubungkan ke Stripe...</span>
                     </>
                   ) : (
-                    <span>Kelola Kartu & Langganan (Stripe Portal)</span>
+                    <span>Kelola / Upgrade Paket (Midtrans)</span>
                   )}
                 </button>
               </div>

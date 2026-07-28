@@ -170,33 +170,6 @@ async def verify_firebase(req: FirebaseVerifyRequest, db: Session = Depends(get_
     is_expired = sub.expires_at and sub.expires_at < datetime.utcnow() if sub else True
     is_active = sub and sub.status in (SubscriptionStatus.ACTIVE, SubscriptionStatus.TRIAL) and not is_expired
 
-    if not is_active and settings.STRIPE_SECRET_KEY:
-        try:
-            import stripe
-            stripe.api_key = settings.STRIPE_SECRET_KEY
-            customers = stripe.Customer.list(email=user.email, limit=1)
-            if customers.data:
-                cust_id = customers.data[0].id
-                if not user.stripe_customer_id:
-                    user.stripe_customer_id = cust_id
-                    db.commit()
-
-                sessions = stripe.checkout.Session.list(customer=cust_id, limit=5)
-                for s in sessions.data:
-                    s_data = s.to_dict()
-                    s_completed = s_data.get("status") == "complete"
-                    s_paid = s_data.get("payment_status") == "paid" or s_data.get("mode") == "setup"
-                    if s_completed and s_paid:
-                        logger.info(f"Auto-heal (verify): Found completed checkout session {s.id} for {user.email}")
-                        from backend.routers.billing import _handle_checkout_completed
-                        _handle_checkout_completed(s_data, db)
-                        db.refresh(user)
-                        sub = user.subscription
-                        is_expired = sub.expires_at and sub.expires_at < datetime.utcnow() if sub else True
-                        break
-        except Exception as e:
-            logger.warning(f"Auto-healing in firebase verify failed: {e}", exc_info=True)
-
     subscription_data = None
     if sub:
         plan = sub.plan

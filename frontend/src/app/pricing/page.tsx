@@ -1,15 +1,24 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/authStore";
-import { CreditCard, Zap, Crown, Rocket, Building2, ChevronRight, Check } from "lucide-react";
+import { CreditCard, Zap, Crown, Rocket, Building2, ChevronRight, Check, Loader2 } from "lucide-react";
+import { fetchApi } from "@/lib/api";
+
+declare global {
+  interface Window {
+    snap?: {
+      pay: (token: string, options?: any) => void;
+    };
+  }
+}
 
 const PLANS = [
   {
     tier: "trial",
     name: "Starter Trial",
-    price: "$0",
+    price: "Rp 0",
     period: "3 hari",
     posts: "6 posts",
     postsDetail: "2 posts/hari",
@@ -17,19 +26,19 @@ const PLANS = [
     color: "from-slate-500 to-slate-700",
     iconBg: "bg-slate-100 text-slate-600",
     border: "border-slate-200",
-    badge: "Card Link Required",
+    badge: "Gratis 3 Hari",
     features: [
       "6 posts total (2 post/hari)",
-      "Tautkan kartu kredit saja ($0)",
-      "Unlimited social accounts",
+      "Gratis tanpa biaya (Rp 0)",
+      "Unlimited akun sosmed",
       "Semua 10+ platform didukung",
-      "Batal kapan saja",
+      "Berlaku selama 3 hari",
     ],
   },
   {
     tier: "creator",
     name: "Creator",
-    price: "$3",
+    price: "Rp 49.000",
     period: "/bulan",
     posts: "50 posts",
     postsDetail: "~1.6 post/hari",
@@ -40,16 +49,16 @@ const PLANS = [
     badge: null,
     features: [
       "50 posts/bulan",
-      "Unlimited social accounts",
+      "Unlimited akun sosmed",
       "Semua 10+ platform",
+      "QRIS, GoPay, VA, Kartu Kredit",
       "Scheduling & media library",
-      "Auto-renewal bulanan",
     ],
   },
   {
     tier: "agency",
     name: "Agency",
-    price: "$19",
+    price: "Rp 299.000",
     period: "/bulan",
     posts: "300 posts",
     postsDetail: "~10 post/hari",
@@ -57,21 +66,21 @@ const PLANS = [
     color: "from-purple-500 to-violet-600",
     iconBg: "bg-purple-100 text-purple-600",
     border: "border-purple-300",
-    badge: "Most Popular",
+    badge: "Paling Populer",
     features: [
       "300 posts/bulan",
-      "Unlimited social accounts",
+      "Unlimited akun sosmed",
       "Multi-client management",
       "Semua 10+ platform",
       "Scheduling & media library",
       "Priority queue engine",
-      "Auto-renewal bulanan",
+      "QRIS, GoPay, VA, Kartu Kredit",
     ],
   },
   {
     tier: "studio",
     name: "Studio",
-    price: "$49",
+    price: "Rp 749.000",
     period: "/bulan",
     posts: "1.000 posts",
     postsDetail: "~33 post/hari",
@@ -79,15 +88,15 @@ const PLANS = [
     color: "from-amber-500 to-orange-600",
     iconBg: "bg-amber-100 text-amber-600",
     border: "border-amber-200",
-    badge: "Best Value",
+    badge: "Terbaik",
     features: [
       "1.000 posts/bulan",
-      "Unlimited social accounts",
+      "Unlimited akun sosmed",
       "Unlimited clients",
       "Semua 10+ platform",
       "Full media library",
       "API access & priority support",
-      "Auto-renewal bulanan",
+      "QRIS, GoPay, VA, Kartu Kredit",
     ],
   },
 ];
@@ -95,6 +104,7 @@ const PLANS = [
 export default function PricingPage() {
   const router = useRouter();
   const { isAuthenticated, isAdmin } = useAuthStore();
+  const [loadingTier, setLoadingTier] = useState<string | null>(null);
 
   const handleSelectPlan = async (tier: string) => {
     if (!isAuthenticated) {
@@ -107,35 +117,55 @@ export default function PricingPage() {
       return;
     }
 
-    // Redirect to checkout
-    try {
-      const stored = localStorage.getItem("agencyos-auth");
-      const token = stored ? JSON.parse(stored)?.state?.idToken : null;
+    setLoadingTier(tier);
 
-      const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-      const res = await fetch(`${API_BASE}/billing/checkout`, {
+    try {
+      const data: any = await fetchApi("/billing/checkout", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
         body: JSON.stringify({
           plan_tier: tier,
-          success_url: `${window.location.origin}/billing/success?plan=${tier}&session_id={CHECKOUT_SESSION_ID}`,
-          cancel_url: `${window.location.origin}/pricing`,
+          finish_url: `${window.location.origin}/billing/success?plan=${tier}`,
         }),
       });
 
-      if (res.ok) {
-        const data = await res.json();
-        window.location.href = data.checkout_url;
-      } else {
-        const err = await res.json();
-        alert(err.detail || "Gagal membuat checkout. Hubungi admin.");
+      if (data?.is_trial && data?.redirect_url) {
+        window.location.href = data.redirect_url;
+        return;
       }
-    } catch (e) {
+
+      if (data?.snap_token) {
+        if (typeof window !== "undefined" && window.snap) {
+          window.snap.pay(data.snap_token, {
+            onSuccess: function (result: any) {
+              console.log("Midtrans success:", result);
+              router.push(`/billing/success?plan=${tier}&order_id=${data.order_id}`);
+            },
+            onPending: function (result: any) {
+              console.log("Midtrans pending:", result);
+              alert("Pembayaran kamu sedang diproses. Mohon selesaikan sesuai instruksi.");
+            },
+            onError: function (result: any) {
+              console.error("Midtrans error:", result);
+              alert("Pembayaran gagal atau dibatalkan. Silakan coba lagi.");
+            },
+            onClose: function () {
+              console.log("Midtrans modal closed");
+            },
+          });
+        } else if (data?.snap_url) {
+          // Fallback if Snap JS script failed to load
+          window.location.href = data.snap_url;
+        } else {
+          alert("Gagal memuat sistem pembayaran Midtrans. Coba muat ulang halaman.");
+        }
+      } else {
+        alert("Gagal membuat checkout session.");
+      }
+    } catch (e: any) {
       console.error(e);
-      alert("Network error. Coba lagi.");
+      alert(e.message || "Gagal memproses pembayaran. Coba lagi.");
+    } finally {
+      setLoadingTier(null);
     }
   };
 
@@ -155,7 +185,7 @@ export default function PricingPage() {
         </h1>
         <p className="text-slate-500 max-w-lg mx-auto text-sm leading-relaxed">
           Tidak ada batasan jumlah akun sosial media. Bedanya hanya di kuota post per periode.
-          Makin besar kebutuhan, makin besar kuota.
+          Pembayaran aman & praktis via <strong>Midtrans (QRIS, GoPay, ShopeePay, VA & Card)</strong>.
         </p>
       </div>
 
@@ -163,7 +193,9 @@ export default function PricingPage() {
       <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
         {PLANS.map((plan) => {
           const Icon = plan.icon;
-          const isPopular = plan.badge === "Most Popular";
+          const isPopular = plan.badge === "Paling Populer";
+          const isLoading = loadingTier === plan.tier;
+
           return (
             <div
               key={plan.tier}
@@ -172,9 +204,13 @@ export default function PricingPage() {
               }`}
             >
               {plan.badge && (
-                <div className={`absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full text-[11px] font-bold text-white shadow-md ${
-                  isPopular ? "bg-gradient-to-r from-purple-500 to-violet-600" : "bg-gradient-to-r from-amber-500 to-orange-500"
-                }`}>
+                <div
+                  className={`absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full text-[11px] font-bold text-white shadow-md ${
+                    isPopular
+                      ? "bg-gradient-to-r from-purple-500 to-violet-600"
+                      : "bg-gradient-to-r from-amber-500 to-orange-500"
+                  }`}
+                >
                   {plan.badge}
                 </div>
               )}
@@ -191,8 +227,8 @@ export default function PricingPage() {
                 </div>
 
                 <div className="flex items-baseline gap-1">
-                  <span className="text-3xl font-extrabold text-slate-900 font-['Outfit']">{plan.price}</span>
-                  <span className="text-sm text-slate-400">{plan.period}</span>
+                  <span className="text-2xl font-extrabold text-slate-900 font-['Outfit']">{plan.price}</span>
+                  <span className="text-xs text-slate-400">{plan.period}</span>
                 </div>
 
                 {/* Post quota highlight */}
@@ -215,14 +251,24 @@ export default function PricingPage() {
                 <button
                   id={`plan-cta-${plan.tier}`}
                   onClick={() => handleSelectPlan(plan.tier)}
-                  className={`w-full py-3 px-4 rounded-2xl font-semibold text-sm flex items-center justify-center gap-2 transition-all hover:scale-[1.02] active:scale-[0.98] ${
+                  disabled={isLoading}
+                  className={`w-full py-3 px-4 rounded-2xl font-semibold text-sm flex items-center justify-center gap-2 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 ${
                     isPopular
                       ? "bg-gradient-to-r from-purple-600 to-violet-600 text-white shadow-lg shadow-purple-500/30 hover:shadow-xl hover:shadow-purple-500/40"
                       : "bg-slate-100 hover:bg-slate-200 text-slate-800"
                   }`}
                 >
-                  <span>{isAuthenticated ? "Pilih Paket" : "Mulai Sekarang"}</span>
-                  <ChevronRight className="w-4 h-4" />
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>Memproses...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>{isAuthenticated ? "Pilih Paket" : "Mulai Sekarang"}</span>
+                      <ChevronRight className="w-4 h-4" />
+                    </>
+                  )}
                 </button>
               </div>
             </div>
@@ -233,10 +279,10 @@ export default function PricingPage() {
       {/* Bottom note */}
       <div className="text-center mt-10 space-y-2">
         <p className="text-xs text-slate-400">
-          💳 Pembayaran aman via Stripe · Sandbox/test mode aktif
+          🇮🇩 Pembayaran aman via <strong>Midtrans Payment Gateway</strong> (QRIS, GoPay, ShopeePay, Virtual Account, & Credit Card)
         </p>
         <p className="text-xs text-slate-400">
-          Tidak ada contract. Bisa cancel kapan saja. API cost kami $0.01/post, margin kami terbuka.
+          Tidak ada kontrak mengikat. Bisa batal kapan saja.
         </p>
       </div>
     </div>
