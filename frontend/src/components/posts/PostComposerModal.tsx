@@ -508,7 +508,7 @@ export default function PostComposerModal() {
         localizations: null
       },
       tiktok: {
-        privacy_status: tiktokPrivacy === "SELF_ONLY" ? "private" : "public",
+        privacy_status: tiktokPrivacy === "PUBLIC_TO_EVERYONE" ? "public" : tiktokPrivacy === "SELF_ONLY" ? "private" : "follower",
         allow_comment: tiktokAllowComment,
         allow_duet: tiktokAllowDuet,
         allow_stitch: tiktokAllowStitch,
@@ -525,7 +525,7 @@ export default function PostComposerModal() {
         set_caption_for_each_image: facebookSetCaptionForEachImage
       },
       x: {
-        poll: xPollQuestion ? { duration_minutes: 1440, options: xPollOptions.filter(o => o.trim()) } : null,
+        poll: xPollQuestion ? { duration_minutes: 1440, options: xPollOptions.filter(o => o.trim()), reply_settings: "following" } : null,
         reply_settings: "following"
       },
       pinterest: {
