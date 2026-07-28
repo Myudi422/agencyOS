@@ -172,9 +172,16 @@ class QueueService:
 
             processed_any = False
             for result_data in result_list:
+                pf_result_id = result_data.get("id")
+
+                # Skip if no valid result ID — cannot safely deduplicate
+                if not pf_result_id:
+                    logger.warning(f"Skipping result with no id for target {target_id}")
+                    continue
+
                 existing = db.query(PostPublishResult).filter(
                     PostPublishResult.post_target_id == target_id,
-                    PostPublishResult.postforme_result_id == result_data.get("id")
+                    PostPublishResult.postforme_result_id == pf_result_id
                 ).first()
 
                 success = result_data.get("success", False)
@@ -185,7 +192,7 @@ class QueueService:
                 if not existing:
                     publish_result = PostPublishResult(
                         post_target_id=target_id,
-                        postforme_result_id=result_data.get("id"),
+                        postforme_result_id=pf_result_id,
                         postforme_post_id=postforme_post_id,
                         social_account_id=result_data.get("social_account_id"),
                         success=success,
@@ -198,8 +205,18 @@ class QueueService:
                     )
                     db.add(publish_result)
                     db.flush()
+                    logger.info(f"✅ New PostPublishResult created for target {target_id}, result_id={pf_result_id}")
                 else:
                     publish_result = existing
+                    # Update existing record if we now have better data (e.g. platform_url was missing)
+                    if platform_url and not existing.platform_url:
+                        existing.platform_url = platform_url
+                        logger.info(f"Updated platform_url for existing result {pf_result_id}")
+                    if platform_post_id and not existing.platform_post_id:
+                        existing.platform_post_id = platform_post_id
+                    if success and existing.success is False:
+                        existing.success = True
+                        existing.error_data = None
 
                 if success:
                     target.status = PostStatus.PUBLISHED
@@ -346,6 +363,10 @@ class QueueService:
         platform_url = platform_data.get("url")
         platform_post_id = platform_data.get("id")
 
+        if not pf_result_id:
+            logger.warning(f"Skipping _apply_result_to_target for target {target.id}: no postforme result id")
+            return
+
         existing = db.query(PostPublishResult).filter(
             PostPublishResult.post_target_id == target.id,
             PostPublishResult.postforme_result_id == pf_result_id
@@ -369,6 +390,14 @@ class QueueService:
             db.flush()
         else:
             publish_result = existing
+            # Update existing record with newer platform data
+            if platform_url and not existing.platform_url:
+                existing.platform_url = platform_url
+            if platform_post_id and not existing.platform_post_id:
+                existing.platform_post_id = platform_post_id
+            if success and existing.success is False:
+                existing.success = True
+                existing.error_data = None
 
         if success:
             target.status = PostStatus.PUBLISHED

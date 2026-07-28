@@ -5,7 +5,7 @@ import {
   Cpu, RefreshCw, AlertTriangle, CheckCircle2,
   Clock, RotateCcw, Trash2, History, ExternalLink,
   Zap, XCircle, ChevronRight, Filter, Search,
-  ArrowUpRight, CreditCard, Loader2, Globe
+  ArrowUpRight, CreditCard, Loader2, Globe, Hourglass
 } from "lucide-react";
 import { useStore } from "@/store/useStore";
 import { toast } from "@/store/useToastStore";
@@ -81,6 +81,17 @@ export default function QueuePage() {
   useEffect(() => {
     if (activeTab === "history") loadHistory(0);
   }, [filterPlatform, filterSuccess]);
+
+  // Auto-refresh when there are processing items in history
+  useEffect(() => {
+    if (activeTab !== "history") return;
+    const hasProcessing = historyData.some((r: any) => r.status === "processing" || r.success === null);
+    if (!hasProcessing) return;
+    const interval = setInterval(() => {
+      loadHistory(historyOffset);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [activeTab, historyData, historyOffset]);
 
   const handleSyncResults = async () => {
     if (!activeWorkspace?.id) return;
@@ -312,7 +323,12 @@ export default function QueuePage() {
 
                         {/* Status */}
                         <td className="py-3.5 px-3">
-                          {r.success === true ? (
+                          {r.status === "processing" || (r.success === null && r.result_id === null) ? (
+                            <span className="flex items-center gap-1.5 text-[11px] px-2.5 py-1.5 rounded-full font-bold bg-blue-100 text-blue-700 border border-blue-200 w-fit whitespace-nowrap animate-pulse">
+                              <Loader2 className="w-3 h-3 animate-spin" />
+                              <span>Proses...</span>
+                            </span>
+                          ) : r.success === true ? (
                             <span className="flex items-center gap-1 text-[11px] px-2.5 py-1.5 rounded-full font-bold bg-emerald-100 text-emerald-700 border border-emerald-200 w-fit whitespace-nowrap">
                               <CheckCircle2 className="w-3 h-3" /> Berhasil
                             </span>

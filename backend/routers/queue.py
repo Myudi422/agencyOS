@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, BackgroundTasks
 from sqlalchemy.orm import Session
+from sqlalchemy import or_
 from typing import Optional
 from backend.database import get_db
 from backend.models.models import (
@@ -81,31 +82,94 @@ def get_publish_history(
 ):
     """
     Riwayat hasil publikasi per workspace/user dari PostForMe.
-    Menampilkan status aktual (sukses/gagal), URL post di platform, dan info kredit.
+    Menampilkan status aktual (sukses/gagal/processing), URL post di platform, dan info kredit.
     """
-    query = (
+    # ─── 1. Ambil PostPublishResult yang sudah ada (has_result) ─────────
+    result_query = (
         db.query(PostPublishResult)
         .join(PostTarget, PostPublishResult.post_target_id == PostTarget.id)
         .join(Post, PostTarget.post_id == Post.id)
         .filter(Post.workspace_id == workspace_id)
     )
-
     if user_id:
-        query = query.filter(Post.created_by_user_id == user_id)
-
+        result_query = result_query.filter(Post.created_by_user_id == user_id)
     if success is not None:
-        query = query.filter(PostPublishResult.success == success)
+        result_query = result_query.filter(PostPublishResult.success == success)
 
-    total = query.count()
-    results = query.order_by(PostPublishResult.created_at.desc()).offset(offset).limit(limit).all()
+    # IDs of post_targets that already have a PostPublishResult
+    result_target_ids = {r.post_target_id for r in result_query.all()}
+
+    # ─── 2. Ambil PostTarget yang masih PUBLISHING (belum ada result) ───
+    # Only include when no success filter is active (processing is neither true/false)
+    processing_targets = []
+    if success is None:
+        pt_query = (
+            db.query(PostTarget)
+            .join(Post, PostTarget.post_id == Post.id)
+            .filter(
+                Post.workspace_id == workspace_id,
+                PostTarget.status == PostStatus.PUBLISHING,
+                PostTarget.id.notin_(result_target_ids) if result_target_ids else True
+            )
+        )
+        if user_id:
+            pt_query = pt_query.filter(Post.created_by_user_id == user_id)
+        if platform:
+            pt_query = pt_query.join(SocialAccount, PostTarget.social_account_id == SocialAccount.id).filter(
+                SocialAccount.platform == platform
+            )
+        processing_targets = pt_query.order_by(PostTarget.created_at.desc()).all()
+
+    # ─── 3. Build total count & paginated results ────────────────────────
+    total_results = result_query.count()
+    total = total_results + len(processing_targets)
 
     history_list = []
-    for r in results:
+
+    # Insert processing targets first (they're most recent & pending)
+    for target in processing_targets:
+        acc = target.social_account
+        post = target.post
+        if platform and acc and acc.platform.value != platform:
+            continue
+
+        # Find the associated job to get job status
+        job = db.query(PublishJob).filter(PublishJob.post_target_id == target.id).order_by(PublishJob.created_at.desc()).first()
+        job_status = job.status.value if job else "processing"
+
+        history_list.append({
+            "result_id": None,
+            "postforme_result_id": None,
+            "postforme_post_id": target.platform_post_id,
+            "post_id": post.id if post else None,
+            "post_caption": (post.caption or "")[:60] if post else "",
+            "post_type": post.post_type.value if post else "unknown",
+            "media_urls": (post.media_urls or [])[:1] if post else [],
+            "platform": acc.platform.value if acc else "unknown",
+            "username": acc.username if acc else "Unknown",
+            "avatar_url": acc.avatar_url if acc else None,
+            "success": None,          # null = still processing
+            "status": "processing",   # explicit status field
+            "job_status": job_status,
+            "platform_url": None,
+            "platform_post_id": None,
+            "error_data": None,
+            "credit_deducted": False,
+            "source": "queue",
+            "created_by": post.created_by if post else None,
+            "created_by_user_id": post.created_by_user_id if post else None,
+            "published_at": None,
+            "scheduled_at": post.scheduled_at if post else None,
+            "result_at": target.created_at
+        })
+
+    # Then append paginated real results
+    real_results = result_query.order_by(PostPublishResult.created_at.desc()).offset(offset).limit(limit).all()
+    for r in real_results:
         target = r.post_target
         acc = target.social_account if target else None
         post = target.post if target else None
 
-        # Filter platform jika diminta
         if platform and acc and acc.platform.value != platform:
             continue
 
@@ -116,11 +180,13 @@ def get_publish_history(
             "post_id": post.id if post else None,
             "post_caption": (post.caption or "")[:60] if post else "",
             "post_type": post.post_type.value if post else "unknown",
-            "media_urls": (post.media_urls or [])[:1] if post else [],  # Thumbnail
+            "media_urls": (post.media_urls or [])[:1] if post else [],
             "platform": acc.platform.value if acc else "unknown",
             "username": acc.username if acc else "Unknown",
             "avatar_url": acc.avatar_url if acc else None,
             "success": r.success,
+            "status": "success" if r.success is True else ("failed" if r.success is False else "pending"),
+            "job_status": None,
             "platform_url": r.platform_url,
             "platform_post_id": r.platform_post_id,
             "error_data": r.error_data,
