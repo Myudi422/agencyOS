@@ -221,6 +221,7 @@ class Post(Base):
     published_at = Column(DateTime, nullable=True)
     status = Column(Enum(PostStatus), default=PostStatus.DRAFT, nullable=False, index=True)
     created_by = Column(String(255), nullable=True)
+    created_by_user_id = Column(String(36), ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
@@ -242,6 +243,7 @@ class PostTarget(Base):
     post = relationship("Post", back_populates="targets")
     social_account = relationship("SocialAccount", back_populates="post_targets")
     jobs = relationship("PublishJob", back_populates="post_target", cascade="all, delete-orphan")
+    publish_results = relationship("PostPublishResult", back_populates="post_target", cascade="all, delete-orphan")
 
 class PublishJob(Base):
     __tablename__ = "publish_jobs"
@@ -258,6 +260,30 @@ class PublishJob(Base):
     completed_at = Column(DateTime, nullable=True)
 
     post_target = relationship("PostTarget", back_populates="jobs")
+
+
+class PostPublishResult(Base):
+    """
+    Menyimpan hasil aktual publish dari PostForMe API (/v1/social-post-results).
+    Sumber kebenaran untuk status sukses/gagal dan URL post di platform.
+    """
+    __tablename__ = "post_publish_results"
+
+    id = Column(String(36), primary_key=True, default=generate_uuid)
+    post_target_id = Column(String(36), ForeignKey("post_targets.id", ondelete="CASCADE"), nullable=False)
+    postforme_result_id = Column(String(255), nullable=True, index=True)  # ID dari /v1/social-post-results
+    postforme_post_id = Column(String(255), nullable=True, index=True)    # ID dari /v1/social-posts
+    social_account_id = Column(String(255), nullable=True)                # PostForMe social_account_id
+    success = Column(Boolean, nullable=True)
+    platform_url = Column(Text, nullable=True)       # URL post yang dipublish di platform
+    platform_post_id = Column(String(255), nullable=True)  # ID post di platform (IG, FB, dll)
+    error_data = Column(JSON, nullable=True)          # Error detail jika gagal
+    raw_result = Column(JSON, nullable=True)          # Full response dari PostForMe
+    credit_deducted = Column(Boolean, default=False, nullable=False)  # Flag apakah kredit sudah dikurangi
+    source = Column(String(50), default="sync", nullable=False)  # 'webhook' atau 'sync'
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    post_target = relationship("PostTarget", back_populates="publish_results")
 
 class ActivityLog(Base):
     __tablename__ = "activity_logs"

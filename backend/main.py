@@ -28,7 +28,7 @@ try:
     from backend.database import engine, Base
     from backend.routers import (
         auth, workspaces, clients, accounts, media, posts, calendar, queue, activity, dashboard,
-        firebase_auth, billing, admin
+        firebase_auth, billing, admin, webhook
     )
     from backend.seed import seed_database
 except ModuleNotFoundError:
@@ -36,7 +36,7 @@ except ModuleNotFoundError:
     from database import engine, Base
     from routers import (
         auth, workspaces, clients, accounts, media, posts, calendar, queue, activity, dashboard,
-        firebase_auth, billing, admin
+        firebase_auth, billing, admin, webhook
     )
     from seed import seed_database
 
@@ -77,6 +77,7 @@ app.include_router(calendar.router)
 app.include_router(queue.router)
 app.include_router(activity.router)
 app.include_router(dashboard.router)
+app.include_router(webhook.router)
 
 @app.get("/")
 @app.get("/api/backend")

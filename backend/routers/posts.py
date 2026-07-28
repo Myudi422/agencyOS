@@ -4,7 +4,7 @@ from pydantic import BaseModel
 from typing import List, Optional, Dict, Any
 from datetime import datetime
 from backend.database import get_db
-from backend.models.models import Post, PostTarget, SocialAccount, PostType, PostStatus, ActivityLog
+from backend.models.models import Post, PostTarget, SocialAccount, PostType, PostStatus, ActivityLog, UserSubscription
 from backend.services.queue_service import queue_service
 from backend.services.postforme_service import postforme_service
 
@@ -151,9 +151,10 @@ async def create_post(
                 detail=f"Kuota post tidak mencukupi. Sisa kuota Anda adalah {remaining} post, sedangkan aksi ini membutuhkan {required_quota} post."
             )
         
-        # Deduct quota
-        sub.posts_used += required_quota
-        db.add(sub)
+        # CATATAN: Kredit (posts_used) TIDAK dikurangi di sini.
+        # Kredit akan dikurangi oleh queue_service setelah PostForMe
+        # mengkonfirmasi bahwa post berhasil dipublikasikan (success=true).
+        # Ini mencegah pengguna kehilangan kredit untuk post yang gagal.
 
     # Parse scheduled_at if provided
     sched_dt = None
@@ -184,7 +185,8 @@ async def create_post(
         platform_configurations=data.platform_configurations,
         scheduled_at=sched_dt,
         status=initial_status,
-        created_by=current_user.full_name
+        created_by=current_user.full_name,
+        created_by_user_id=current_user.id  # Simpan user_id untuk deduct kredit nanti
     )
     db.add(post)
     db.flush()

@@ -317,4 +317,94 @@ class PostForMeService:
             res.raise_for_status()
             return res.json()
 
+    # ─── Webhook Management ──────────────────────────────────────────────────
+
+    async def list_webhooks(
+        self,
+        url: Optional[List[str]] = None,
+        event_type: Optional[List[str]] = None,
+        offset: int = 0,
+        limit: int = 50
+    ) -> Dict[str, Any]:
+        """Get all registered webhooks. Endpoint: GET /v1/webhooks"""
+        endpoint = f"{self.base_url}/v1/webhooks"
+        params: Dict[str, Any] = {"offset": offset, "limit": limit}
+        if url:
+            params["url"] = url
+        if event_type:
+            params["event_type"] = event_type
+        if not self.api_key:
+            return {"data": [], "meta": {"total": 0}}
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            res = await client.get(endpoint, params=params, headers=self._get_headers())
+            res.raise_for_status()
+            return res.json()
+
+    async def create_webhook(self, webhook_url: str, event_types: List[str]) -> Dict[str, Any]:
+        """Create a new webhook. Endpoint: POST /v1/webhooks"""
+        endpoint = f"{self.base_url}/v1/webhooks"
+        payload = {"url": webhook_url, "event_types": event_types}
+        if not self.api_key:
+            return {"id": "wbh_demo", "url": webhook_url, "secret": "demo_secret", "event_types": event_types}
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            res = await client.post(endpoint, json=payload, headers=self._get_headers())
+            res.raise_for_status()
+            return res.json()
+
+    async def get_webhook(self, webhook_id: str) -> Dict[str, Any]:
+        """Get webhook by ID. Endpoint: GET /v1/webhooks/{id}"""
+        endpoint = f"{self.base_url}/v1/webhooks/{webhook_id}"
+        if not self.api_key:
+            return {}
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            res = await client.get(endpoint, headers=self._get_headers())
+            res.raise_for_status()
+            return res.json()
+
+    async def update_webhook(self, webhook_id: str, webhook_url: Optional[str] = None, event_types: Optional[List[str]] = None) -> Dict[str, Any]:
+        """Update webhook. Endpoint: PATCH /v1/webhooks/{id}"""
+        endpoint = f"{self.base_url}/v1/webhooks/{webhook_id}"
+        payload: Dict[str, Any] = {}
+        if webhook_url:
+            payload["url"] = webhook_url
+        if event_types:
+            payload["event_types"] = event_types
+        if not self.api_key:
+            return {"id": webhook_id, "success": True}
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            res = await client.patch(endpoint, json=payload, headers=self._get_headers())
+            res.raise_for_status()
+            return res.json()
+
+    async def delete_webhook(self, webhook_id: str) -> Dict[str, Any]:
+        """Delete webhook. Endpoint: DELETE /v1/webhooks/{id}"""
+        endpoint = f"{self.base_url}/v1/webhooks/{webhook_id}"
+        if not self.api_key:
+            return {"success": True}
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            res = await client.delete(endpoint, headers=self._get_headers())
+            res.raise_for_status()
+            return res.json()
+
+    async def ensure_webhook_registered(self, target_url: str) -> Optional[Dict[str, Any]]:
+        """
+        Pastikan webhook untuk social.post.result.created terdaftar di PostForMe.
+        Jika belum ada, buat webhook baru. Kembalikan data webhook (termasuk secret).
+        """
+        try:
+            existing = await self.list_webhooks(url=[target_url])
+            for wh in existing.get("data", []):
+                if wh.get("url") == target_url and "social.post.result.created" in wh.get("event_types", []):
+                    logger.info(f"Webhook sudah terdaftar: {wh.get('id')}")
+                    return wh
+            new_webhook = await self.create_webhook(
+                webhook_url=target_url,
+                event_types=["social.post.result.created", "social.post.updated"]
+            )
+            logger.info(f"Webhook baru dibuat: {new_webhook.get('id')} secret={new_webhook.get('secret')}")
+            return new_webhook
+        except Exception as e:
+            logger.error(f"Gagal memastikan webhook terdaftar: {e}")
+            return None
+
 postforme_service = PostForMeService()
