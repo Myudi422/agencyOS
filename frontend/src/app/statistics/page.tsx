@@ -1718,23 +1718,23 @@ export default function StatisticsPage() {
 
                     {/* Section 4: Top Performing Posts */}
                     {pdfSections.topPosts && topPosts.length > 0 && (
-                      <div className="space-y-3">
+                      <div className="space-y-2">
                         <h2 className="text-xs font-extrabold text-slate-900 uppercase tracking-wider border-b border-slate-200 pb-1.5">
                           Top 5 Postingan Terbaik
                         </h2>
-                        <div className="grid grid-cols-1 gap-3">
+                        <div className="divide-y divide-slate-100">
                           {topPosts.slice(0, 5).map((post, i) => {
                             const m = post.metrics || {};
                             const eng = (m.likes || 0) + (m.comments || 0) + (m.shares || 0);
                             return (
-                              <div key={i} className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between text-xs gap-3">
-                                <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                                  <span className="font-extrabold text-purple-700 text-xs w-6 shrink-0">#{i + 1}</span>
+                              <div key={i} className="py-2.5 flex items-center justify-between text-xs gap-3">
+                                <div className="flex items-center gap-2 min-w-0 flex-1">
+                                  <span className="font-extrabold text-purple-700 text-xs w-5 shrink-0">#{i + 1}</span>
                                   <span className="text-purple-700 font-extrabold text-[10px] font-mono shrink-0">
                                     [{getPlatformDisplayName(post._platform)}]
                                   </span>
                                   <span className="font-bold text-slate-800 text-[11px] shrink-0">@{post._account_username}</span>
-                                  <p className="text-slate-600 text-xs leading-relaxed py-1 truncate max-w-xs">
+                                  <p className="text-slate-600 text-xs leading-normal truncate max-w-xs">
                                     {post.caption || "—"}
                                   </p>
                                 </div>
@@ -1749,7 +1749,7 @@ export default function StatisticsPage() {
                                       data-pdf-url={post.platform_url}
                                       target="_blank"
                                       rel="noopener noreferrer"
-                                      className="text-purple-700 font-bold hover:underline text-[10px] border border-purple-200 bg-purple-50 px-2 py-0.5 rounded ml-1"
+                                      className="text-purple-700 font-bold hover:underline text-[10px] ml-1"
                                     >
                                       Buka ↗
                                     </a>
@@ -1764,22 +1764,22 @@ export default function StatisticsPage() {
 
                     {/* Section 5: Timeline Feed (Initial 5 posts) */}
                     {pdfSections.timelineFeed && posts.length > 0 && (
-                      <div className="space-y-3">
+                      <div className="space-y-2">
                         <h2 className="text-xs font-extrabold text-slate-900 uppercase tracking-wider border-b border-slate-200 pb-1.5">
                           Riwayat Feed Postingan ({Math.min(posts.length, 5)} Post Terbaru)
                         </h2>
-                        <div className="space-y-2.5">
+                        <div className="divide-y divide-slate-100">
                           {posts.slice(0, 5).map((post, i) => {
                             const m = post.metrics || {};
                             return (
-                              <div key={i} className="p-3 rounded-lg border border-slate-200 bg-white flex items-center justify-between text-xs gap-3">
-                                <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                              <div key={i} className="py-2.5 flex items-center justify-between text-xs gap-3">
+                                <div className="flex items-center gap-2 min-w-0 flex-1">
                                   <span className="text-[10px] text-slate-400 font-mono w-20 shrink-0">{fmtDate(post.posted_at)}</span>
                                   <span className="text-purple-700 font-extrabold text-[10px] font-mono shrink-0">
                                     [{getPlatformDisplayName(post._platform)}]
                                   </span>
                                   <span className="font-bold text-slate-800 text-[11px] shrink-0">@{post._account_username}</span>
-                                  <p className="text-slate-600 text-xs leading-relaxed py-1 truncate">
+                                  <p className="text-slate-600 text-xs leading-normal truncate">
                                     {post.caption || "—"}
                                   </p>
                                 </div>
@@ -1793,7 +1793,7 @@ export default function StatisticsPage() {
                                       data-pdf-url={post.platform_url}
                                       target="_blank"
                                       rel="noopener noreferrer"
-                                      className="text-purple-700 font-bold hover:underline text-[10px] border border-purple-200 bg-purple-50 px-2 py-0.5 rounded ml-1"
+                                      className="text-purple-700 font-bold hover:underline text-[10px] ml-1"
                                     >
                                       Buka ↗
                                     </a>
@@ -1833,22 +1833,22 @@ export default function StatisticsPage() {
                       </div>
 
                       {/* Feed Chunk */}
-                      <div className="space-y-3">
+                      <div className="space-y-2">
                         <h2 className="text-xs font-extrabold text-slate-900 uppercase tracking-wider border-b border-slate-200 pb-1.5">
                           Riwayat Feed Postingan (Post {startIdx} – {endIdx})
                         </h2>
-                        <div className="space-y-2.5">
+                        <div className="divide-y divide-slate-100">
                           {chunk.map((post, i) => {
                             const m = post.metrics || {};
                             return (
-                              <div key={i} className="p-3 rounded-lg border border-slate-200 bg-white flex items-center justify-between text-xs gap-3">
-                                <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                              <div key={i} className="py-2.5 flex items-center justify-between text-xs gap-3">
+                                <div className="flex items-center gap-2 min-w-0 flex-1">
                                   <span className="text-[10px] text-slate-400 font-mono w-20 shrink-0">{fmtDate(post.posted_at)}</span>
                                   <span className="text-purple-700 font-extrabold text-[10px] font-mono shrink-0">
                                     [{getPlatformDisplayName(post._platform)}]
                                   </span>
                                   <span className="font-bold text-slate-800 text-[11px] shrink-0">@{post._account_username}</span>
-                                  <p className="text-slate-600 text-xs leading-relaxed py-1 truncate">
+                                  <p className="text-slate-600 text-xs leading-normal truncate">
                                     {post.caption || "—"}
                                   </p>
                                 </div>
@@ -1862,7 +1862,7 @@ export default function StatisticsPage() {
                                       data-pdf-url={post.platform_url}
                                       target="_blank"
                                       rel="noopener noreferrer"
-                                      className="text-purple-700 font-bold hover:underline text-[10px] border border-purple-200 bg-purple-50 px-2 py-0.5 rounded ml-1"
+                                      className="text-purple-700 font-bold hover:underline text-[10px] ml-1"
                                     >
                                       Buka ↗
                                     </a>
