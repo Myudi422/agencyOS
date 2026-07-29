@@ -7,7 +7,7 @@ import {
   Filter, Loader2, AlertTriangle, ArrowUpRight, BarChart, Globe,
   Star, X, Bookmark, MousePointerClick, ChevronRight, Info,
   Image as ImageIcon, Video, LayoutGrid, List, FileText, CheckSquare,
-  Square, User, Building, AlignLeft, Sparkles, Sliders, Check
+  Square, AlignLeft, Sparkles, Sliders, Check
 } from "lucide-react";
 import {
   ResponsiveContainer, LineChart, Line, BarChart as ReBarChart, Bar,
@@ -407,9 +407,9 @@ export default function StatisticsPage() {
   const [customFrom, setCustomFrom] = useState("");
   const [customTo, setCustomTo] = useState("");
 
-  // View Mode states: "grid" (Instagram-style) | "list"
-  const [topPostsViewMode, setTopPostsViewMode] = useState<"grid" | "list">("grid");
-  const [timelineViewMode, setTimelineViewMode] = useState<"grid" | "list">("grid");
+  // Default View Mode: "list" (as requested by user)
+  const [topPostsViewMode, setTopPostsViewMode] = useState<"grid" | "list">("list");
+  const [timelineViewMode, setTimelineViewMode] = useState<"grid" | "list">("list");
 
   // Data state
   const [data, setData] = useState<StatsFeedResponse | null>(null);
@@ -424,16 +424,13 @@ export default function StatisticsPage() {
 
   // PDF Executive Customizer Modal State
   const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
-  const [pdfTitle, setPdfTitle] = useState("Executive Social Media Performance Report");
-  const [pdfTarget, setPdfTarget] = useState("CEO & Executive Management");
+  const [pdfTitle, setPdfTitle] = useState("Laporan Performa Social Media");
   const [pdfNotes, setPdfNotes] = useState(
     "Performa konten sosial media periode ini menunjukkan pertumbuhan engagement yang positif, dengan pencapaian reach dan impresi yang meningkat signifikan."
   );
   const [pdfSelectedAccounts, setPdfSelectedAccounts] = useState<string[]>([]);
   const [pdfSections, setPdfSections] = useState({
     executiveSummary: true,
-    dailyTrend: true,
-    platformMix: true,
     accountBreakdown: true,
     topPosts: true,
     timelineFeed: true,
@@ -502,80 +499,69 @@ export default function StatisticsPage() {
     setIsPdfModalOpen(true);
   };
 
-  // ── Generate Executive PDF ──
+  // ── Multi-Page Clean PDF Generator ──
   const handleGenerateExecutivePDF = async () => {
     if (!data) return;
     setIsGeneratingPdf(true);
-    toast.info("Menyiapkan Laporan Eksekutif PDF...");
+    toast.info("Menyiapkan Laporan PDF...");
 
     try {
       const { jsPDF } = await import("jspdf");
       const { default: html2canvas } = await import("html2canvas");
 
-      // We render a hidden printable container with fixed A4 dimensions
-      const printContainer = document.getElementById("executive-pdf-template");
-      if (!printContainer) {
-        toast.error("Gagal memuat template laporan eksekutif.");
+      const templateContainer = document.getElementById("executive-pdf-template");
+      const page1El = document.getElementById("pdf-page-1");
+      const page2El = document.getElementById("pdf-page-2");
+
+      if (!templateContainer || !page1El || !page2El) {
+        toast.error("Gagal memuat template PDF.");
         setIsGeneratingPdf(false);
         return;
       }
 
-      printContainer.style.display = "block";
+      // Temporarily display template for html2canvas rendering
+      templateContainer.style.display = "block";
 
-      const canvas = await html2canvas(printContainer, {
+      const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+
+      // Render Page 1 Canvas
+      const canvas1 = await html2canvas(page1El, {
         scale: 2,
         useCORS: true,
         backgroundColor: "#ffffff",
         logging: false,
-        width: 800,
+        width: 794,
+        height: 1120,
       });
 
-      printContainer.style.display = "none";
+      const imgData1 = canvas1.toDataURL("image/png");
+      pdf.addImage(imgData1, "PNG", 0, 0, pageWidth, pageHeight);
 
-      const imgData = canvas.toDataURL("image/png");
-      const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
-      const pageWidth = pdf.internal.pageSize.getWidth();
-      const pageHeight = pdf.internal.pageSize.getHeight();
-      const margin = 8;
-      const availableWidth = pageWidth - margin * 2;
-      const imgHeight = (canvas.height / canvas.width) * availableWidth;
-
-      let remainingHeight = imgHeight;
-      let offsetY = margin;
-
-      if (imgHeight <= pageHeight - margin * 2) {
-        pdf.addImage(imgData, "PNG", margin, margin, availableWidth, imgHeight);
-      } else {
-        const pageImgHeight = pageHeight - margin * 2;
-        while (remainingHeight > 0) {
-          pdf.addImage(imgData, "PNG", margin, offsetY, availableWidth, imgHeight);
-          remainingHeight -= pageImgHeight;
-          if (remainingHeight > 0) {
-            pdf.addPage();
-            offsetY = margin - (imgHeight - remainingHeight);
-          }
-        }
+      // Render Page 2 Canvas if Top Posts or Timeline Feed sections are checked
+      if (pdfSections.topPosts || pdfSections.timelineFeed) {
+        const canvas2 = await html2canvas(page2El, {
+          scale: 2,
+          useCORS: true,
+          backgroundColor: "#ffffff",
+          logging: false,
+          width: 794,
+          height: 1120,
+        });
+        const imgData2 = canvas2.toDataURL("image/png");
+        pdf.addPage();
+        pdf.addImage(imgData2, "PNG", 0, 0, pageWidth, pageHeight);
       }
 
-      // Add page numbering & footer watermark
-      const totalPages = (pdf as any).internal.getNumberOfPages();
-      for (let i = 1; i <= totalPages; i++) {
-        pdf.setPage(i);
-        pdf.setFontSize(7);
-        pdf.setTextColor(150);
-        pdf.text(
-          `CONFIDENTIAL EXECUTIVE REPORT • Disiapkan untuk ${pdfTarget} • Hal ${i} dari ${totalPages}`,
-          margin,
-          pageHeight - 4
-        );
-      }
+      templateContainer.style.display = "none";
 
-      const filename = `Executive_Report_${pdfTarget.replace(/\s+/g, "_")}_${new Date().toISOString().slice(0, 10)}.pdf`;
+      const filename = `Laporan_Performa_Social_Media_${new Date().toISOString().slice(0, 10)}.pdf`;
       pdf.save(filename);
-      toast.success(`Laporan PDF Eksekutif berhasil diunduh: ${filename}`);
+      toast.success(`PDF Laporan berhasil diunduh: ${filename}`);
       setIsPdfModalOpen(false);
     } catch (err) {
-      console.error("PDF generation failed:", err);
+      console.error("PDF generation error:", err);
       toast.error("Gagal membuat laporan PDF.");
     } finally {
       setIsGeneratingPdf(false);
@@ -606,7 +592,6 @@ export default function StatisticsPage() {
     ? "Semua Akun"
     : availableAccounts.filter(a => selectedAccountIds.includes(a.id)).map(a => `@${a.username}`).join(", ");
 
-  // Accounts filtered for PDF
   const pdfFilteredAccounts = data?.accounts.filter(a => pdfSelectedAccounts.includes(a.id)) || [];
 
   return (
@@ -646,7 +631,7 @@ export default function StatisticsPage() {
             className="py-2.5 px-4 rounded-2xl gradient-brand text-white font-semibold text-xs flex items-center gap-2 shadow-md shadow-purple-500/20 hover:shadow-lg hover:shadow-purple-500/30 hover:scale-[1.01] transition-all disabled:opacity-50"
           >
             <FileText className="w-4 h-4" />
-            <span>Export PDF Eksekutif</span>
+            <span>Export PDF Laporan</span>
           </button>
         </div>
       </div>
@@ -1129,15 +1114,6 @@ export default function StatisticsPage() {
                   {/* View Mode Switcher */}
                   <div className="flex items-center gap-1 p-0.5 bg-slate-100/90 rounded-xl">
                     <button
-                      onClick={() => setTopPostsViewMode("grid")}
-                      className={`p-1.5 rounded-lg transition-all ${
-                        topPostsViewMode === "grid" ? "bg-white text-purple-700 shadow-xs" : "text-slate-400 hover:text-slate-600"
-                      }`}
-                      title="Grid View (Instagram Style)"
-                    >
-                      <LayoutGrid className="w-3.5 h-3.5" />
-                    </button>
-                    <button
                       onClick={() => setTopPostsViewMode("list")}
                       className={`p-1.5 rounded-lg transition-all ${
                         topPostsViewMode === "list" ? "bg-white text-purple-700 shadow-xs" : "text-slate-400 hover:text-slate-600"
@@ -1145,6 +1121,15 @@ export default function StatisticsPage() {
                       title="List View"
                     >
                       <List className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      onClick={() => setTopPostsViewMode("grid")}
+                      className={`p-1.5 rounded-lg transition-all ${
+                        topPostsViewMode === "grid" ? "bg-white text-purple-700 shadow-xs" : "text-slate-400 hover:text-slate-600"
+                      }`}
+                      title="Grid View (Instagram Style)"
+                    >
+                      <LayoutGrid className="w-3.5 h-3.5" />
                     </button>
                   </div>
                   <span className="text-[10px] text-slate-400 font-mono">Top {Math.min(data.top_posts.length, 10)}</span>
@@ -1246,15 +1231,6 @@ export default function StatisticsPage() {
                     {/* View Mode Switcher */}
                     <div className="flex items-center gap-1 p-0.5 bg-slate-100/90 rounded-xl">
                       <button
-                        onClick={() => setTimelineViewMode("grid")}
-                        className={`p-1.5 rounded-lg transition-all ${
-                          timelineViewMode === "grid" ? "bg-white text-purple-700 shadow-xs" : "text-slate-400 hover:text-slate-600"
-                        }`}
-                        title="Grid View (Instagram Style)"
-                      >
-                        <LayoutGrid className="w-3.5 h-3.5" />
-                      </button>
-                      <button
                         onClick={() => setTimelineViewMode("list")}
                         className={`p-1.5 rounded-lg transition-all ${
                           timelineViewMode === "list" ? "bg-white text-purple-700 shadow-xs" : "text-slate-400 hover:text-slate-600"
@@ -1262,6 +1238,15 @@ export default function StatisticsPage() {
                         title="List View"
                       >
                         <List className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={() => setTimelineViewMode("grid")}
+                        className={`p-1.5 rounded-lg transition-all ${
+                          timelineViewMode === "grid" ? "bg-white text-purple-700 shadow-xs" : "text-slate-400 hover:text-slate-600"
+                        }`}
+                        title="Grid View (Instagram Style)"
+                      >
+                        <LayoutGrid className="w-3.5 h-3.5" />
                       </button>
                     </div>
                     <span className="text-[10px] text-slate-400 font-mono">
@@ -1366,7 +1351,7 @@ export default function StatisticsPage() {
       {/* ═══════════════════════════════════════════════════════════════════════ */}
       {isPdfModalOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm animate-in fade-in duration-150">
-          <div className="w-full max-w-2xl bg-white rounded-3xl shadow-2xl border border-slate-100 overflow-hidden max-h-[90vh] flex flex-col">
+          <div className="w-full max-w-xl bg-white rounded-3xl shadow-2xl border border-slate-100 overflow-hidden max-h-[90vh] flex flex-col">
             {/* Modal Header */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50/50">
               <div className="flex items-center gap-2.5">
@@ -1375,9 +1360,9 @@ export default function StatisticsPage() {
                 </div>
                 <div>
                   <h3 className="text-sm font-bold text-slate-900" style={{ fontFamily: "'Outfit', sans-serif" }}>
-                    Konfigurasi Laporan PDF Eksekutif (CEO & Management)
+                    Konfigurasi Laporan PDF
                   </h3>
-                  <p className="text-[11px] text-slate-500">Sesuaikan isi seksi & catatan sebelum di-generate</p>
+                  <p className="text-[11px] text-slate-500">Sesuaikan judul, akun, seksi, & catatan sebelum di-download</p>
                 </div>
               </div>
               <button
@@ -1390,37 +1375,22 @@ export default function StatisticsPage() {
 
             {/* Modal Body */}
             <div className="p-6 overflow-y-auto space-y-5 flex-1 custom-scrollbar text-xs">
-              {/* Section 1: Title & Target */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold text-slate-800 mb-1.5 flex items-center gap-1.5">
-                    <FileText className="w-3.5 h-3.5 text-purple-600" />
-                    Judul Laporan
-                  </label>
-                  <input
-                    type="text"
-                    value={pdfTitle}
-                    onChange={e => setPdfTitle(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-purple-400"
-                    placeholder="e.g. Executive Performance Report"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-slate-800 mb-1.5 flex items-center gap-1.5">
-                    <Building className="w-3.5 h-3.5 text-purple-600" />
-                    Penerima Laporan (Target/CEO/Client)
-                  </label>
-                  <input
-                    type="text"
-                    value={pdfTarget}
-                    onChange={e => setPdfTarget(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-purple-400"
-                    placeholder="e.g. CEO & Board of Directors"
-                  />
-                </div>
+              {/* Judul Laporan */}
+              <div>
+                <label className="block text-xs font-bold text-slate-800 mb-1.5 flex items-center gap-1.5">
+                  <FileText className="w-3.5 h-3.5 text-purple-600" />
+                  Judul Laporan
+                </label>
+                <input
+                  type="text"
+                  value={pdfTitle}
+                  onChange={e => setPdfTitle(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-purple-400"
+                  placeholder="e.g. Laporan Performa Social Media"
+                />
               </div>
 
-              {/* Section 2: Account Selector */}
+              {/* Account Selector */}
               <div>
                 <label className="block text-xs font-bold text-slate-800 mb-1.5 flex items-center gap-1.5">
                   <Users2 className="w-3.5 h-3.5 text-purple-600" />
@@ -1453,17 +1423,15 @@ export default function StatisticsPage() {
                 </div>
               </div>
 
-              {/* Section 3: Sections Checkbox Selector */}
+              {/* Sections Checkbox Selector */}
               <div>
                 <label className="block text-xs font-bold text-slate-800 mb-1.5 flex items-center gap-1.5">
                   <Sliders className="w-3.5 h-3.5 text-purple-600" />
-                  Pilih Seksi statistik yang dimasukkan dalam PDF
+                  Pilih Seksi Laporan
                 </label>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 p-3 bg-slate-50 rounded-2xl border border-slate-100">
                   {[
                     { key: "executiveSummary", label: "Ringkasan Metrik KPI" },
-                    { key: "dailyTrend", label: "Grafik Tren Harian" },
-                    { key: "platformMix", label: "Platform Mix & Distribusi" },
                     { key: "accountBreakdown", label: "Performa Per Akun (Tabel)" },
                     { key: "topPosts", label: "Top Posts (Konten Terbaik)" },
                     { key: "timelineFeed", label: "Timeline Feed Postingan" },
@@ -1494,18 +1462,18 @@ export default function StatisticsPage() {
                 </div>
               </div>
 
-              {/* Section 4: Executive Analysis Note */}
+              {/* Catatan & Analisa Manager */}
               <div>
                 <label className="block text-xs font-bold text-slate-800 mb-1.5 flex items-center gap-1.5">
                   <AlignLeft className="w-3.5 h-3.5 text-purple-600" />
-                  Catatan & Analisa Eksekutif Manager (Optional)
+                  Catatan & Analisa Manager (Optional)
                 </label>
                 <textarea
                   rows={3}
                   value={pdfNotes}
                   onChange={e => setPdfNotes(e.target.value)}
                   className="w-full p-3 rounded-xl border border-slate-200 bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-purple-400 resize-none text-xs leading-relaxed"
-                  placeholder="Tuliskan pesan atau poin analisa sosial media untuk disampaikan ke CEO..."
+                  placeholder="Tuliskan poin analisa atau catatan penting sosial media..."
                 />
               </div>
             </div>
@@ -1524,7 +1492,7 @@ export default function StatisticsPage() {
                 className="px-5 py-2.5 rounded-xl text-xs font-bold text-white gradient-brand flex items-center gap-2 shadow-md shadow-purple-500/20 hover:shadow-lg disabled:opacity-60 transition-all"
               >
                 {isGeneratingPdf ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
-                <span>Generate & Download PDF Eksekutif</span>
+                <span>Download PDF Laporan</span>
               </button>
             </div>
           </div>
@@ -1532,185 +1500,217 @@ export default function StatisticsPage() {
       )}
 
       {/* ═══════════════════════════════════════════════════════════════════════ */}
-      {/* ─── HIDDEN PRINT TEMPLATE FOR EXECUTIVE PDF ─── */}
+      {/* ─── MULTI-PAGE CLEAN A4 PRINT TEMPLATES FOR PDF EXPORT ─── */}
       {/* ═══════════════════════════════════════════════════════════════════════ */}
       <div
         id="executive-pdf-template"
-        className="fixed top-0 left-[-9999px] w-[800px] bg-white text-slate-900 p-8 space-y-6 select-none font-sans"
+        className="fixed top-0 left-[-9999px] text-slate-900 select-none font-sans"
         style={{ display: "none" }}
       >
-        {/* Cover Header */}
-        <div className="p-6 rounded-3xl bg-slate-900 text-white space-y-4 shadow-lg">
-          <div className="flex items-center justify-between border-b border-slate-800 pb-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-purple-600 text-white flex items-center justify-center font-extrabold text-lg shadow-md">
-                S
+        {/* ── PAGE 1 (A4 Fixed Dimensions: 794px x 1120px) ── */}
+        <div
+          id="pdf-page-1"
+          className="w-[794px] h-[1120px] bg-white p-10 flex flex-col justify-between box-border overflow-hidden"
+        >
+          <div className="space-y-6">
+            {/* Header Banner */}
+            <div className="p-6 rounded-2xl bg-gradient-to-r from-slate-900 via-purple-950 to-slate-900 text-white shadow-md space-y-4">
+              <div className="flex items-center justify-between border-b border-white/10 pb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-purple-600 text-white flex items-center justify-center font-extrabold text-xl shadow-md border border-purple-400/30">
+                    S
+                  </div>
+                  <div>
+                    <h1 className="text-lg font-extrabold tracking-tight font-['Outfit']">{pdfTitle}</h1>
+                    <p className="text-xs text-purple-300 font-semibold mt-0.5">Shiera Analytics Report</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <span className="px-3 py-1 rounded-full bg-purple-900/80 text-purple-200 text-[10px] font-bold border border-purple-700/50 uppercase tracking-widest block">
+                    Report Brief
+                  </span>
+                  <span className="text-[10px] text-slate-400 font-mono block mt-1.5">
+                    Dibuat: {new Date().toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric" })}
+                  </span>
+                </div>
               </div>
-              <div>
-                <h1 className="text-xl font-extrabold tracking-tight font-['Outfit']">{pdfTitle}</h1>
-                <p className="text-xs text-purple-300 font-semibold mt-0.5">Shiera Social Command OS</p>
+
+              {/* Header Meta */}
+              <div className="grid grid-cols-2 gap-4 text-xs">
+                <div>
+                  <p className="text-[10px] text-slate-400 uppercase font-semibold">Periode Data</p>
+                  <p className="font-bold text-purple-300 mt-0.5">{data?.period_label}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] text-slate-400 uppercase font-semibold">Akun Dilibatkan</p>
+                  <p className="font-bold text-white mt-0.5">{pdfFilteredAccounts.length} Akun Sosial Media</p>
+                </div>
               </div>
             </div>
-            <div className="text-right">
-              <span className="px-3 py-1 rounded-full bg-purple-950 text-purple-300 text-[10px] font-bold border border-purple-800 uppercase tracking-widest block">
-                Executive Brief
-              </span>
-              <span className="text-[10px] text-slate-400 font-mono block mt-1">{new Date().toLocaleDateString("id-ID", { day: "2-digit", month: "long", year: "numeric" })}</span>
-            </div>
+
+            {/* Catatan Analisa Manager */}
+            {pdfNotes.trim() && (
+              <div className="p-4 rounded-xl bg-purple-50/80 border border-purple-200 text-purple-950 space-y-1">
+                <div className="flex items-center gap-2 text-purple-800 font-bold text-xs">
+                  <Sparkles className="w-4 h-4 text-purple-600 shrink-0" />
+                  <span>Catatan & Analisa Manager</span>
+                </div>
+                <p className="text-xs leading-relaxed text-slate-700 whitespace-pre-line">{pdfNotes}</p>
+              </div>
+            )}
+
+            {/* Section 1: KPI Summary Cards */}
+            {pdfSections.executiveSummary && (
+              <div className="space-y-3">
+                <h2 className="text-xs font-extrabold text-slate-900 uppercase tracking-wider border-b border-slate-200 pb-1.5">
+                  Ringkasan Metrik KPI
+                </h2>
+                <div className="grid grid-cols-4 gap-3">
+                  {[
+                    { label: "Total Post", val: fmtNum(agg?.total_posts), color: "text-purple-600" },
+                    { label: "Total Likes", val: fmtNum(agg?.likes), color: "text-rose-600" },
+                    { label: "Total Comments", val: fmtNum(agg?.comments), color: "text-sky-600" },
+                    { label: "Total Shares", val: fmtNum(agg?.shares), color: "text-emerald-600" },
+                    { label: "Total Reach", val: fmtNum(agg?.reach), color: "text-amber-600" },
+                    { label: "Video Views", val: fmtNum(agg?.video_views), color: "text-violet-600" },
+                    { label: "New Followers", val: fmtNum(agg?.new_followers), color: "text-teal-600" },
+                    { label: "Engagement Rate", val: `${agg?.engagement_rate ?? 0}%`, color: "text-yellow-600" },
+                  ].map((kpi, i) => (
+                    <div key={i} className="p-3 rounded-xl bg-slate-50 border border-slate-200/80 space-y-0.5">
+                      <span className="text-[9px] font-bold text-slate-500 uppercase block">{kpi.label}</span>
+                      <p className={`text-base font-extrabold ${kpi.color}`}>{kpi.val}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Section 2: Performa Per Akun Table */}
+            {pdfSections.accountBreakdown && pdfFilteredAccounts.length > 0 && (
+              <div className="space-y-3">
+                <h2 className="text-xs font-extrabold text-slate-900 uppercase tracking-wider border-b border-slate-200 pb-1.5">
+                  Performa Per Akun Sosial
+                </h2>
+                <table className="w-full text-xs border-collapse">
+                  <thead>
+                    <tr className="border-b border-slate-200 bg-slate-100/80">
+                      <th className="text-left py-2 px-3 font-bold text-slate-600 text-[11px]">Akun</th>
+                      <th className="text-right py-2 px-3 font-bold text-slate-600 text-[11px]">Post</th>
+                      <th className="text-right py-2 px-3 font-bold text-slate-600 text-[11px]">Likes</th>
+                      <th className="text-right py-2 px-3 font-bold text-slate-600 text-[11px]">Komentar</th>
+                      <th className="text-right py-2 px-3 font-bold text-slate-600 text-[11px]">Shares</th>
+                      <th className="text-right py-2 px-3 font-bold text-slate-600 text-[11px]">Reach</th>
+                      <th className="text-right py-2 px-3 font-bold text-slate-600 text-[11px]">Eng. Rate</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {pdfFilteredAccounts.map(acc => (
+                      <tr key={acc.id}>
+                        <td className="py-2 px-3 font-bold text-slate-800">
+                          {PLATFORM_ICONS[acc.platform]} @{acc.username}
+                        </td>
+                        <td className="py-2 px-3 text-right font-semibold">{acc.post_count}</td>
+                        <td className="py-2 px-3 text-right text-rose-600 font-semibold">{fmtNum(acc.metrics.likes)}</td>
+                        <td className="py-2 px-3 text-right text-sky-600 font-semibold">{fmtNum(acc.metrics.comments)}</td>
+                        <td className="py-2 px-3 text-right text-emerald-600 font-semibold">{fmtNum(acc.metrics.shares)}</td>
+                        <td className="py-2 px-3 text-right text-amber-600 font-semibold">{fmtNum(acc.metrics.reach)}</td>
+                        <td className="py-2 px-3 text-right font-bold text-purple-700">{acc.metrics.engagement_rate}%</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
 
-          <div className="grid grid-cols-3 gap-4 text-xs">
-            <div>
-              <p className="text-[10px] text-slate-400 uppercase font-semibold">Target Receiver</p>
-              <p className="font-bold text-white mt-0.5">{pdfTarget}</p>
-            </div>
-            <div>
-              <p className="text-[10px] text-slate-400 uppercase font-semibold">Periode Data</p>
-              <p className="font-bold text-purple-300 mt-0.5">{data?.period_label}</p>
-            </div>
-            <div>
-              <p className="text-[10px] text-slate-400 uppercase font-semibold">Akun Teranalisis</p>
-              <p className="font-bold text-white mt-0.5">{pdfFilteredAccounts.length} Social Accounts</p>
-            </div>
+          {/* Page 1 Footer */}
+          <div className="pt-4 border-t border-slate-200 flex items-center justify-between text-[10px] text-slate-400 font-medium">
+            <span>CONFIDENTIAL REPORT • Shiera Social Media Management</span>
+            <span>Halaman 1 dari 2</span>
           </div>
         </div>
 
-        {/* Executive Summary Note Box */}
-        {pdfNotes.trim() && (
-          <div className="p-5 rounded-2xl bg-purple-50 border border-purple-200 text-purple-950 space-y-1.5">
-            <div className="flex items-center gap-2 text-purple-800 font-bold text-xs">
-              <Sparkles className="w-4 h-4 text-purple-600" />
-              <span>Poin Analisa & Catatan Executive Manager</span>
-            </div>
-            <p className="text-xs leading-relaxed text-slate-700 whitespace-pre-line">{pdfNotes}</p>
-          </div>
-        )}
-
-        {/* Section 1: Executive KPI Summary Cards */}
-        {pdfSections.executiveSummary && (
-          <div className="space-y-3">
-            <h2 className="text-sm font-extrabold text-slate-900 uppercase tracking-wider border-b border-slate-200 pb-2">
-              Ringkasan Metrik KPI
-            </h2>
-            <div className="grid grid-cols-4 gap-3">
-              {[
-                { label: "Total Post", val: fmtNum(agg?.total_posts), color: "text-purple-600" },
-                { label: "Total Likes", val: fmtNum(agg?.likes), color: "text-rose-600" },
-                { label: "Total Comments", val: fmtNum(agg?.comments), color: "text-sky-600" },
-                { label: "Total Shares", val: fmtNum(agg?.shares), color: "text-emerald-600" },
-                { label: "Total Reach", val: fmtNum(agg?.reach), color: "text-amber-600" },
-                { label: "Video Views", val: fmtNum(agg?.video_views), color: "text-violet-600" },
-                { label: "New Followers", val: fmtNum(agg?.new_followers), color: "text-teal-600" },
-                { label: "Engagement Rate", val: `${agg?.engagement_rate ?? 0}%`, color: "text-yellow-600" },
-              ].map((kpi, i) => (
-                <div key={i} className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
-                  <span className="text-[10px] font-bold text-slate-500 uppercase">{kpi.label}</span>
-                  <p className={`text-lg font-extrabold ${kpi.color}`}>{kpi.val}</p>
+        {/* ── PAGE 2 (A4 Fixed Dimensions: 794px x 1120px) ── */}
+        <div
+          id="pdf-page-2"
+          className="w-[794px] h-[1120px] bg-white p-10 flex flex-col justify-between box-border overflow-hidden"
+        >
+          <div className="space-y-6">
+            {/* Page 2 Mini Header */}
+            <div className="flex items-center justify-between border-b border-slate-200 pb-3">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-xl bg-purple-600 text-white flex items-center justify-center font-bold text-sm">
+                  S
                 </div>
-              ))}
+                <span className="font-bold text-slate-800 text-xs">{pdfTitle}</span>
+              </div>
+              <span className="text-[10px] text-slate-400 font-mono">{data?.period_label}</span>
             </div>
-          </div>
-        )}
 
-        {/* Section 2: Account Breakdown Table */}
-        {pdfSections.accountBreakdown && pdfFilteredAccounts.length > 0 && (
-          <div className="space-y-3">
-            <h2 className="text-sm font-extrabold text-slate-900 uppercase tracking-wider border-b border-slate-200 pb-2">
-              Performa Per Akun Sosial
-            </h2>
-            <table className="w-full text-xs">
-              <thead>
-                <tr className="border-b border-slate-200 bg-slate-100">
-                  <th className="text-left py-2 px-3 font-bold text-slate-600">Akun</th>
-                  <th className="text-right py-2 px-3 font-bold text-slate-600">Post</th>
-                  <th className="text-right py-2 px-3 font-bold text-slate-600">Likes</th>
-                  <th className="text-right py-2 px-3 font-bold text-slate-600">Komentar</th>
-                  <th className="text-right py-2 px-3 font-bold text-slate-600">Shares</th>
-                  <th className="text-right py-2 px-3 font-bold text-slate-600">Reach</th>
-                  <th className="text-right py-2 px-3 font-bold text-slate-600">Eng. Rate</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {pdfFilteredAccounts.map(acc => (
-                  <tr key={acc.id}>
-                    <td className="py-2.5 px-3 font-bold text-slate-800">
-                      {PLATFORM_ICONS[acc.platform]} @{acc.username}
-                    </td>
-                    <td className="py-2.5 px-3 text-right font-semibold">{acc.post_count}</td>
-                    <td className="py-2.5 px-3 text-right text-rose-600 font-semibold">{fmtNum(acc.metrics.likes)}</td>
-                    <td className="py-2.5 px-3 text-right text-sky-600 font-semibold">{fmtNum(acc.metrics.comments)}</td>
-                    <td className="py-2.5 px-3 text-right text-emerald-600 font-semibold">{fmtNum(acc.metrics.shares)}</td>
-                    <td className="py-2.5 px-3 text-right text-amber-600 font-semibold">{fmtNum(acc.metrics.reach)}</td>
-                    <td className="py-2.5 px-3 text-right font-bold text-purple-700">{acc.metrics.engagement_rate}%</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+            {/* Section 3: Top Performing Posts */}
+            {pdfSections.topPosts && data?.top_posts && data.top_posts.length > 0 && (
+              <div className="space-y-3">
+                <h2 className="text-xs font-extrabold text-slate-900 uppercase tracking-wider border-b border-slate-200 pb-1.5">
+                  Top 5 Postingan Terbaik
+                </h2>
+                <div className="grid grid-cols-1 gap-2.5">
+                  {data.top_posts.slice(0, 5).map((post, i) => {
+                    const m = post.metrics || {};
+                    const eng = (m.likes || 0) + (m.comments || 0) + (m.shares || 0);
+                    return (
+                      <div key={i} className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between text-xs gap-3">
+                        <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                          <span className="font-extrabold text-purple-700 w-5">#{i + 1}</span>
+                          <span className="font-semibold text-slate-800 shrink-0">{PLATFORM_ICONS[post._platform || ""]} @{post._account_username}</span>
+                          <p className="text-slate-600 truncate max-w-xs">{post.caption || "—"}</p>
+                        </div>
+                        <div className="flex items-center gap-3.5 text-slate-700 shrink-0 text-[11px]">
+                          <span className="text-rose-600 font-semibold">♥ {fmtNum(m.likes)}</span>
+                          <span className="text-sky-600 font-semibold">💬 {fmtNum(m.comments)}</span>
+                          <span className="text-emerald-600 font-semibold">↗ {fmtNum(m.shares)}</span>
+                          <span className="font-bold text-purple-700 bg-purple-100 px-2 py-0.5 rounded-full text-[10px]">Eng: {fmtNum(eng)}</span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
-        {/* Section 3: Top Performing Posts */}
-        {pdfSections.topPosts && data?.top_posts && data.top_posts.length > 0 && (
-          <div className="space-y-3">
-            <h2 className="text-sm font-extrabold text-slate-900 uppercase tracking-wider border-b border-slate-200 pb-2">
-              Top 5 Postingan Terbaik
-            </h2>
-            <div className="grid grid-cols-1 gap-2.5">
-              {data.top_posts.slice(0, 5).map((post, i) => {
-                const m = post.metrics || {};
-                const eng = (m.likes || 0) + (m.comments || 0) + (m.shares || 0);
-                return (
-                  <div key={i} className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between text-xs gap-3">
-                    <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                      <span className="font-bold text-purple-700 w-5">#{i + 1}</span>
-                      <span className="font-semibold text-slate-800">{PLATFORM_ICONS[post._platform || ""]} @{post._account_username}</span>
-                      <p className="text-slate-600 truncate max-w-xs">{post.caption || "—"}</p>
-                    </div>
-                    <div className="flex items-center gap-4 text-slate-700 shrink-0 text-[11px]">
-                      <span>♥ {fmtNum(m.likes)}</span>
-                      <span>💬 {fmtNum(m.comments)}</span>
-                      <span>↗ {fmtNum(m.shares)}</span>
-                      <span className="font-bold text-purple-700">Eng: {fmtNum(eng)}</span>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+            {/* Section 4: Content Timeline Feed */}
+            {pdfSections.timelineFeed && data?.posts && data.posts.length > 0 && (
+              <div className="space-y-3">
+                <h2 className="text-xs font-extrabold text-slate-900 uppercase tracking-wider border-b border-slate-200 pb-1.5">
+                  Riwayat Feed Postingan ({Math.min(data.posts.length, 10)} Post Terbaru)
+                </h2>
+                <div className="space-y-2">
+                  {data.posts.slice(0, 10).map((post, i) => {
+                    const m = post.metrics || {};
+                    return (
+                      <div key={i} className="p-2.5 rounded-lg border border-slate-200/70 bg-white flex items-center justify-between text-xs gap-2">
+                        <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                          <span className="text-[10px] text-slate-400 font-mono w-20 shrink-0">{fmtDate(post.posted_at)}</span>
+                          <span className="font-bold text-slate-800 shrink-0">{PLATFORM_ICONS[post._platform || ""]} @{post._account_username}</span>
+                          <p className="text-slate-600 truncate">{post.caption || "—"}</p>
+                        </div>
+                        <div className="flex items-center gap-3 text-[10px] text-slate-500 shrink-0">
+                          <span className="text-rose-600">♥ {fmtNum(m.likes)}</span>
+                          <span className="text-sky-600">💬 {fmtNum(m.comments)}</span>
+                          <span className="text-emerald-600">↗ {fmtNum(m.shares)}</span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </div>
-        )}
 
-        {/* Section 4: Content Timeline Feed */}
-        {pdfSections.timelineFeed && data?.posts && data.posts.length > 0 && (
-          <div className="space-y-3">
-            <h2 className="text-sm font-extrabold text-slate-900 uppercase tracking-wider border-b border-slate-200 pb-2">
-              Riwayat Feed Postingan ({Math.min(data.posts.length, 10)} Post Terbaru)
-            </h2>
-            <div className="space-y-2">
-              {data.posts.slice(0, 10).map((post, i) => {
-                const m = post.metrics || {};
-                return (
-                  <div key={i} className="p-2.5 rounded-lg border border-slate-100 bg-white flex items-center justify-between text-xs gap-2">
-                    <div className="flex items-center gap-2 min-w-0 flex-1">
-                      <span className="text-[10px] text-slate-400 font-mono w-20 shrink-0">{fmtDate(post.posted_at)}</span>
-                      <span className="font-bold text-slate-800 shrink-0">@{post._account_username}</span>
-                      <p className="text-slate-600 truncate">{post.caption || "—"}</p>
-                    </div>
-                    <div className="flex items-center gap-3 text-[10px] text-slate-500 shrink-0">
-                      <span>♥ {fmtNum(m.likes)}</span>
-                      <span>💬 {fmtNum(m.comments)}</span>
-                      <span>↗ {fmtNum(m.shares)}</span>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+          {/* Page 2 Footer */}
+          <div className="pt-4 border-t border-slate-200 flex items-center justify-between text-[10px] text-slate-400 font-medium">
+            <span>CONFIDENTIAL REPORT • Shiera Social Media Management</span>
+            <span>Halaman 2 dari 2</span>
           </div>
-        )}
-
-        {/* PDF Footer watermark */}
-        <div className="pt-4 border-t border-slate-200 flex items-center justify-between text-[10px] text-slate-400">
-          <span>CONFIDENTIAL EXECUTIVE REPORT</span>
-          <span>Shiera Social Media Management OS</span>
         </div>
       </div>
     </div>
