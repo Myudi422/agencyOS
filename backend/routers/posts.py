@@ -1,3 +1,4 @@
+import logging
 from fastapi import APIRouter, Depends, HTTPException, Query, BackgroundTasks
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
@@ -7,6 +8,8 @@ from backend.database import get_db
 from backend.models.models import Post, PostTarget, SocialAccount, PostType, PostStatus, ActivityLog, UserSubscription
 from backend.services.queue_service import queue_service
 from backend.services.postforme_service import postforme_service
+
+logger = logging.getLogger("PostsRouter")
 
 router = APIRouter(prefix="/posts", tags=["Posts"])
 
@@ -82,36 +85,122 @@ STATUS_DB_TO_ALIAS: Dict[str, str] = {
 }
 
 @router.get("/")
-def get_posts(
+async def get_posts(
     workspace_id: str = Query(..., description="Workspace ID"),
-    status: Optional[str] = Query(None, description="draft, scheduled, processing, processed (aliases supported)"),
+    status: Optional[str] = Query(None, description="draft, scheduled, processing, processed"),
     client_id: Optional[str] = Query(None, description="Client filter"),
     search: Optional[str] = Query(None, description="Search in caption"),
     limit: int = Query(20, ge=1, le=100),
     offset: int = Query(0, ge=0),
     db: Session = Depends(get_db)
 ):
-    """Retrieves posts for a workspace with target account statuses."""
-    query = db.query(Post).filter(Post.workspace_id == workspace_id)
-
-    if status:
-        # Map frontend alias to DB enum value
-        db_status = STATUS_ALIAS_TO_DB.get(status.lower(), status.lower())
-        try:
-            query = query.filter(Post.status == PostStatus(db_status))
-        except ValueError:
-            pass  # Unknown status — ignore filter
-
-    if search:
-        query = query.filter(Post.caption.ilike(f"%{search}%"))
-    if client_id:
-        query = query.filter(Post.client_id == client_id)
-
-    total = query.count()
-    posts = query.order_by(Post.created_at.desc()).offset(offset).limit(limit).all()
+    """
+    Hybrid endpoint: 
+    - Fetches ACTIVE posts (scheduled/processing/processed) directly from PostForMe (source of truth).
+    - Local DB draft posts (no postforme_post_id) are merged in.
+    - Search and status filtering applied after merge.
+    """
     results = []
 
-    for p in posts:
+    # ─── 1. Load LOCAL posts for this workspace ────────────────────────────
+    local_query = db.query(Post).filter(Post.workspace_id == workspace_id)
+    if client_id:
+        local_query = local_query.filter(Post.client_id == client_id)
+    local_posts = local_query.order_by(Post.created_at.desc()).all()
+
+    # Map local posts by postforme_post_id for deduplication
+    pf_id_to_local: Dict[str, Post] = {}
+    local_only_posts: List[Post] = []  # Drafts not yet sent to PostForMe
+
+    for p in local_posts:
+        if p.postforme_post_id:
+            pf_id_to_local[p.postforme_post_id] = p
+        else:
+            local_only_posts.append(p)  # Pure local drafts
+
+    # ─── 2. Fetch from PostForMe API (source of truth) ────────────────────
+    pf_posts = []
+    try:
+        # Build external_id filter — PostForMe allows filtering by external_id (= our post IDs)
+        # We fetch all posts for accounts linked to this workspace
+        pf_status_filter = None
+        if status and status in ("draft", "scheduled", "processing", "processed"):
+            pf_status_filter = [status]
+
+        pf_response = await postforme_service.get_posts(
+            limit=min(limit * 3, 100),  # Over-fetch then filter locally
+            status=pf_status_filter
+        )
+        pf_posts = pf_response.get("data", [])
+    except Exception as e:
+        logger.warning(f"PostForMe fetch failed, falling back to local DB only: {e}")
+        pf_posts = []
+
+    # ─── 3. Build unified post objects from PostForMe data ────────────────
+    seen_pf_ids = set()
+    for pf_post in pf_posts:
+        pf_id = pf_post.get("id")
+        if not pf_id or pf_id in seen_pf_ids:
+            continue
+        seen_pf_ids.add(pf_id)
+
+        # Find matching local post for enrichment (captions, media, workspace context)
+        local = pf_id_to_local.get(pf_id)
+        if local and local.workspace_id != workspace_id:
+            continue  # Belongs to different workspace
+        if not local and not pf_post.get("external_id") in [p.id for p in local_posts]:
+            # PostForMe post has no local counterpart — skip (belongs to another workspace/project)
+            if local is None:
+                continue
+
+        # Platform & targets from local DB (more complete than PostForMe response)
+        targets = []
+        platforms = []
+        if local:
+            for t in local.targets:
+                acc = t.social_account
+                plat = acc.platform.value if acc else "unknown"
+                if plat not in platforms:
+                    platforms.append(plat)
+                targets.append({
+                    "target_id": t.id,
+                    "account_id": acc.id if acc else None,
+                    "platform": plat,
+                    "username": acc.username if acc else "deleted",
+                    "name": acc.name if acc else "Deleted Account",
+                    "avatar_url": acc.avatar_url if acc else None,
+                    "status": pf_post.get("status", "processing"),  # Use PostForMe status
+                    "platform_post_id": t.platform_post_id,
+                })
+
+        pf_status = pf_post.get("status", "processing")
+        caption = (local.caption if local else None) or pf_post.get("caption", "")
+        scheduled_at_val = pf_post.get("scheduled_at") or (local.scheduled_at.isoformat() if local and local.scheduled_at else None)
+        updated_at_val = pf_post.get("updated_at") or (local.updated_at.isoformat() if local and local.updated_at else None)
+
+        results.append({
+            "id": local.id if local else pf_id,
+            "postforme_post_id": pf_id,
+            "workspace_id": workspace_id,
+            "client_id": local.client_id if local else None,
+            "post_type": (local.post_type.value if local else "image"),
+            "content": {"text": caption or ""},
+            "caption": caption,
+            "hashtags": local.hashtags if local else None,
+            "media_urls": (local.media_urls or []) if local else [],
+            "platform_configurations": local.platform_configurations if local else None,
+            "platforms": platforms,
+            "scheduled_at": scheduled_at_val,
+            "published_at": (local.published_at.isoformat() if local and local.published_at else None),
+            "status": pf_status,  # ← Real status dari PostForMe!
+            "targets": targets,
+            "created_at": (local.created_at.isoformat() if local and local.created_at else pf_post.get("created_at")),
+            "updated_at": updated_at_val,
+            "_source": "postforme",
+        })
+
+    # ─── 4. Add local-only draft posts (not yet sent to PostForMe) ────────
+    for p in local_only_posts:
         targets = []
         platforms = []
         for t in p.targets:
@@ -126,38 +215,45 @@ def get_posts(
                 "username": acc.username if acc else "deleted",
                 "name": acc.name if acc else "Deleted Account",
                 "avatar_url": acc.avatar_url if acc else None,
-                "status": STATUS_DB_TO_ALIAS.get(t.status.value, t.status.value),
-                "platform_post_id": t.platform_post_id,
-                "error_message": t.error_message
+                "status": "draft",
+                "platform_post_id": None,
             })
-
-        db_status = p.status.value
         results.append({
             "id": p.id,
+            "postforme_post_id": None,
             "workspace_id": p.workspace_id,
             "client_id": p.client_id,
             "post_type": p.post_type.value,
-            # Nested content object (frontend expects { text })
             "content": {"text": p.caption or ""},
             "caption": p.caption,
             "hashtags": p.hashtags,
-            "first_comment": p.first_comment,
-            "location": p.location,
-            "alt_text": p.alt_text,
             "media_urls": p.media_urls or [],
             "platform_configurations": p.platform_configurations,
             "platforms": platforms,
-            "postforme_post_id": p.postforme_post_id,
-            "scheduled_at": p.scheduled_at.isoformat() if p.scheduled_at else None,
-            "published_at": p.published_at.isoformat() if p.published_at else None,
-            # Map DB status to frontend alias
-            "status": STATUS_DB_TO_ALIAS.get(db_status, db_status),
+            "scheduled_at": None,
+            "published_at": None,
+            "status": "draft",
             "targets": targets,
             "created_at": p.created_at.isoformat() if p.created_at else None,
             "updated_at": p.updated_at.isoformat() if p.updated_at else None,
+            "_source": "local_draft",
         })
 
-    return {"data": results, "total": total, "limit": limit, "offset": offset}
+    # ─── 5. Filter & search on merged results ─────────────────────────────
+    if status:
+        results = [r for r in results if r["status"] == status]
+    if search:
+        sq = search.lower()
+        results = [r for r in results if sq in (r.get("caption") or "").lower()]
+
+    # Sort: most recently updated first
+    results.sort(key=lambda r: r.get("updated_at") or r.get("created_at") or "", reverse=True)
+
+    # Paginate
+    total = len(results)
+    paginated = results[offset: offset + limit]
+
+    return {"data": paginated, "total": total, "limit": limit, "offset": offset}
 
 from backend.routers.firebase_auth import require_user
 from backend.models.models import User, UserSubscription
@@ -382,17 +478,29 @@ def patch_post(post_id: str, data: PostPatch, db: Session = Depends(get_db)):
     }
 
 @router.delete("/{post_id}")
-def delete_post(post_id: str, db: Session = Depends(get_db)):
+async def delete_post(post_id: str, db: Session = Depends(get_db)):
+    """Delete post from local DB AND from PostForMe (if postforme_post_id exists)."""
     post = db.query(Post).filter(Post.id == post_id).first()
     if not post:
         raise HTTPException(status_code=404, detail="Post not found")
-    
+
     workspace_id = post.workspace_id
+    pf_id = post.postforme_post_id
+
+    # Delete from PostForMe first (if it was submitted there)
+    if pf_id:
+        try:
+            await postforme_service.delete_post(pf_id)
+            logger.info(f"Deleted post {pf_id} from PostForMe.")
+        except Exception as e:
+            logger.warning(f"Failed to delete post {pf_id} from PostForMe: {e}")
+            # Continue with local deletion even if PostForMe fails
+
     db.delete(post)
     db.add(ActivityLog(
         workspace_id=workspace_id,
         action="DELETE_POST",
-        details=f"Deleted post {post_id}",
+        details=f"Deleted post {post_id} (PostForMe: {pf_id})",
         entity_type="Post"
     ))
     db.commit()

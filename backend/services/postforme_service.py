@@ -228,6 +228,21 @@ class PostForMeService:
             res.raise_for_status()
             return res.json()
 
+    async def delete_post(self, post_id: str) -> Dict[str, Any]:
+        """
+        Delete a post from PostForMe.
+        Endpoint: DELETE /v1/social-posts/{id}
+        """
+        url = f"{self.base_url}/v1/social-posts/{post_id}"
+        if not self.api_key:
+            logger.warning(f"POSTFORME_API_KEY not configured. Simulating delete for post {post_id}.")
+            return {"status": "success", "message": f"Post {post_id} deleted (mock)"}
+
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            res = await client.delete(url, headers=self._get_headers())
+            res.raise_for_status()
+            return res.json()
+
     async def get_posts(
         self,
         offset: int = 0,
