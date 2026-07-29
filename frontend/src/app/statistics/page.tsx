@@ -184,6 +184,13 @@ function getPlatformDisplayName(platform?: string): string {
   return map[platform.toLowerCase()] || platform;
 }
 
+function getProxiedImageUrl(url?: string): string {
+  if (!url) return "";
+  if (url.startsWith("data:") || url.startsWith("blob:")) return url;
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+  return `${apiUrl}/statistics/proxy-image?url=${encodeURIComponent(url)}`;
+}
+
 // ─── Sub-Components ───────────────────────────────────────────────────────────
 
 function PostMediaThumbnail({
@@ -228,8 +235,9 @@ function PostMediaThumbnail({
   return (
     <div className={`relative ${sizeClasses}`}>
       <img
-        src={url}
+        src={getProxiedImageUrl(url)}
         onError={() => setImgError(true)}
+        crossOrigin="anonymous"
         className={`${sizeClasses} object-cover ${isGrid ? "rounded-none" : "rounded-xl border border-slate-100 shadow-xs"}`}
         alt=""
       />
@@ -1728,8 +1736,25 @@ export default function StatisticsPage() {
                             const eng = (m.likes || 0) + (m.comments || 0) + (m.shares || 0);
                             return (
                               <div key={i} className="py-2.5 flex items-center justify-between text-xs gap-3">
-                                <div className="flex items-center gap-2 min-w-0 flex-1">
+                                <div className="flex items-center gap-2.5 min-w-0 flex-1">
                                   <span className="font-extrabold text-purple-700 text-xs w-5 shrink-0">#{i + 1}</span>
+
+                                  {/* Media Thumbnail */}
+                                  <div className="w-8 h-8 rounded-lg bg-slate-100 border border-slate-200 shrink-0 overflow-hidden flex items-center justify-center">
+                                    {post.media?.[0]?.url ? (
+                                      <img
+                                        src={getProxiedImageUrl(post.media[0].url)}
+                                        className="w-full h-full object-cover"
+                                        alt=""
+                                        crossOrigin="anonymous"
+                                      />
+                                    ) : post._platform === "tiktok" || post._platform === "tiktok_business" || post._platform === "youtube" || post.media?.[0]?.type === "video" ? (
+                                      <Video className="w-3.5 h-3.5 text-purple-600 opacity-75" />
+                                    ) : (
+                                      <ImageIcon className="w-3.5 h-3.5 text-purple-600 opacity-75" />
+                                    )}
+                                  </div>
+
                                   <span className="text-purple-700 font-extrabold text-[10px] font-mono shrink-0">
                                     [{getPlatformDisplayName(post._platform)}]
                                   </span>
@@ -1773,8 +1798,25 @@ export default function StatisticsPage() {
                             const m = post.metrics || {};
                             return (
                               <div key={i} className="py-2.5 flex items-center justify-between text-xs gap-3">
-                                <div className="flex items-center gap-2 min-w-0 flex-1">
+                                <div className="flex items-center gap-2.5 min-w-0 flex-1">
                                   <span className="text-[10px] text-slate-400 font-mono w-20 shrink-0">{fmtDate(post.posted_at)}</span>
+
+                                  {/* Media Thumbnail */}
+                                  <div className="w-8 h-8 rounded-lg bg-slate-100 border border-slate-200 shrink-0 overflow-hidden flex items-center justify-center">
+                                    {post.media?.[0]?.url ? (
+                                      <img
+                                        src={getProxiedImageUrl(post.media[0].url)}
+                                        className="w-full h-full object-cover"
+                                        alt=""
+                                        crossOrigin="anonymous"
+                                      />
+                                    ) : post._platform === "tiktok" || post._platform === "tiktok_business" || post._platform === "youtube" || post.media?.[0]?.type === "video" ? (
+                                      <Video className="w-3.5 h-3.5 text-purple-600 opacity-75" />
+                                    ) : (
+                                      <ImageIcon className="w-3.5 h-3.5 text-purple-600 opacity-75" />
+                                    )}
+                                  </div>
+
                                   <span className="text-purple-700 font-extrabold text-[10px] font-mono shrink-0">
                                     [{getPlatformDisplayName(post._platform)}]
                                   </span>
@@ -1842,8 +1884,25 @@ export default function StatisticsPage() {
                             const m = post.metrics || {};
                             return (
                               <div key={i} className="py-2.5 flex items-center justify-between text-xs gap-3">
-                                <div className="flex items-center gap-2 min-w-0 flex-1">
+                                <div className="flex items-center gap-2.5 min-w-0 flex-1">
                                   <span className="text-[10px] text-slate-400 font-mono w-20 shrink-0">{fmtDate(post.posted_at)}</span>
+
+                                  {/* Media Thumbnail */}
+                                  <div className="w-8 h-8 rounded-lg bg-slate-100 border border-slate-200 shrink-0 overflow-hidden flex items-center justify-center">
+                                    {post.media?.[0]?.url ? (
+                                      <img
+                                        src={getProxiedImageUrl(post.media[0].url)}
+                                        className="w-full h-full object-cover"
+                                        alt=""
+                                        crossOrigin="anonymous"
+                                      />
+                                    ) : post._platform === "tiktok" || post._platform === "tiktok_business" || post._platform === "youtube" || post.media?.[0]?.type === "video" ? (
+                                      <Video className="w-3.5 h-3.5 text-purple-600 opacity-75" />
+                                    ) : (
+                                      <ImageIcon className="w-3.5 h-3.5 text-purple-600 opacity-75" />
+                                    )}
+                                  </div>
+
                                   <span className="text-purple-700 font-extrabold text-[10px] font-mono shrink-0">
                                     [{getPlatformDisplayName(post._platform)}]
                                   </span>

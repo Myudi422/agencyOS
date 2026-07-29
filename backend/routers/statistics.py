@@ -226,6 +226,33 @@ async def _fetch_all_posts_for_account(
     return all_posts
 
 
+# ─── Image Proxy Endpoint for CORS-free PDF Generation ───────────────────────
+
+@router.get("/proxy-image")
+async def proxy_image(url: str = Query(..., description="External image URL to proxy")):
+    """Proxy external media image (TikTok, IG, FB) to bypass CORS when generating PDF in frontend canvas."""
+    import httpx
+    from fastapi.responses import Response
+
+    if not url:
+        return Response(status_code=400)
+    try:
+        async with httpx.AsyncClient(timeout=10.0, follow_redirects=True) as client:
+            resp = await client.get(url)
+            content_type = resp.headers.get("content-type", "image/jpeg")
+            return Response(
+                content=resp.content,
+                media_type=content_type,
+                headers={
+                    "Access-Control-Allow-Origin": "*",
+                    "Cache-Control": "public, max-age=86400",
+                },
+            )
+    except Exception as exc:
+        logger.warning(f"Image proxy failed for URL {url[:60]}: {exc}")
+        return Response(status_code=502)
+
+
 # ─── Endpoints ────────────────────────────────────────────────────────────────
 
 @router.get("/accounts")
