@@ -6,7 +6,8 @@ import {
   Share2, Eye, Play, UserPlus, TrendingUp, ChevronDown, Calendar,
   Filter, Loader2, AlertTriangle, ArrowUpRight, BarChart, Globe,
   Star, X, Bookmark, MousePointerClick, ChevronRight, Info,
-  Image as ImageIcon, Video, LayoutGrid, List
+  Image as ImageIcon, Video, LayoutGrid, List, FileText, CheckSquare,
+  Square, User, Building, AlignLeft, Sparkles, Sliders, Check
 } from "lucide-react";
 import {
   ResponsiveContainer, LineChart, Line, BarChart as ReBarChart, Bar,
@@ -391,118 +392,6 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   );
 };
 
-// ─── PDF Export ───────────────────────────────────────────────────────────────
-
-async function exportToPDF(
-  data: StatsFeedResponse,
-  periodLabel: string,
-  selectedAccountNames: string[]
-) {
-  const { jsPDF } = await import("jspdf");
-  const { default: html2canvas } = await import("html2canvas");
-
-  const element = document.getElementById("statistics-report-area");
-  if (!element) {
-    toast.error("Tidak dapat menemukan area laporan.");
-    return;
-  }
-
-  toast.info("Menyiapkan PDF...");
-
-  try {
-    const canvas = await html2canvas(element, {
-      scale: 1.5,
-      useCORS: true,
-      backgroundColor: "#ffffff",
-      logging: false,
-      width: element.scrollWidth,
-      height: element.scrollHeight,
-    });
-
-    const imgData = canvas.toDataURL("image/png");
-    const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
-    const pageWidth = pdf.internal.pageSize.getWidth();
-    const pageHeight = pdf.internal.pageSize.getHeight();
-    const margin = 10;
-    const availableWidth = pageWidth - margin * 2;
-
-    // Header
-    pdf.setFillColor(124, 58, 237);
-    pdf.rect(0, 0, pageWidth, 24, "F");
-    pdf.setTextColor(255, 255, 255);
-    pdf.setFontSize(14);
-    pdf.setFont("helvetica", "bold");
-    pdf.text("Shiera — Laporan Statistik Akun", margin, 10);
-    pdf.setFontSize(8);
-    pdf.setFont("helvetica", "normal");
-    pdf.text(`Periode: ${periodLabel}   •   Dibuat: ${new Date().toLocaleString("id-ID")}`, margin, 17);
-    if (selectedAccountNames.length > 0) {
-      pdf.text(`Akun: ${selectedAccountNames.join(", ")}`, margin, 22);
-    }
-
-    // Aggregated metrics summary text block
-    pdf.setTextColor(30, 30, 30);
-    const agg = data.aggregated;
-    pdf.setFontSize(9);
-    pdf.setFont("helvetica", "bold");
-    pdf.text("Ringkasan Metrik", margin, 32);
-    pdf.setFont("helvetica", "normal");
-    pdf.setFontSize(8);
-    const metrics = [
-      `Total Post: ${fmtNum(agg.total_posts)}`,
-      `Total Likes: ${fmtNum(agg.likes)}`,
-      `Total Comments: ${fmtNum(agg.comments)}`,
-      `Total Shares: ${fmtNum(agg.shares)}`,
-      `Total Reach: ${fmtNum(agg.reach)}`,
-      `Video Views: ${fmtNum(agg.video_views)}`,
-      `New Followers: ${fmtNum(agg.new_followers)}`,
-      `Engagement Rate: ${agg.engagement_rate}%`,
-    ];
-    metrics.forEach((m, i) => {
-      pdf.text(m, margin + (i % 4) * 45, 38 + Math.floor(i / 4) * 6);
-    });
-
-    // Main chart image
-    const startY = 52;
-    const imgHeight = (canvas.height / canvas.width) * availableWidth;
-    let yPos = startY;
-
-    if (imgHeight <= pageHeight - startY - margin) {
-      pdf.addImage(imgData, "PNG", margin, yPos, availableWidth, imgHeight);
-    } else {
-      const pageImgHeight = pageHeight - startY - margin;
-      let remainingImgHeight = imgHeight;
-      let offsetY = startY;
-
-      while (remainingImgHeight > 0) {
-        const chunkHeight = Math.min(remainingImgHeight, pageImgHeight);
-        pdf.addImage(imgData, "PNG", margin, offsetY, availableWidth, imgHeight);
-        remainingImgHeight -= chunkHeight;
-        if (remainingImgHeight > 0) {
-          pdf.addPage();
-          offsetY = margin - (imgHeight - remainingImgHeight);
-        }
-      }
-    }
-
-    // Footer
-    const totalPages = (pdf as any).internal.getNumberOfPages();
-    for (let i = 1; i <= totalPages; i++) {
-      pdf.setPage(i);
-      pdf.setFontSize(7);
-      pdf.setTextColor(150);
-      pdf.text(`Halaman ${i} dari ${totalPages} — Shiera Analytics Report`, margin, pageHeight - 4);
-    }
-
-    const filename = `shiera-statistik-${new Date().toISOString().slice(0, 10)}.pdf`;
-    pdf.save(filename);
-    toast.success(`PDF berhasil diexport: ${filename}`);
-  } catch (err) {
-    console.error("PDF export error:", err);
-    toast.error("Gagal mengexport PDF. Coba lagi.");
-  }
-}
-
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
 export default function StatisticsPage() {
@@ -526,13 +415,30 @@ export default function StatisticsPage() {
   const [data, setData] = useState<StatsFeedResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [hasLoaded, setHasLoaded] = useState(false);
-  const [exportLoading, setExportLoading] = useState(false);
 
   // Pagination for Timeline Posts
   const [timelinePage, setTimelinePage] = useState(1);
 
   // Chart tab
   const [chartMetric, setChartMetric] = useState<"likes" | "comments" | "shares" | "reach" | "video_views">("likes");
+
+  // PDF Executive Customizer Modal State
+  const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
+  const [pdfTitle, setPdfTitle] = useState("Executive Social Media Performance Report");
+  const [pdfTarget, setPdfTarget] = useState("CEO & Executive Management");
+  const [pdfNotes, setPdfNotes] = useState(
+    "Performa konten sosial media periode ini menunjukkan pertumbuhan engagement yang positif, dengan pencapaian reach dan impresi yang meningkat signifikan."
+  );
+  const [pdfSelectedAccounts, setPdfSelectedAccounts] = useState<string[]>([]);
+  const [pdfSections, setPdfSections] = useState({
+    executiveSummary: true,
+    dailyTrend: true,
+    platformMix: true,
+    accountBreakdown: true,
+    topPosts: true,
+    timelineFeed: true,
+  });
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
 
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -545,7 +451,10 @@ export default function StatisticsPage() {
   useEffect(() => {
     if (!activeWorkspace?.id) return;
     fetchApi<SocialAccountMeta[]>(`/statistics/accounts?workspace_id=${activeWorkspace.id}`)
-      .then(setAvailableAccounts)
+      .then((accs) => {
+        setAvailableAccounts(accs);
+        setPdfSelectedAccounts(accs.map(a => a.id));
+      })
       .catch(() => setAvailableAccounts([]));
   }, [activeWorkspace?.id]);
 
@@ -584,15 +493,93 @@ export default function StatisticsPage() {
     if (activeWorkspace?.id && !hasLoaded) loadStats();
   }, [activeWorkspace?.id]);
 
-  // ── PDF Export ──
-  const handleExportPDF = async () => {
+  // Open PDF Customizer Modal
+  const handleOpenPdfModal = () => {
     if (!data) return;
-    setExportLoading(true);
-    const selectedNames = selectedAccountIds.length === 0
-      ? ["Semua Akun"]
-      : availableAccounts.filter(a => selectedAccountIds.includes(a.id)).map(a => `@${a.username}`);
-    await exportToPDF(data, data.period_label, selectedNames);
-    setExportLoading(false);
+    setPdfSelectedAccounts(
+      selectedAccountIds.length > 0 ? selectedAccountIds : availableAccounts.map(a => a.id)
+    );
+    setIsPdfModalOpen(true);
+  };
+
+  // ── Generate Executive PDF ──
+  const handleGenerateExecutivePDF = async () => {
+    if (!data) return;
+    setIsGeneratingPdf(true);
+    toast.info("Menyiapkan Laporan Eksekutif PDF...");
+
+    try {
+      const { jsPDF } = await import("jspdf");
+      const { default: html2canvas } = await import("html2canvas");
+
+      // We render a hidden printable container with fixed A4 dimensions
+      const printContainer = document.getElementById("executive-pdf-template");
+      if (!printContainer) {
+        toast.error("Gagal memuat template laporan eksekutif.");
+        setIsGeneratingPdf(false);
+        return;
+      }
+
+      printContainer.style.display = "block";
+
+      const canvas = await html2canvas(printContainer, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: "#ffffff",
+        logging: false,
+        width: 800,
+      });
+
+      printContainer.style.display = "none";
+
+      const imgData = canvas.toDataURL("image/png");
+      const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const margin = 8;
+      const availableWidth = pageWidth - margin * 2;
+      const imgHeight = (canvas.height / canvas.width) * availableWidth;
+
+      let remainingHeight = imgHeight;
+      let offsetY = margin;
+
+      if (imgHeight <= pageHeight - margin * 2) {
+        pdf.addImage(imgData, "PNG", margin, margin, availableWidth, imgHeight);
+      } else {
+        const pageImgHeight = pageHeight - margin * 2;
+        while (remainingHeight > 0) {
+          pdf.addImage(imgData, "PNG", margin, offsetY, availableWidth, imgHeight);
+          remainingHeight -= pageImgHeight;
+          if (remainingHeight > 0) {
+            pdf.addPage();
+            offsetY = margin - (imgHeight - remainingHeight);
+          }
+        }
+      }
+
+      // Add page numbering & footer watermark
+      const totalPages = (pdf as any).internal.getNumberOfPages();
+      for (let i = 1; i <= totalPages; i++) {
+        pdf.setPage(i);
+        pdf.setFontSize(7);
+        pdf.setTextColor(150);
+        pdf.text(
+          `CONFIDENTIAL EXECUTIVE REPORT • Disiapkan untuk ${pdfTarget} • Hal ${i} dari ${totalPages}`,
+          margin,
+          pageHeight - 4
+        );
+      }
+
+      const filename = `Executive_Report_${pdfTarget.replace(/\s+/g, "_")}_${new Date().toISOString().slice(0, 10)}.pdf`;
+      pdf.save(filename);
+      toast.success(`Laporan PDF Eksekutif berhasil diunduh: ${filename}`);
+      setIsPdfModalOpen(false);
+    } catch (err) {
+      console.error("PDF generation failed:", err);
+      toast.error("Gagal membuat laporan PDF.");
+    } finally {
+      setIsGeneratingPdf(false);
+    }
   };
 
   const agg = data?.aggregated;
@@ -618,6 +605,9 @@ export default function StatisticsPage() {
   const selectedAccountNames = selectedAccountIds.length === 0
     ? "Semua Akun"
     : availableAccounts.filter(a => selectedAccountIds.includes(a.id)).map(a => `@${a.username}`).join(", ");
+
+  // Accounts filtered for PDF
+  const pdfFilteredAccounts = data?.accounts.filter(a => pdfSelectedAccounts.includes(a.id)) || [];
 
   return (
     <div className="space-y-6 pb-16 min-w-0">
@@ -651,12 +641,12 @@ export default function StatisticsPage() {
             <span>{loading ? "Memuat..." : "Refresh"}</span>
           </button>
           <button
-            onClick={handleExportPDF}
-            disabled={!data || exportLoading || loading}
+            onClick={handleOpenPdfModal}
+            disabled={!data || loading}
             className="py-2.5 px-4 rounded-2xl gradient-brand text-white font-semibold text-xs flex items-center gap-2 shadow-md shadow-purple-500/20 hover:shadow-lg hover:shadow-purple-500/30 hover:scale-[1.01] transition-all disabled:opacity-50"
           >
-            {exportLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
-            <span>Export PDF</span>
+            <FileText className="w-4 h-4" />
+            <span>Export PDF Eksekutif</span>
           </button>
         </div>
       </div>
@@ -791,9 +781,9 @@ export default function StatisticsPage() {
         </div>
       )}
 
-      {/* ─── Stats Area (PDF Export Target) ─── */}
+      {/* ─── Main Content Area ─── */}
       {!loading && data && (
-        <div id="statistics-report-area" className="space-y-6">
+        <div className="space-y-6">
           {/* Period Info Bar */}
           <div className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-purple-50 border border-purple-200 text-purple-700 flex-wrap">
             <Calendar className="w-4 h-4 shrink-0" />
@@ -1370,6 +1360,359 @@ export default function StatisticsPage() {
           )}
         </div>
       )}
+
+      {/* ═══════════════════════════════════════════════════════════════════════ */}
+      {/* ─── EXECUTIVE PDF CUSTOMIZER MODAL ─── */}
+      {/* ═══════════════════════════════════════════════════════════════════════ */}
+      {isPdfModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm animate-in fade-in duration-150">
+          <div className="w-full max-w-2xl bg-white rounded-3xl shadow-2xl border border-slate-100 overflow-hidden max-h-[90vh] flex flex-col">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50/50">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-2xl bg-purple-100 text-purple-700 flex items-center justify-center shadow-xs">
+                  <FileText className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-slate-900" style={{ fontFamily: "'Outfit', sans-serif" }}>
+                    Konfigurasi Laporan PDF Eksekutif (CEO & Management)
+                  </h3>
+                  <p className="text-[11px] text-slate-500">Sesuaikan isi seksi & catatan sebelum di-generate</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsPdfModalOpen(false)}
+                className="p-1.5 rounded-full hover:bg-slate-200 text-slate-400 hover:text-slate-600 transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 overflow-y-auto space-y-5 flex-1 custom-scrollbar text-xs">
+              {/* Section 1: Title & Target */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-800 mb-1.5 flex items-center gap-1.5">
+                    <FileText className="w-3.5 h-3.5 text-purple-600" />
+                    Judul Laporan
+                  </label>
+                  <input
+                    type="text"
+                    value={pdfTitle}
+                    onChange={e => setPdfTitle(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-purple-400"
+                    placeholder="e.g. Executive Performance Report"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-800 mb-1.5 flex items-center gap-1.5">
+                    <Building className="w-3.5 h-3.5 text-purple-600" />
+                    Penerima Laporan (Target/CEO/Client)
+                  </label>
+                  <input
+                    type="text"
+                    value={pdfTarget}
+                    onChange={e => setPdfTarget(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-purple-400"
+                    placeholder="e.g. CEO & Board of Directors"
+                  />
+                </div>
+              </div>
+
+              {/* Section 2: Account Selector */}
+              <div>
+                <label className="block text-xs font-bold text-slate-800 mb-1.5 flex items-center gap-1.5">
+                  <Users2 className="w-3.5 h-3.5 text-purple-600" />
+                  Pilih Akun yang Dilibatkan ({pdfSelectedAccounts.length} akun dipilih)
+                </label>
+                <div className="flex flex-wrap gap-2 p-3 bg-slate-50 rounded-2xl border border-slate-100 max-h-36 overflow-y-auto">
+                  {availableAccounts.map(acc => {
+                    const isSelected = pdfSelectedAccounts.includes(acc.id);
+                    return (
+                      <button
+                        key={acc.id}
+                        type="button"
+                        onClick={() => {
+                          setPdfSelectedAccounts(prev =>
+                            isSelected ? prev.filter(id => id !== acc.id) : [...prev, acc.id]
+                          );
+                        }}
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all ${
+                          isSelected
+                            ? "bg-purple-600 text-white border-purple-600 shadow-xs"
+                            : "bg-white text-slate-600 border-slate-200 hover:border-purple-200"
+                        }`}
+                      >
+                        <span>{PLATFORM_ICONS[acc.platform]}</span>
+                        <span>@{acc.username}</span>
+                        {isSelected && <Check className="w-3 h-3 ml-0.5" />}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Section 3: Sections Checkbox Selector */}
+              <div>
+                <label className="block text-xs font-bold text-slate-800 mb-1.5 flex items-center gap-1.5">
+                  <Sliders className="w-3.5 h-3.5 text-purple-600" />
+                  Pilih Seksi statistik yang dimasukkan dalam PDF
+                </label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 p-3 bg-slate-50 rounded-2xl border border-slate-100">
+                  {[
+                    { key: "executiveSummary", label: "Ringkasan Metrik KPI" },
+                    { key: "dailyTrend", label: "Grafik Tren Harian" },
+                    { key: "platformMix", label: "Platform Mix & Distribusi" },
+                    { key: "accountBreakdown", label: "Performa Per Akun (Tabel)" },
+                    { key: "topPosts", label: "Top Posts (Konten Terbaik)" },
+                    { key: "timelineFeed", label: "Timeline Feed Postingan" },
+                  ].map(sec => {
+                    const isChecked = (pdfSections as any)[sec.key];
+                    return (
+                      <button
+                        key={sec.key}
+                        type="button"
+                        onClick={() => {
+                          setPdfSections(prev => ({ ...prev, [sec.key]: !isChecked }));
+                        }}
+                        className={`flex items-center justify-between p-2.5 rounded-xl border text-left transition-all ${
+                          isChecked
+                            ? "bg-white text-purple-900 border-purple-200 font-bold shadow-xs"
+                            : "bg-white/60 text-slate-400 border-slate-200 hover:border-slate-300"
+                        }`}
+                      >
+                        <span>{sec.label}</span>
+                        {isChecked ? (
+                          <CheckSquare className="w-4 h-4 text-purple-600 shrink-0" />
+                        ) : (
+                          <Square className="w-4 h-4 text-slate-300 shrink-0" />
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Section 4: Executive Analysis Note */}
+              <div>
+                <label className="block text-xs font-bold text-slate-800 mb-1.5 flex items-center gap-1.5">
+                  <AlignLeft className="w-3.5 h-3.5 text-purple-600" />
+                  Catatan & Analisa Eksekutif Manager (Optional)
+                </label>
+                <textarea
+                  rows={3}
+                  value={pdfNotes}
+                  onChange={e => setPdfNotes(e.target.value)}
+                  className="w-full p-3 rounded-xl border border-slate-200 bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-purple-400 resize-none text-xs leading-relaxed"
+                  placeholder="Tuliskan pesan atau poin analisa sosial media untuk disampaikan ke CEO..."
+                />
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="flex items-center justify-end gap-2.5 px-6 py-4 border-t border-slate-100 bg-slate-50">
+              <button
+                onClick={() => setIsPdfModalOpen(false)}
+                className="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-200 transition-colors"
+              >
+                Batal
+              </button>
+              <button
+                onClick={handleGenerateExecutivePDF}
+                disabled={isGeneratingPdf || pdfSelectedAccounts.length === 0}
+                className="px-5 py-2.5 rounded-xl text-xs font-bold text-white gradient-brand flex items-center gap-2 shadow-md shadow-purple-500/20 hover:shadow-lg disabled:opacity-60 transition-all"
+              >
+                {isGeneratingPdf ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+                <span>Generate & Download PDF Eksekutif</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ═══════════════════════════════════════════════════════════════════════ */}
+      {/* ─── HIDDEN PRINT TEMPLATE FOR EXECUTIVE PDF ─── */}
+      {/* ═══════════════════════════════════════════════════════════════════════ */}
+      <div
+        id="executive-pdf-template"
+        className="fixed top-0 left-[-9999px] w-[800px] bg-white text-slate-900 p-8 space-y-6 select-none font-sans"
+        style={{ display: "none" }}
+      >
+        {/* Cover Header */}
+        <div className="p-6 rounded-3xl bg-slate-900 text-white space-y-4 shadow-lg">
+          <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-purple-600 text-white flex items-center justify-center font-extrabold text-lg shadow-md">
+                S
+              </div>
+              <div>
+                <h1 className="text-xl font-extrabold tracking-tight font-['Outfit']">{pdfTitle}</h1>
+                <p className="text-xs text-purple-300 font-semibold mt-0.5">Shiera Social Command OS</p>
+              </div>
+            </div>
+            <div className="text-right">
+              <span className="px-3 py-1 rounded-full bg-purple-950 text-purple-300 text-[10px] font-bold border border-purple-800 uppercase tracking-widest block">
+                Executive Brief
+              </span>
+              <span className="text-[10px] text-slate-400 font-mono block mt-1">{new Date().toLocaleDateString("id-ID", { day: "2-digit", month: "long", year: "numeric" })}</span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-3 gap-4 text-xs">
+            <div>
+              <p className="text-[10px] text-slate-400 uppercase font-semibold">Target Receiver</p>
+              <p className="font-bold text-white mt-0.5">{pdfTarget}</p>
+            </div>
+            <div>
+              <p className="text-[10px] text-slate-400 uppercase font-semibold">Periode Data</p>
+              <p className="font-bold text-purple-300 mt-0.5">{data?.period_label}</p>
+            </div>
+            <div>
+              <p className="text-[10px] text-slate-400 uppercase font-semibold">Akun Teranalisis</p>
+              <p className="font-bold text-white mt-0.5">{pdfFilteredAccounts.length} Social Accounts</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Executive Summary Note Box */}
+        {pdfNotes.trim() && (
+          <div className="p-5 rounded-2xl bg-purple-50 border border-purple-200 text-purple-950 space-y-1.5">
+            <div className="flex items-center gap-2 text-purple-800 font-bold text-xs">
+              <Sparkles className="w-4 h-4 text-purple-600" />
+              <span>Poin Analisa & Catatan Executive Manager</span>
+            </div>
+            <p className="text-xs leading-relaxed text-slate-700 whitespace-pre-line">{pdfNotes}</p>
+          </div>
+        )}
+
+        {/* Section 1: Executive KPI Summary Cards */}
+        {pdfSections.executiveSummary && (
+          <div className="space-y-3">
+            <h2 className="text-sm font-extrabold text-slate-900 uppercase tracking-wider border-b border-slate-200 pb-2">
+              Ringkasan Metrik KPI
+            </h2>
+            <div className="grid grid-cols-4 gap-3">
+              {[
+                { label: "Total Post", val: fmtNum(agg?.total_posts), color: "text-purple-600" },
+                { label: "Total Likes", val: fmtNum(agg?.likes), color: "text-rose-600" },
+                { label: "Total Comments", val: fmtNum(agg?.comments), color: "text-sky-600" },
+                { label: "Total Shares", val: fmtNum(agg?.shares), color: "text-emerald-600" },
+                { label: "Total Reach", val: fmtNum(agg?.reach), color: "text-amber-600" },
+                { label: "Video Views", val: fmtNum(agg?.video_views), color: "text-violet-600" },
+                { label: "New Followers", val: fmtNum(agg?.new_followers), color: "text-teal-600" },
+                { label: "Engagement Rate", val: `${agg?.engagement_rate ?? 0}%`, color: "text-yellow-600" },
+              ].map((kpi, i) => (
+                <div key={i} className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+                  <span className="text-[10px] font-bold text-slate-500 uppercase">{kpi.label}</span>
+                  <p className={`text-lg font-extrabold ${kpi.color}`}>{kpi.val}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Section 2: Account Breakdown Table */}
+        {pdfSections.accountBreakdown && pdfFilteredAccounts.length > 0 && (
+          <div className="space-y-3">
+            <h2 className="text-sm font-extrabold text-slate-900 uppercase tracking-wider border-b border-slate-200 pb-2">
+              Performa Per Akun Sosial
+            </h2>
+            <table className="w-full text-xs">
+              <thead>
+                <tr className="border-b border-slate-200 bg-slate-100">
+                  <th className="text-left py-2 px-3 font-bold text-slate-600">Akun</th>
+                  <th className="text-right py-2 px-3 font-bold text-slate-600">Post</th>
+                  <th className="text-right py-2 px-3 font-bold text-slate-600">Likes</th>
+                  <th className="text-right py-2 px-3 font-bold text-slate-600">Komentar</th>
+                  <th className="text-right py-2 px-3 font-bold text-slate-600">Shares</th>
+                  <th className="text-right py-2 px-3 font-bold text-slate-600">Reach</th>
+                  <th className="text-right py-2 px-3 font-bold text-slate-600">Eng. Rate</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {pdfFilteredAccounts.map(acc => (
+                  <tr key={acc.id}>
+                    <td className="py-2.5 px-3 font-bold text-slate-800">
+                      {PLATFORM_ICONS[acc.platform]} @{acc.username}
+                    </td>
+                    <td className="py-2.5 px-3 text-right font-semibold">{acc.post_count}</td>
+                    <td className="py-2.5 px-3 text-right text-rose-600 font-semibold">{fmtNum(acc.metrics.likes)}</td>
+                    <td className="py-2.5 px-3 text-right text-sky-600 font-semibold">{fmtNum(acc.metrics.comments)}</td>
+                    <td className="py-2.5 px-3 text-right text-emerald-600 font-semibold">{fmtNum(acc.metrics.shares)}</td>
+                    <td className="py-2.5 px-3 text-right text-amber-600 font-semibold">{fmtNum(acc.metrics.reach)}</td>
+                    <td className="py-2.5 px-3 text-right font-bold text-purple-700">{acc.metrics.engagement_rate}%</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {/* Section 3: Top Performing Posts */}
+        {pdfSections.topPosts && data?.top_posts && data.top_posts.length > 0 && (
+          <div className="space-y-3">
+            <h2 className="text-sm font-extrabold text-slate-900 uppercase tracking-wider border-b border-slate-200 pb-2">
+              Top 5 Postingan Terbaik
+            </h2>
+            <div className="grid grid-cols-1 gap-2.5">
+              {data.top_posts.slice(0, 5).map((post, i) => {
+                const m = post.metrics || {};
+                const eng = (m.likes || 0) + (m.comments || 0) + (m.shares || 0);
+                return (
+                  <div key={i} className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between text-xs gap-3">
+                    <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                      <span className="font-bold text-purple-700 w-5">#{i + 1}</span>
+                      <span className="font-semibold text-slate-800">{PLATFORM_ICONS[post._platform || ""]} @{post._account_username}</span>
+                      <p className="text-slate-600 truncate max-w-xs">{post.caption || "—"}</p>
+                    </div>
+                    <div className="flex items-center gap-4 text-slate-700 shrink-0 text-[11px]">
+                      <span>♥ {fmtNum(m.likes)}</span>
+                      <span>💬 {fmtNum(m.comments)}</span>
+                      <span>↗ {fmtNum(m.shares)}</span>
+                      <span className="font-bold text-purple-700">Eng: {fmtNum(eng)}</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Section 4: Content Timeline Feed */}
+        {pdfSections.timelineFeed && data?.posts && data.posts.length > 0 && (
+          <div className="space-y-3">
+            <h2 className="text-sm font-extrabold text-slate-900 uppercase tracking-wider border-b border-slate-200 pb-2">
+              Riwayat Feed Postingan ({Math.min(data.posts.length, 10)} Post Terbaru)
+            </h2>
+            <div className="space-y-2">
+              {data.posts.slice(0, 10).map((post, i) => {
+                const m = post.metrics || {};
+                return (
+                  <div key={i} className="p-2.5 rounded-lg border border-slate-100 bg-white flex items-center justify-between text-xs gap-2">
+                    <div className="flex items-center gap-2 min-w-0 flex-1">
+                      <span className="text-[10px] text-slate-400 font-mono w-20 shrink-0">{fmtDate(post.posted_at)}</span>
+                      <span className="font-bold text-slate-800 shrink-0">@{post._account_username}</span>
+                      <p className="text-slate-600 truncate">{post.caption || "—"}</p>
+                    </div>
+                    <div className="flex items-center gap-3 text-[10px] text-slate-500 shrink-0">
+                      <span>♥ {fmtNum(m.likes)}</span>
+                      <span>💬 {fmtNum(m.comments)}</span>
+                      <span>↗ {fmtNum(m.shares)}</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* PDF Footer watermark */}
+        <div className="pt-4 border-t border-slate-200 flex items-center justify-between text-[10px] text-slate-400">
+          <span>CONFIDENTIAL EXECUTIVE REPORT</span>
+          <span>Shiera Social Media Management OS</span>
+        </div>
+      </div>
     </div>
   );
 }
