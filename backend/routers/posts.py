@@ -108,99 +108,39 @@ async def get_posts(
         local_query = local_query.filter(Post.client_id == client_id)
     local_posts = local_query.order_by(Post.created_at.desc()).all()
 
-    # Map local posts by postforme_post_id for deduplication
-    pf_id_to_local: Dict[str, Post] = {}
-    local_only_posts: List[Post] = []  # Drafts not yet sent to PostForMe
-
-    for p in local_posts:
-        if p.postforme_post_id:
-            pf_id_to_local[p.postforme_post_id] = p
-        else:
-            local_only_posts.append(p)  # Pure local drafts
-
-    # ─── 2. Fetch from PostForMe API (source of truth) ────────────────────
-    pf_posts = []
+    # ─── 2. Fetch from PostForMe API (live status source) ─────────────────
+    pf_posts_by_id: Dict[str, Dict[str, Any]] = {}
     try:
-        # Build external_id filter — PostForMe allows filtering by external_id (= our post IDs)
-        # We fetch all posts for accounts linked to this workspace
         pf_status_filter = None
         if status and status in ("draft", "scheduled", "processing", "processed"):
             pf_status_filter = [status]
 
         pf_response = await postforme_service.get_posts(
-            limit=min(limit * 3, 100),  # Over-fetch then filter locally
+            limit=min(limit * 3, 100),
             status=pf_status_filter
         )
-        pf_posts = pf_response.get("data", [])
+        pf_data = pf_response.get("data", [])
+        for pf_item in pf_data:
+            if pf_item.get("id"):
+                pf_posts_by_id[pf_item["id"]] = pf_item
     except Exception as e:
-        logger.warning(f"PostForMe fetch failed, falling back to local DB only: {e}")
-        pf_posts = []
+        logger.warning(f"PostForMe fetch failed, falling back to local DB: {e}")
 
-    # ─── 3. Build unified post objects from PostForMe data ────────────────
-    seen_pf_ids = set()
-    for pf_post in pf_posts:
-        pf_id = pf_post.get("id")
-        if not pf_id or pf_id in seen_pf_ids:
-            continue
-        seen_pf_ids.add(pf_id)
+    # ─── 3. Build unified results starting from ALL local posts ───────────
+    processed_local_pf_ids = set()
 
-        # Find matching local post for enrichment (captions, media, workspace context)
-        local = pf_id_to_local.get(pf_id)
-        if local and local.workspace_id != workspace_id:
-            continue  # Belongs to different workspace
-        if not local and not pf_post.get("external_id") in [p.id for p in local_posts]:
-            # PostForMe post has no local counterpart — skip (belongs to another workspace/project)
-            if local is None:
-                continue
+    for p in local_posts:
+        pf_post = pf_posts_by_id.get(p.postforme_post_id) if p.postforme_post_id else None
+        if p.postforme_post_id:
+            processed_local_pf_ids.add(p.postforme_post_id)
 
-        # Platform & targets from local DB (more complete than PostForMe response)
-        targets = []
-        platforms = []
-        if local:
-            for t in local.targets:
-                acc = t.social_account
-                plat = acc.platform.value if acc else "unknown"
-                if plat not in platforms:
-                    platforms.append(plat)
-                targets.append({
-                    "target_id": t.id,
-                    "account_id": acc.id if acc else None,
-                    "platform": plat,
-                    "username": acc.username if acc else "deleted",
-                    "name": acc.name if acc else "Deleted Account",
-                    "avatar_url": acc.avatar_url if acc else None,
-                    "status": pf_post.get("status", "processing"),  # Use PostForMe status
-                    "platform_post_id": t.platform_post_id,
-                })
+        # Status: PostForMe status takes precedence if available, otherwise map local DB status
+        if pf_post and pf_post.get("status"):
+            post_status = pf_post["status"]
+        else:
+            db_st = p.status.value if p.status else "draft"
+            post_status = STATUS_DB_TO_ALIAS.get(db_st, db_st)
 
-        pf_status = pf_post.get("status", "processing")
-        caption = (local.caption if local else None) or pf_post.get("caption", "")
-        scheduled_at_val = pf_post.get("scheduled_at") or (local.scheduled_at.isoformat() if local and local.scheduled_at else None)
-        updated_at_val = pf_post.get("updated_at") or (local.updated_at.isoformat() if local and local.updated_at else None)
-
-        results.append({
-            "id": local.id if local else pf_id,
-            "postforme_post_id": pf_id,
-            "workspace_id": workspace_id,
-            "client_id": local.client_id if local else None,
-            "post_type": (local.post_type.value if local else "image"),
-            "content": {"text": caption or ""},
-            "caption": caption,
-            "hashtags": local.hashtags if local else None,
-            "media_urls": (local.media_urls or []) if local else [],
-            "platform_configurations": local.platform_configurations if local else None,
-            "platforms": platforms,
-            "scheduled_at": scheduled_at_val,
-            "published_at": (local.published_at.isoformat() if local and local.published_at else None),
-            "status": pf_status,  # ← Real status dari PostForMe!
-            "targets": targets,
-            "created_at": (local.created_at.isoformat() if local and local.created_at else pf_post.get("created_at")),
-            "updated_at": updated_at_val,
-            "_source": "postforme",
-        })
-
-    # ─── 4. Add local-only draft posts (not yet sent to PostForMe) ────────
-    for p in local_only_posts:
         targets = []
         platforms = []
         for t in p.targets:
@@ -215,31 +155,35 @@ async def get_posts(
                 "username": acc.username if acc else "deleted",
                 "name": acc.name if acc else "Deleted Account",
                 "avatar_url": acc.avatar_url if acc else None,
-                "status": "draft",
-                "platform_post_id": None,
+                "status": post_status,
+                "platform_post_id": t.platform_post_id,
             })
+
+        sched_at_val = (pf_post.get("scheduled_at") if pf_post else None) or (p.scheduled_at.isoformat() if p.scheduled_at else None)
+        updated_at_val = (pf_post.get("updated_at") if pf_post else None) or (p.updated_at.isoformat() if p.updated_at else None)
+
         results.append({
             "id": p.id,
-            "postforme_post_id": None,
+            "postforme_post_id": p.postforme_post_id,
             "workspace_id": p.workspace_id,
             "client_id": p.client_id,
-            "post_type": p.post_type.value,
+            "post_type": p.post_type.value if p.post_type else "image",
             "content": {"text": p.caption or ""},
             "caption": p.caption,
             "hashtags": p.hashtags,
             "media_urls": p.media_urls or [],
             "platform_configurations": p.platform_configurations,
             "platforms": platforms,
-            "scheduled_at": None,
-            "published_at": None,
-            "status": "draft",
+            "scheduled_at": sched_at_val,
+            "published_at": p.published_at.isoformat() if p.published_at else None,
+            "status": post_status,
             "targets": targets,
             "created_at": p.created_at.isoformat() if p.created_at else None,
-            "updated_at": p.updated_at.isoformat() if p.updated_at else None,
-            "_source": "local_draft",
+            "updated_at": updated_at_val,
+            "_source": "hybrid",
         })
 
-    # ─── 5. Filter & search on merged results ─────────────────────────────
+    # ─── 4. Filter & search on merged results ─────────────────────────────
     if status:
         results = [r for r in results if r["status"] == status]
     if search:
