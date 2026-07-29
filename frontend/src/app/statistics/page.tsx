@@ -1720,9 +1720,15 @@ export default function StatisticsPage() {
                   <div className="space-y-5">
                     {/* Mini Header */}
                     <div className="flex items-center justify-between border-b border-slate-200 pb-3">
-                      <span className="font-extrabold text-slate-800 text-xs tracking-wide uppercase">
-                        SHIERA ANALYTICS • {pdfTitle}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[9px] font-black tracking-widest text-purple-700 uppercase">
+                          SHIERA ANALYTICS
+                        </span>
+                        <span className="text-slate-300 font-bold">•</span>
+                        <span className="text-[11px] font-extrabold text-slate-800 tracking-wide uppercase">
+                          {pdfTitle}
+                        </span>
+                      </div>
                       <span className="text-[10px] text-slate-400 font-mono">{data?.period_label}</span>
                     </div>
 
@@ -1736,19 +1742,26 @@ export default function StatisticsPage() {
                           {topPosts.slice(0, 5).map((post, i) => {
                             const m = post.metrics || {};
                             const eng = (m.likes || 0) + (m.comments || 0) + (m.shares || 0);
+                            const isVideo =
+                              post._platform === "tiktok" ||
+                              post._platform === "tiktok_business" ||
+                              post._platform === "youtube" ||
+                              post.media?.[0]?.type === "video";
+
                             return (
                               <div key={i} className="p-3 rounded-xl border border-slate-200 bg-slate-50/50 flex flex-col justify-between space-y-2 text-xs">
                                 <div className="flex items-start gap-2.5">
-                                  <div className="w-12 h-12 rounded-lg bg-slate-100 border border-slate-200 shrink-0 overflow-hidden flex items-center justify-center">
-                                    {post.media?.[0]?.url ? (
+                                  {/* Media Thumbnail / Video Icon */}
+                                  <div className="w-12 h-12 rounded-lg bg-purple-50 border border-purple-100 shrink-0 overflow-hidden flex items-center justify-center text-purple-600">
+                                    {isVideo ? (
+                                      <Video className="w-5 h-5 text-purple-600 opacity-90" />
+                                    ) : post.media?.[0]?.url ? (
                                       <img
                                         src={getProxiedImageUrl(post.media[0].url)}
                                         className="w-full h-full object-cover"
                                         alt=""
                                         crossOrigin="anonymous"
                                       />
-                                    ) : post._platform === "tiktok" || post._platform === "tiktok_business" || post._platform === "youtube" || post.media?.[0]?.type === "video" ? (
-                                      <Video className="w-5 h-5 text-purple-600 opacity-75" />
                                     ) : (
                                       <ImageIcon className="w-5 h-5 text-purple-600 opacity-75" />
                                     )}
@@ -1761,7 +1774,7 @@ export default function StatisticsPage() {
                                       </span>
                                       <span className="font-extrabold text-purple-700 text-[10px]">#{i + 1}</span>
                                     </div>
-                                    <span className="font-bold text-slate-800 text-[11px] block truncate">@{post._account_username}</span>
+                                    <span className="font-bold text-slate-800 text-[11px] leading-relaxed py-0.5 min-h-[20px] flex items-center truncate">@{post._account_username}</span>
                                   </div>
                                 </div>
 
@@ -1803,19 +1816,26 @@ export default function StatisticsPage() {
                         <div className="grid grid-cols-2 gap-3">
                           {initialFeedPosts.map((post, i) => {
                             const m = post.metrics || {};
+                            const isVideo =
+                              post._platform === "tiktok" ||
+                              post._platform === "tiktok_business" ||
+                              post._platform === "youtube" ||
+                              post.media?.[0]?.type === "video";
+
                             return (
                               <div key={i} className="p-3 rounded-xl border border-slate-200 bg-slate-50/50 flex flex-col justify-between space-y-2 text-xs">
                                 <div className="flex items-start gap-2.5">
-                                  <div className="w-12 h-12 rounded-lg bg-slate-100 border border-slate-200 shrink-0 overflow-hidden flex items-center justify-center">
-                                    {post.media?.[0]?.url ? (
+                                  {/* Media Thumbnail / Video Icon */}
+                                  <div className="w-12 h-12 rounded-lg bg-purple-50 border border-purple-100 shrink-0 overflow-hidden flex items-center justify-center text-purple-600">
+                                    {isVideo ? (
+                                      <Video className="w-5 h-5 text-purple-600 opacity-90" />
+                                    ) : post.media?.[0]?.url ? (
                                       <img
                                         src={getProxiedImageUrl(post.media[0].url)}
                                         className="w-full h-full object-cover"
                                         alt=""
                                         crossOrigin="anonymous"
                                       />
-                                    ) : post._platform === "tiktok" || post._platform === "tiktok_business" || post._platform === "youtube" || post.media?.[0]?.type === "video" ? (
-                                      <Video className="w-5 h-5 text-purple-600 opacity-75" />
                                     ) : (
                                       <ImageIcon className="w-5 h-5 text-purple-600 opacity-75" />
                                     )}
@@ -1828,7 +1848,7 @@ export default function StatisticsPage() {
                                       </span>
                                       <span className="text-[9px] text-slate-400 font-mono">{fmtDate(post.posted_at)}</span>
                                     </div>
-                                    <span className="font-bold text-slate-800 text-[11px] block truncate">@{post._account_username}</span>
+                                    <span className="font-bold text-slate-800 text-[11px] leading-relaxed py-0.5 min-h-[20px] flex items-center truncate">@{post._account_username}</span>
                                   </div>
                                 </div>
 
@@ -1881,9 +1901,15 @@ export default function StatisticsPage() {
                     <div className="space-y-5">
                       {/* Mini Header */}
                       <div className="flex items-center justify-between border-b border-slate-200 pb-3">
-                        <span className="font-extrabold text-slate-800 text-xs tracking-wide uppercase">
-                          SHIERA ANALYTICS • {pdfTitle} (Lanjutan)
-                        </span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-[9px] font-black tracking-widest text-purple-700 uppercase">
+                            SHIERA ANALYTICS
+                          </span>
+                          <span className="text-slate-300 font-bold">•</span>
+                          <span className="text-[11px] font-extrabold text-slate-800 tracking-wide uppercase">
+                            {pdfTitle} (Lanjutan)
+                          </span>
+                        </div>
                         <span className="text-[10px] text-slate-400 font-mono">{data?.period_label}</span>
                       </div>
 
@@ -1895,19 +1921,26 @@ export default function StatisticsPage() {
                         <div className="grid grid-cols-2 gap-3">
                           {chunk.map((post, i) => {
                             const m = post.metrics || {};
+                            const isVideo =
+                              post._platform === "tiktok" ||
+                              post._platform === "tiktok_business" ||
+                              post._platform === "youtube" ||
+                              post.media?.[0]?.type === "video";
+
                             return (
                               <div key={i} className="p-3 rounded-xl border border-slate-200 bg-slate-50/50 flex flex-col justify-between space-y-2 text-xs">
                                 <div className="flex items-start gap-2.5">
-                                  <div className="w-12 h-12 rounded-lg bg-slate-100 border border-slate-200 shrink-0 overflow-hidden flex items-center justify-center">
-                                    {post.media?.[0]?.url ? (
+                                  {/* Media Thumbnail / Video Icon */}
+                                  <div className="w-12 h-12 rounded-lg bg-purple-50 border border-purple-100 shrink-0 overflow-hidden flex items-center justify-center text-purple-600">
+                                    {isVideo ? (
+                                      <Video className="w-5 h-5 text-purple-600 opacity-90" />
+                                    ) : post.media?.[0]?.url ? (
                                       <img
                                         src={getProxiedImageUrl(post.media[0].url)}
                                         className="w-full h-full object-cover"
                                         alt=""
                                         crossOrigin="anonymous"
                                       />
-                                    ) : post._platform === "tiktok" || post._platform === "tiktok_business" || post._platform === "youtube" || post.media?.[0]?.type === "video" ? (
-                                      <Video className="w-5 h-5 text-purple-600 opacity-75" />
                                     ) : (
                                       <ImageIcon className="w-5 h-5 text-purple-600 opacity-75" />
                                     )}
@@ -1920,7 +1953,7 @@ export default function StatisticsPage() {
                                       </span>
                                       <span className="text-[9px] text-slate-400 font-mono">{fmtDate(post.posted_at)}</span>
                                     </div>
-                                    <span className="font-bold text-slate-800 text-[11px] block truncate">@{post._account_username}</span>
+                                    <span className="font-bold text-slate-800 text-[11px] leading-relaxed py-0.5 min-h-[20px] flex items-center truncate">@{post._account_username}</span>
                                   </div>
                                 </div>
 
