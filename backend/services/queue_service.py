@@ -105,13 +105,15 @@ class QueueService:
                     pf_platform_configs[platform_key] = cleaned
 
             try:
-                logger.info(f"Publishing via PostForMe API targeting account @{account.username} ({account.platform.value})...")
+                is_draft_post = (post.status == PostStatus.DRAFT)
+                logger.info(f"Publishing via PostForMe API targeting account @{account.username} ({account.platform.value})... (is_draft={is_draft_post})")
                 res = await postforme_service.create_post(
                     caption=post.caption or "",
                     social_accounts=[target_account_id],
                     media=media_list if media_list else None,
                     platform_configurations=pf_platform_configs if pf_platform_configs else None,
                     scheduled_at=post.scheduled_at.isoformat() if post.scheduled_at else None,
+                    is_draft=is_draft_post,
                     external_id=post.id
                 )
 

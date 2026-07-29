@@ -396,19 +396,27 @@ export default function QueuePage() {
     loadPosts(postsOffset);
   };
 
-  const handleDeletePost = (postId: string) => {
+  const handleDeletePost = (post: SocialPost) => {
+    const isProcessed = post.status === "processed";
+    const isScheduled = post.status === "scheduled";
+    const message = isProcessed
+      ? "Apakah kamu yakin ingin menghapus catatan postingan ini dari Shiera? (Catatan: Postingan yang sudah terbit di feed Instagram/Facebook/X kamu tidak akan terhapus dari platform)."
+      : isScheduled
+      ? "Apakah kamu yakin ingin membatalkan jadwal & menghapus postingan ini dari PostForMe & Shiera?"
+      : "Apakah kamu yakin ingin menghapus draft postingan ini?";
+
     confirmModal({
-      title: "Hapus Post",
-      message: "Apakah kamu yakin ingin menghapus post ini?",
+      title: isScheduled ? "Batalkan & Hapus Jadwal" : "Hapus Postingan",
+      message,
       variant: "danger",
-      confirmText: "Hapus",
+      confirmText: isScheduled ? "Batalkan Jadwal" : "Hapus Permanen",
       onConfirm: async () => {
         try {
-          await fetchApi(`/posts/${postId}`, { method: "DELETE" });
-          toast.success("Post dihapus.");
+          await fetchApi(`/posts/${post.id}`, { method: "DELETE" });
+          toast.success(isScheduled ? "Jadwal postingan dibatalkan." : "Postingan dihapus.");
           loadPosts(postsOffset);
         } catch {
-          toast.error("Gagal menghapus post.");
+          toast.error("Gagal menghapus postingan.");
         }
       },
     });
@@ -694,7 +702,7 @@ export default function QueuePage() {
                         {/* Delete */}
                         {!isProcessing && (
                           <button
-                            onClick={() => handleDeletePost(post.id)}
+                            onClick={() => handleDeletePost(post)}
                             className="p-1.5 rounded-xl text-slate-300 hover:text-rose-600 hover:bg-rose-50 transition-colors"
                             title="Hapus Post"
                           >

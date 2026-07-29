@@ -358,9 +358,8 @@ async def create_post(
     db.commit()
     db.refresh(post)
 
-    # If Publish Now or Schedule, dispatch background queue task to send post to PostForMe API
-    if action_type in ("publish_now", "schedule"):
-        background_tasks.add_task(queue_service.enqueue_post_publishing, db, post.id)
+    # Dispatch background queue task to send post to PostForMe API for all actions (publish_now, schedule, save_draft)
+    background_tasks.add_task(queue_service.enqueue_post_publishing, db, post.id)
 
     return {"status": "success", "post_id": post.id, "post_status": post.status.value}
 
