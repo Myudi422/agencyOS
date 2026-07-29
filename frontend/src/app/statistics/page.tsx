@@ -1550,14 +1550,14 @@ export default function StatisticsPage() {
           const topPosts = data?.top_posts || [];
 
           const hasPage2 = pdfSections.topPosts || pdfSections.timelineFeed;
-          const initialFeedCount = pdfSections.topPosts ? 8 : 14;
+          const initialFeedCount = pdfSections.topPosts ? 4 : 8;
           const initialFeedPosts = pdfSections.timelineFeed ? posts.slice(0, initialFeedCount) : [];
           const remainingTimelinePosts = pdfSections.timelineFeed ? posts.slice(initialFeedCount) : [];
 
-          // Divide remaining posts into chunks of 14 per page to fill A4 height cleanly
+          // Divide remaining posts into chunks of 8 per page (2-col grid: 4 rows x 2 cols)
           const extraPagesChunks: FeedPost[][] = [];
-          for (let i = 0; i < remainingTimelinePosts.length; i += 14) {
-            extraPagesChunks.push(remainingTimelinePosts.slice(i, i + 14));
+          for (let i = 0; i < remainingTimelinePosts.length; i += 8) {
+            extraPagesChunks.push(remainingTimelinePosts.slice(i, i + 8));
           }
 
           const totalPages = 1 + (hasPage2 ? 1 : 0) + extraPagesChunks.length;
@@ -1726,23 +1726,20 @@ export default function StatisticsPage() {
                       <span className="text-[10px] text-slate-400 font-mono">{data?.period_label}</span>
                     </div>
 
-                    {/* Section 4: Top Performing Posts */}
+                    {/* Section 4: Top Performing Posts (2-Col Grid) */}
                     {pdfSections.topPosts && topPosts.length > 0 && (
-                      <div className="space-y-1.5">
+                      <div className="space-y-2">
                         <h2 className="text-xs font-extrabold text-slate-900 uppercase tracking-wider border-b border-slate-200 pb-1">
                           Top 5 Postingan Terbaik
                         </h2>
-                        <div className="divide-y divide-slate-100">
+                        <div className="grid grid-cols-2 gap-3">
                           {topPosts.slice(0, 5).map((post, i) => {
                             const m = post.metrics || {};
                             const eng = (m.likes || 0) + (m.comments || 0) + (m.shares || 0);
                             return (
-                              <div key={i} className="py-2 flex items-center justify-between text-xs gap-3">
-                                <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                                  <span className="font-extrabold text-purple-700 text-xs w-5 shrink-0">#{i + 1}</span>
-
-                                  {/* Media Thumbnail */}
-                                  <div className="w-8 h-8 rounded-lg bg-slate-100 border border-slate-200 shrink-0 overflow-hidden flex items-center justify-center">
+                              <div key={i} className="p-3 rounded-xl border border-slate-200 bg-slate-50/50 flex flex-col justify-between space-y-2 text-xs">
+                                <div className="flex items-start gap-2.5">
+                                  <div className="w-12 h-12 rounded-lg bg-slate-100 border border-slate-200 shrink-0 overflow-hidden flex items-center justify-center">
                                     {post.media?.[0]?.url ? (
                                       <img
                                         src={getProxiedImageUrl(post.media[0].url)}
@@ -1751,32 +1748,40 @@ export default function StatisticsPage() {
                                         crossOrigin="anonymous"
                                       />
                                     ) : post._platform === "tiktok" || post._platform === "tiktok_business" || post._platform === "youtube" || post.media?.[0]?.type === "video" ? (
-                                      <Video className="w-3.5 h-3.5 text-purple-600 opacity-75" />
+                                      <Video className="w-5 h-5 text-purple-600 opacity-75" />
                                     ) : (
-                                      <ImageIcon className="w-3.5 h-3.5 text-purple-600 opacity-75" />
+                                      <ImageIcon className="w-5 h-5 text-purple-600 opacity-75" />
                                     )}
                                   </div>
 
-                                  <span className="text-purple-700 font-extrabold text-[10px] font-mono shrink-0">
-                                    [{getPlatformDisplayName(post._platform)}]
-                                  </span>
-                                  <span className="font-bold text-slate-800 text-[11px] shrink-0">@{post._account_username}</span>
-                                  <p className="text-slate-600 text-[11px] leading-relaxed py-0.5 truncate max-w-[220px] font-normal shrink overflow-hidden text-ellipsis whitespace-nowrap min-h-[22px] flex items-center">
-                                    {post.caption || "—"}
-                                  </p>
+                                  <div className="min-w-0 flex-1 space-y-0.5">
+                                    <div className="flex items-center justify-between gap-1">
+                                      <span className="text-purple-700 font-extrabold text-[10px] font-mono">
+                                        [{getPlatformDisplayName(post._platform)}]
+                                      </span>
+                                      <span className="font-extrabold text-purple-700 text-[10px]">#{i + 1}</span>
+                                    </div>
+                                    <span className="font-bold text-slate-800 text-[11px] block truncate">@{post._account_username}</span>
+                                  </div>
                                 </div>
-                                <div className="flex items-center gap-3 text-slate-700 shrink-0 text-[11px] font-medium">
-                                  <span className="text-rose-600 font-semibold">♥ {fmtNum(m.likes)}</span>
-                                  <span className="text-sky-600 font-semibold">💬 {fmtNum(m.comments)}</span>
-                                  <span className="text-emerald-600 font-semibold">↗ {fmtNum(m.shares)}</span>
-                                  <span className="font-bold text-purple-700 text-[11px]">Eng: {fmtNum(eng)}</span>
+
+                                <p className="text-slate-600 text-[11px] leading-relaxed py-0.5 line-clamp-2 min-h-[30px] font-normal">
+                                  {post.caption || "—"}
+                                </p>
+
+                                <div className="pt-1.5 border-t border-slate-200/80 flex items-center justify-between text-[10px] font-medium text-slate-600">
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-rose-600 font-semibold">♥ {fmtNum(m.likes)}</span>
+                                    <span className="text-sky-600 font-semibold">💬 {fmtNum(m.comments)}</span>
+                                    <span className="text-emerald-600 font-semibold">↗ {fmtNum(m.shares)}</span>
+                                  </div>
                                   {post.platform_url && (
                                     <a
                                       href={post.platform_url}
                                       data-pdf-url={post.platform_url}
                                       target="_blank"
                                       rel="noopener noreferrer"
-                                      className="text-purple-700 font-bold hover:underline text-[10px] ml-1"
+                                      className="text-purple-700 font-bold hover:underline text-[10px]"
                                     >
                                       Buka ↗
                                     </a>
@@ -1789,22 +1794,19 @@ export default function StatisticsPage() {
                       </div>
                     )}
 
-                    {/* Section 5: Timeline Feed Initial Posts */}
+                    {/* Section 5: Timeline Feed Initial Posts (2-Col Grid) */}
                     {pdfSections.timelineFeed && initialFeedPosts.length > 0 && (
-                      <div className="space-y-1.5">
+                      <div className="space-y-2">
                         <h2 className="text-xs font-extrabold text-slate-900 uppercase tracking-wider border-b border-slate-200 pb-1">
                           Riwayat Feed Postingan ({initialFeedPosts.length} Post Terbaru)
                         </h2>
-                        <div className="divide-y divide-slate-100">
+                        <div className="grid grid-cols-2 gap-3">
                           {initialFeedPosts.map((post, i) => {
                             const m = post.metrics || {};
                             return (
-                              <div key={i} className="py-2 flex items-center justify-between text-xs gap-3">
-                                <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                                  <span className="text-[10px] text-slate-400 font-mono w-20 shrink-0">{fmtDate(post.posted_at)}</span>
-
-                                  {/* Media Thumbnail */}
-                                  <div className="w-8 h-8 rounded-lg bg-slate-100 border border-slate-200 shrink-0 overflow-hidden flex items-center justify-center">
+                              <div key={i} className="p-3 rounded-xl border border-slate-200 bg-slate-50/50 flex flex-col justify-between space-y-2 text-xs">
+                                <div className="flex items-start gap-2.5">
+                                  <div className="w-12 h-12 rounded-lg bg-slate-100 border border-slate-200 shrink-0 overflow-hidden flex items-center justify-center">
                                     {post.media?.[0]?.url ? (
                                       <img
                                         src={getProxiedImageUrl(post.media[0].url)}
@@ -1813,31 +1815,40 @@ export default function StatisticsPage() {
                                         crossOrigin="anonymous"
                                       />
                                     ) : post._platform === "tiktok" || post._platform === "tiktok_business" || post._platform === "youtube" || post.media?.[0]?.type === "video" ? (
-                                      <Video className="w-3.5 h-3.5 text-purple-600 opacity-75" />
+                                      <Video className="w-5 h-5 text-purple-600 opacity-75" />
                                     ) : (
-                                      <ImageIcon className="w-3.5 h-3.5 text-purple-600 opacity-75" />
+                                      <ImageIcon className="w-5 h-5 text-purple-600 opacity-75" />
                                     )}
                                   </div>
 
-                                  <span className="text-purple-700 font-extrabold text-[10px] font-mono shrink-0">
-                                    [{getPlatformDisplayName(post._platform)}]
-                                  </span>
-                                  <span className="font-bold text-slate-800 text-[11px] shrink-0">@{post._account_username}</span>
-                                  <p className="text-slate-600 text-[11px] leading-relaxed py-0.5 truncate max-w-[220px] font-normal shrink overflow-hidden text-ellipsis whitespace-nowrap min-h-[22px] flex items-center">
-                                    {post.caption || "—"}
-                                  </p>
+                                  <div className="min-w-0 flex-1 space-y-0.5">
+                                    <div className="flex items-center justify-between gap-1">
+                                      <span className="text-purple-700 font-extrabold text-[10px] font-mono">
+                                        [{getPlatformDisplayName(post._platform)}]
+                                      </span>
+                                      <span className="text-[9px] text-slate-400 font-mono">{fmtDate(post.posted_at)}</span>
+                                    </div>
+                                    <span className="font-bold text-slate-800 text-[11px] block truncate">@{post._account_username}</span>
+                                  </div>
                                 </div>
-                                <div className="flex items-center gap-3 text-[10px] text-slate-500 shrink-0 font-medium">
-                                  <span className="text-rose-600">♥ {fmtNum(m.likes)}</span>
-                                  <span className="text-sky-600">💬 {fmtNum(m.comments)}</span>
-                                  <span className="text-emerald-600">↗ {fmtNum(m.shares)}</span>
+
+                                <p className="text-slate-600 text-[11px] leading-relaxed py-0.5 line-clamp-2 min-h-[30px] font-normal">
+                                  {post.caption || "—"}
+                                </p>
+
+                                <div className="pt-1.5 border-t border-slate-200/80 flex items-center justify-between text-[10px] font-medium text-slate-600">
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-rose-600">♥ {fmtNum(m.likes)}</span>
+                                    <span className="text-sky-600">💬 {fmtNum(m.comments)}</span>
+                                    <span className="text-emerald-600">↗ {fmtNum(m.shares)}</span>
+                                  </div>
                                   {post.platform_url && (
                                     <a
                                       href={post.platform_url}
                                       data-pdf-url={post.platform_url}
                                       target="_blank"
                                       rel="noopener noreferrer"
-                                      className="text-purple-700 font-bold hover:underline text-[10px] ml-1"
+                                      className="text-purple-700 font-bold hover:underline text-[10px]"
                                     >
                                       Buka ↗
                                     </a>
@@ -1859,11 +1870,11 @@ export default function StatisticsPage() {
                 </div>
               )}
 
-              {/* ── EXTRA PAGES (PAGE 3, 4, etc. if remaining posts exist) ── */}
+              {/* ── EXTRA PAGES (PAGE 3, 4, etc. 2-Col Grid) ── */}
               {extraPagesChunks.map((chunk, pageIdx) => {
                 const currentPageNum = 2 + pageIdx + 1;
-                const startIdx = initialFeedCount + pageIdx * 14 + 1;
-                const endIdx = initialFeedCount + pageIdx * 14 + chunk.length;
+                const startIdx = initialFeedCount + pageIdx * 8 + 1;
+                const endIdx = initialFeedCount + pageIdx * 8 + chunk.length;
 
                 return (
                   <div key={pageIdx} className="pdf-page-block w-[794px] h-[1120px] bg-white p-10 flex flex-col justify-between box-border overflow-hidden">
@@ -1876,21 +1887,18 @@ export default function StatisticsPage() {
                         <span className="text-[10px] text-slate-400 font-mono">{data?.period_label}</span>
                       </div>
 
-                      {/* Feed Chunk */}
-                      <div className="space-y-1.5">
+                      {/* Feed Chunk 2-Col Grid */}
+                      <div className="space-y-2">
                         <h2 className="text-xs font-extrabold text-slate-900 uppercase tracking-wider border-b border-slate-200 pb-1">
                           Riwayat Feed Postingan (Post {startIdx} – {endIdx})
                         </h2>
-                        <div className="divide-y divide-slate-100">
+                        <div className="grid grid-cols-2 gap-3">
                           {chunk.map((post, i) => {
                             const m = post.metrics || {};
                             return (
-                              <div key={i} className="py-2 flex items-center justify-between text-xs gap-3">
-                                <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                                  <span className="text-[10px] text-slate-400 font-mono w-20 shrink-0">{fmtDate(post.posted_at)}</span>
-
-                                  {/* Media Thumbnail */}
-                                  <div className="w-8 h-8 rounded-lg bg-slate-100 border border-slate-200 shrink-0 overflow-hidden flex items-center justify-center">
+                              <div key={i} className="p-3 rounded-xl border border-slate-200 bg-slate-50/50 flex flex-col justify-between space-y-2 text-xs">
+                                <div className="flex items-start gap-2.5">
+                                  <div className="w-12 h-12 rounded-lg bg-slate-100 border border-slate-200 shrink-0 overflow-hidden flex items-center justify-center">
                                     {post.media?.[0]?.url ? (
                                       <img
                                         src={getProxiedImageUrl(post.media[0].url)}
@@ -1899,31 +1907,40 @@ export default function StatisticsPage() {
                                         crossOrigin="anonymous"
                                       />
                                     ) : post._platform === "tiktok" || post._platform === "tiktok_business" || post._platform === "youtube" || post.media?.[0]?.type === "video" ? (
-                                      <Video className="w-3.5 h-3.5 text-purple-600 opacity-75" />
+                                      <Video className="w-5 h-5 text-purple-600 opacity-75" />
                                     ) : (
-                                      <ImageIcon className="w-3.5 h-3.5 text-purple-600 opacity-75" />
+                                      <ImageIcon className="w-5 h-5 text-purple-600 opacity-75" />
                                     )}
                                   </div>
 
-                                  <span className="text-purple-700 font-extrabold text-[10px] font-mono shrink-0">
-                                    [{getPlatformDisplayName(post._platform)}]
-                                  </span>
-                                  <span className="font-bold text-slate-800 text-[11px] shrink-0">@{post._account_username}</span>
-                                  <p className="text-slate-600 text-[11px] leading-relaxed py-0.5 truncate max-w-[220px] font-normal shrink overflow-hidden text-ellipsis whitespace-nowrap min-h-[22px] flex items-center">
-                                    {post.caption || "—"}
-                                  </p>
+                                  <div className="min-w-0 flex-1 space-y-0.5">
+                                    <div className="flex items-center justify-between gap-1">
+                                      <span className="text-purple-700 font-extrabold text-[10px] font-mono">
+                                        [{getPlatformDisplayName(post._platform)}]
+                                      </span>
+                                      <span className="text-[9px] text-slate-400 font-mono">{fmtDate(post.posted_at)}</span>
+                                    </div>
+                                    <span className="font-bold text-slate-800 text-[11px] block truncate">@{post._account_username}</span>
+                                  </div>
                                 </div>
-                                <div className="flex items-center gap-3 text-[10px] text-slate-500 shrink-0 font-medium">
-                                  <span className="text-rose-600">♥ {fmtNum(m.likes)}</span>
-                                  <span className="text-sky-600">💬 {fmtNum(m.comments)}</span>
-                                  <span className="text-emerald-600">↗ {fmtNum(m.shares)}</span>
+
+                                <p className="text-slate-600 text-[11px] leading-relaxed py-0.5 line-clamp-2 min-h-[30px] font-normal">
+                                  {post.caption || "—"}
+                                </p>
+
+                                <div className="pt-1.5 border-t border-slate-200/80 flex items-center justify-between text-[10px] font-medium text-slate-600">
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-rose-600">♥ {fmtNum(m.likes)}</span>
+                                    <span className="text-sky-600">💬 {fmtNum(m.comments)}</span>
+                                    <span className="text-emerald-600">↗ {fmtNum(m.shares)}</span>
+                                  </div>
                                   {post.platform_url && (
                                     <a
                                       href={post.platform_url}
                                       data-pdf-url={post.platform_url}
                                       target="_blank"
                                       rel="noopener noreferrer"
-                                      className="text-purple-700 font-bold hover:underline text-[10px] ml-1"
+                                      className="text-purple-700 font-bold hover:underline text-[10px]"
                                     >
                                       Buka ↗
                                     </a>
