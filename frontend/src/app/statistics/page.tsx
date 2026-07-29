@@ -167,6 +167,23 @@ function fmtDayShort(dateStr: string) {
   return d.toLocaleDateString("id-ID", { day: "2-digit", month: "short" });
 }
 
+function getPlatformDisplayName(platform?: string): string {
+  if (!platform) return "Account";
+  const map: Record<string, string> = {
+    instagram: "Instagram",
+    facebook: "Facebook",
+    x: "X (Twitter)",
+    tiktok: "TikTok",
+    tiktok_business: "TikTok",
+    youtube: "YouTube",
+    linkedin: "LinkedIn",
+    pinterest: "Pinterest",
+    bluesky: "Bluesky",
+    threads: "Threads",
+  };
+  return map[platform.toLowerCase()] || platform;
+}
+
 // ─── Sub-Components ───────────────────────────────────────────────────────────
 
 function PostMediaThumbnail({
@@ -1514,47 +1531,47 @@ export default function StatisticsPage() {
           id="pdf-page-1"
           className="w-[794px] h-[1120px] bg-white p-10 flex flex-col justify-between box-border overflow-hidden"
         >
-          <div className="space-y-6">
-            {/* Header Banner */}
-            <div className="p-6 rounded-2xl bg-gradient-to-r from-slate-900 via-purple-950 to-slate-900 text-white shadow-md space-y-4">
-              <div className="flex items-center justify-between border-b border-white/10 pb-4">
+          <div className="space-y-5">
+            {/* Header Banner (Corporate Clean Style) */}
+            <div className="p-5 rounded-2xl bg-white border border-slate-200 border-t-4 border-t-purple-600 shadow-xs space-y-3">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-2xl bg-purple-600 text-white flex items-center justify-center font-extrabold text-xl shadow-md border border-purple-400/30">
+                  <div className="w-9 h-9 rounded-xl bg-purple-600 text-white flex items-center justify-center font-extrabold text-lg shadow-xs">
                     S
                   </div>
                   <div>
-                    <h1 className="text-lg font-extrabold tracking-tight font-['Outfit']">{pdfTitle}</h1>
-                    <p className="text-xs text-purple-300 font-semibold mt-0.5">Shiera Analytics Report</p>
+                    <h1 className="text-lg font-extrabold tracking-tight text-slate-900 font-['Outfit']">{pdfTitle}</h1>
+                    <p className="text-[11px] text-purple-700 font-semibold">Shiera Social Command OS</p>
                   </div>
                 </div>
                 <div className="text-right">
-                  <span className="px-3 py-1 rounded-full bg-purple-900/80 text-purple-200 text-[10px] font-bold border border-purple-700/50 uppercase tracking-widest block">
-                    Report Brief
+                  <span className="px-2.5 py-0.5 rounded-full bg-purple-50 text-purple-700 text-[9px] font-bold border border-purple-200 uppercase tracking-wider inline-block">
+                    Official Report
                   </span>
-                  <span className="text-[10px] text-slate-400 font-mono block mt-1.5">
+                  <span className="text-[10px] text-slate-500 font-mono block mt-1">
                     Dibuat: {new Date().toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric" })}
                   </span>
                 </div>
               </div>
 
               {/* Header Meta */}
-              <div className="grid grid-cols-2 gap-4 text-xs">
+              <div className="grid grid-cols-2 gap-4 text-xs pt-0.5">
                 <div>
                   <p className="text-[10px] text-slate-400 uppercase font-semibold">Periode Data</p>
-                  <p className="font-bold text-purple-300 mt-0.5">{data?.period_label}</p>
+                  <p className="font-bold text-slate-800 mt-0.5">{data?.period_label}</p>
                 </div>
                 <div>
                   <p className="text-[10px] text-slate-400 uppercase font-semibold">Akun Dilibatkan</p>
-                  <p className="font-bold text-white mt-0.5">{pdfFilteredAccounts.length} Akun Sosial Media</p>
+                  <p className="font-bold text-slate-800 mt-0.5">{pdfFilteredAccounts.length} Akun Social Media</p>
                 </div>
               </div>
             </div>
 
             {/* Catatan Analisa Manager */}
             {pdfNotes.trim() && (
-              <div className="p-4 rounded-xl bg-purple-50/80 border border-purple-200 text-purple-950 space-y-1">
+              <div className="p-3.5 rounded-xl bg-purple-50/80 border border-purple-200 text-purple-950 space-y-1">
                 <div className="flex items-center gap-2 text-purple-800 font-bold text-xs">
-                  <Sparkles className="w-4 h-4 text-purple-600 shrink-0" />
+                  <Sparkles className="w-3.5 h-3.5 text-purple-600 shrink-0" />
                   <span>Catatan & Analisa Manager</span>
                 </div>
                 <p className="text-xs leading-relaxed text-slate-700 whitespace-pre-line">{pdfNotes}</p>
@@ -1563,11 +1580,11 @@ export default function StatisticsPage() {
 
             {/* Section 1: KPI Summary Cards */}
             {pdfSections.executiveSummary && (
-              <div className="space-y-3">
-                <h2 className="text-xs font-extrabold text-slate-900 uppercase tracking-wider border-b border-slate-200 pb-1.5">
+              <div className="space-y-2.5">
+                <h2 className="text-[11px] font-extrabold text-slate-900 uppercase tracking-wider border-b border-slate-200 pb-1">
                   Ringkasan Metrik KPI
                 </h2>
-                <div className="grid grid-cols-4 gap-3">
+                <div className="grid grid-cols-4 gap-2.5">
                   {[
                     { label: "Total Post", val: fmtNum(agg?.total_posts), color: "text-purple-600" },
                     { label: "Total Likes", val: fmtNum(agg?.likes), color: "text-rose-600" },
@@ -1594,7 +1611,7 @@ export default function StatisticsPage() {
                   Grafik Visual Tren Harian ({chartMetric.toUpperCase()})
                 </h2>
                 <div className="p-2 bg-slate-50/80 rounded-xl border border-slate-200/90 flex justify-center">
-                  <AreaChart width={700} height={125} data={dailyData} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+                  <AreaChart width={700} height={120} data={dailyData} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
                     <defs>
                       <linearGradient id="pdfAreaGradient" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="5%" stopColor="#7c3aed" stopOpacity={0.35} />
@@ -1639,7 +1656,10 @@ export default function StatisticsPage() {
                     {pdfFilteredAccounts.map(acc => (
                       <tr key={acc.id}>
                         <td className="py-1.5 px-3 font-bold text-slate-800 text-[11px]">
-                          {PLATFORM_ICONS[acc.platform]} @{acc.username}
+                          <span className="px-1.5 py-0.5 rounded bg-purple-50 text-purple-700 text-[9px] font-bold border border-purple-200 mr-1.5">
+                            {getPlatformDisplayName(acc.platform)}
+                          </span>
+                          @{acc.username}
                         </td>
                         <td className="py-1.5 px-3 text-right font-semibold text-[11px]">{acc.post_count}</td>
                         <td className="py-1.5 px-3 text-right text-rose-600 font-semibold text-[11px]">{fmtNum(acc.metrics.likes)}</td>
@@ -1679,7 +1699,7 @@ export default function StatisticsPage() {
               <span className="text-[10px] text-slate-400 font-mono">{data?.period_label}</span>
             </div>
 
-            {/* Section 3: Top Performing Posts */}
+            {/* Section 4: Top Performing Posts */}
             {pdfSections.topPosts && data?.top_posts && data.top_posts.length > 0 && (
               <div className="space-y-3">
                 <h2 className="text-xs font-extrabold text-slate-900 uppercase tracking-wider border-b border-slate-200 pb-1.5">
@@ -1693,7 +1713,10 @@ export default function StatisticsPage() {
                       <div key={i} className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between text-xs gap-3">
                         <div className="flex items-center gap-2.5 min-w-0 flex-1">
                           <span className="font-extrabold text-purple-700 w-5">#{i + 1}</span>
-                          <span className="font-semibold text-slate-800 shrink-0">{PLATFORM_ICONS[post._platform || ""]} @{post._account_username}</span>
+                          <span className="px-1.5 py-0.5 rounded bg-purple-50 text-purple-700 text-[9px] font-bold border border-purple-200 shrink-0">
+                            {getPlatformDisplayName(post._platform)}
+                          </span>
+                          <span className="font-semibold text-slate-800 shrink-0">@{post._account_username}</span>
                           <p className="text-slate-600 truncate max-w-xs">{post.caption || "—"}</p>
                         </div>
                         <div className="flex items-center gap-3.5 text-slate-700 shrink-0 text-[11px]">
@@ -1709,7 +1732,7 @@ export default function StatisticsPage() {
               </div>
             )}
 
-            {/* Section 4: Content Timeline Feed */}
+            {/* Section 5: Content Timeline Feed */}
             {pdfSections.timelineFeed && data?.posts && data.posts.length > 0 && (
               <div className="space-y-3">
                 <h2 className="text-xs font-extrabold text-slate-900 uppercase tracking-wider border-b border-slate-200 pb-1.5">
@@ -1722,7 +1745,10 @@ export default function StatisticsPage() {
                       <div key={i} className="p-2.5 rounded-lg border border-slate-200/70 bg-white flex items-center justify-between text-xs gap-2">
                         <div className="flex items-center gap-2.5 min-w-0 flex-1">
                           <span className="text-[10px] text-slate-400 font-mono w-20 shrink-0">{fmtDate(post.posted_at)}</span>
-                          <span className="font-bold text-slate-800 shrink-0">{PLATFORM_ICONS[post._platform || ""]} @{post._account_username}</span>
+                          <span className="px-1.5 py-0.5 rounded bg-purple-50 text-purple-700 text-[9px] font-bold border border-purple-200 shrink-0">
+                            {getPlatformDisplayName(post._platform)}
+                          </span>
+                          <span className="font-bold text-slate-800 shrink-0">@{post._account_username}</span>
                           <p className="text-slate-600 truncate">{post.caption || "—"}</p>
                         </div>
                         <div className="flex items-center gap-3 text-[10px] text-slate-500 shrink-0">
