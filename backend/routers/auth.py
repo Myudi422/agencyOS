@@ -210,15 +210,18 @@ async def postforme_sync_accounts(
 
     try:
         from backend.services.postforme_service import postforme_service
-        pf_res = await postforme_service.get_social_accounts(limit=100)
+        # Strictly fetch accounts for this specific workspace_id
+        pf_res = await postforme_service.get_social_accounts(external_id=[target_ws.id], limit=100)
         pf_accounts = pf_res.get("data", [])
+
+        # If PostForMe returned all accounts (fallback), filter strictly in memory
         synced_count = 0
 
         for acc in pf_accounts:
-            logger.info(f"PostForMe raw account object: {acc}")
-            # Multi-tenancy guard: check external_id matches target_ws.id
             acc_ext_id = acc.get("external_id")
-            if acc_ext_id and acc_ext_id != target_ws.id:
+            # Strict multi-tenancy check: external_id MUST equal target_ws.id
+            if acc_ext_id != target_ws.id:
+                logger.info(f"Skipping account {acc.get('id')} with mismatched external_id: {acc_ext_id} (expected {target_ws.id})")
                 continue
 
             pf_id = acc.get("id")
@@ -232,7 +235,7 @@ async def postforme_sync_accounts(
             # Extract followers count from PostForMe data/metadata recursively
             followers = extract_followers_count(acc)
 
-            # Map to enum platform
+            # Check if existing record
             try:
                 enum_platform = AccountPlatform(platform_str)
             except ValueError:
@@ -268,7 +271,6 @@ async def postforme_sync_accounts(
             else:
                 existing.postforme_account_id = pf_id
                 existing.status = AccountStatus.CONNECTED
-                # Always update avatar and followers from PostForMe on each sync
                 if profile_photo_url:
                     existing.avatar_url = profile_photo_url
                 if followers > 0:

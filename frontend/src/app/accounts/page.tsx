@@ -443,10 +443,7 @@ export default function AccountsPage() {
                 </div>
 
                 <div className="flex items-center justify-between pt-3 border-t border-slate-100 text-xs">
-                  <div>
-                    <p className="text-[10px] text-slate-400 font-medium">Followers</p>
-                    <p className="font-bold text-slate-900 font-['Outfit']">{acc.followers_count?.toLocaleString() || 0}</p>
-                  </div>
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700">Connected</span>
                   
                   <div className="flex items-center gap-1.5">
                     <button
@@ -479,7 +476,6 @@ export default function AccountsPage() {
               <tr className="border-b border-slate-200 text-slate-400 uppercase text-[10px] font-bold">
                 <th className="py-3 px-4">Channel</th>
                 <th className="py-3 px-4">Platform</th>
-                <th className="py-3 px-4">Followers</th>
                 <th className="py-3 px-4">Status</th>
                 <th className="py-3 px-4 text-right">Actions</th>
               </tr>
@@ -489,7 +485,6 @@ export default function AccountsPage() {
                 <tr key={acc.id} className="border-b border-slate-100 hover:bg-purple-50/40 transition-colors">
                   <td className="py-3 px-4 font-bold text-slate-900">@{acc.username}</td>
                   <td className="py-3 px-4 capitalize">{acc.platform}</td>
-                  <td className="py-3 px-4 font-mono">{acc.followers_count?.toLocaleString() || 0}</td>
                   <td className="py-3 px-4">
                     <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700">Connected</span>
                   </td>
