@@ -1532,49 +1532,46 @@ export default function StatisticsPage() {
           className="w-[794px] h-[1120px] bg-white p-10 flex flex-col justify-between box-border overflow-hidden"
         >
           <div className="space-y-5">
-            {/* Header Banner (Corporate Clean Style) */}
-            <div className="p-5 rounded-2xl bg-white border border-slate-200 border-t-4 border-t-purple-600 shadow-xs space-y-3">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-purple-600 text-white flex items-center justify-center font-extrabold text-lg shadow-xs">
-                    S
-                  </div>
-                  <div>
-                    <h1 className="text-lg font-extrabold tracking-tight text-slate-900 font-['Outfit']">{pdfTitle}</h1>
-                    <p className="text-[11px] text-purple-700 font-semibold">Shiera Social Command OS</p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <span className="px-2.5 py-0.5 rounded-full bg-purple-50 text-purple-700 text-[9px] font-bold border border-purple-200 uppercase tracking-wider inline-block">
-                    Official Report
+            {/* Clean Typography Header (No Shapes) */}
+            <div className="pb-4 border-b-2 border-purple-600 space-y-3">
+              <div className="flex items-start justify-between gap-4">
+                <div className="space-y-1">
+                  <span className="text-[10px] font-black tracking-widest text-purple-700 uppercase block">
+                    SHIERA ANALYTICS ENGINE
                   </span>
-                  <span className="text-[10px] text-slate-500 font-mono block mt-1">
-                    Dibuat: {new Date().toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric" })}
+                  <h1 className="text-xl font-extrabold text-slate-900 leading-snug">{pdfTitle}</h1>
+                </div>
+                <div className="text-right shrink-0 space-y-0.5">
+                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
+                    LAPORAN ANALISA
+                  </span>
+                  <span className="text-[10px] text-slate-400 font-mono block">
+                    {new Date().toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric" })}
                   </span>
                 </div>
               </div>
 
-              {/* Header Meta */}
-              <div className="grid grid-cols-2 gap-4 text-xs pt-0.5">
+              {/* Header Meta Row */}
+              <div className="flex items-center gap-6 text-xs pt-1 border-t border-slate-100">
                 <div>
-                  <p className="text-[10px] text-slate-400 uppercase font-semibold">Periode Data</p>
-                  <p className="font-bold text-slate-800 mt-0.5">{data?.period_label}</p>
+                  <span className="text-[10px] text-slate-400 font-semibold uppercase">Periode: </span>
+                  <span className="font-bold text-slate-800">{data?.period_label}</span>
                 </div>
                 <div>
-                  <p className="text-[10px] text-slate-400 uppercase font-semibold">Akun Dilibatkan</p>
-                  <p className="font-bold text-slate-800 mt-0.5">{pdfFilteredAccounts.length} Akun Social Media</p>
+                  <span className="text-[10px] text-slate-400 font-semibold uppercase">Cakupan: </span>
+                  <span className="font-bold text-slate-800">{pdfFilteredAccounts.length} Akun Sosial Media</span>
                 </div>
               </div>
             </div>
 
             {/* Catatan Analisa Manager */}
             {pdfNotes.trim() && (
-              <div className="p-3.5 rounded-xl bg-purple-50/80 border border-purple-200 text-purple-950 space-y-1">
-                <div className="flex items-center gap-2 text-purple-800 font-bold text-xs">
+              <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 space-y-1">
+                <div className="flex items-center gap-1.5 text-purple-700 font-bold text-xs">
                   <Sparkles className="w-3.5 h-3.5 text-purple-600 shrink-0" />
                   <span>Catatan & Analisa Manager</span>
                 </div>
-                <p className="text-xs leading-relaxed text-slate-700 whitespace-pre-line">{pdfNotes}</p>
+                <p className="text-xs leading-relaxed text-slate-700 whitespace-pre-line py-0.5">{pdfNotes}</p>
               </div>
             )}
 
@@ -1610,7 +1607,7 @@ export default function StatisticsPage() {
                 <h2 className="text-[11px] font-extrabold text-slate-900 uppercase tracking-wider border-b border-slate-200 pb-1">
                   Grafik Visual Tren Harian ({chartMetric.toUpperCase()})
                 </h2>
-                <div className="p-2 bg-slate-50/80 rounded-xl border border-slate-200/90 flex justify-center">
+                <div className="p-2.5 bg-slate-50/80 rounded-xl border border-slate-200/90 flex justify-center">
                   <AreaChart width={700} height={120} data={dailyData} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
                     <defs>
                       <linearGradient id="pdfAreaGradient" x1="0" y1="0" x2="0" y2="1">
@@ -1655,18 +1652,18 @@ export default function StatisticsPage() {
                   <tbody className="divide-y divide-slate-100">
                     {pdfFilteredAccounts.map(acc => (
                       <tr key={acc.id}>
-                        <td className="py-1.5 px-3 font-bold text-slate-800 text-[11px]">
-                          <span className="px-1.5 py-0.5 rounded bg-purple-50 text-purple-700 text-[9px] font-bold border border-purple-200 mr-1.5">
-                            {getPlatformDisplayName(acc.platform)}
+                        <td className="py-2 px-3 font-bold text-slate-800 text-[11px] leading-relaxed">
+                          <span className="text-purple-700 font-extrabold text-[10px] font-mono mr-1.5">
+                            [{getPlatformDisplayName(acc.platform)}]
                           </span>
                           @{acc.username}
                         </td>
-                        <td className="py-1.5 px-3 text-right font-semibold text-[11px]">{acc.post_count}</td>
-                        <td className="py-1.5 px-3 text-right text-rose-600 font-semibold text-[11px]">{fmtNum(acc.metrics.likes)}</td>
-                        <td className="py-1.5 px-3 text-right text-sky-600 font-semibold text-[11px]">{fmtNum(acc.metrics.comments)}</td>
-                        <td className="py-1.5 px-3 text-right text-emerald-600 font-semibold text-[11px]">{fmtNum(acc.metrics.shares)}</td>
-                        <td className="py-1.5 px-3 text-right text-amber-600 font-semibold text-[11px]">{fmtNum(acc.metrics.reach)}</td>
-                        <td className="py-1.5 px-3 text-right font-bold text-purple-700 text-[11px]">{acc.metrics.engagement_rate}%</td>
+                        <td className="py-2 px-3 text-right font-semibold text-[11px]">{acc.post_count}</td>
+                        <td className="py-2 px-3 text-right text-rose-600 font-semibold text-[11px]">{fmtNum(acc.metrics.likes)}</td>
+                        <td className="py-2 px-3 text-right text-sky-600 font-semibold text-[11px]">{fmtNum(acc.metrics.comments)}</td>
+                        <td className="py-2 px-3 text-right text-emerald-600 font-semibold text-[11px]">{fmtNum(acc.metrics.shares)}</td>
+                        <td className="py-2 px-3 text-right text-amber-600 font-semibold text-[11px]">{fmtNum(acc.metrics.reach)}</td>
+                        <td className="py-2 px-3 text-right font-bold text-purple-700 text-[11px]">{acc.metrics.engagement_rate}%</td>
                       </tr>
                     ))}
                   </tbody>
@@ -1688,13 +1685,12 @@ export default function StatisticsPage() {
           className="w-[794px] h-[1120px] bg-white p-10 flex flex-col justify-between box-border overflow-hidden"
         >
           <div className="space-y-6">
-            {/* Page 2 Mini Header */}
+            {/* Page 2 Mini Header (Clean Typography - No shapes) */}
             <div className="flex items-center justify-between border-b border-slate-200 pb-3">
-              <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-xl bg-purple-600 text-white flex items-center justify-center font-bold text-sm">
-                  S
-                </div>
-                <span className="font-bold text-slate-800 text-xs">{pdfTitle}</span>
+              <div>
+                <span className="font-extrabold text-slate-800 text-xs tracking-wide uppercase">
+                  SHIERA ANALYTICS • {pdfTitle}
+                </span>
               </div>
               <span className="text-[10px] text-slate-400 font-mono">{data?.period_label}</span>
             </div>
@@ -1705,25 +1701,27 @@ export default function StatisticsPage() {
                 <h2 className="text-xs font-extrabold text-slate-900 uppercase tracking-wider border-b border-slate-200 pb-1.5">
                   Top 5 Postingan Terbaik
                 </h2>
-                <div className="grid grid-cols-1 gap-2.5">
+                <div className="grid grid-cols-1 gap-3">
                   {data.top_posts.slice(0, 5).map((post, i) => {
                     const m = post.metrics || {};
                     const eng = (m.likes || 0) + (m.comments || 0) + (m.shares || 0);
                     return (
-                      <div key={i} className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between text-xs gap-3">
+                      <div key={i} className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between text-xs gap-3">
                         <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                          <span className="font-extrabold text-purple-700 w-5">#{i + 1}</span>
-                          <span className="px-1.5 py-0.5 rounded bg-purple-50 text-purple-700 text-[9px] font-bold border border-purple-200 shrink-0">
-                            {getPlatformDisplayName(post._platform)}
+                          <span className="font-extrabold text-purple-700 text-xs w-6 shrink-0">#{i + 1}</span>
+                          <span className="text-purple-700 font-extrabold text-[10px] font-mono shrink-0">
+                            [{getPlatformDisplayName(post._platform)}]
                           </span>
-                          <span className="font-semibold text-slate-800 shrink-0">@{post._account_username}</span>
-                          <p className="text-slate-600 truncate max-w-xs">{post.caption || "—"}</p>
+                          <span className="font-bold text-slate-800 text-[11px] shrink-0">@{post._account_username}</span>
+                          <p className="text-slate-600 text-xs leading-relaxed py-1 truncate max-w-xs">
+                            {post.caption || "—"}
+                          </p>
                         </div>
-                        <div className="flex items-center gap-3.5 text-slate-700 shrink-0 text-[11px]">
+                        <div className="flex items-center gap-3 text-slate-700 shrink-0 text-[11px] font-medium">
                           <span className="text-rose-600 font-semibold">♥ {fmtNum(m.likes)}</span>
                           <span className="text-sky-600 font-semibold">💬 {fmtNum(m.comments)}</span>
                           <span className="text-emerald-600 font-semibold">↗ {fmtNum(m.shares)}</span>
-                          <span className="font-bold text-purple-700 bg-purple-100 px-2 py-0.5 rounded-full text-[10px]">Eng: {fmtNum(eng)}</span>
+                          <span className="font-bold text-purple-700 text-[11px]">Eng: {fmtNum(eng)}</span>
                         </div>
                       </div>
                     );
@@ -1738,20 +1736,22 @@ export default function StatisticsPage() {
                 <h2 className="text-xs font-extrabold text-slate-900 uppercase tracking-wider border-b border-slate-200 pb-1.5">
                   Riwayat Feed Postingan ({Math.min(data.posts.length, 10)} Post Terbaru)
                 </h2>
-                <div className="space-y-2">
+                <div className="space-y-2.5">
                   {data.posts.slice(0, 10).map((post, i) => {
                     const m = post.metrics || {};
                     return (
-                      <div key={i} className="p-2.5 rounded-lg border border-slate-200/70 bg-white flex items-center justify-between text-xs gap-2">
+                      <div key={i} className="p-3 rounded-lg border border-slate-200 bg-white flex items-center justify-between text-xs gap-3">
                         <div className="flex items-center gap-2.5 min-w-0 flex-1">
                           <span className="text-[10px] text-slate-400 font-mono w-20 shrink-0">{fmtDate(post.posted_at)}</span>
-                          <span className="px-1.5 py-0.5 rounded bg-purple-50 text-purple-700 text-[9px] font-bold border border-purple-200 shrink-0">
-                            {getPlatformDisplayName(post._platform)}
+                          <span className="text-purple-700 font-extrabold text-[10px] font-mono shrink-0">
+                            [{getPlatformDisplayName(post._platform)}]
                           </span>
-                          <span className="font-bold text-slate-800 shrink-0">@{post._account_username}</span>
-                          <p className="text-slate-600 truncate">{post.caption || "—"}</p>
+                          <span className="font-bold text-slate-800 text-[11px] shrink-0">@{post._account_username}</span>
+                          <p className="text-slate-600 text-xs leading-relaxed py-1 truncate">
+                            {post.caption || "—"}
+                          </p>
                         </div>
-                        <div className="flex items-center gap-3 text-[10px] text-slate-500 shrink-0">
+                        <div className="flex items-center gap-3 text-[10px] text-slate-500 shrink-0 font-medium">
                           <span className="text-rose-600">♥ {fmtNum(m.likes)}</span>
                           <span className="text-sky-600">💬 {fmtNum(m.comments)}</span>
                           <span className="text-emerald-600">↗ {fmtNum(m.shares)}</span>
