@@ -12,7 +12,7 @@ import SubscriptionGuard from "@/components/billing/SubscriptionGuard";
 import { useAuthStore } from "@/store/authStore";
 import AccountSettingsModal from "@/components/profile/AccountSettingsModal";
 
-const PUBLIC_PATHS = ["/login", "/pricing", "/billing/success", "/onboarding"];
+const PUBLIC_PATHS = ["/landing", "/login", "/pricing", "/billing/success", "/onboarding"];
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
@@ -20,12 +20,13 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { isAuthenticated, isLoading, needsOnboarding, workspaceId } = useAuthStore();
 
+  const isPublicPage = pathname === "/" || PUBLIC_PATHS.some((p) => pathname.startsWith(p));
+
   // Auth & Onboarding guard
   useEffect(() => {
     if (isLoading) return;
-    const isPublic = PUBLIC_PATHS.some((p) => pathname.startsWith(p));
-    
-    if (!isAuthenticated && !isPublic) {
+
+    if (!isAuthenticated && !isPublicPage) {
       router.replace("/login");
       return;
     }
@@ -34,14 +35,13 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       if ((needsOnboarding || !workspaceId) && pathname !== "/onboarding") {
         router.replace("/onboarding");
       } else if (!needsOnboarding && workspaceId && pathname === "/onboarding") {
-        router.replace("/");
+        router.replace("/dashboard");
       }
     }
-  }, [isAuthenticated, isLoading, needsOnboarding, workspaceId, pathname, router]);
+  }, [isAuthenticated, isLoading, needsOnboarding, workspaceId, pathname, isPublicPage, router]);
 
-  // Public pages rendered without sidebar/header
-  const isPublic = PUBLIC_PATHS.some((p) => pathname.startsWith(p));
-  if (isPublic) {
+  // Public pages (landing, login, pricing, etc.) rendered without sidebar/header
+  if (isPublicPage) {
     return <>{children}</>;
   }
 

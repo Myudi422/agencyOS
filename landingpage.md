@@ -232,17 +232,18 @@ Platform All-in-One hemat waktu untuk Digital Agency & Media Publisher. Publikas
 
 ### [SECTION 7] Airbnb Reservation Card Style Pricing Matrix
 
-Tampilan harga menggunakan gaya **Sticky Reservation Card** Airbnb:
+Tampilan harga menggunakan gaya **Sticky Reservation Card** Airbnb dengan 4 tingkatan paket fleksibel:
 
-| Card Component | Starter Plan | Agency Pro (Recommended) | Enterprise / Newsroom |
-| :--- | :--- | :--- | :--- |
-| **Pill Highlight** | Solopreneur | **`GUEST FAVORITE`** | Enterprise |
-| **Harga / Bulan** | **Rp 299.000** | **Rp 799.000** | **Custom Pricing** |
-| **Social Accounts** | 10 Akun | 50 Akun | Unlimited Akun |
-| **Workspaces** | 2 Klien | 10 Klien | Unlimited Klien |
-| **Feature Included**| Scheduler & Queue | Scheduler, KOL Manager, RSS | Semua Fitur + Custom Domain |
-| **Report Type** | Standard | White-Label PDF Logo Agency | Custom Branded Report |
-| **CTA Button** | `Pilih Starter` (Secondary) | `Coba Agency Pro` (Pill Purple `#7c3aed`) | `Hubungi Sales` (Secondary) |
+| Card Component | Starter Trial | Creator | Agency (`GUEST FAVORITE`) | Studio (`TERBAIK`) |
+| :--- | :--- | :--- | :--- | :--- |
+| **Pill Badge** | Gratis 3 Hari | Creator Plan | **`Paling Populer`** | **`Terbaik`** |
+| **Harga / Periode** | **Rp 0** *(3 hari)* | **Rp 49.000** */bulan* | **Rp 299.000** */bulan* | **Rp 749.000** */bulan* |
+| **Kuota Post** | 6 Posts (2 post/hari) | 50 Posts (~1.6/hari) | 300 Posts (~10/hari) | 1.000 Posts (~33/hari) |
+| **Social Accounts** | Unlimited Akun | Unlimited Akun | Unlimited Akun | Unlimited Akun |
+| **Workspaces / Clients** | 1 Workspace | Personal / Brand | Multi-Client Management | Unlimited Clients |
+| **Fitur Utama** | 10+ Platform & WA OTP | Scheduling & Media Library | Priority Queue & Multi-Client | API Access & Priority Support |
+| **Metode Bayar** | Free Trial (WA Verify) | QRIS, GoPay, VA, Card | QRIS, GoPay, VA, Card | QRIS, GoPay, VA, Card |
+| **CTA Button** | `Mulai Trial` (Secondary) | `Pilih Creator` (Secondary) | `Pilih Agency` (Pill Purple `#7c3aed`) | `Pilih Studio` (Secondary) |
 
 ---
 

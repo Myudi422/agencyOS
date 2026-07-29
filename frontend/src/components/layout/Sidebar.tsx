@@ -69,7 +69,7 @@ export default function Sidebar({ isMobileOpen = false, onCloseMobile }: Sidebar
   };
 
   const navItems = [
-    { name: "Dashboard", href: "/", icon: LayoutDashboard },
+    { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
     { name: "Proses", href: "/queue", icon: Cpu, activeDot: true },
     { name: "Account Manager", href: "/accounts", icon: Users2, badge: "10 Platforms" },
     { name: "Client Roster", href: "/clients", icon: Briefcase },
