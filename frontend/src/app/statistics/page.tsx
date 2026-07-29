@@ -1550,12 +1550,14 @@ export default function StatisticsPage() {
           const topPosts = data?.top_posts || [];
 
           const hasPage2 = pdfSections.topPosts || pdfSections.timelineFeed;
-          const remainingTimelinePosts = pdfSections.timelineFeed ? posts.slice(5) : [];
+          const initialFeedCount = pdfSections.topPosts ? 8 : 14;
+          const initialFeedPosts = pdfSections.timelineFeed ? posts.slice(0, initialFeedCount) : [];
+          const remainingTimelinePosts = pdfSections.timelineFeed ? posts.slice(initialFeedCount) : [];
 
-          // Divide remaining posts into chunks of 8 per page to guarantee clean spacing
+          // Divide remaining posts into chunks of 14 per page to fill A4 height cleanly
           const extraPagesChunks: FeedPost[][] = [];
-          for (let i = 0; i < remainingTimelinePosts.length; i += 8) {
-            extraPagesChunks.push(remainingTimelinePosts.slice(i, i + 8));
+          for (let i = 0; i < remainingTimelinePosts.length; i += 14) {
+            extraPagesChunks.push(remainingTimelinePosts.slice(i, i + 14));
           }
 
           const totalPages = 1 + (hasPage2 ? 1 : 0) + extraPagesChunks.length;
@@ -1715,7 +1717,7 @@ export default function StatisticsPage() {
               {/* ── PAGE 2 ── */}
               {hasPage2 && (
                 <div className="pdf-page-block w-[794px] h-[1120px] bg-white p-10 flex flex-col justify-between box-border overflow-hidden">
-                  <div className="space-y-6">
+                  <div className="space-y-5">
                     {/* Mini Header */}
                     <div className="flex items-center justify-between border-b border-slate-200 pb-3">
                       <span className="font-extrabold text-slate-800 text-xs tracking-wide uppercase">
@@ -1726,8 +1728,8 @@ export default function StatisticsPage() {
 
                     {/* Section 4: Top Performing Posts */}
                     {pdfSections.topPosts && topPosts.length > 0 && (
-                      <div className="space-y-2">
-                        <h2 className="text-xs font-extrabold text-slate-900 uppercase tracking-wider border-b border-slate-200 pb-1.5">
+                      <div className="space-y-1.5">
+                        <h2 className="text-xs font-extrabold text-slate-900 uppercase tracking-wider border-b border-slate-200 pb-1">
                           Top 5 Postingan Terbaik
                         </h2>
                         <div className="divide-y divide-slate-100">
@@ -1735,7 +1737,7 @@ export default function StatisticsPage() {
                             const m = post.metrics || {};
                             const eng = (m.likes || 0) + (m.comments || 0) + (m.shares || 0);
                             return (
-                              <div key={i} className="py-2.5 flex items-center justify-between text-xs gap-3">
+                              <div key={i} className="py-2 flex items-center justify-between text-xs gap-3">
                                 <div className="flex items-center gap-2.5 min-w-0 flex-1">
                                   <span className="font-extrabold text-purple-700 text-xs w-5 shrink-0">#{i + 1}</span>
 
@@ -1759,7 +1761,7 @@ export default function StatisticsPage() {
                                     [{getPlatformDisplayName(post._platform)}]
                                   </span>
                                   <span className="font-bold text-slate-800 text-[11px] shrink-0">@{post._account_username}</span>
-                                  <p className="text-slate-600 text-xs leading-normal truncate max-w-xs">
+                                  <p className="text-slate-600 text-[11px] leading-relaxed py-0.5 truncate max-w-[220px] font-normal shrink overflow-hidden text-ellipsis whitespace-nowrap min-h-[22px] flex items-center">
                                     {post.caption || "—"}
                                   </p>
                                 </div>
@@ -1787,17 +1789,17 @@ export default function StatisticsPage() {
                       </div>
                     )}
 
-                    {/* Section 5: Timeline Feed (Initial 5 posts) */}
-                    {pdfSections.timelineFeed && posts.length > 0 && (
-                      <div className="space-y-2">
-                        <h2 className="text-xs font-extrabold text-slate-900 uppercase tracking-wider border-b border-slate-200 pb-1.5">
-                          Riwayat Feed Postingan ({Math.min(posts.length, 5)} Post Terbaru)
+                    {/* Section 5: Timeline Feed Initial Posts */}
+                    {pdfSections.timelineFeed && initialFeedPosts.length > 0 && (
+                      <div className="space-y-1.5">
+                        <h2 className="text-xs font-extrabold text-slate-900 uppercase tracking-wider border-b border-slate-200 pb-1">
+                          Riwayat Feed Postingan ({initialFeedPosts.length} Post Terbaru)
                         </h2>
                         <div className="divide-y divide-slate-100">
-                          {posts.slice(0, 5).map((post, i) => {
+                          {initialFeedPosts.map((post, i) => {
                             const m = post.metrics || {};
                             return (
-                              <div key={i} className="py-2.5 flex items-center justify-between text-xs gap-3">
+                              <div key={i} className="py-2 flex items-center justify-between text-xs gap-3">
                                 <div className="flex items-center gap-2.5 min-w-0 flex-1">
                                   <span className="text-[10px] text-slate-400 font-mono w-20 shrink-0">{fmtDate(post.posted_at)}</span>
 
@@ -1821,7 +1823,7 @@ export default function StatisticsPage() {
                                     [{getPlatformDisplayName(post._platform)}]
                                   </span>
                                   <span className="font-bold text-slate-800 text-[11px] shrink-0">@{post._account_username}</span>
-                                  <p className="text-slate-600 text-xs leading-normal truncate">
+                                  <p className="text-slate-600 text-[11px] leading-relaxed py-0.5 truncate max-w-[220px] font-normal shrink overflow-hidden text-ellipsis whitespace-nowrap min-h-[22px] flex items-center">
                                     {post.caption || "—"}
                                   </p>
                                 </div>
@@ -1860,12 +1862,12 @@ export default function StatisticsPage() {
               {/* ── EXTRA PAGES (PAGE 3, 4, etc. if remaining posts exist) ── */}
               {extraPagesChunks.map((chunk, pageIdx) => {
                 const currentPageNum = 2 + pageIdx + 1;
-                const startIdx = 5 + pageIdx * 8 + 1;
-                const endIdx = 5 + pageIdx * 8 + chunk.length;
+                const startIdx = initialFeedCount + pageIdx * 14 + 1;
+                const endIdx = initialFeedCount + pageIdx * 14 + chunk.length;
 
                 return (
                   <div key={pageIdx} className="pdf-page-block w-[794px] h-[1120px] bg-white p-10 flex flex-col justify-between box-border overflow-hidden">
-                    <div className="space-y-6">
+                    <div className="space-y-5">
                       {/* Mini Header */}
                       <div className="flex items-center justify-between border-b border-slate-200 pb-3">
                         <span className="font-extrabold text-slate-800 text-xs tracking-wide uppercase">
@@ -1875,15 +1877,15 @@ export default function StatisticsPage() {
                       </div>
 
                       {/* Feed Chunk */}
-                      <div className="space-y-2">
-                        <h2 className="text-xs font-extrabold text-slate-900 uppercase tracking-wider border-b border-slate-200 pb-1.5">
+                      <div className="space-y-1.5">
+                        <h2 className="text-xs font-extrabold text-slate-900 uppercase tracking-wider border-b border-slate-200 pb-1">
                           Riwayat Feed Postingan (Post {startIdx} – {endIdx})
                         </h2>
                         <div className="divide-y divide-slate-100">
                           {chunk.map((post, i) => {
                             const m = post.metrics || {};
                             return (
-                              <div key={i} className="py-2.5 flex items-center justify-between text-xs gap-3">
+                              <div key={i} className="py-2 flex items-center justify-between text-xs gap-3">
                                 <div className="flex items-center gap-2.5 min-w-0 flex-1">
                                   <span className="text-[10px] text-slate-400 font-mono w-20 shrink-0">{fmtDate(post.posted_at)}</span>
 
@@ -1907,7 +1909,7 @@ export default function StatisticsPage() {
                                     [{getPlatformDisplayName(post._platform)}]
                                   </span>
                                   <span className="font-bold text-slate-800 text-[11px] shrink-0">@{post._account_username}</span>
-                                  <p className="text-slate-600 text-xs leading-normal truncate">
+                                  <p className="text-slate-600 text-[11px] leading-relaxed py-0.5 truncate max-w-[220px] font-normal shrink overflow-hidden text-ellipsis whitespace-nowrap min-h-[22px] flex items-center">
                                     {post.caption || "—"}
                                   </p>
                                 </div>
