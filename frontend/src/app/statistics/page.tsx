@@ -6,7 +6,7 @@ import {
   Share2, Eye, Play, UserPlus, TrendingUp, ChevronDown, Calendar,
   Filter, Loader2, AlertTriangle, ArrowUpRight, BarChart, Globe,
   Star, X, Bookmark, MousePointerClick, ChevronRight, Info,
-  Image as ImageIcon, Video
+  Image as ImageIcon, Video, LayoutGrid, List
 } from "lucide-react";
 import {
   ResponsiveContainer, LineChart, Line, BarChart as ReBarChart, Bar,
@@ -172,10 +172,12 @@ function PostMediaThumbnail({
   url,
   mediaType,
   platform,
+  isGrid = false,
 }: {
   url?: string;
   mediaType?: string;
   platform?: string;
+  isGrid?: boolean;
 }) {
   const [imgError, setImgError] = useState(false);
 
@@ -189,31 +191,126 @@ function PostMediaThumbnail({
     platform === "tiktok_business" ||
     platform === "youtube";
 
+  const sizeClasses = isGrid
+    ? "w-full h-full"
+    : "w-11 h-11 sm:w-12 sm:h-12 rounded-xl shrink-0";
+
   if (!url || imgError) {
     return (
-      <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-purple-50 border border-purple-100/80 flex items-center justify-center shrink-0 text-purple-600 shadow-xs">
+      <div className={`${sizeClasses} bg-purple-50 border border-purple-100/80 flex items-center justify-center text-purple-600 shadow-xs ${isGrid ? "rounded-none" : ""}`}>
         {isVideo ? (
-          <Video className="w-4 h-4 sm:w-5 sm:h-5 opacity-80" />
+          <Video className={`${isGrid ? "w-8 h-8" : "w-4 h-4 sm:w-5 sm:h-5"} opacity-75`} />
         ) : (
-          <ImageIcon className="w-4 h-4 sm:w-5 sm:h-5 opacity-80" />
+          <ImageIcon className={`${isGrid ? "w-8 h-8" : "w-4 h-4 sm:w-5 sm:h-5"} opacity-75`} />
         )}
       </div>
     );
   }
 
   return (
-    <div className="relative w-11 h-11 sm:w-12 sm:h-12 shrink-0">
+    <div className={`relative ${sizeClasses}`}>
       <img
         src={url}
         onError={() => setImgError(true)}
-        className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl object-cover border border-slate-100 shadow-xs"
+        className={`${sizeClasses} object-cover ${isGrid ? "rounded-none" : "rounded-xl border border-slate-100 shadow-xs"}`}
         alt=""
       />
       {isVideo && (
-        <div className="absolute bottom-0.5 right-0.5 bg-slate-900/75 text-white p-0.5 rounded-md backdrop-blur-xs">
+        <div className="absolute bottom-1 right-1 bg-slate-900/80 text-white p-1 rounded-md backdrop-blur-xs flex items-center gap-1 text-[9px] font-bold px-1.5">
           <Play className="w-2.5 h-2.5 fill-current" />
+          {isGrid && <span>Video</span>}
         </div>
       )}
+    </div>
+  );
+}
+
+function PostGridCard({ post, rank }: { post: FeedPost; rank?: number }) {
+  const m = post.metrics || {};
+  const eng = (m.likes || 0) + (m.comments || 0) + (m.shares || 0);
+
+  return (
+    <div className="flex flex-col bg-white rounded-2xl border border-slate-100 hover:border-purple-200 hover:shadow-md transition-all overflow-hidden group min-w-0">
+      {/* Header Info */}
+      <div className="p-3 flex items-center justify-between gap-2 border-b border-slate-50">
+        <div className="flex items-center gap-2 min-w-0">
+          {post._avatar_url ? (
+            <img src={post._avatar_url} className="w-6 h-6 rounded-full object-cover border border-slate-100 shrink-0" alt="" />
+          ) : (
+            <div className="w-6 h-6 rounded-full bg-purple-100 text-purple-700 flex items-center justify-center text-[10px] font-bold shrink-0">
+              {post._account_username?.charAt(0)?.toUpperCase() || "A"}
+            </div>
+          )}
+          <div className="min-w-0">
+            <p className="text-[11px] font-bold text-slate-800 truncate leading-tight">
+              @{post._account_username || "user"}
+            </p>
+            <p className="text-[9px] text-slate-400 font-mono">{fmtDate(post.posted_at)}</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-1 shrink-0">
+          {rank !== undefined && (
+            <span className={`px-1.5 py-0.5 rounded-full text-[9px] font-extrabold ${
+              rank === 1 ? "bg-amber-100 text-amber-700" :
+              rank === 2 ? "bg-slate-100 text-slate-600" :
+              rank === 3 ? "bg-orange-100 text-orange-700" :
+              "bg-slate-50 text-slate-400"
+            }`}>
+              #{rank}
+            </span>
+          )}
+          {post._platform && <PlatformBadge platform={post._platform} />}
+        </div>
+      </div>
+
+      {/* Square Media Container */}
+      <div className="relative aspect-square w-full bg-slate-50 overflow-hidden flex items-center justify-center">
+        <PostMediaThumbnail
+          url={post.media?.[0]?.url}
+          mediaType={post.media?.[0]?.type}
+          platform={post._platform}
+          isGrid
+        />
+        {post.platform_url && (
+          <a
+            href={post.platform_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="absolute top-2 right-2 p-1.5 rounded-full bg-slate-900/60 text-white hover:bg-purple-600 transition-all shadow-xs opacity-0 group-hover:opacity-100"
+            title="Buka Postingan"
+          >
+            <ArrowUpRight className="w-3.5 h-3.5" />
+          </a>
+        )}
+      </div>
+
+      {/* Caption & Metrics */}
+      <div className="p-3 flex-1 flex flex-col justify-between space-y-2.5">
+        <p className="text-xs text-slate-700 line-clamp-2 leading-relaxed font-medium break-words">
+          {post.caption || "Tidak ada caption"}
+        </p>
+
+        {/* Engagement Stats Bar */}
+        <div className="pt-2 border-t border-slate-50 flex items-center justify-between text-[11px] text-slate-600 flex-wrap gap-1">
+          <div className="flex items-center gap-2">
+            <span className="flex items-center gap-1 text-rose-600 font-semibold" title="Likes">
+              <Heart className="w-3 h-3 text-rose-500 fill-rose-50 shrink-0" />
+              {fmtNum(m.likes)}
+            </span>
+            <span className="flex items-center gap-1 text-sky-600 font-semibold" title="Komentar">
+              <MessageCircle className="w-3 h-3 text-sky-500 shrink-0" />
+              {fmtNum(m.comments)}
+            </span>
+            <span className="flex items-center gap-1 text-emerald-600 font-semibold" title="Shares">
+              <Share2 className="w-3 h-3 text-emerald-500 shrink-0" />
+              {fmtNum(m.shares)}
+            </span>
+          </div>
+          <span className="text-purple-600 font-bold text-[10px]">
+            Eng: {fmtNum(eng)}
+          </span>
+        </div>
+      </div>
     </div>
   );
 }
@@ -420,6 +517,10 @@ export default function StatisticsPage() {
   const [period, setPeriod] = useState<PeriodKey>("today");
   const [customFrom, setCustomFrom] = useState("");
   const [customTo, setCustomTo] = useState("");
+
+  // View Mode states: "grid" (Instagram-style) | "list"
+  const [topPostsViewMode, setTopPostsViewMode] = useState<"grid" | "list">("grid");
+  const [timelineViewMode, setTimelineViewMode] = useState<"grid" | "list">("grid");
 
   // Data state
   const [data, setData] = useState<StatsFeedResponse | null>(null);
@@ -1024,7 +1125,7 @@ export default function StatisticsPage() {
           {/* ─── Top Posts ─── */}
           {data.top_posts && data.top_posts.length > 0 && (
             <div className="p-5 sm:p-6 rounded-3xl glass-card space-y-4 min-w-0">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-4">
                 <div className="flex items-center gap-2.5">
                   <div className="w-8 h-8 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center shrink-0">
                     <Star className="w-4 h-4" />
@@ -1034,67 +1135,100 @@ export default function StatisticsPage() {
                     <p className="text-[11px] text-slate-500">Konten dengan engagement tertinggi</p>
                   </div>
                 </div>
-                <span className="text-[10px] text-slate-400 font-mono">Top {Math.min(data.top_posts.length, 10)}</span>
+                <div className="flex items-center gap-3">
+                  {/* View Mode Switcher */}
+                  <div className="flex items-center gap-1 p-0.5 bg-slate-100/90 rounded-xl">
+                    <button
+                      onClick={() => setTopPostsViewMode("grid")}
+                      className={`p-1.5 rounded-lg transition-all ${
+                        topPostsViewMode === "grid" ? "bg-white text-purple-700 shadow-xs" : "text-slate-400 hover:text-slate-600"
+                      }`}
+                      title="Grid View (Instagram Style)"
+                    >
+                      <LayoutGrid className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      onClick={() => setTopPostsViewMode("list")}
+                      className={`p-1.5 rounded-lg transition-all ${
+                        topPostsViewMode === "list" ? "bg-white text-purple-700 shadow-xs" : "text-slate-400 hover:text-slate-600"
+                      }`}
+                      title="List View"
+                    >
+                      <List className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                  <span className="text-[10px] text-slate-400 font-mono">Top {Math.min(data.top_posts.length, 10)}</span>
+                </div>
               </div>
-              <div className="space-y-3">
-                {data.top_posts.slice(0, 10).map((post, idx) => {
-                  const m = post.metrics || {};
-                  const eng = (m.likes || 0) + (m.comments || 0) + (m.shares || 0);
-                  return (
-                    <div key={idx} className="flex items-start gap-3 sm:gap-3.5 p-3.5 sm:p-4 rounded-2xl bg-white border border-slate-100 hover:border-purple-200 hover:shadow-sm transition-all group min-w-0">
-                      {/* Rank */}
-                      <div className={`shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold ${
-                        idx === 0 ? "bg-amber-100 text-amber-700" :
-                        idx === 1 ? "bg-slate-100 text-slate-600" :
-                        idx === 2 ? "bg-orange-100 text-orange-700" :
-                        "bg-slate-50 text-slate-400"
-                      }`}>
-                        {idx + 1}
-                      </div>
 
-                      {/* Thumbnail with Error Fallback */}
-                      <PostMediaThumbnail
-                        url={post.media?.[0]?.url}
-                        mediaType={post.media?.[0]?.type}
-                        platform={post._platform}
-                      />
-
-                      {/* Content */}
-                      <div className="flex-1 min-w-0 space-y-1">
-                        <div className="flex items-center gap-1.5 flex-wrap">
-                          {post._platform && <PlatformBadge platform={post._platform} />}
-                          {post._account_username && (
-                            <span className="text-[10px] text-slate-400 truncate">@{post._account_username}</span>
-                          )}
-                          <span className="text-[10px] text-slate-400 font-mono sm:ml-auto">{fmtDate(post.posted_at)}</span>
+              {/* Grid View vs List View */}
+              {topPostsViewMode === "grid" ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                  {data.top_posts.slice(0, 10).map((post, idx) => (
+                    <PostGridCard key={idx} post={post} rank={idx + 1} />
+                  ))}
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {data.top_posts.slice(0, 10).map((post, idx) => {
+                    const m = post.metrics || {};
+                    const eng = (m.likes || 0) + (m.comments || 0) + (m.shares || 0);
+                    return (
+                      <div key={idx} className="flex items-start gap-3 sm:gap-3.5 p-3.5 sm:p-4 rounded-2xl bg-white border border-slate-100 hover:border-purple-200 hover:shadow-sm transition-all group min-w-0">
+                        {/* Rank */}
+                        <div className={`shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold ${
+                          idx === 0 ? "bg-amber-100 text-amber-700" :
+                          idx === 1 ? "bg-slate-100 text-slate-600" :
+                          idx === 2 ? "bg-orange-100 text-orange-700" :
+                          "bg-slate-50 text-slate-400"
+                        }`}>
+                          {idx + 1}
                         </div>
-                        <p className="text-xs text-slate-700 line-clamp-2 leading-relaxed font-medium break-words">
-                          {post.caption || "Tidak ada caption"}
-                        </p>
-                        <div className="flex items-center gap-2.5 sm:gap-3 text-[11px] text-slate-500 flex-wrap pt-0.5">
-                          <span className="flex items-center gap-1 text-rose-600 font-semibold"><Heart className="w-3 h-3 shrink-0" />{fmtNum(m.likes)}</span>
-                          <span className="flex items-center gap-1 text-sky-600 font-semibold"><MessageCircle className="w-3 h-3 shrink-0" />{fmtNum(m.comments)}</span>
-                          <span className="flex items-center gap-1 text-emerald-600 font-semibold"><Share2 className="w-3 h-3 shrink-0" />{fmtNum(m.shares)}</span>
-                          {(m.reach ?? 0) > 0 && <span className="flex items-center gap-1 text-amber-600 font-semibold"><Eye className="w-3 h-3 shrink-0" />{fmtNum(m.reach)}</span>}
-                          <span className="ml-auto text-purple-600 font-bold">Eng: {fmtNum(eng)}</span>
-                        </div>
-                      </div>
 
-                      {/* External link */}
-                      {post.platform_url && (
-                        <a
-                          href={post.platform_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="shrink-0 p-1.5 rounded-lg text-slate-300 hover:text-purple-600 hover:bg-purple-50 transition-colors"
-                        >
-                          <ArrowUpRight className="w-4 h-4" />
-                        </a>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
+                        {/* Thumbnail with Error Fallback */}
+                        <PostMediaThumbnail
+                          url={post.media?.[0]?.url}
+                          mediaType={post.media?.[0]?.type}
+                          platform={post._platform}
+                        />
+
+                        {/* Content */}
+                        <div className="flex-1 min-w-0 space-y-1">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            {post._platform && <PlatformBadge platform={post._platform} />}
+                            {post._account_username && (
+                              <span className="text-[10px] text-slate-400 truncate">@{post._account_username}</span>
+                            )}
+                            <span className="text-[10px] text-slate-400 font-mono sm:ml-auto">{fmtDate(post.posted_at)}</span>
+                          </div>
+                          <p className="text-xs text-slate-700 line-clamp-2 leading-relaxed font-medium break-words">
+                            {post.caption || "Tidak ada caption"}
+                          </p>
+                          <div className="flex items-center gap-2.5 sm:gap-3 text-[11px] text-slate-500 flex-wrap pt-0.5">
+                            <span className="flex items-center gap-1 text-rose-600 font-semibold"><Heart className="w-3 h-3 shrink-0" />{fmtNum(m.likes)}</span>
+                            <span className="flex items-center gap-1 text-sky-600 font-semibold"><MessageCircle className="w-3 h-3 shrink-0" />{fmtNum(m.comments)}</span>
+                            <span className="flex items-center gap-1 text-emerald-600 font-semibold"><Share2 className="w-3 h-3 shrink-0" />{fmtNum(m.shares)}</span>
+                            {(m.reach ?? 0) > 0 && <span className="flex items-center gap-1 text-amber-600 font-semibold"><Eye className="w-3 h-3 shrink-0" />{fmtNum(m.reach)}</span>}
+                            <span className="ml-auto text-purple-600 font-bold">Eng: {fmtNum(eng)}</span>
+                          </div>
+                        </div>
+
+                        {/* External link */}
+                        {post.platform_url && (
+                          <a
+                            href={post.platform_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="shrink-0 p-1.5 rounded-lg text-slate-300 hover:text-purple-600 hover:bg-purple-50 transition-colors"
+                          >
+                            <ArrowUpRight className="w-4 h-4" />
+                          </a>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           )}
 
@@ -1118,54 +1252,85 @@ export default function StatisticsPage() {
                       <p className="text-[11px] text-slate-500">Postingan terbaru dalam periode</p>
                     </div>
                   </div>
-                  <span className="text-[10px] text-slate-400 font-mono">
-                    Total {data.posts.length} post
-                  </span>
+                  <div className="flex items-center gap-3">
+                    {/* View Mode Switcher */}
+                    <div className="flex items-center gap-1 p-0.5 bg-slate-100/90 rounded-xl">
+                      <button
+                        onClick={() => setTimelineViewMode("grid")}
+                        className={`p-1.5 rounded-lg transition-all ${
+                          timelineViewMode === "grid" ? "bg-white text-purple-700 shadow-xs" : "text-slate-400 hover:text-slate-600"
+                        }`}
+                        title="Grid View (Instagram Style)"
+                      >
+                        <LayoutGrid className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={() => setTimelineViewMode("list")}
+                        className={`p-1.5 rounded-lg transition-all ${
+                          timelineViewMode === "list" ? "bg-white text-purple-700 shadow-xs" : "text-slate-400 hover:text-slate-600"
+                        }`}
+                        title="List View"
+                      >
+                        <List className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                    <span className="text-[10px] text-slate-400 font-mono">
+                      Total {data.posts.length} post
+                    </span>
+                  </div>
                 </div>
 
-                {/* Timeline Items */}
-                <div className="space-y-2.5">
-                  {currentPosts.map((post, idx) => {
-                    const m = post.metrics || {};
-                    return (
-                      <div key={idx} className="flex flex-col sm:flex-row sm:items-center gap-2.5 p-3.5 rounded-2xl bg-white border border-slate-100 hover:border-purple-200 transition-all text-xs min-w-0">
-                        <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                          <PostMediaThumbnail
-                            url={post.media?.[0]?.url}
-                            mediaType={post.media?.[0]?.type}
-                            platform={post._platform}
-                          />
-                          <div className="min-w-0 flex-1 space-y-1">
-                            <div className="flex items-center gap-1.5 flex-wrap">
-                              {post._platform && <PlatformBadge platform={post._platform} />}
-                              {post._account_username && (
-                                <span className="text-[10px] text-slate-400 truncate">@{post._account_username}</span>
-                              )}
-                              <span className="text-[10px] text-slate-400 font-mono sm:ml-auto">
-                                {fmtDate(post.posted_at)}
-                              </span>
+                {/* Grid View vs List View */}
+                {timelineViewMode === "grid" ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                    {currentPosts.map((post, idx) => (
+                      <PostGridCard key={idx} post={post} />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="space-y-2.5">
+                    {currentPosts.map((post, idx) => {
+                      const m = post.metrics || {};
+                      return (
+                        <div key={idx} className="flex flex-col sm:flex-row sm:items-center gap-2.5 p-3.5 rounded-2xl bg-white border border-slate-100 hover:border-purple-200 transition-all text-xs min-w-0">
+                          <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                            <PostMediaThumbnail
+                              url={post.media?.[0]?.url}
+                              mediaType={post.media?.[0]?.type}
+                              platform={post._platform}
+                            />
+                            <div className="min-w-0 flex-1 space-y-1">
+                              <div className="flex items-center gap-1.5 flex-wrap">
+                                {post._platform && <PlatformBadge platform={post._platform} />}
+                                {post._account_username && (
+                                  <span className="text-[10px] text-slate-400 truncate">@{post._account_username}</span>
+                                )}
+                                <span className="text-[10px] text-slate-400 font-mono sm:ml-auto">
+                                  {fmtDate(post.posted_at)}
+                                </span>
+                              </div>
+                              <p className="text-slate-700 truncate font-medium">{post.caption || "—"}</p>
                             </div>
-                            <p className="text-slate-700 truncate font-medium">{post.caption || "—"}</p>
                           </div>
-                        </div>
 
-                        {/* Engagement stats & link */}
-                        <div className="flex items-center justify-between sm:justify-end gap-3 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-50 text-[11px] shrink-0">
-                          <div className="flex items-center gap-2.5">
-                            <span className="text-rose-500 font-bold flex items-center gap-1"><Heart className="w-3 h-3 shrink-0" />{fmtNum(m.likes)}</span>
-                            <span className="text-sky-500 font-bold flex items-center gap-1"><MessageCircle className="w-3 h-3 shrink-0" />{fmtNum(m.comments)}</span>
-                            <span className="text-emerald-500 font-bold flex items-center gap-1"><Share2 className="w-3 h-3 shrink-0" />{fmtNum(m.shares)}</span>
+                          {/* Engagement stats & link */}
+                          <div className="flex items-center justify-between sm:justify-end gap-3 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-50 text-[11px] shrink-0">
+                            <div className="flex items-center gap-2.5">
+                              <span className="text-rose-500 font-bold flex items-center gap-1"><Heart className="w-3 h-3 shrink-0" />{fmtNum(m.likes)}</span>
+                              <span className="text-sky-500 font-bold flex items-center gap-1"><MessageCircle className="w-3 h-3 shrink-0" />{fmtNum(m.comments)}</span>
+                              <span className="text-emerald-500 font-bold flex items-center gap-1"><Share2 className="w-3 h-3 shrink-0" />{fmtNum(m.shares)}</span>
+                            </div>
+                            {post.platform_url && (
+                              <a href={post.platform_url} target="_blank" rel="noopener noreferrer" className="text-slate-300 hover:text-purple-600 transition-colors p-1">
+                                <ArrowUpRight className="w-3.5 h-3.5" />
+                              </a>
+                            )}
                           </div>
-                          {post.platform_url && (
-                            <a href={post.platform_url} target="_blank" rel="noopener noreferrer" className="text-slate-300 hover:text-purple-600 transition-colors p-1">
-                              <ArrowUpRight className="w-3.5 h-3.5" />
-                            </a>
-                          )}
                         </div>
-                      </div>
-                    );
-                  })}
-                </div>
+                      );
+                    })}
+                  </div>
+                )}
 
                 {/* Pagination Controls */}
                 {totalTimelinePages > 1 && (
