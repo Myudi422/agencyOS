@@ -147,27 +147,75 @@ class PostForMeSyncRequest(BaseModel):
     workspace_id: Optional[str] = None
     client_id: Optional[str] = None
 
+def extract_followers_count(acc: dict) -> int:
+    """
+    Recursively search for follower / subscriber / fan counts in PostForMe account data or metadata.
+    """
+    target_keys = {
+        "followers_count", "follower_count", "followerscount", "followercount",
+        "followers", "follower", "subscribers_count", "subscriber_count",
+        "subscriberscount", "subscribercount", "subscribers", "subscriber",
+        "fan_count", "fancount", "fans", "follower_num", "subscribers_num"
+    }
+
+    def search_dict(d: Any) -> int:
+        if isinstance(d, dict):
+            for k, v in d.items():
+                clean_k = str(k).lower().replace("_", "").replace("-", "")
+                if clean_k in {tk.replace("_", "") for tk in target_keys}:
+                    try:
+                        if isinstance(v, (int, float)) and v > 0:
+                            return int(v)
+                        elif isinstance(v, str) and v.isdigit() and int(v) > 0:
+                            return int(v)
+                    except (ValueError, TypeError):
+                        pass
+                if isinstance(v, (dict, list)):
+                    res = search_dict(v)
+                    if res > 0:
+                        return res
+        elif isinstance(d, list):
+            for item in d:
+                res = search_dict(item)
+                if res > 0:
+                    return res
+        return 0
+
+    return search_dict(acc)
+
 
 @router.post("/postforme/sync-accounts")
 async def postforme_sync_accounts(
-    req: PostForMeSyncRequest,
+    payload: Dict[str, Any],
     db: Session = Depends(get_db),
-    current_user: Optional[User] = Depends(get_current_user_from_token)
+    current_user: User = Depends(require_user)
 ):
     """
-    Fetches connected accounts from PostForMe API and syncs them into user's workspace in DB.
-    Strictly scoped to current user's target workspace via external_id.
+    Fetch all social accounts from PostForMe API and sync them into local SocialAccount database records.
+    Updates workspace_id, client_id, profile_photo_url, followers_count, and connection status.
     """
+    workspace_id = payload.get("workspace_id")
+    client_id = payload.get("client_id")
+    if not workspace_id:
+        raise HTTPException(status_code=400, detail="workspace_id is required")
+
+    target_ws = get_user_workspace(current_user, workspace_id, db)
+    target_client = None
+    if client_id:
+        target_client = db.query(Client).filter(Client.id == client_id, Client.workspace_id == target_ws.id).first()
+    if not target_client:
+        target_client = db.query(Client).filter(Client.workspace_id == target_ws.id).first()
+    if not target_client:
+        raise HTTPException(status_code=400, detail="Workspace has no client associated")
+
     try:
         from backend.services.postforme_service import postforme_service
-        target_ws, target_client = _get_user_target_workspace(db, current_user, req.workspace_id, req.client_id)
-        
-        # Only fetch PostForMe accounts registered under target_ws.id
-        pf_res = await postforme_service.get_social_accounts(external_id=[target_ws.id])
+        pf_res = await postforme_service.get_social_accounts(limit=100)
         pf_accounts = pf_res.get("data", [])
-        synced_list = []
+        synced_count = 0
 
         for acc in pf_accounts:
+            logger.info(f"PostForMe raw account object: {acc}")
             # Multi-tenancy guard: check external_id matches target_ws.id
             acc_ext_id = acc.get("external_id")
             if acc_ext_id and acc_ext_id != target_ws.id:
@@ -181,15 +229,8 @@ async def postforme_sync_accounts(
             # PostForMe SocialAccountDto returns profile_photo_url for the platform avatar
             profile_photo_url = acc.get("profile_photo_url")
 
-            # Extract followers count from PostForMe metadata if available
-            metadata = acc.get("metadata") or {}
-            followers = (
-                metadata.get("followers_count")
-                or metadata.get("follower_count")
-                or metadata.get("followers")
-                or acc.get("followers_count")
-                or 0
-            )
+            # Extract followers count from PostForMe data/metadata recursively
+            followers = extract_followers_count(acc)
 
             # Map to enum platform
             try:
@@ -230,21 +271,18 @@ async def postforme_sync_accounts(
                 # Always update avatar and followers from PostForMe on each sync
                 if profile_photo_url:
                     existing.avatar_url = profile_photo_url
-                existing.followers_count = followers
+                if followers > 0:
+                    existing.followers_count = followers
                 existing.last_synced_at = datetime.utcnow()
 
-            synced_list.append(f"{platform_str}: @{username}")
+            synced_count += 1
 
         db.commit()
-        return {
-            "status": "success",
-            "message": f"Berhasil menyinkronkan {len(synced_list)} akun dari PostForMe.",
-            "accounts": synced_list
-        }
+        return {"status": "success", "synced_count": synced_count, "total_pf_accounts": len(pf_accounts)}
     except Exception as e:
+        logger.error(f"PostForMe sync error: {e}")
         db.rollback()
-        logger.error(f"PostForMe Sync Error: {e}", exc_info=True)
-        raise HTTPException(status_code=400, detail=f"Gagal menyinkronkan akun PostForMe: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to sync accounts from PostForMe: {str(e)}")
 
 @router.post("/postforme/connect-bluesky")
 async def postforme_connect_bluesky(
