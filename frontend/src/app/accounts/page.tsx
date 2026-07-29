@@ -48,6 +48,7 @@ export default function AccountsPage() {
   const [bskyHandle, setBskyHandle] = useState("");
   const [bskyPassword, setBskyPassword] = useState("");
   const [isConnecting, setIsConnecting] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
   const [modalError, setModalError] = useState<string | null>(null);
   const [modalSuccess, setModalSuccess] = useState<string | null>(null);
 
@@ -76,6 +77,27 @@ export default function AccountsPage() {
       });
   };
 
+  const handleSyncAccounts = async () => {
+    if (!activeWorkspace?.id || isSyncing) return;
+    setIsSyncing(true);
+    try {
+      await fetchApi("/auth/postforme/sync-accounts", {
+        method: "POST",
+        body: JSON.stringify({
+          workspace_id: activeWorkspace.id,
+          client_id: activeClientId
+        })
+      });
+      toast.success("Akun berhasil disinkronkan dari PostForMe!");
+      loadAccounts();
+    } catch (err: any) {
+      toast.info("Sync selesai.");
+      loadAccounts();
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
   useEffect(() => {
     loadAccounts();
   }, [activeWorkspace?.id, activeClientId, platformFilter, statusFilter, search, favoritesOnly, sortBy, sortOrder]);
@@ -93,14 +115,18 @@ export default function AccountsPage() {
   };
 
   const handleToggleFavorite = async (accId: string, currentFav: boolean) => {
+    // Optimistically update UI
+    setAccounts(prev => prev.map(a => a.id === accId ? { ...a, is_favorite: !currentFav } : a));
     try {
       await fetchApi(`/accounts/${accId}/favorite`, {
-        method: "PUT",
-        body: JSON.stringify({ is_favorite: !currentFav })
+        method: "POST",
       });
+      // Reload to sync server state
       loadAccounts();
     } catch (err) {
-      setAccounts(prev => prev.map(a => a.id === accId ? { ...a, is_favorite: !currentFav } : a));
+      // Revert optimistic update on error
+      setAccounts(prev => prev.map(a => a.id === accId ? { ...a, is_favorite: currentFav } : a));
+      toast.info("Gagal mengubah favorit.");
     }
   };
 
@@ -237,6 +263,15 @@ export default function AccountsPage() {
 
         <div className="flex items-center gap-3 z-10 shrink-0">
           <button
+            onClick={handleSyncAccounts}
+            disabled={isSyncing}
+            title="Sync ulang data dari PostForMe (foto profil & followers)"
+            className="py-2.5 px-4 rounded-2xl bg-white border border-slate-200 text-slate-600 font-semibold text-xs flex items-center gap-2 hover:bg-slate-50 hover:border-slate-300 transition-all disabled:opacity-60"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
+            <span>{isSyncing ? 'Syncing...' : 'Sync'}</span>
+          </button>
+          <button
             onClick={() => setIsConnectModalOpen(true)}
             className="py-3 px-5 rounded-2xl gradient-brand text-white font-semibold text-xs sm:text-sm flex items-center gap-2 shadow-md shadow-purple-500/25 hover:shadow-lg hover:shadow-purple-500/35 hover:scale-[1.02] active:scale-[0.98] transition-all"
           >
@@ -368,11 +403,25 @@ export default function AccountsPage() {
               >
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-3">
-                    <img
-                      src={acc.avatar_url || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150"}
-                      alt={acc.name}
-                      className="w-11 h-11 rounded-2xl object-cover border border-slate-200 shadow-xs"
-                    />
+                    {acc.avatar_url ? (
+                      <img
+                        src={acc.avatar_url}
+                        alt={acc.name}
+                        onError={(e) => {
+                          const img = e.target as HTMLImageElement;
+                          img.style.display = 'none';
+                          const fallback = img.nextElementSibling as HTMLElement;
+                          if (fallback) fallback.style.display = 'flex';
+                        }}
+                        className="w-11 h-11 rounded-2xl object-cover border border-slate-200 shadow-xs"
+                      />
+                    ) : null}
+                    <div
+                      className={`w-11 h-11 rounded-2xl items-center justify-center border border-slate-200 shadow-xs bg-gradient-to-br ${platMeta.color} text-white ${acc.avatar_url ? 'hidden' : 'flex'}`}
+                      style={{ display: acc.avatar_url ? 'none' : 'flex' }}
+                    >
+                      <platMeta.icon className="w-5 h-5" />
+                    </div>
                     <div>
                       <h3 className="text-xs font-bold text-slate-900 truncate max-w-[120px]">{acc.name || acc.username}</h3>
                       <p className="text-[11px] text-slate-500 font-medium">@{acc.username}</p>

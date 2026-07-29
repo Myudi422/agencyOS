@@ -1,12 +1,17 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, Header
+# pyrefly: ignore [missing-import]
 from sqlalchemy.orm import Session
+# pyrefly: ignore [missing-import]
 from sqlalchemy import or_, desc, asc
 from pydantic import BaseModel
 from typing import List, Optional
 from datetime import datetime
+import logging
 from backend.database import get_db
 from backend.models.models import SocialAccount, AccountPlatform, AccountStatus, ActivityLog, Client, User
 from backend.routers.firebase_auth import require_user, get_user_workspace
+
+logger = logging.getLogger("AccountsRouter")
 
 router = APIRouter(prefix="/accounts", tags=["Social Accounts"])
 
@@ -105,7 +110,7 @@ def get_accounts(
     }
 
 @router.post("/{account_id}/favorite")
-def toggle_favorite(
+def toggle_favorite_post(
     account_id: str,
     db: Session = Depends(get_db),
     current_user: User = Depends(require_user)
@@ -113,7 +118,20 @@ def toggle_favorite(
     account = db.query(SocialAccount).filter(SocialAccount.id == account_id).first()
     if not account:
         raise HTTPException(status_code=404, detail="Account not found")
-    # Validate ownership
+    get_user_workspace(current_user, account.workspace_id, db)
+    account.is_favorite = not account.is_favorite
+    db.commit()
+    return {"id": account.id, "is_favorite": account.is_favorite}
+
+@router.put("/{account_id}/favorite")
+def toggle_favorite_put(
+    account_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_user)
+):
+    account = db.query(SocialAccount).filter(SocialAccount.id == account_id).first()
+    if not account:
+        raise HTTPException(status_code=404, detail="Account not found")
     get_user_workspace(current_user, account.workspace_id, db)
     account.is_favorite = not account.is_favorite
     db.commit()
@@ -161,7 +179,7 @@ def bulk_action(
     return {"status": "success", "message": f"Successfully performed {data.action} on {updated_count} accounts"}
 
 @router.delete("/{account_id}")
-def delete_account(
+async def delete_account(
     account_id: str,
     db: Session = Depends(get_db),
     current_user: User = Depends(require_user)
@@ -175,13 +193,25 @@ def delete_account(
 
     workspace_id = account.workspace_id
     acc_name = account.username
+    postforme_id = account.postforme_account_id
+
+    # Also delete from PostForMe if the account has a PostForMe ID
+    if postforme_id:
+        try:
+            from backend.services.postforme_service import postforme_service
+            # Use delete (permanent) to remove from PostForMe
+            await postforme_service.delete_social_account(postforme_id)
+            logger.info(f"Deleted PostForMe account {postforme_id} for @{acc_name}")
+        except Exception as pf_err:
+            # Log but don't fail — still remove from local DB
+            logger.warning(f"PostForMe delete failed for {postforme_id}: {pf_err}")
 
     db.delete(account)
     db.add(ActivityLog(
         workspace_id=workspace_id,
         user_name=current_user.full_name,
         action="DISCONNECT_ACCOUNT",
-        details=f"Disconnected social account @{acc_name}",
+        details=f"Disconnected social account @{acc_name} (PostForMe ID: {postforme_id})",
         entity_type="Account"
     ))
     db.commit()

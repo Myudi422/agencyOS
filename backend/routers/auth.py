@@ -1,7 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, Header
 from pydantic import BaseModel
+# pyrefly: ignore [missing-import]
 from sqlalchemy.orm import Session
 from typing import Dict, Any, Optional, List
+from datetime import datetime
 import logging
 import json
 
@@ -176,6 +178,19 @@ async def postforme_sync_accounts(
             username = acc.get("username") or acc.get("name") or "user"
             name = acc.get("name") or username
 
+            # PostForMe SocialAccountDto returns profile_photo_url for the platform avatar
+            profile_photo_url = acc.get("profile_photo_url")
+
+            # Extract followers count from PostForMe metadata if available
+            metadata = acc.get("metadata") or {}
+            followers = (
+                metadata.get("followers_count")
+                or metadata.get("follower_count")
+                or metadata.get("followers")
+                or acc.get("followers_count")
+                or 0
+            )
+
             # Map to enum platform
             try:
                 enum_platform = AccountPlatform(platform_str)
@@ -199,21 +214,24 @@ async def postforme_sync_accounts(
                     workspace_id=target_ws.id,
                     client_id=target_client.id,
                     platform=enum_platform,
-                    platform_account_id=acc.get("platform_account_id") or pf_id,
+                    platform_account_id=acc.get("user_id") or pf_id,
                     postforme_account_id=pf_id,
                     name=name,
                     username=username,
-                    avatar_url=acc.get("avatar_url") or "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=150",
+                    avatar_url=profile_photo_url or "",
                     access_token_encrypted="postforme_managed",
                     status=AccountStatus.CONNECTED,
-                    followers_count=acc.get("followers_count", 1200)
+                    followers_count=followers
                 )
                 db.add(existing)
             else:
                 existing.postforme_account_id = pf_id
                 existing.status = AccountStatus.CONNECTED
-                if acc.get("avatar_url"):
-                    existing.avatar_url = acc.get("avatar_url")
+                # Always update avatar and followers from PostForMe on each sync
+                if profile_photo_url:
+                    existing.avatar_url = profile_photo_url
+                existing.followers_count = followers
+                existing.last_synced_at = datetime.utcnow()
 
             synced_list.append(f"{platform_str}: @{username}")
 
