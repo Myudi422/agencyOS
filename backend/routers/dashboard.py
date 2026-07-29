@@ -70,7 +70,35 @@ def get_dashboard_overview(
         .all()
     )
 
-    # 6. System & Infrastructure Metrics (Memory, DB Size, Redis, Vercel)
+    # 6. Upcoming Scheduled & Recent Posts for Content Calendar Overview
+    upcoming_posts = (
+        db.query(Post)
+        .filter(Post.workspace_id == workspace_id)
+        .order_by(Post.created_at.desc())
+        .limit(5)
+        .all()
+    )
+
+    formatted_posts = []
+    for p in upcoming_posts:
+        media_list = p.media if isinstance(p.media, list) else []
+        thumb = None
+        if media_list and isinstance(media_list[0], dict):
+            thumb = media_list[0].get("url") or media_list[0].get("media_url")
+        elif media_list and isinstance(media_list[0], str):
+            thumb = media_list[0]
+
+        formatted_posts.append({
+            "id": p.id,
+            "caption": p.caption or "Tanpa Judul",
+            "scheduled_at": p.scheduled_at.isoformat() if p.scheduled_at else None,
+            "created_at": p.created_at.isoformat() if p.created_at else None,
+            "status": p.status.value if hasattr(p.status, "value") else str(p.status),
+            "thumbnail": thumb,
+            "targets_count": len(p.targets) if p.targets else 0
+        })
+
+    # 7. System & Infrastructure Metrics (Memory, DB Size, Redis, Vercel)
     import os
     # pyrefly: ignore [missing-import]
     from sqlalchemy import text
@@ -132,5 +160,6 @@ def get_dashboard_overview(
                 "entity_type": a.entity_type,
                 "created_at": a.created_at
             } for a in recent_activity
-        ]
+        ],
+        "upcoming_posts": formatted_posts
     }
