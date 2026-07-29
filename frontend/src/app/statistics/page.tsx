@@ -431,6 +431,7 @@ export default function StatisticsPage() {
   const [pdfSelectedAccounts, setPdfSelectedAccounts] = useState<string[]>([]);
   const [pdfSections, setPdfSections] = useState({
     executiveSummary: true,
+    dailyTrend: true,
     accountBreakdown: true,
     topPosts: true,
     timelineFeed: true,
@@ -1432,6 +1433,7 @@ export default function StatisticsPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 p-3 bg-slate-50 rounded-2xl border border-slate-100">
                   {[
                     { key: "executiveSummary", label: "Ringkasan Metrik KPI" },
+                    { key: "dailyTrend", label: "Grafik Tren Harian" },
                     { key: "accountBreakdown", label: "Performa Per Akun (Tabel)" },
                     { key: "topPosts", label: "Top Posts (Konten Terbaik)" },
                     { key: "timelineFeed", label: "Timeline Feed Postingan" },
@@ -1585,36 +1587,66 @@ export default function StatisticsPage() {
               </div>
             )}
 
-            {/* Section 2: Performa Per Akun Table */}
+            {/* Section 2: Grafik Visual Tren Harian */}
+            {pdfSections.dailyTrend && dailyData.length > 0 && (
+              <div className="space-y-1.5">
+                <h2 className="text-[11px] font-extrabold text-slate-900 uppercase tracking-wider border-b border-slate-200 pb-1">
+                  Grafik Visual Tren Harian ({chartMetric.toUpperCase()})
+                </h2>
+                <div className="p-2 bg-slate-50/80 rounded-xl border border-slate-200/90 flex justify-center">
+                  <AreaChart width={700} height={125} data={dailyData} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="pdfAreaGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#7c3aed" stopOpacity={0.35} />
+                        <stop offset="95%" stopColor="#7c3aed" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                    <XAxis dataKey="label" tick={{ fontSize: 8, fill: "#64748b" }} axisLine={false} tickLine={false} />
+                    <YAxis tick={{ fontSize: 8, fill: "#64748b" }} axisLine={false} tickLine={false} tickFormatter={fmtNum} />
+                    <Area
+                      type="monotone"
+                      dataKey={chartMetric}
+                      stroke="#7c3aed"
+                      strokeWidth={2}
+                      fill="url(#pdfAreaGradient)"
+                      isAnimationActive={false}
+                    />
+                  </AreaChart>
+                </div>
+              </div>
+            )}
+
+            {/* Section 3: Performa Per Akun Table */}
             {pdfSections.accountBreakdown && pdfFilteredAccounts.length > 0 && (
-              <div className="space-y-3">
-                <h2 className="text-xs font-extrabold text-slate-900 uppercase tracking-wider border-b border-slate-200 pb-1.5">
+              <div className="space-y-2">
+                <h2 className="text-[11px] font-extrabold text-slate-900 uppercase tracking-wider border-b border-slate-200 pb-1">
                   Performa Per Akun Sosial
                 </h2>
                 <table className="w-full text-xs border-collapse">
                   <thead>
                     <tr className="border-b border-slate-200 bg-slate-100/80">
-                      <th className="text-left py-2 px-3 font-bold text-slate-600 text-[11px]">Akun</th>
-                      <th className="text-right py-2 px-3 font-bold text-slate-600 text-[11px]">Post</th>
-                      <th className="text-right py-2 px-3 font-bold text-slate-600 text-[11px]">Likes</th>
-                      <th className="text-right py-2 px-3 font-bold text-slate-600 text-[11px]">Komentar</th>
-                      <th className="text-right py-2 px-3 font-bold text-slate-600 text-[11px]">Shares</th>
-                      <th className="text-right py-2 px-3 font-bold text-slate-600 text-[11px]">Reach</th>
-                      <th className="text-right py-2 px-3 font-bold text-slate-600 text-[11px]">Eng. Rate</th>
+                      <th className="text-left py-1.5 px-3 font-bold text-slate-600 text-[10px]">Akun</th>
+                      <th className="text-right py-1.5 px-3 font-bold text-slate-600 text-[10px]">Post</th>
+                      <th className="text-right py-1.5 px-3 font-bold text-slate-600 text-[10px]">Likes</th>
+                      <th className="text-right py-1.5 px-3 font-bold text-slate-600 text-[10px]">Komentar</th>
+                      <th className="text-right py-1.5 px-3 font-bold text-slate-600 text-[10px]">Shares</th>
+                      <th className="text-right py-1.5 px-3 font-bold text-slate-600 text-[10px]">Reach</th>
+                      <th className="text-right py-1.5 px-3 font-bold text-slate-600 text-[10px]">Eng. Rate</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
                     {pdfFilteredAccounts.map(acc => (
                       <tr key={acc.id}>
-                        <td className="py-2 px-3 font-bold text-slate-800">
+                        <td className="py-1.5 px-3 font-bold text-slate-800 text-[11px]">
                           {PLATFORM_ICONS[acc.platform]} @{acc.username}
                         </td>
-                        <td className="py-2 px-3 text-right font-semibold">{acc.post_count}</td>
-                        <td className="py-2 px-3 text-right text-rose-600 font-semibold">{fmtNum(acc.metrics.likes)}</td>
-                        <td className="py-2 px-3 text-right text-sky-600 font-semibold">{fmtNum(acc.metrics.comments)}</td>
-                        <td className="py-2 px-3 text-right text-emerald-600 font-semibold">{fmtNum(acc.metrics.shares)}</td>
-                        <td className="py-2 px-3 text-right text-amber-600 font-semibold">{fmtNum(acc.metrics.reach)}</td>
-                        <td className="py-2 px-3 text-right font-bold text-purple-700">{acc.metrics.engagement_rate}%</td>
+                        <td className="py-1.5 px-3 text-right font-semibold text-[11px]">{acc.post_count}</td>
+                        <td className="py-1.5 px-3 text-right text-rose-600 font-semibold text-[11px]">{fmtNum(acc.metrics.likes)}</td>
+                        <td className="py-1.5 px-3 text-right text-sky-600 font-semibold text-[11px]">{fmtNum(acc.metrics.comments)}</td>
+                        <td className="py-1.5 px-3 text-right text-emerald-600 font-semibold text-[11px]">{fmtNum(acc.metrics.shares)}</td>
+                        <td className="py-1.5 px-3 text-right text-amber-600 font-semibold text-[11px]">{fmtNum(acc.metrics.reach)}</td>
+                        <td className="py-1.5 px-3 text-right font-bold text-purple-700 text-[11px]">{acc.metrics.engagement_rate}%</td>
                       </tr>
                     ))}
                   </tbody>
