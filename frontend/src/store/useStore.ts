@@ -32,13 +32,14 @@ interface StoreState {
   isComposerOpen: boolean;
   isSettingsOpen: boolean;
   composerPreselectedAccounts: string[];
+  composerInitialPost: any | null;
   uploadTasks: UploadTask[];
 
   setWorkspaces: (workspaces: Workspace[]) => void;
   setActiveWorkspace: (ws: Workspace) => void;
   setClients: (clients: Client[]) => void;
   setActiveClientId: (id: string | null) => void;
-  openComposer: (accountIds?: string[]) => void;
+  openComposer: (accountIds?: string[], initialPost?: any) => void;
   closeComposer: () => void;
   openSettings: () => void;
   closeSettings: () => void;
@@ -57,6 +58,7 @@ export const useStore = create<StoreState>((set) => ({
   isComposerOpen: false,
   isSettingsOpen: false,
   composerPreselectedAccounts: [],
+  composerInitialPost: null,
   uploadTasks: [],
 
   setWorkspaces: (workspaces) => set({ 
@@ -66,8 +68,8 @@ export const useStore = create<StoreState>((set) => ({
   setActiveWorkspace: (activeWorkspace) => set({ activeWorkspace }),
   setClients: (clients) => set({ clients }),
   setActiveClientId: (activeClientId) => set({ activeClientId }),
-  openComposer: (accountIds = []) => set({ isComposerOpen: true, composerPreselectedAccounts: accountIds }),
-  closeComposer: () => set({ isComposerOpen: false, composerPreselectedAccounts: [] }),
+  openComposer: (accountIds = [], initialPost = null) => set({ isComposerOpen: true, composerPreselectedAccounts: accountIds, composerInitialPost: initialPost }),
+  closeComposer: () => set({ isComposerOpen: false, composerPreselectedAccounts: [], composerInitialPost: null }),
   openSettings: () => set({ isSettingsOpen: true }),
   closeSettings: () => set({ isSettingsOpen: false }),
 

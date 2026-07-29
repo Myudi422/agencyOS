@@ -25,11 +25,14 @@ class QueueService:
             logger.error(f"Post {post_id} not found for queueing.")
             return
 
-        post.status = PostStatus.PUBLISHING
+        # Keep SCHEDULED status if post is scheduled, otherwise mark as PUBLISHING
+        is_scheduled = post.scheduled_at is not None or post.status == PostStatus.SCHEDULED
+        initial_target_status = PostStatus.SCHEDULED if is_scheduled else PostStatus.PUBLISHING
+        post.status = initial_target_status
         db.commit()
 
         for target in post.targets:
-            target.status = PostStatus.PUBLISHING
+            target.status = initial_target_status
 
             # Check or create PublishJob
             job = db.query(PublishJob).filter(PublishJob.post_target_id == target.id).first()
@@ -122,7 +125,9 @@ class QueueService:
 
                 if post.scheduled_at:
                     target.status = PostStatus.SCHEDULED
+                    post.status = PostStatus.SCHEDULED
 
+                self._update_parent_post_status(db, post.id)
                 db.commit()  # <-- TERPERCAYA: Disimpan ke database sekarang!
                 logger.info(f"✅ Job {job_id} sent to PostForMe. postforme_post_id={postforme_post_id}")
 
@@ -438,6 +443,9 @@ class QueueService:
             return
 
         statuses = [t.status for t in post.targets]
+        if not statuses:
+            return
+
         if all(s == PostStatus.PUBLISHED for s in statuses):
             post.status = PostStatus.PUBLISHED
             post.published_at = datetime.utcnow()
@@ -448,6 +456,10 @@ class QueueService:
             post.status = PostStatus.FAILED
         elif any(s == PostStatus.PUBLISHING for s in statuses):
             post.status = PostStatus.PUBLISHING
+        elif any(s == PostStatus.SCHEDULED for s in statuses) or all(s == PostStatus.SCHEDULED for s in statuses):
+            post.status = PostStatus.SCHEDULED
+        elif any(s == PostStatus.DRAFT for s in statuses):
+            post.status = PostStatus.DRAFT
         db.commit()
 
 queue_service = QueueService()

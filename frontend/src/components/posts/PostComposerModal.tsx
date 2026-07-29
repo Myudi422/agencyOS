@@ -70,11 +70,12 @@ const FieldTooltip = ({ text }: { text: string }) => (
 );
 
 export default function PostComposerModal() {
-  const { isComposerOpen, closeComposer, activeWorkspace, composerPreselectedAccounts } = useStore();
+  const { isComposerOpen, closeComposer, activeWorkspace, composerPreselectedAccounts, composerInitialPost } = useStore();
 
   // Mobile View Switcher (Editor vs Preview)
   const [mobileTab, setMobileTab] = useState<"editor" | "preview">("editor");
 
+  const [editingPostId, setEditingPostId] = useState<string | null>(null);
   const [postType, setPostType] = useState<"image" | "carousel" | "video">("image");
   const [caption, setCaption] = useState("");
   const [hashtags, setHashtags] = useState("#Shiera #SocialMedia #Marketing");
@@ -260,6 +261,34 @@ export default function PostComposerModal() {
         setSelectedAccountIds(fallbackAccs.map(a => a.id));
       });
   }, [activeWorkspace?.id, composerPreselectedAccounts]);
+
+  // Load initial post data when editing an existing draft/post
+  useEffect(() => {
+    if (isComposerOpen && composerInitialPost) {
+      setEditingPostId(composerInitialPost.id);
+      const textVal = composerInitialPost.caption || composerInitialPost.content?.text || "";
+      setCaption(textVal);
+      if (composerInitialPost.hashtags) setHashtags(composerInitialPost.hashtags);
+      if (Array.isArray(composerInitialPost.media_urls) && composerInitialPost.media_urls.length > 0) {
+        setMediaUrls(composerInitialPost.media_urls);
+      }
+      if (composerInitialPost.post_type) setPostType(composerInitialPost.post_type);
+      if (composerInitialPost.scheduled_at) {
+        try {
+          setScheduledAt(new Date(composerInitialPost.scheduled_at).toISOString().slice(0, 16));
+          setActionType("schedule");
+        } catch {}
+      } else {
+        setActionType(composerInitialPost.status === "draft" ? "save_draft" : "publish_now");
+      }
+      if (Array.isArray(composerInitialPost.targets) && composerInitialPost.targets.length > 0) {
+        const accIds = composerInitialPost.targets.map((t: any) => t.account_id).filter(Boolean);
+        if (accIds.length > 0) setSelectedAccountIds(accIds);
+      }
+    } else if (isComposerOpen && !composerInitialPost) {
+      setEditingPostId(null);
+    }
+  }, [isComposerOpen, composerInitialPost]);
 
   const loadMediaLibrary = async () => {
     setIsLoadingLibrary(true);
@@ -556,12 +585,21 @@ export default function PostComposerModal() {
     };
 
     try {
-      await fetchApi("/posts/", {
-        method: "POST",
-        body: JSON.stringify(payload)
-      });
+      if (editingPostId) {
+        await fetchApi(`/posts/${editingPostId}`, {
+          method: "PUT",
+          body: JSON.stringify(payload)
+        });
+      } else {
+        await fetchApi("/posts/", {
+          method: "POST",
+          body: JSON.stringify(payload)
+        });
+      }
       toast.success(
-        actionType === "publish_now"
+        editingPostId
+          ? "Post draft berhasil diperbarui!"
+          : actionType === "publish_now"
           ? "Post published instantly across channels!"
           : actionType === "schedule"
           ? "Post berhasil dijadwalkan!"

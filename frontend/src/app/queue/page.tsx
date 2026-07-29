@@ -26,7 +26,7 @@ interface SocialPost {
   content?: { text?: string };
   caption?: string;           // flat field (also returned by backend)
   platforms?: string[];
-  targets?: { platform: string; username: string; avatar_url?: string }[];
+  targets?: { target_id?: string; account_id?: string; platform: string; username: string; avatar_url?: string }[];
   scheduled_at?: string;
   updated_at: string;
   created_at?: string;
@@ -251,7 +251,7 @@ function PostModal({
 
 /* ─── Main Queue Page ─── */
 export default function QueuePage() {
-  const { activeWorkspace } = useStore();
+  const { activeWorkspace, openComposer } = useStore();
 
   // Tabs: posts | queue | history
   const [activeTab, setActiveTab] = useState<"posts" | "queue" | "history">("posts");
@@ -674,34 +674,14 @@ export default function QueuePage() {
 
                       {/* Actions */}
                       <div className="flex items-center gap-2 shrink-0">
-                        {/* Draft → Edit or process */}
-                        {isDraft && (
+                        {/* Draft or Scheduled → Edit in Shiera Post Composer */}
+                        {(isDraft || isScheduled) && (
                           <button
-                            onClick={() => setModalPost({ post, mode: "edit" })}
-                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-purple-700 bg-purple-50 hover:bg-purple-100 border border-purple-200 transition-all"
+                            onClick={() => openComposer(post.targets?.map(t => t.account_id).filter((id): id is string => Boolean(id)) || [], post)}
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-purple-700 bg-purple-50 hover:bg-purple-100 border border-purple-200 transition-all cursor-pointer"
                           >
                             <Edit3 className="w-3 h-3" />
-                            Edit & Proses
-                          </button>
-                        )}
-                        {/* Draft → Schedule */}
-                        {isDraft && (
-                          <button
-                            onClick={() => setModalPost({ post, mode: "schedule" })}
-                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 transition-all"
-                          >
-                            <CalendarClock className="w-3 h-3" />
-                            Jadwalkan
-                          </button>
-                        )}
-                        {/* Scheduled → Reschedule */}
-                        {isScheduled && (
-                          <button
-                            onClick={() => setModalPost({ post, mode: "schedule" })}
-                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 transition-all"
-                          >
-                            <CalendarClock className="w-3 h-3" />
-                            Ubah Jadwal
+                            {isDraft ? "Edit & Proses di Composer" : "Edit di Composer"}
                           </button>
                         )}
                         {/* Processing indicator */}

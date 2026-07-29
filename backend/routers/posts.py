@@ -53,6 +53,10 @@ class PostUpdate(BaseModel):
     platform_configurations: Optional[Dict[str, Any]] = None
     scheduled_at: Optional[str] = None
     status: Optional[str] = None  # Allow frontend to update status (draft, scheduled, etc.)
+    account_ids: Optional[List[str]] = None
+    target_account_ids: Optional[List[str]] = None
+    action: Optional[str] = None
+    publish_now: Optional[bool] = None
 
 class PostPatch(BaseModel):
     """Partial update payload from frontend queue manager."""
@@ -266,10 +270,18 @@ async def create_post(
 
 
 @router.put("/{post_id}")
-def update_post(post_id: str, data: PostUpdate, db: Session = Depends(get_db)):
+async def update_post(
+    post_id: str,
+    data: PostUpdate,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db)
+):
     post = db.query(Post).filter(Post.id == post_id).first()
     if not post:
         raise HTTPException(status_code=404, detail="Post not found")
+
+    selected_account_ids = data.account_ids or data.target_account_ids
+    action_type = data.action or ("publish_now" if data.publish_now else ("schedule" if data.scheduled_at else None))
 
     if data.caption is not None:
         post.caption = data.caption
@@ -283,9 +295,33 @@ def update_post(post_id: str, data: PostUpdate, db: Session = Depends(get_db)):
         post.alt_text = data.alt_text
     if data.media_urls is not None:
         post.media_urls = data.media_urls
+    if data.platform_configurations is not None:
+        post.platform_configurations = data.platform_configurations
     if data.scheduled_at is not None:
-        post.scheduled_at = datetime.fromisoformat(data.scheduled_at.replace("Z", "+00:00"))
-    if data.status is not None:
+        try:
+            post.scheduled_at = datetime.fromisoformat(data.scheduled_at.replace("Z", "+00:00"))
+        except Exception:
+            post.scheduled_at = datetime.utcnow()
+
+    # Update account targets if provided
+    if selected_account_ids is not None and len(selected_account_ids) > 0:
+        db.query(PostTarget).filter(PostTarget.post_id == post_id).delete()
+        for acc_id in selected_account_ids:
+            target = PostTarget(
+                post_id=post.id,
+                social_account_id=acc_id,
+                status=post.status
+            )
+            db.add(target)
+
+    # Determine status & action
+    if action_type == "save_draft":
+        post.status = PostStatus.DRAFT
+    elif action_type == "schedule":
+        post.status = PostStatus.SCHEDULED
+    elif action_type == "publish_now":
+        post.status = PostStatus.PUBLISHING
+    elif data.status is not None:
         db_status = STATUS_ALIAS_TO_DB.get(data.status.lower(), data.status.lower())
         try:
             post.status = PostStatus(db_status)
@@ -295,9 +331,15 @@ def update_post(post_id: str, data: PostUpdate, db: Session = Depends(get_db)):
     post.updated_at = datetime.utcnow()
     db.commit()
     db.refresh(post)
+
+    # Trigger queue if publish_now or schedule
+    if action_type in ("publish_now", "schedule"):
+        background_tasks.add_task(queue_service.enqueue_post_publishing, db, post.id)
+
     return {
+        "status": "success",
         "id": post.id,
-        "status": STATUS_DB_TO_ALIAS.get(post.status.value, post.status.value),
+        "post_status": STATUS_DB_TO_ALIAS.get(post.status.value, post.status.value),
         "caption": post.caption,
         "scheduled_at": post.scheduled_at.isoformat() if post.scheduled_at else None,
         "updated_at": post.updated_at.isoformat() if post.updated_at else None,
