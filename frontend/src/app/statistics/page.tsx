@@ -319,19 +319,18 @@ async function exportToPDF(
     if (imgHeight <= pageHeight - startY - margin) {
       pdf.addImage(imgData, "PNG", margin, yPos, availableWidth, imgHeight);
     } else {
-      // Multi-page
-      let remainingHeight = imgHeight;
-      let srcY = 0;
+      // Multi-page: split canvas into page-sized chunks
       const pageImgHeight = pageHeight - startY - margin;
+      let remainingImgHeight = imgHeight;
+      let offsetY = startY;
 
-      while (remainingHeight > 0) {
-        const sliceHeight = Math.min(remainingHeight, pageImgHeight);
-        pdf.addImage(imgData, "PNG", margin, yPos, availableWidth, imgHeight, "", "FAST", 0, srcY);
-        remainingHeight -= sliceHeight;
-        srcY += sliceHeight;
-        if (remainingHeight > 0) {
+      while (remainingImgHeight > 0) {
+        const chunkHeight = Math.min(remainingImgHeight, pageImgHeight);
+        pdf.addImage(imgData, "PNG", margin, offsetY, availableWidth, imgHeight);
+        remainingImgHeight -= chunkHeight;
+        if (remainingImgHeight > 0) {
           pdf.addPage();
-          yPos = margin;
+          offsetY = margin - (imgHeight - remainingImgHeight);
         }
       }
     }
@@ -754,7 +753,16 @@ export default function StatisticsPage() {
                         ))}
                       </Pie>
                       <Tooltip
-                        formatter={(val: number, name: string) => [fmtNum(val), name]}
+                        content={({ active, payload }) => {
+                          if (!active || !payload?.length) return null;
+                          const d = payload[0];
+                          return (
+                            <div className="bg-white border border-slate-200 rounded-xl shadow-lg p-2.5 text-xs">
+                              <p className="font-bold text-slate-700 capitalize">{String(d.name)}</p>
+                              <p className="font-semibold text-purple-700">{fmtNum(Number(d.value))}</p>
+                            </div>
+                          );
+                        }}
                         contentStyle={{ fontSize: "11px", borderRadius: "12px", border: "1px solid #e2e8f0" }}
                       />
                     </PieChart>
@@ -824,7 +832,16 @@ export default function StatisticsPage() {
                   <PolarRadiusAxis tick={false} axisLine={false} />
                   <Radar name="Metrik" dataKey="value" stroke="#7c3aed" fill="#7c3aed" fillOpacity={0.25} strokeWidth={2} />
                   <Tooltip
-                    formatter={(val: number) => [fmtNum(val)]}
+                    content={({ active, payload }) => {
+                      if (!active || !payload?.length) return null;
+                      const d = payload[0];
+                      return (
+                        <div className="bg-white border border-slate-200 rounded-xl shadow-lg p-2.5 text-xs">
+                          <p className="font-bold text-slate-700">{String(d.name)}</p>
+                          <p className="font-semibold text-purple-700">{fmtNum(Number(d.value))}</p>
+                        </div>
+                      );
+                    }}
                     contentStyle={{ fontSize: "11px", borderRadius: "12px", border: "1px solid #e2e8f0" }}
                   />
                 </RadarChart>
