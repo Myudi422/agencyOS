@@ -52,46 +52,89 @@ class PostUpdate(BaseModel):
     media_urls: Optional[List[str]] = None
     platform_configurations: Optional[Dict[str, Any]] = None
     scheduled_at: Optional[str] = None
+    status: Optional[str] = None  # Allow frontend to update status (draft, scheduled, etc.)
+
+class PostPatch(BaseModel):
+    """Partial update payload from frontend queue manager."""
+    caption: Optional[str] = None
+    content: Optional[Dict[str, Any]] = None  # Frontend sends { text: str }
+    scheduled_at: Optional[str] = None
+    status: Optional[str] = None
+
+# ─── Status alias mapping: frontend uses processing/processed, DB uses publishing/published ───
+STATUS_ALIAS_TO_DB: Dict[str, str] = {
+    "processing": "publishing",
+    "processed": "published",
+    "draft": "draft",
+    "scheduled": "scheduled",
+}
+STATUS_DB_TO_ALIAS: Dict[str, str] = {
+    "publishing": "processing",
+    "published": "processed",
+    "draft": "draft",
+    "scheduled": "scheduled",
+    "failed": "failed",
+    "cancelled": "cancelled",
+}
 
 @router.get("/")
 def get_posts(
     workspace_id: str = Query(..., description="Workspace ID"),
-    status: Optional[str] = Query(None, description="Draft, Scheduled, Publishing, Published, Failed"),
+    status: Optional[str] = Query(None, description="draft, scheduled, processing, processed (aliases supported)"),
     client_id: Optional[str] = Query(None, description="Client filter"),
+    search: Optional[str] = Query(None, description="Search in caption"),
+    limit: int = Query(20, ge=1, le=100),
+    offset: int = Query(0, ge=0),
     db: Session = Depends(get_db)
 ):
     """Retrieves posts for a workspace with target account statuses."""
     query = db.query(Post).filter(Post.workspace_id == workspace_id)
 
     if status:
-        query = query.filter(Post.status == PostStatus(status))
+        # Map frontend alias to DB enum value
+        db_status = STATUS_ALIAS_TO_DB.get(status.lower(), status.lower())
+        try:
+            query = query.filter(Post.status == PostStatus(db_status))
+        except ValueError:
+            pass  # Unknown status — ignore filter
+
+    if search:
+        query = query.filter(Post.caption.ilike(f"%{search}%"))
     if client_id:
         query = query.filter(Post.client_id == client_id)
 
-    posts = query.order_by(Post.created_at.desc()).all()
+    total = query.count()
+    posts = query.order_by(Post.created_at.desc()).offset(offset).limit(limit).all()
     results = []
 
     for p in posts:
         targets = []
+        platforms = []
         for t in p.targets:
             acc = t.social_account
+            plat = acc.platform.value if acc else "unknown"
+            if plat not in platforms:
+                platforms.append(plat)
             targets.append({
                 "target_id": t.id,
                 "account_id": acc.id if acc else None,
-                "platform": acc.platform.value if acc else "unknown",
+                "platform": plat,
                 "username": acc.username if acc else "deleted",
                 "name": acc.name if acc else "Deleted Account",
                 "avatar_url": acc.avatar_url if acc else None,
-                "status": t.status.value,
+                "status": STATUS_DB_TO_ALIAS.get(t.status.value, t.status.value),
                 "platform_post_id": t.platform_post_id,
                 "error_message": t.error_message
             })
 
+        db_status = p.status.value
         results.append({
             "id": p.id,
             "workspace_id": p.workspace_id,
             "client_id": p.client_id,
             "post_type": p.post_type.value,
+            # Nested content object (frontend expects { text })
+            "content": {"text": p.caption or ""},
             "caption": p.caption,
             "hashtags": p.hashtags,
             "first_comment": p.first_comment,
@@ -99,15 +142,18 @@ def get_posts(
             "alt_text": p.alt_text,
             "media_urls": p.media_urls or [],
             "platform_configurations": p.platform_configurations,
+            "platforms": platforms,
             "postforme_post_id": p.postforme_post_id,
-            "scheduled_at": p.scheduled_at,
-            "published_at": p.published_at,
-            "status": p.status.value,
+            "scheduled_at": p.scheduled_at.isoformat() if p.scheduled_at else None,
+            "published_at": p.published_at.isoformat() if p.published_at else None,
+            # Map DB status to frontend alias
+            "status": STATUS_DB_TO_ALIAS.get(db_status, db_status),
             "targets": targets,
-            "created_at": p.created_at
+            "created_at": p.created_at.isoformat() if p.created_at else None,
+            "updated_at": p.updated_at.isoformat() if p.updated_at else None,
         })
 
-    return results
+    return {"data": results, "total": total, "limit": limit, "offset": offset}
 
 from backend.routers.firebase_auth import require_user
 from backend.models.models import User, UserSubscription
@@ -239,9 +285,59 @@ def update_post(post_id: str, data: PostUpdate, db: Session = Depends(get_db)):
         post.media_urls = data.media_urls
     if data.scheduled_at is not None:
         post.scheduled_at = datetime.fromisoformat(data.scheduled_at.replace("Z", "+00:00"))
+    if data.status is not None:
+        db_status = STATUS_ALIAS_TO_DB.get(data.status.lower(), data.status.lower())
+        try:
+            post.status = PostStatus(db_status)
+        except ValueError:
+            pass
 
+    post.updated_at = datetime.utcnow()
     db.commit()
-    return post
+    db.refresh(post)
+    return {
+        "id": post.id,
+        "status": STATUS_DB_TO_ALIAS.get(post.status.value, post.status.value),
+        "caption": post.caption,
+        "scheduled_at": post.scheduled_at.isoformat() if post.scheduled_at else None,
+        "updated_at": post.updated_at.isoformat() if post.updated_at else None,
+    }
+
+
+@router.patch("/{post_id}")
+def patch_post(post_id: str, data: PostPatch, db: Session = Depends(get_db)):
+    """Partial update — used by frontend queue manager for draft edit & schedule."""
+    post = db.query(Post).filter(Post.id == post_id).first()
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
+
+    # Accept caption from flat field or from content.text
+    if data.caption is not None:
+        post.caption = data.caption
+    elif data.content is not None and "text" in data.content:
+        post.caption = data.content["text"]
+
+    if data.scheduled_at is not None:
+        post.scheduled_at = datetime.fromisoformat(data.scheduled_at.replace("Z", "+00:00"))
+
+    if data.status is not None:
+        db_status = STATUS_ALIAS_TO_DB.get(data.status.lower(), data.status.lower())
+        try:
+            post.status = PostStatus(db_status)
+        except ValueError:
+            pass
+
+    post.updated_at = datetime.utcnow()
+    db.commit()
+    db.refresh(post)
+    return {
+        "id": post.id,
+        "status": STATUS_DB_TO_ALIAS.get(post.status.value, post.status.value),
+        "caption": post.caption,
+        "content": {"text": post.caption or ""},
+        "scheduled_at": post.scheduled_at.isoformat() if post.scheduled_at else None,
+        "updated_at": post.updated_at.isoformat() if post.updated_at else None,
+    }
 
 @router.delete("/{post_id}")
 def delete_post(post_id: str, db: Session = Depends(get_db)):
@@ -259,3 +355,13 @@ def delete_post(post_id: str, db: Session = Depends(get_db)):
     ))
     db.commit()
     return {"status": "success", "message": "Post deleted"}
+
+
+# ─── /v1/social-posts alias ─────────────────────────────────────────────────
+# Mirrors the same CRUD so the frontend can call /v1/social-posts/* or /posts/*
+v1_router = APIRouter(prefix="/v1/social-posts", tags=["Social Posts v1"])
+
+v1_router.get("/")(get_posts)
+v1_router.patch("/{post_id}")(patch_post)
+v1_router.put("/{post_id}")(update_post)
+v1_router.delete("/{post_id}")(delete_post)

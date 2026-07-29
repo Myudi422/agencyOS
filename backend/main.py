@@ -30,6 +30,7 @@ try:
         auth, workspaces, clients, accounts, media, posts, calendar, queue, activity, dashboard,
         firebase_auth, billing, admin, webhook
     )
+    from backend.routers.posts import v1_router as posts_v1_router
     from backend.seed import seed_database
 except ModuleNotFoundError:
     from config import settings
@@ -38,6 +39,7 @@ except ModuleNotFoundError:
         auth, workspaces, clients, accounts, media, posts, calendar, queue, activity, dashboard,
         firebase_auth, billing, admin, webhook
     )
+    from routers.posts import v1_router as posts_v1_router
     from seed import seed_database
 
 # Configure Logging
@@ -73,6 +75,7 @@ app.include_router(clients.router)
 app.include_router(accounts.router)
 app.include_router(media.router)
 app.include_router(posts.router)
+app.include_router(posts_v1_router)
 app.include_router(calendar.router)
 app.include_router(queue.router)
 app.include_router(activity.router)
