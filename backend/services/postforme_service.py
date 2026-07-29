@@ -332,6 +332,38 @@ class PostForMeService:
             res.raise_for_status()
             return res.json()
 
+    async def get_account_feed_paginated(
+        self,
+        social_account_id: str,
+        limit: int = 50,
+        cursor: Optional[str] = None,
+        expand_metrics: bool = True,
+    ) -> Dict[str, Any]:
+        """
+        Get one page of account feed with optional cursor pagination and metrics.
+        Endpoint: GET /v1/social-account-feeds/{social_account_id}
+        Supports: limit, cursor, expand=metrics
+        Response: { items/data: [...], meta: { cursor, limit, next, has_more } }
+        """
+        url = f"{self.base_url}/v1/social-account-feeds/{social_account_id}"
+        params: Dict[str, Any] = {"limit": limit}
+        if expand_metrics:
+            params["expand"] = "metrics"
+        if cursor:
+            params["cursor"] = cursor
+
+        if not self.api_key:
+            logger.warning("POSTFORME_API_KEY not set. Returning empty feed.")
+            return {"items": [], "data": [], "meta": {"has_more": False, "cursor": None}}
+
+        async with httpx.AsyncClient(timeout=60.0) as client:
+            res = await client.get(url, params=params, headers=self._get_headers())
+            if res.status_code == 404:
+                logger.warning(f"Account feed 404 for {social_account_id}")
+                return {"items": [], "data": [], "meta": {"has_more": False, "cursor": None}}
+            res.raise_for_status()
+            return res.json()
+
     # ─── Webhook Management ──────────────────────────────────────────────────
 
     async def list_webhooks(

@@ -1,0 +1,1081 @@
+"use client";
+
+import React, { useState, useEffect, useCallback, useRef } from "react";
+import {
+  BarChart2, RefreshCw, Download, Users2, Heart, MessageCircle,
+  Share2, Eye, Play, UserPlus, TrendingUp, ChevronDown, Calendar,
+  Filter, Loader2, AlertTriangle, ArrowUpRight, BarChart, Globe,
+  Star, X, Bookmark, MousePointerClick, ChevronRight, Info
+} from "lucide-react";
+import {
+  ResponsiveContainer, LineChart, Line, BarChart as ReBarChart, Bar,
+  XAxis, YAxis, CartesianGrid, Tooltip, Legend, AreaChart, Area,
+  PieChart, Pie, Cell, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis
+} from "recharts";
+import { useStore } from "@/store/useStore";
+import { fetchApi } from "@/lib/api";
+import { toast } from "@/store/useToastStore";
+
+// ─── Types ──────────────────────────────────────────────────────────────────
+
+interface SocialAccountMeta {
+  id: string;
+  platform_account_id: string;
+  platform: string;
+  name: string;
+  username: string;
+  avatar_url?: string;
+  followers_count?: number;
+}
+
+interface AccountMetrics {
+  likes: number;
+  comments: number;
+  shares: number;
+  favorites: number;
+  reach: number;
+  video_views: number;
+  new_followers: number;
+  profile_views: number;
+  website_clicks: number;
+  engagement_likes: number;
+  total_posts: number;
+  engagement_rate: number;
+}
+
+interface AccountSummary extends SocialAccountMeta {
+  metrics: AccountMetrics;
+  post_count: number;
+}
+
+interface FeedPost {
+  platform_post_id?: string;
+  social_post_id?: string;
+  posted_at?: string;
+  caption?: string;
+  platform_url?: string;
+  media?: { url?: string; type?: string }[];
+  metrics?: Partial<AccountMetrics>;
+  _account_name?: string;
+  _account_username?: string;
+  _platform?: string;
+  _avatar_url?: string;
+}
+
+interface DailyData {
+  date: string;
+  posts: number;
+  likes: number;
+  comments: number;
+  shares: number;
+  reach: number;
+  video_views: number;
+}
+
+interface StatsFeedResponse {
+  accounts: AccountSummary[];
+  aggregated: AccountMetrics;
+  posts: FeedPost[];
+  top_posts: FeedPost[];
+  daily_breakdown: DailyData[];
+  date_from: string;
+  date_to: string;
+  period_label: string;
+  total_accounts_fetched: number;
+}
+
+// ─── Constants ───────────────────────────────────────────────────────────────
+
+const PLATFORM_COLORS: Record<string, string> = {
+  instagram: "#E1306C",
+  facebook: "#1877F2",
+  x: "#000000",
+  tiktok: "#010101",
+  tiktok_business: "#010101",
+  youtube: "#FF0000",
+  linkedin: "#0A66C2",
+  pinterest: "#BD081C",
+  bluesky: "#0085FF",
+  threads: "#101010",
+};
+
+const PLATFORM_ICONS: Record<string, string> = {
+  instagram: "📸", facebook: "📘", x: "𝕏", tiktok: "🎵",
+  youtube: "▶️", linkedin: "💼", pinterest: "📌",
+  bluesky: "🦋", threads: "🧵", tiktok_business: "🎵",
+};
+
+const CHART_COLORS = ["#7c3aed", "#2563eb", "#059669", "#d97706", "#dc2626", "#0891b2"];
+
+type PeriodKey = "today" | "7d" | "30d" | "custom";
+
+const PERIOD_OPTIONS: { key: PeriodKey; label: string }[] = [
+  { key: "today", label: "Hari Ini" },
+  { key: "7d", label: "7 Hari" },
+  { key: "30d", label: "30 Hari" },
+  { key: "custom", label: "Custom" },
+];
+
+// ─── Utils ───────────────────────────────────────────────────────────────────
+
+function getDateRange(period: PeriodKey, customFrom?: string, customTo?: string) {
+  const now = new Date();
+  const todayStart = new Date(now);
+  todayStart.setHours(0, 0, 0, 0);
+  const todayEnd = new Date(now);
+  todayEnd.setHours(23, 59, 59, 999);
+
+  switch (period) {
+    case "today":
+      return { from: todayStart.toISOString(), to: todayEnd.toISOString() };
+    case "7d": {
+      const from = new Date(todayStart);
+      from.setDate(from.getDate() - 6);
+      return { from: from.toISOString(), to: todayEnd.toISOString() };
+    }
+    case "30d": {
+      const from = new Date(todayStart);
+      from.setDate(from.getDate() - 29);
+      return { from: from.toISOString(), to: todayEnd.toISOString() };
+    }
+    case "custom":
+      return {
+        from: customFrom ? new Date(customFrom + "T00:00:00").toISOString() : todayStart.toISOString(),
+        to: customTo ? new Date(customTo + "T23:59:59").toISOString() : todayEnd.toISOString(),
+      };
+  }
+}
+
+function fmtNum(n?: number) {
+  if (!n) return "0";
+  if (n >= 1_000_000) return (n / 1_000_000).toFixed(1) + "M";
+  if (n >= 1_000) return (n / 1_000).toFixed(1) + "K";
+  return n.toLocaleString("id-ID");
+}
+
+function fmtDate(iso?: string) {
+  if (!iso) return "-";
+  return new Date(iso).toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric" });
+}
+
+function fmtDayShort(dateStr: string) {
+  const d = new Date(dateStr);
+  return d.toLocaleDateString("id-ID", { day: "2-digit", month: "short" });
+}
+
+// ─── Sub-Components ───────────────────────────────────────────────────────────
+
+function MetricCard({
+  label, value, icon: Icon, color, bg, delta, suffix = ""
+}: {
+  label: string;
+  value: number;
+  icon: React.ElementType;
+  color: string;
+  bg: string;
+  delta?: number;
+  suffix?: string;
+}) {
+  return (
+    <div className="p-5 rounded-2xl bg-white border border-slate-200 shadow-xs flex flex-col gap-3 hover:shadow-md hover:border-purple-200 transition-all group">
+      <div className="flex items-center justify-between">
+        <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">{label}</span>
+        <div className={`w-8 h-8 rounded-xl ${bg} border flex items-center justify-center ${color} shrink-0 group-hover:scale-110 transition-transform`}>
+          <Icon className="w-4 h-4" />
+        </div>
+      </div>
+      <div className="flex items-baseline gap-2">
+        <span className="text-2xl font-extrabold text-slate-900 font-['Outfit']">{fmtNum(value)}{suffix}</span>
+        {delta !== undefined && delta !== 0 && (
+          <span className={`text-xs font-bold ${delta > 0 ? "text-emerald-600" : "text-red-500"}`}>
+            {delta > 0 ? "↑" : "↓"} {Math.abs(delta).toFixed(1)}%
+          </span>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function PlatformBadge({ platform }: { platform: string }) {
+  return (
+    <span
+      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold text-white"
+      style={{ background: PLATFORM_COLORS[platform] || "#64748b" }}
+    >
+      {PLATFORM_ICONS[platform]} {platform}
+    </span>
+  );
+}
+
+function LoadingSkeleton() {
+  return (
+    <div className="space-y-6 animate-pulse">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <div key={i} className="h-28 bg-slate-200/70 rounded-2xl" />
+        ))}
+      </div>
+      <div className="h-64 bg-slate-200/70 rounded-3xl" />
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="h-64 bg-slate-200/70 rounded-3xl" />
+        <div className="h-64 bg-slate-200/70 rounded-3xl" />
+      </div>
+    </div>
+  );
+}
+
+// Custom tooltip for charts
+const CustomTooltip = ({ active, payload, label }: any) => {
+  if (!active || !payload?.length) return null;
+  return (
+    <div className="bg-white border border-slate-200 rounded-xl shadow-lg p-3 text-xs">
+      <p className="font-bold text-slate-700 mb-1">{label}</p>
+      {payload.map((entry: any, i: number) => (
+        <p key={i} style={{ color: entry.color }} className="font-semibold">
+          {entry.name}: {fmtNum(entry.value)}
+        </p>
+      ))}
+    </div>
+  );
+};
+
+// ─── PDF Export ───────────────────────────────────────────────────────────────
+
+async function exportToPDF(
+  data: StatsFeedResponse,
+  periodLabel: string,
+  selectedAccountNames: string[]
+) {
+  const { jsPDF } = await import("jspdf");
+  const { default: html2canvas } = await import("html2canvas");
+
+  const element = document.getElementById("statistics-report-area");
+  if (!element) {
+    toast.error("Tidak dapat menemukan area laporan.");
+    return;
+  }
+
+  toast.info("Menyiapkan PDF...");
+
+  try {
+    const canvas = await html2canvas(element, {
+      scale: 1.5,
+      useCORS: true,
+      backgroundColor: "#ffffff",
+      logging: false,
+      width: element.scrollWidth,
+      height: element.scrollHeight,
+    });
+
+    const imgData = canvas.toDataURL("image/png");
+    const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+    const margin = 10;
+    const availableWidth = pageWidth - margin * 2;
+
+    // Header
+    pdf.setFillColor(124, 58, 237);
+    pdf.rect(0, 0, pageWidth, 24, "F");
+    pdf.setTextColor(255, 255, 255);
+    pdf.setFontSize(14);
+    pdf.setFont("helvetica", "bold");
+    pdf.text("Shiera — Laporan Statistik Akun", margin, 10);
+    pdf.setFontSize(8);
+    pdf.setFont("helvetica", "normal");
+    pdf.text(`Periode: ${periodLabel}   •   Dibuat: ${new Date().toLocaleString("id-ID")}`, margin, 17);
+    if (selectedAccountNames.length > 0) {
+      pdf.text(`Akun: ${selectedAccountNames.join(", ")}`, margin, 22);
+    }
+
+    // Aggregated metrics summary text block
+    pdf.setTextColor(30, 30, 30);
+    const agg = data.aggregated;
+    pdf.setFontSize(9);
+    pdf.setFont("helvetica", "bold");
+    pdf.text("Ringkasan Metrik", margin, 32);
+    pdf.setFont("helvetica", "normal");
+    pdf.setFontSize(8);
+    const metrics = [
+      `Total Post: ${fmtNum(agg.total_posts)}`,
+      `Total Likes: ${fmtNum(agg.likes)}`,
+      `Total Comments: ${fmtNum(agg.comments)}`,
+      `Total Shares: ${fmtNum(agg.shares)}`,
+      `Total Reach: ${fmtNum(agg.reach)}`,
+      `Video Views: ${fmtNum(agg.video_views)}`,
+      `New Followers: ${fmtNum(agg.new_followers)}`,
+      `Engagement Rate: ${agg.engagement_rate}%`,
+    ];
+    metrics.forEach((m, i) => {
+      pdf.text(m, margin + (i % 4) * 45, 38 + Math.floor(i / 4) * 6);
+    });
+
+    // Main chart image
+    const startY = 52;
+    const imgHeight = (canvas.height / canvas.width) * availableWidth;
+    let yPos = startY;
+
+    // If image fits on first page
+    if (imgHeight <= pageHeight - startY - margin) {
+      pdf.addImage(imgData, "PNG", margin, yPos, availableWidth, imgHeight);
+    } else {
+      // Multi-page
+      let remainingHeight = imgHeight;
+      let srcY = 0;
+      const pageImgHeight = pageHeight - startY - margin;
+
+      while (remainingHeight > 0) {
+        const sliceHeight = Math.min(remainingHeight, pageImgHeight);
+        pdf.addImage(imgData, "PNG", margin, yPos, availableWidth, imgHeight, "", "FAST", 0, srcY);
+        remainingHeight -= sliceHeight;
+        srcY += sliceHeight;
+        if (remainingHeight > 0) {
+          pdf.addPage();
+          yPos = margin;
+        }
+      }
+    }
+
+    // Footer
+    const totalPages = (pdf as any).internal.getNumberOfPages();
+    for (let i = 1; i <= totalPages; i++) {
+      pdf.setPage(i);
+      pdf.setFontSize(7);
+      pdf.setTextColor(150);
+      pdf.text(`Halaman ${i} dari ${totalPages} — Shiera Analytics Report`, margin, pageHeight - 4);
+    }
+
+    const filename = `shiera-statistik-${new Date().toISOString().slice(0, 10)}.pdf`;
+    pdf.save(filename);
+    toast.success(`PDF berhasil diexport: ${filename}`);
+  } catch (err) {
+    console.error("PDF export error:", err);
+    toast.error("Gagal mengexport PDF. Coba lagi.");
+  }
+}
+
+// ─── Main Page ────────────────────────────────────────────────────────────────
+
+export default function StatisticsPage() {
+  const { activeWorkspace } = useStore();
+
+  // Account filter
+  const [availableAccounts, setAvailableAccounts] = useState<SocialAccountMeta[]>([]);
+  const [selectedAccountIds, setSelectedAccountIds] = useState<string[]>([]);
+  const [accountDropdownOpen, setAccountDropdownOpen] = useState(false);
+
+  // Period filter
+  const [period, setPeriod] = useState<PeriodKey>("today");
+  const [customFrom, setCustomFrom] = useState("");
+  const [customTo, setCustomTo] = useState("");
+
+  // Data state
+  const [data, setData] = useState<StatsFeedResponse | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [hasLoaded, setHasLoaded] = useState(false);
+  const [exportLoading, setExportLoading] = useState(false);
+
+  // Chart tab
+  const [chartMetric, setChartMetric] = useState<"likes" | "comments" | "shares" | "reach" | "video_views">("likes");
+
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // ── Load available accounts ──
+  useEffect(() => {
+    if (!activeWorkspace?.id) return;
+    fetchApi<SocialAccountMeta[]>(`/statistics/accounts?workspace_id=${activeWorkspace.id}`)
+      .then(setAvailableAccounts)
+      .catch(() => setAvailableAccounts([]));
+  }, [activeWorkspace?.id]);
+
+  // ── Close dropdown on outside click ──
+  useEffect(() => {
+    function handler(e: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setAccountDropdownOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  // ── Fetch statistics ──
+  const loadStats = useCallback(async () => {
+    if (!activeWorkspace?.id) return;
+    setLoading(true);
+    try {
+      const { from, to } = getDateRange(period, customFrom, customTo);
+      const params = new URLSearchParams({ workspace_id: activeWorkspace.id, date_from: from, date_to: to });
+      selectedAccountIds.forEach(id => params.append("account_ids", id));
+      const result = await fetchApi<StatsFeedResponse>(`/statistics/feed?${params.toString()}`);
+      setData(result);
+      setHasLoaded(true);
+    } catch (err) {
+      toast.error("Gagal memuat statistik. Pastikan akun sudah terhubung.");
+      setData(null);
+    } finally {
+      setLoading(false);
+    }
+  }, [activeWorkspace?.id, period, customFrom, customTo, selectedAccountIds]);
+
+  // Auto-load when workspace is ready
+  useEffect(() => {
+    if (activeWorkspace?.id && !hasLoaded) loadStats();
+  }, [activeWorkspace?.id]);
+
+  // ── PDF Export ──
+  const handleExportPDF = async () => {
+    if (!data) return;
+    setExportLoading(true);
+    const selectedNames = selectedAccountIds.length === 0
+      ? ["Semua Akun"]
+      : availableAccounts.filter(a => selectedAccountIds.includes(a.id)).map(a => `@${a.username}`);
+    await exportToPDF(data, data.period_label, selectedNames);
+    setExportLoading(false);
+  };
+
+  const agg = data?.aggregated;
+  const dailyData = (data?.daily_breakdown || []).map(d => ({ ...d, label: fmtDayShort(d.date) }));
+
+  // Pie chart data per platform
+  const platformData = (data?.accounts || []).reduce<Record<string, number>>((acc, a) => {
+    acc[a.platform] = (acc[a.platform] || 0) + a.metrics.likes + a.metrics.comments;
+    return acc;
+  }, {});
+  const pieData = Object.entries(platformData).map(([name, value]) => ({ name, value }));
+
+  // Account radar data
+  const radarData = [
+    { metric: "Likes", value: agg?.likes ?? 0 },
+    { metric: "Comments", value: agg?.comments ?? 0 },
+    { metric: "Shares", value: agg?.shares ?? 0 },
+    { metric: "Reach", value: agg?.reach ?? 0 },
+    { metric: "Views", value: agg?.video_views ?? 0 },
+    { metric: "Followers", value: agg?.new_followers ?? 0 },
+  ];
+
+  const selectedAccountNames = selectedAccountIds.length === 0
+    ? "Semua Akun"
+    : availableAccounts.filter(a => selectedAccountIds.includes(a.id)).map(a => `@${a.username}`).join(", ");
+
+  return (
+    <div className="space-y-6 pb-16">
+      {/* ─── Hero Header ─── */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 sm:p-8 rounded-3xl glass-panel relative overflow-hidden shadow-sm">
+        <div className="space-y-1.5 z-10">
+          <div className="flex items-center gap-2">
+            <span className="px-3 py-1 rounded-full bg-purple-100 text-purple-700 text-[11px] font-bold tracking-wide uppercase border border-purple-200">
+              Analytics Engine
+            </span>
+            {data && (
+              <span className="text-xs text-slate-500 font-mono">
+                {data.total_accounts_fetched} akun · {data.aggregated.total_posts} post
+              </span>
+            )}
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight font-['Outfit'] gradient-text">
+            Statistik & Performa Akun
+          </h1>
+          <p className="text-xs sm:text-sm text-slate-600 max-w-2xl leading-relaxed">
+            Monitor engagement, reach, dan performa konten semua akun sosial dalam satu dashboard.
+          </p>
+        </div>
+        <div className="flex items-center gap-2 z-10 flex-wrap">
+          <button
+            onClick={loadStats}
+            disabled={loading}
+            className="py-2.5 px-4 rounded-2xl bg-white hover:bg-purple-50/80 border border-slate-200 text-slate-700 font-semibold text-xs flex items-center gap-2 shadow-xs transition-all disabled:opacity-60"
+          >
+            <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin text-purple-600" : ""}`} />
+            <span>{loading ? "Memuat..." : "Refresh"}</span>
+          </button>
+          <button
+            onClick={handleExportPDF}
+            disabled={!data || exportLoading || loading}
+            className="py-2.5 px-4 rounded-2xl gradient-brand text-white font-semibold text-xs flex items-center gap-2 shadow-md shadow-purple-500/20 hover:shadow-lg hover:shadow-purple-500/30 hover:scale-[1.01] transition-all disabled:opacity-50"
+          >
+            {exportLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+            <span>Export PDF</span>
+          </button>
+        </div>
+      </div>
+
+      {/* ─── Filter Bar ─── */}
+      <div className="flex flex-wrap items-center gap-3 p-4 rounded-2xl glass-card">
+        {/* Account filter dropdown */}
+        <div className="relative" ref={dropdownRef}>
+          <button
+            onClick={() => setAccountDropdownOpen(v => !v)}
+            className="flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-white border border-slate-200 text-xs font-semibold text-slate-700 hover:border-purple-300 hover:text-purple-700 transition-all min-w-[160px]"
+          >
+            <Users2 className="w-3.5 h-3.5 text-slate-400" />
+            <span className="flex-1 text-left truncate max-w-[140px]">{selectedAccountNames}</span>
+            <ChevronDown className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+          </button>
+          {accountDropdownOpen && (
+            <div className="absolute top-full mt-1 left-0 z-50 w-72 bg-white border border-slate-200 rounded-2xl shadow-xl overflow-hidden">
+              <div className="p-2 border-b border-slate-100">
+                <button
+                  onClick={() => { setSelectedAccountIds([]); setAccountDropdownOpen(false); }}
+                  className={`w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold transition-all ${
+                    selectedAccountIds.length === 0 ? "bg-purple-50 text-purple-700" : "text-slate-600 hover:bg-slate-50"
+                  }`}
+                >
+                  <Globe className="w-3.5 h-3.5" />
+                  Semua Akun
+                </button>
+              </div>
+              <div className="max-h-56 overflow-y-auto p-2 space-y-0.5">
+                {availableAccounts.length === 0 ? (
+                  <p className="text-xs text-slate-400 text-center py-4">Belum ada akun terhubung</p>
+                ) : (
+                  availableAccounts.map(acc => {
+                    const isSelected = selectedAccountIds.includes(acc.id);
+                    return (
+                      <button
+                        key={acc.id}
+                        onClick={() => {
+                          setSelectedAccountIds(prev =>
+                            isSelected ? prev.filter(id => id !== acc.id) : [...prev, acc.id]
+                          );
+                        }}
+                        className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs transition-all ${
+                          isSelected ? "bg-purple-50 text-purple-700" : "text-slate-600 hover:bg-slate-50"
+                        }`}
+                      >
+                        {acc.avatar_url ? (
+                          <img src={acc.avatar_url} className="w-6 h-6 rounded-full object-cover border border-slate-200 shrink-0" alt="" />
+                        ) : (
+                          <div className="w-6 h-6 rounded-full bg-purple-100 text-purple-700 flex items-center justify-center text-[10px] font-bold shrink-0">
+                            {acc.name?.charAt(0) || "A"}
+                          </div>
+                        )}
+                        <div className="flex-1 text-left min-w-0">
+                          <p className="font-semibold truncate">{acc.name}</p>
+                          <p className="text-[10px] text-slate-400">@{acc.username} · {PLATFORM_ICONS[acc.platform]} {acc.platform}</p>
+                        </div>
+                        {isSelected && <span className="w-2 h-2 rounded-full bg-purple-600 shrink-0" />}
+                      </button>
+                    );
+                  })
+                )}
+              </div>
+              {selectedAccountIds.length > 0 && (
+                <div className="p-2 border-t border-slate-100">
+                  <button
+                    onClick={() => { loadStats(); setAccountDropdownOpen(false); }}
+                    className="w-full py-2 rounded-xl bg-purple-600 text-white text-xs font-bold hover:bg-purple-700 transition-colors"
+                  >
+                    Terapkan Filter ({selectedAccountIds.length} akun)
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Period pills */}
+        <div className="flex items-center gap-1 p-1 bg-slate-100/80 rounded-xl">
+          {PERIOD_OPTIONS.map(opt => (
+            <button
+              key={opt.key}
+              onClick={() => setPeriod(opt.key)}
+              className={`px-3.5 py-2 rounded-lg text-xs font-bold transition-all ${
+                period === opt.key ? "bg-white text-purple-700 shadow-sm" : "text-slate-500 hover:text-slate-700"
+              }`}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Custom date range */}
+        {period === "custom" && (
+          <div className="flex items-center gap-2 flex-wrap">
+            <input
+              type="date"
+              value={customFrom}
+              onChange={e => setCustomFrom(e.target.value)}
+              className="px-3 py-2 rounded-xl text-xs border border-slate-200 bg-white text-slate-700 font-medium focus:outline-none focus:ring-2 focus:ring-purple-300"
+            />
+            <span className="text-xs text-slate-400">–</span>
+            <input
+              type="date"
+              value={customTo}
+              onChange={e => setCustomTo(e.target.value)}
+              className="px-3 py-2 rounded-xl text-xs border border-slate-200 bg-white text-slate-700 font-medium focus:outline-none focus:ring-2 focus:ring-purple-300"
+            />
+          </div>
+        )}
+
+        <button
+          onClick={loadStats}
+          disabled={loading}
+          className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-purple-600 text-white text-xs font-bold hover:bg-purple-700 transition-all disabled:opacity-60 shadow-sm ml-auto"
+        >
+          <Filter className="w-3.5 h-3.5" />
+          Tampilkan
+        </button>
+      </div>
+
+      {/* ─── Loading ─── */}
+      {loading && <LoadingSkeleton />}
+
+      {/* ─── Empty / No API ─── */}
+      {!loading && !data && hasLoaded && (
+        <div className="flex flex-col items-center justify-center py-24 gap-4 text-slate-400">
+          <BarChart2 className="w-14 h-14 opacity-20" />
+          <p className="text-sm font-medium">Belum ada data statistik</p>
+          <p className="text-xs">Pastikan akun sudah terhubung dan API PostForMe aktif</p>
+        </div>
+      )}
+
+      {/* ─── Stats Area (PDF Export Target) ─── */}
+      {!loading && data && (
+        <div id="statistics-report-area" className="space-y-6">
+          {/* Period Info Bar */}
+          <div className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-purple-50 border border-purple-200 text-purple-700">
+            <Calendar className="w-4 h-4 shrink-0" />
+            <span className="text-xs font-semibold">{data.period_label}</span>
+            <span className="text-xs text-purple-400 ml-auto">{data.total_accounts_fetched} akun teranalisis</span>
+          </div>
+
+          {/* ─── Metric Cards Row ─── */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+            <MetricCard label="Total Post"    value={agg?.total_posts ?? 0}    icon={BarChart2}        color="text-purple-600" bg="bg-purple-100 border-purple-200" />
+            <MetricCard label="Total Likes"   value={agg?.likes ?? 0}          icon={Heart}            color="text-rose-600"   bg="bg-rose-100 border-rose-200" />
+            <MetricCard label="Komentar"      value={agg?.comments ?? 0}       icon={MessageCircle}    color="text-sky-600"    bg="bg-sky-100 border-sky-200" />
+            <MetricCard label="Shares"        value={agg?.shares ?? 0}         icon={Share2}           color="text-emerald-600" bg="bg-emerald-100 border-emerald-200" />
+            <MetricCard label="Total Reach"   value={agg?.reach ?? 0}          icon={Eye}              color="text-amber-600"  bg="bg-amber-100 border-amber-200" />
+            <MetricCard label="Video Views"   value={agg?.video_views ?? 0}    icon={Play}             color="text-violet-600" bg="bg-violet-100 border-violet-200" />
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+            <MetricCard label="Follower Baru"     value={agg?.new_followers ?? 0}   icon={UserPlus}         color="text-teal-600"   bg="bg-teal-100 border-teal-200" />
+            <MetricCard label="Profile Views"     value={agg?.profile_views ?? 0}   icon={TrendingUp}       color="text-indigo-600" bg="bg-indigo-100 border-indigo-200" />
+            <MetricCard label="Website Clicks"    value={agg?.website_clicks ?? 0}  icon={MousePointerClick} color="text-orange-600" bg="bg-orange-100 border-orange-200" />
+            <MetricCard label="Saves/Favorites"   value={agg?.favorites ?? 0}       icon={Bookmark}         color="text-pink-600"   bg="bg-pink-100 border-pink-200" />
+            <MetricCard label="Engagement Rate"   value={agg?.engagement_rate ?? 0} icon={Star}             color="text-yellow-600" bg="bg-yellow-100 border-yellow-200" suffix="%" />
+            <MetricCard label="Eng. Likes"        value={agg?.engagement_likes ?? 0} icon={Heart}           color="text-red-600"    bg="bg-red-100 border-red-200" />
+          </div>
+
+          {/* ─── Charts Row ─── */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Main Line/Area Chart */}
+            <div className="lg:col-span-2 p-6 rounded-3xl glass-card space-y-4">
+              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center">
+                    <TrendingUp className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">Tren Harian</h3>
+                    <p className="text-[11px] text-slate-500">Performa konten per hari</p>
+                  </div>
+                </div>
+                {/* Metric tab switcher */}
+                <div className="flex gap-1 p-1 bg-slate-100 rounded-xl">
+                  {(["likes", "comments", "shares", "reach", "video_views"] as const).map(m => (
+                    <button
+                      key={m}
+                      onClick={() => setChartMetric(m)}
+                      className={`px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all ${
+                        chartMetric === m ? "bg-white text-purple-700 shadow-sm" : "text-slate-500 hover:text-slate-700"
+                      }`}
+                    >
+                      {m === "video_views" ? "Views" : m.charAt(0).toUpperCase() + m.slice(1)}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              {dailyData.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-48 text-slate-300 gap-2">
+                  <BarChart2 className="w-10 h-10 opacity-40" />
+                  <p className="text-xs">Tidak ada data untuk periode ini</p>
+                </div>
+              ) : (
+                <ResponsiveContainer width="100%" height={220}>
+                  <AreaChart data={dailyData} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#7c3aed" stopOpacity={0.25} />
+                        <stop offset="95%" stopColor="#7c3aed" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                    <XAxis dataKey="label" tick={{ fontSize: 10, fill: "#94a3b8" }} axisLine={false} tickLine={false} />
+                    <YAxis tick={{ fontSize: 10, fill: "#94a3b8" }} axisLine={false} tickLine={false} tickFormatter={fmtNum} />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Area
+                      type="monotone"
+                      dataKey={chartMetric}
+                      stroke="#7c3aed"
+                      strokeWidth={2.5}
+                      fill="url(#areaGradient)"
+                      dot={{ fill: "#7c3aed", r: 3, strokeWidth: 0 }}
+                      activeDot={{ r: 5, strokeWidth: 0 }}
+                      name={chartMetric === "video_views" ? "Video Views" : chartMetric.charAt(0).toUpperCase() + chartMetric.slice(1)}
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              )}
+            </div>
+
+            {/* Pie Chart — Platform Distribution */}
+            <div className="p-6 rounded-3xl glass-card space-y-4">
+              <div className="flex items-center gap-2.5 border-b border-slate-100 pb-4">
+                <div className="w-8 h-8 rounded-xl bg-pink-100 text-pink-600 flex items-center justify-center">
+                  <Globe className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">Platform Mix</h3>
+                  <p className="text-[11px] text-slate-500">Distribusi engagement per platform</p>
+                </div>
+              </div>
+              {pieData.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-48 text-slate-300 gap-2">
+                  <Globe className="w-10 h-10 opacity-40" />
+                  <p className="text-xs">Tidak ada data</p>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center gap-3">
+                  <ResponsiveContainer width="100%" height={160}>
+                    <PieChart>
+                      <Pie
+                        data={pieData}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={45}
+                        outerRadius={72}
+                        paddingAngle={3}
+                        dataKey="value"
+                      >
+                        {pieData.map((entry, index) => (
+                          <Cell key={entry.name} fill={PLATFORM_COLORS[entry.name] || CHART_COLORS[index % CHART_COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip
+                        formatter={(val: number, name: string) => [fmtNum(val), name]}
+                        contentStyle={{ fontSize: "11px", borderRadius: "12px", border: "1px solid #e2e8f0" }}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+                  <div className="w-full space-y-1.5">
+                    {pieData.slice(0, 5).map((d, i) => (
+                      <div key={d.name} className="flex items-center justify-between text-[11px]">
+                        <div className="flex items-center gap-1.5">
+                          <div className="w-2.5 h-2.5 rounded-full" style={{ background: PLATFORM_COLORS[d.name] || CHART_COLORS[i] }} />
+                          <span className="text-slate-600 font-medium capitalize">{d.name}</span>
+                        </div>
+                        <span className="font-bold text-slate-800">{fmtNum(d.value)}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* ─── Second Charts Row ─── */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Bar Chart — Posts per day */}
+            <div className="p-6 rounded-3xl glass-card space-y-4">
+              <div className="flex items-center gap-2.5 border-b border-slate-100 pb-4">
+                <div className="w-8 h-8 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center">
+                  <BarChart className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">Frekuensi Post</h3>
+                  <p className="text-[11px] text-slate-500">Jumlah post yang diterbitkan per hari</p>
+                </div>
+              </div>
+              {dailyData.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-48 text-slate-300 gap-2">
+                  <BarChart className="w-10 h-10 opacity-40" />
+                  <p className="text-xs">Tidak ada data</p>
+                </div>
+              ) : (
+                <ResponsiveContainer width="100%" height={200}>
+                  <ReBarChart data={dailyData} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                    <XAxis dataKey="label" tick={{ fontSize: 10, fill: "#94a3b8" }} axisLine={false} tickLine={false} />
+                    <YAxis tick={{ fontSize: 10, fill: "#94a3b8" }} axisLine={false} tickLine={false} allowDecimals={false} />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Bar dataKey="posts" name="Post" fill="#7c3aed" radius={[6, 6, 0, 0]} />
+                  </ReBarChart>
+                </ResponsiveContainer>
+              )}
+            </div>
+
+            {/* Radar Chart — Metrics overview */}
+            <div className="p-6 rounded-3xl glass-card space-y-4">
+              <div className="flex items-center gap-2.5 border-b border-slate-100 pb-4">
+                <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center">
+                  <Star className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">Radar Performa</h3>
+                  <p className="text-[11px] text-slate-500">Distribusi kekuatan metrik konten</p>
+                </div>
+              </div>
+              <ResponsiveContainer width="100%" height={200}>
+                <RadarChart data={radarData} margin={{ top: 5, right: 20, left: 20, bottom: 5 }}>
+                  <PolarGrid stroke="#e2e8f0" />
+                  <PolarAngleAxis dataKey="metric" tick={{ fontSize: 10, fill: "#64748b", fontWeight: 600 }} />
+                  <PolarRadiusAxis tick={false} axisLine={false} />
+                  <Radar name="Metrik" dataKey="value" stroke="#7c3aed" fill="#7c3aed" fillOpacity={0.25} strokeWidth={2} />
+                  <Tooltip
+                    formatter={(val: number) => [fmtNum(val)]}
+                    contentStyle={{ fontSize: "11px", borderRadius: "12px", border: "1px solid #e2e8f0" }}
+                  />
+                </RadarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          {/* ─── Per-Account Breakdown ─── */}
+          {data.accounts.length > 0 && (
+            <div className="p-6 rounded-3xl glass-card space-y-4">
+              <div className="flex items-center gap-2.5 border-b border-slate-100 pb-4">
+                <div className="w-8 h-8 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center">
+                  <Users2 className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">Performa Per Akun</h3>
+                  <p className="text-[11px] text-slate-500">Breakdown metrik tiap akun sosial</p>
+                </div>
+              </div>
+
+              {/* Desktop table */}
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[700px] text-xs">
+                  <thead>
+                    <tr className="border-b border-slate-100">
+                      <th className="text-left text-[10px] font-bold text-slate-400 uppercase tracking-wider pb-3 pr-4">Akun</th>
+                      <th className="text-right text-[10px] font-bold text-slate-400 uppercase tracking-wider pb-3 px-3">Post</th>
+                      <th className="text-right text-[10px] font-bold text-slate-400 uppercase tracking-wider pb-3 px-3">Likes</th>
+                      <th className="text-right text-[10px] font-bold text-slate-400 uppercase tracking-wider pb-3 px-3">Komentar</th>
+                      <th className="text-right text-[10px] font-bold text-slate-400 uppercase tracking-wider pb-3 px-3">Shares</th>
+                      <th className="text-right text-[10px] font-bold text-slate-400 uppercase tracking-wider pb-3 px-3">Reach</th>
+                      <th className="text-right text-[10px] font-bold text-slate-400 uppercase tracking-wider pb-3 px-3">Views</th>
+                      <th className="text-right text-[10px] font-bold text-slate-400 uppercase tracking-wider pb-3 pl-3">Eng. Rate</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-50">
+                    {data.accounts
+                      .sort((a, b) => b.metrics.likes - a.metrics.likes)
+                      .map(acc => (
+                        <tr key={acc.id} className="hover:bg-purple-50/30 transition-colors group">
+                          <td className="py-3.5 pr-4">
+                            <div className="flex items-center gap-2.5">
+                              {acc.avatar_url ? (
+                                <img src={acc.avatar_url} className="w-8 h-8 rounded-full object-cover border border-slate-200 shrink-0" alt="" />
+                              ) : (
+                                <div className="w-8 h-8 rounded-full bg-purple-100 text-purple-700 flex items-center justify-center text-xs font-bold shrink-0">
+                                  {acc.name?.charAt(0) || "A"}
+                                </div>
+                              )}
+                              <div className="min-w-0">
+                                <p className="font-semibold text-slate-800 truncate">{acc.name}</p>
+                                <div className="flex items-center gap-1 mt-0.5">
+                                  <PlatformBadge platform={acc.platform} />
+                                  <span className="text-[10px] text-slate-400">@{acc.username}</span>
+                                </div>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="py-3.5 px-3 text-right font-semibold text-slate-700">{acc.post_count}</td>
+                          <td className="py-3.5 px-3 text-right font-semibold text-rose-600">{fmtNum(acc.metrics.likes)}</td>
+                          <td className="py-3.5 px-3 text-right font-semibold text-sky-600">{fmtNum(acc.metrics.comments)}</td>
+                          <td className="py-3.5 px-3 text-right font-semibold text-emerald-600">{fmtNum(acc.metrics.shares)}</td>
+                          <td className="py-3.5 px-3 text-right font-semibold text-amber-600">{fmtNum(acc.metrics.reach)}</td>
+                          <td className="py-3.5 px-3 text-right font-semibold text-violet-600">{fmtNum(acc.metrics.video_views)}</td>
+                          <td className="py-3.5 pl-3 text-right">
+                            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                              acc.metrics.engagement_rate >= 3
+                                ? "bg-emerald-100 text-emerald-700"
+                                : acc.metrics.engagement_rate >= 1
+                                ? "bg-amber-100 text-amber-700"
+                                : "bg-slate-100 text-slate-600"
+                            }`}>
+                              {acc.metrics.engagement_rate}%
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* ─── Engagement Multi-Bar Chart ─── */}
+          {data.accounts.length > 1 && (
+            <div className="p-6 rounded-3xl glass-card space-y-4">
+              <div className="flex items-center gap-2.5 border-b border-slate-100 pb-4">
+                <div className="w-8 h-8 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center">
+                  <BarChart2 className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">Perbandingan Akun</h3>
+                  <p className="text-[11px] text-slate-500">Likes & comments per akun dalam periode ini</p>
+                </div>
+              </div>
+              <ResponsiveContainer width="100%" height={220}>
+                <ReBarChart
+                  data={data.accounts.slice(0, 8).map(a => ({
+                    name: a.username || a.name,
+                    Likes: a.metrics.likes,
+                    Komentar: a.metrics.comments,
+                    Shares: a.metrics.shares,
+                  }))}
+                  margin={{ top: 5, right: 10, left: -20, bottom: 0 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                  <XAxis dataKey="name" tick={{ fontSize: 9, fill: "#94a3b8" }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fontSize: 10, fill: "#94a3b8" }} axisLine={false} tickLine={false} tickFormatter={fmtNum} />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Legend wrapperStyle={{ fontSize: "10px" }} />
+                  <Bar dataKey="Likes" fill="#f43f5e" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="Komentar" fill="#0ea5e9" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="Shares" fill="#10b981" radius={[4, 4, 0, 0]} />
+                </ReBarChart>
+              </ResponsiveContainer>
+            </div>
+          )}
+
+          {/* ─── Top Posts ─── */}
+          {data.top_posts && data.top_posts.length > 0 && (
+            <div className="p-6 rounded-3xl glass-card space-y-4">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center">
+                    <Star className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">Top Posts</h3>
+                    <p className="text-[11px] text-slate-500">Konten dengan engagement tertinggi</p>
+                  </div>
+                </div>
+                <span className="text-[10px] text-slate-400 font-mono">Top {Math.min(data.top_posts.length, 10)}</span>
+              </div>
+              <div className="space-y-3">
+                {data.top_posts.slice(0, 10).map((post, idx) => {
+                  const m = post.metrics || {};
+                  const eng = (m.likes || 0) + (m.comments || 0) + (m.shares || 0);
+                  return (
+                    <div key={idx} className="flex items-start gap-3.5 p-4 rounded-2xl bg-white border border-slate-100 hover:border-purple-200 hover:shadow-sm transition-all group">
+                      {/* Rank */}
+                      <div className={`shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold ${
+                        idx === 0 ? "bg-amber-100 text-amber-700" :
+                        idx === 1 ? "bg-slate-100 text-slate-600" :
+                        idx === 2 ? "bg-orange-100 text-orange-700" :
+                        "bg-slate-50 text-slate-400"
+                      }`}>
+                        {idx + 1}
+                      </div>
+
+                      {/* Thumbnail */}
+                      {post.media?.[0]?.url ? (
+                        <img src={post.media[0].url} className="w-12 h-12 rounded-xl object-cover border border-slate-100 shrink-0" alt="" />
+                      ) : (
+                        <div className="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center shrink-0">
+                          <Play className="w-4 h-4 text-slate-400" />
+                        </div>
+                      )}
+
+                      {/* Content */}
+                      <div className="flex-1 min-w-0 space-y-1">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          {post._platform && <PlatformBadge platform={post._platform} />}
+                          {post._account_username && (
+                            <span className="text-[10px] text-slate-400">@{post._account_username}</span>
+                          )}
+                          <span className="text-[10px] text-slate-400 ml-auto">{fmtDate(post.posted_at)}</span>
+                        </div>
+                        <p className="text-xs text-slate-700 line-clamp-2 leading-relaxed">
+                          {post.caption || "Tidak ada caption"}
+                        </p>
+                        <div className="flex items-center gap-3 text-[11px] text-slate-500 flex-wrap">
+                          <span className="flex items-center gap-1 text-rose-600 font-semibold"><Heart className="w-3 h-3" />{fmtNum(m.likes)}</span>
+                          <span className="flex items-center gap-1 text-sky-600 font-semibold"><MessageCircle className="w-3 h-3" />{fmtNum(m.comments)}</span>
+                          <span className="flex items-center gap-1 text-emerald-600 font-semibold"><Share2 className="w-3 h-3" />{fmtNum(m.shares)}</span>
+                          {(m.reach ?? 0) > 0 && <span className="flex items-center gap-1 text-amber-600 font-semibold"><Eye className="w-3 h-3" />{fmtNum(m.reach)}</span>}
+                          <span className="ml-auto text-purple-600 font-bold">Eng: {fmtNum(eng)}</span>
+                        </div>
+                      </div>
+
+                      {/* External link */}
+                      {post.platform_url && (
+                        <a
+                          href={post.platform_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="shrink-0 p-1.5 rounded-lg text-slate-300 hover:text-purple-600 hover:bg-purple-50 transition-colors"
+                        >
+                          <ArrowUpRight className="w-4 h-4" />
+                        </a>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* ─── All Posts Timeline ─── */}
+          {data.posts && data.posts.length > 0 && (
+            <div className="p-6 rounded-3xl glass-card space-y-4">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-xl bg-slate-100 text-slate-600 flex items-center justify-center">
+                    <Calendar className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">Timeline Post</h3>
+                    <p className="text-[11px] text-slate-500">Semua post dalam periode yang dipilih</p>
+                  </div>
+                </div>
+                <span className="text-[10px] text-slate-400 font-mono">{data.posts.length} post</span>
+              </div>
+              <div className="space-y-2 max-h-[600px] overflow-y-auto pr-1 custom-scrollbar">
+                {data.posts.map((post, idx) => {
+                  const m = post.metrics || {};
+                  return (
+                    <div key={idx} className="flex items-center gap-3 p-3.5 rounded-xl bg-white border border-slate-100 hover:border-purple-200 transition-all text-xs">
+                      <div className="w-2 h-2 rounded-full bg-purple-400 shrink-0" />
+                      <div className="shrink-0 text-[10px] text-slate-400 font-mono w-20">{fmtDate(post.posted_at)}</div>
+                      {post._platform && <PlatformBadge platform={post._platform} />}
+                      {post._account_username && (
+                        <span className="text-[10px] text-slate-400 shrink-0">@{post._account_username}</span>
+                      )}
+                      <p className="flex-1 text-slate-700 truncate">{post.caption || "—"}</p>
+                      <div className="flex items-center gap-2.5 text-[11px] shrink-0">
+                        <span className="text-rose-500 font-bold">♥ {fmtNum(m.likes)}</span>
+                        <span className="text-sky-500 font-bold">💬 {fmtNum(m.comments)}</span>
+                        <span className="text-emerald-500 font-bold">↗ {fmtNum(m.shares)}</span>
+                      </div>
+                      {post.platform_url && (
+                        <a href={post.platform_url} target="_blank" rel="noopener noreferrer" className="text-slate-300 hover:text-purple-600 transition-colors shrink-0">
+                          <ArrowUpRight className="w-3.5 h-3.5" />
+                        </a>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Empty posts state */}
+          {(!data.posts || data.posts.length === 0) && (
+            <div className="flex flex-col items-center justify-center py-16 gap-3 text-slate-300 p-6 rounded-3xl glass-card">
+              <Info className="w-10 h-10 opacity-40" />
+              <p className="text-sm font-medium text-slate-500">Tidak ada post dalam periode ini</p>
+              <p className="text-xs text-slate-400">Coba ubah filter periode atau pilih akun yang berbeda</p>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}

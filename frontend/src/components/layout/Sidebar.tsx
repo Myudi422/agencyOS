@@ -7,7 +7,7 @@ import {
   LayoutDashboard, Users2, Briefcase, Image as ImageIcon,
   CalendarDays, Cpu, History, Plus, ChevronDown, Sparkles, X,
   ShieldCheck, Wrench, Settings, LogOut, CreditCard,
-  Zap, Rocket, Crown, Building2, UserCircle, Loader2
+  Zap, Rocket, Crown, Building2, UserCircle, Loader2, BarChart2
 } from "lucide-react";
 import { useStore } from "@/store/useStore";
 import { useAuthStore } from "@/store/authStore";
@@ -71,6 +71,7 @@ export default function Sidebar({ isMobileOpen = false, onCloseMobile }: Sidebar
   const navItems = [
     { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
     { name: "Proses", href: "/queue", icon: Cpu, activeDot: true },
+    { name: "Statistik", href: "/statistics", icon: BarChart2 },
     { name: "Account Manager", href: "/accounts", icon: Users2, badge: "10 Platforms" },
     { name: "Client Roster", href: "/clients", icon: Briefcase },
     { name: "Media Library", href: "/media", icon: ImageIcon },
