@@ -5,7 +5,8 @@ import {
   BarChart2, RefreshCw, Download, Users2, Heart, MessageCircle,
   Share2, Eye, Play, UserPlus, TrendingUp, ChevronDown, Calendar,
   Filter, Loader2, AlertTriangle, ArrowUpRight, BarChart, Globe,
-  Star, X, Bookmark, MousePointerClick, ChevronRight, Info
+  Star, X, Bookmark, MousePointerClick, ChevronRight, Info,
+  Image as ImageIcon, Video
 } from "lucide-react";
 import {
   ResponsiveContainer, LineChart, Line, BarChart as ReBarChart, Bar,
@@ -116,6 +117,8 @@ const PERIOD_OPTIONS: { key: PeriodKey; label: string }[] = [
   { key: "custom", label: "Custom" },
 ];
 
+const TIMELINE_PER_PAGE = 10;
+
 // ─── Utils ───────────────────────────────────────────────────────────────────
 
 function getDateRange(period: PeriodKey, customFrom?: string, customTo?: string) {
@@ -165,6 +168,56 @@ function fmtDayShort(dateStr: string) {
 
 // ─── Sub-Components ───────────────────────────────────────────────────────────
 
+function PostMediaThumbnail({
+  url,
+  mediaType,
+  platform,
+}: {
+  url?: string;
+  mediaType?: string;
+  platform?: string;
+}) {
+  const [imgError, setImgError] = useState(false);
+
+  useEffect(() => {
+    setImgError(false);
+  }, [url]);
+
+  const isVideo =
+    mediaType === "video" ||
+    platform === "tiktok" ||
+    platform === "tiktok_business" ||
+    platform === "youtube";
+
+  if (!url || imgError) {
+    return (
+      <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-purple-50 border border-purple-100/80 flex items-center justify-center shrink-0 text-purple-600 shadow-xs">
+        {isVideo ? (
+          <Video className="w-4 h-4 sm:w-5 sm:h-5 opacity-80" />
+        ) : (
+          <ImageIcon className="w-4 h-4 sm:w-5 sm:h-5 opacity-80" />
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <div className="relative w-11 h-11 sm:w-12 sm:h-12 shrink-0">
+      <img
+        src={url}
+        onError={() => setImgError(true)}
+        className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl object-cover border border-slate-100 shadow-xs"
+        alt=""
+      />
+      {isVideo && (
+        <div className="absolute bottom-0.5 right-0.5 bg-slate-900/75 text-white p-0.5 rounded-md backdrop-blur-xs">
+          <Play className="w-2.5 h-2.5 fill-current" />
+        </div>
+      )}
+    </div>
+  );
+}
+
 function MetricCard({
   label, value, icon: Icon, color, bg, delta, suffix = ""
 }: {
@@ -177,17 +230,19 @@ function MetricCard({
   suffix?: string;
 }) {
   return (
-    <div className="p-5 rounded-2xl bg-white border border-slate-200 shadow-xs flex flex-col gap-3 hover:shadow-md hover:border-purple-200 transition-all group">
-      <div className="flex items-center justify-between">
-        <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">{label}</span>
-        <div className={`w-8 h-8 rounded-xl ${bg} border flex items-center justify-center ${color} shrink-0 group-hover:scale-110 transition-transform`}>
-          <Icon className="w-4 h-4" />
+    <div className="p-3.5 sm:p-5 rounded-2xl bg-white border border-slate-200 shadow-xs flex flex-col justify-between gap-2.5 sm:gap-3 hover:shadow-md hover:border-purple-200 transition-all group min-w-0">
+      <div className="flex items-start justify-between gap-1.5 sm:gap-2 min-w-0">
+        <span className="text-[10px] sm:text-[11px] font-semibold text-slate-500 uppercase tracking-wider leading-tight min-w-0 flex-1 pr-0.5 break-words">
+          {label}
+        </span>
+        <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-xl ${bg} border flex items-center justify-center ${color} shrink-0 group-hover:scale-105 transition-transform`}>
+          <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
         </div>
       </div>
-      <div className="flex items-baseline gap-2">
-        <span className="text-2xl font-extrabold text-slate-900 font-['Outfit']">{fmtNum(value)}{suffix}</span>
+      <div className="flex items-baseline gap-1.5 min-w-0 flex-wrap">
+        <span className="text-lg sm:text-2xl font-extrabold text-slate-900 font-['Outfit'] truncate">{fmtNum(value)}{suffix}</span>
         {delta !== undefined && delta !== 0 && (
-          <span className={`text-xs font-bold ${delta > 0 ? "text-emerald-600" : "text-red-500"}`}>
+          <span className={`text-[10px] sm:text-xs font-bold ${delta > 0 ? "text-emerald-600" : "text-red-500"}`}>
             {delta > 0 ? "↑" : "↓"} {Math.abs(delta).toFixed(1)}%
           </span>
         )}
@@ -199,7 +254,7 @@ function MetricCard({
 function PlatformBadge({ platform }: { platform: string }) {
   return (
     <span
-      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold text-white"
+      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold text-white shrink-0"
       style={{ background: PLATFORM_COLORS[platform] || "#64748b" }}
     >
       {PLATFORM_ICONS[platform]} {platform}
@@ -210,7 +265,7 @@ function PlatformBadge({ platform }: { platform: string }) {
 function LoadingSkeleton() {
   return (
     <div className="space-y-6 animate-pulse">
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
         {Array.from({ length: 6 }).map((_, i) => (
           <div key={i} className="h-28 bg-slate-200/70 rounded-2xl" />
         ))}
@@ -315,11 +370,9 @@ async function exportToPDF(
     const imgHeight = (canvas.height / canvas.width) * availableWidth;
     let yPos = startY;
 
-    // If image fits on first page
     if (imgHeight <= pageHeight - startY - margin) {
       pdf.addImage(imgData, "PNG", margin, yPos, availableWidth, imgHeight);
     } else {
-      // Multi-page: split canvas into page-sized chunks
       const pageImgHeight = pageHeight - startY - margin;
       let remainingImgHeight = imgHeight;
       let offsetY = startY;
@@ -374,10 +427,18 @@ export default function StatisticsPage() {
   const [hasLoaded, setHasLoaded] = useState(false);
   const [exportLoading, setExportLoading] = useState(false);
 
+  // Pagination for Timeline Posts
+  const [timelinePage, setTimelinePage] = useState(1);
+
   // Chart tab
   const [chartMetric, setChartMetric] = useState<"likes" | "comments" | "shares" | "reach" | "video_views">("likes");
 
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // ── Reset timeline page on data refresh ──
+  useEffect(() => {
+    setTimelinePage(1);
+  }, [data]);
 
   // ── Load available accounts ──
   useEffect(() => {
@@ -458,11 +519,11 @@ export default function StatisticsPage() {
     : availableAccounts.filter(a => selectedAccountIds.includes(a.id)).map(a => `@${a.username}`).join(", ");
 
   return (
-    <div className="space-y-6 pb-16">
+    <div className="space-y-6 pb-16 min-w-0">
       {/* ─── Hero Header ─── */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 sm:p-8 rounded-3xl glass-panel relative overflow-hidden shadow-sm">
-        <div className="space-y-1.5 z-10">
-          <div className="flex items-center gap-2">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 sm:p-8 rounded-3xl glass-panel relative overflow-hidden shadow-sm">
+        <div className="space-y-1.5 z-10 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
             <span className="px-3 py-1 rounded-full bg-purple-100 text-purple-700 text-[11px] font-bold tracking-wide uppercase border border-purple-200">
               Analytics Engine
             </span>
@@ -472,14 +533,14 @@ export default function StatisticsPage() {
               </span>
             )}
           </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight font-['Outfit'] gradient-text">
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight font-['Outfit'] gradient-text leading-tight">
             Statistik & Performa Akun
           </h1>
           <p className="text-xs sm:text-sm text-slate-600 max-w-2xl leading-relaxed">
             Monitor engagement, reach, dan performa konten semua akun sosial dalam satu dashboard.
           </p>
         </div>
-        <div className="flex items-center gap-2 z-10 flex-wrap">
+        <div className="flex items-center gap-2 z-10 flex-wrap shrink-0">
           <button
             onClick={loadStats}
             disabled={loading}
@@ -500,19 +561,19 @@ export default function StatisticsPage() {
       </div>
 
       {/* ─── Filter Bar ─── */}
-      <div className="flex flex-wrap items-center gap-3 p-4 rounded-2xl glass-card">
+      <div className="flex flex-wrap items-center gap-2.5 p-3.5 sm:p-4 rounded-2xl glass-card">
         {/* Account filter dropdown */}
-        <div className="relative" ref={dropdownRef}>
+        <div className="relative w-full sm:w-auto" ref={dropdownRef}>
           <button
             onClick={() => setAccountDropdownOpen(v => !v)}
-            className="flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-white border border-slate-200 text-xs font-semibold text-slate-700 hover:border-purple-300 hover:text-purple-700 transition-all min-w-[160px]"
+            className="flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-white border border-slate-200 text-xs font-semibold text-slate-700 hover:border-purple-300 hover:text-purple-700 transition-all w-full sm:w-auto min-w-[160px]"
           >
-            <Users2 className="w-3.5 h-3.5 text-slate-400" />
-            <span className="flex-1 text-left truncate max-w-[140px]">{selectedAccountNames}</span>
+            <Users2 className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+            <span className="flex-1 text-left truncate max-w-[160px] sm:max-w-[140px]">{selectedAccountNames}</span>
             <ChevronDown className="w-3.5 h-3.5 text-slate-400 shrink-0" />
           </button>
           {accountDropdownOpen && (
-            <div className="absolute top-full mt-1 left-0 z-50 w-72 bg-white border border-slate-200 rounded-2xl shadow-xl overflow-hidden">
+            <div className="absolute top-full mt-1 left-0 z-50 w-full sm:w-72 bg-white border border-slate-200 rounded-2xl shadow-xl overflow-hidden">
               <div className="p-2 border-b border-slate-100">
                 <button
                   onClick={() => { setSelectedAccountIds([]); setAccountDropdownOpen(false); }}
@@ -573,13 +634,13 @@ export default function StatisticsPage() {
           )}
         </div>
 
-        {/* Period pills */}
-        <div className="flex items-center gap-1 p-1 bg-slate-100/80 rounded-xl">
+        {/* Period pills (Scrollable on mobile) */}
+        <div className="flex items-center gap-1 p-1 bg-slate-100/90 rounded-xl overflow-x-auto max-w-full no-scrollbar shrink-0">
           {PERIOD_OPTIONS.map(opt => (
             <button
               key={opt.key}
               onClick={() => setPeriod(opt.key)}
-              className={`px-3.5 py-2 rounded-lg text-xs font-bold transition-all ${
+              className={`px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
                 period === opt.key ? "bg-white text-purple-700 shadow-sm" : "text-slate-500 hover:text-slate-700"
               }`}
             >
@@ -590,7 +651,7 @@ export default function StatisticsPage() {
 
         {/* Custom date range */}
         {period === "custom" && (
-          <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex items-center gap-2 flex-wrap w-full sm:w-auto">
             <input
               type="date"
               value={customFrom}
@@ -610,7 +671,7 @@ export default function StatisticsPage() {
         <button
           onClick={loadStats}
           disabled={loading}
-          className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-purple-600 text-white text-xs font-bold hover:bg-purple-700 transition-all disabled:opacity-60 shadow-sm ml-auto"
+          className="flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-purple-600 text-white text-xs font-bold hover:bg-purple-700 transition-all disabled:opacity-60 shadow-sm w-full sm:w-auto sm:ml-auto"
         >
           <Filter className="w-3.5 h-3.5" />
           Tampilkan
@@ -633,14 +694,14 @@ export default function StatisticsPage() {
       {!loading && data && (
         <div id="statistics-report-area" className="space-y-6">
           {/* Period Info Bar */}
-          <div className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-purple-50 border border-purple-200 text-purple-700">
+          <div className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-purple-50 border border-purple-200 text-purple-700 flex-wrap">
             <Calendar className="w-4 h-4 shrink-0" />
             <span className="text-xs font-semibold">{data.period_label}</span>
-            <span className="text-xs text-purple-400 ml-auto">{data.total_accounts_fetched} akun teranalisis</span>
+            <span className="text-[11px] sm:text-xs text-purple-500 sm:ml-auto font-medium">{data.total_accounts_fetched} akun teranalisis</span>
           </div>
 
-          {/* ─── Metric Cards Row ─── */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+          {/* ─── Metric Cards Row (Responsive Grid) ─── */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 sm:gap-3">
             <MetricCard label="Total Post"    value={agg?.total_posts ?? 0}    icon={BarChart2}        color="text-purple-600" bg="bg-purple-100 border-purple-200" />
             <MetricCard label="Total Likes"   value={agg?.likes ?? 0}          icon={Heart}            color="text-rose-600"   bg="bg-rose-100 border-rose-200" />
             <MetricCard label="Komentar"      value={agg?.comments ?? 0}       icon={MessageCircle}    color="text-sky-600"    bg="bg-sky-100 border-sky-200" />
@@ -648,7 +709,7 @@ export default function StatisticsPage() {
             <MetricCard label="Total Reach"   value={agg?.reach ?? 0}          icon={Eye}              color="text-amber-600"  bg="bg-amber-100 border-amber-200" />
             <MetricCard label="Video Views"   value={agg?.video_views ?? 0}    icon={Play}             color="text-violet-600" bg="bg-violet-100 border-violet-200" />
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 sm:gap-3">
             <MetricCard label="Follower Baru"     value={agg?.new_followers ?? 0}   icon={UserPlus}         color="text-teal-600"   bg="bg-teal-100 border-teal-200" />
             <MetricCard label="Profile Views"     value={agg?.profile_views ?? 0}   icon={TrendingUp}       color="text-indigo-600" bg="bg-indigo-100 border-indigo-200" />
             <MetricCard label="Website Clicks"    value={agg?.website_clicks ?? 0}  icon={MousePointerClick} color="text-orange-600" bg="bg-orange-100 border-orange-200" />
@@ -660,10 +721,10 @@ export default function StatisticsPage() {
           {/* ─── Charts Row ─── */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Main Line/Area Chart */}
-            <div className="lg:col-span-2 p-6 rounded-3xl glass-card space-y-4">
+            <div className="lg:col-span-2 p-5 sm:p-6 rounded-3xl glass-card space-y-4 min-w-0">
               <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center">
+                  <div className="w-8 h-8 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center shrink-0">
                     <TrendingUp className="w-4 h-4" />
                   </div>
                   <div>
@@ -671,13 +732,13 @@ export default function StatisticsPage() {
                     <p className="text-[11px] text-slate-500">Performa konten per hari</p>
                   </div>
                 </div>
-                {/* Metric tab switcher */}
-                <div className="flex gap-1 p-1 bg-slate-100 rounded-xl">
+                {/* Metric tab switcher (Scrollable on mobile) */}
+                <div className="flex items-center gap-1 p-1 bg-slate-100/90 rounded-xl overflow-x-auto max-w-full shrink-0 no-scrollbar">
                   {(["likes", "comments", "shares", "reach", "video_views"] as const).map(m => (
                     <button
                       key={m}
                       onClick={() => setChartMetric(m)}
-                      className={`px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all ${
+                      className={`px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all whitespace-nowrap ${
                         chartMetric === m ? "bg-white text-purple-700 shadow-sm" : "text-slate-500 hover:text-slate-700"
                       }`}
                     >
@@ -720,9 +781,9 @@ export default function StatisticsPage() {
             </div>
 
             {/* Pie Chart — Platform Distribution */}
-            <div className="p-6 rounded-3xl glass-card space-y-4">
+            <div className="p-5 sm:p-6 rounded-3xl glass-card space-y-4 min-w-0">
               <div className="flex items-center gap-2.5 border-b border-slate-100 pb-4">
-                <div className="w-8 h-8 rounded-xl bg-pink-100 text-pink-600 flex items-center justify-center">
+                <div className="w-8 h-8 rounded-xl bg-pink-100 text-pink-600 flex items-center justify-center shrink-0">
                   <Globe className="w-4 h-4" />
                 </div>
                 <div>
@@ -770,11 +831,11 @@ export default function StatisticsPage() {
                   <div className="w-full space-y-1.5">
                     {pieData.slice(0, 5).map((d, i) => (
                       <div key={d.name} className="flex items-center justify-between text-[11px]">
-                        <div className="flex items-center gap-1.5">
-                          <div className="w-2.5 h-2.5 rounded-full" style={{ background: PLATFORM_COLORS[d.name] || CHART_COLORS[i] }} />
-                          <span className="text-slate-600 font-medium capitalize">{d.name}</span>
+                        <div className="flex items-center gap-1.5 min-w-0">
+                          <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: PLATFORM_COLORS[d.name] || CHART_COLORS[i] }} />
+                          <span className="text-slate-600 font-medium capitalize truncate">{d.name}</span>
                         </div>
-                        <span className="font-bold text-slate-800">{fmtNum(d.value)}</span>
+                        <span className="font-bold text-slate-800 shrink-0">{fmtNum(d.value)}</span>
                       </div>
                     ))}
                   </div>
@@ -786,9 +847,9 @@ export default function StatisticsPage() {
           {/* ─── Second Charts Row ─── */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Bar Chart — Posts per day */}
-            <div className="p-6 rounded-3xl glass-card space-y-4">
+            <div className="p-5 sm:p-6 rounded-3xl glass-card space-y-4 min-w-0">
               <div className="flex items-center gap-2.5 border-b border-slate-100 pb-4">
-                <div className="w-8 h-8 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center">
+                <div className="w-8 h-8 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center shrink-0">
                   <BarChart className="w-4 h-4" />
                 </div>
                 <div>
@@ -815,9 +876,9 @@ export default function StatisticsPage() {
             </div>
 
             {/* Radar Chart — Metrics overview */}
-            <div className="p-6 rounded-3xl glass-card space-y-4">
+            <div className="p-5 sm:p-6 rounded-3xl glass-card space-y-4 min-w-0">
               <div className="flex items-center gap-2.5 border-b border-slate-100 pb-4">
-                <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center">
+                <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0">
                   <Star className="w-4 h-4" />
                 </div>
                 <div>
@@ -851,9 +912,9 @@ export default function StatisticsPage() {
 
           {/* ─── Per-Account Breakdown ─── */}
           {data.accounts.length > 0 && (
-            <div className="p-6 rounded-3xl glass-card space-y-4">
+            <div className="p-5 sm:p-6 rounded-3xl glass-card space-y-4 min-w-0">
               <div className="flex items-center gap-2.5 border-b border-slate-100 pb-4">
-                <div className="w-8 h-8 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center">
+                <div className="w-8 h-8 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center shrink-0">
                   <Users2 className="w-4 h-4" />
                 </div>
                 <div>
@@ -862,9 +923,9 @@ export default function StatisticsPage() {
                 </div>
               </div>
 
-              {/* Desktop table */}
-              <div className="overflow-x-auto">
-                <table className="w-full min-w-[700px] text-xs">
+              {/* Desktop & Mobile Responsive Table */}
+              <div className="overflow-x-auto -mx-5 px-5 sm:mx-0 sm:px-0">
+                <table className="w-full min-w-[650px] text-xs">
                   <thead>
                     <tr className="border-b border-slate-100">
                       <th className="text-left text-[10px] font-bold text-slate-400 uppercase tracking-wider pb-3 pr-4">Akun</th>
@@ -883,7 +944,7 @@ export default function StatisticsPage() {
                       .map(acc => (
                         <tr key={acc.id} className="hover:bg-purple-50/30 transition-colors group">
                           <td className="py-3.5 pr-4">
-                            <div className="flex items-center gap-2.5">
+                            <div className="flex items-center gap-2.5 min-w-0">
                               {acc.avatar_url ? (
                                 <img src={acc.avatar_url} className="w-8 h-8 rounded-full object-cover border border-slate-200 shrink-0" alt="" />
                               ) : (
@@ -891,11 +952,11 @@ export default function StatisticsPage() {
                                   {acc.name?.charAt(0) || "A"}
                                 </div>
                               )}
-                              <div className="min-w-0">
+                              <div className="min-w-0 flex-1">
                                 <p className="font-semibold text-slate-800 truncate">{acc.name}</p>
-                                <div className="flex items-center gap-1 mt-0.5">
+                                <div className="flex items-center gap-1 mt-0.5 flex-wrap">
                                   <PlatformBadge platform={acc.platform} />
-                                  <span className="text-[10px] text-slate-400">@{acc.username}</span>
+                                  <span className="text-[10px] text-slate-400 truncate">@{acc.username}</span>
                                 </div>
                               </div>
                             </div>
@@ -927,9 +988,9 @@ export default function StatisticsPage() {
 
           {/* ─── Engagement Multi-Bar Chart ─── */}
           {data.accounts.length > 1 && (
-            <div className="p-6 rounded-3xl glass-card space-y-4">
+            <div className="p-5 sm:p-6 rounded-3xl glass-card space-y-4 min-w-0">
               <div className="flex items-center gap-2.5 border-b border-slate-100 pb-4">
-                <div className="w-8 h-8 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center">
+                <div className="w-8 h-8 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center shrink-0">
                   <BarChart2 className="w-4 h-4" />
                 </div>
                 <div>
@@ -962,10 +1023,10 @@ export default function StatisticsPage() {
 
           {/* ─── Top Posts ─── */}
           {data.top_posts && data.top_posts.length > 0 && (
-            <div className="p-6 rounded-3xl glass-card space-y-4">
+            <div className="p-5 sm:p-6 rounded-3xl glass-card space-y-4 min-w-0">
               <div className="flex items-center justify-between border-b border-slate-100 pb-4">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center">
+                  <div className="w-8 h-8 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center shrink-0">
                     <Star className="w-4 h-4" />
                   </div>
                   <div>
@@ -980,7 +1041,7 @@ export default function StatisticsPage() {
                   const m = post.metrics || {};
                   const eng = (m.likes || 0) + (m.comments || 0) + (m.shares || 0);
                   return (
-                    <div key={idx} className="flex items-start gap-3.5 p-4 rounded-2xl bg-white border border-slate-100 hover:border-purple-200 hover:shadow-sm transition-all group">
+                    <div key={idx} className="flex items-start gap-3 sm:gap-3.5 p-3.5 sm:p-4 rounded-2xl bg-white border border-slate-100 hover:border-purple-200 hover:shadow-sm transition-all group min-w-0">
                       {/* Rank */}
                       <div className={`shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold ${
                         idx === 0 ? "bg-amber-100 text-amber-700" :
@@ -991,32 +1052,30 @@ export default function StatisticsPage() {
                         {idx + 1}
                       </div>
 
-                      {/* Thumbnail */}
-                      {post.media?.[0]?.url ? (
-                        <img src={post.media[0].url} className="w-12 h-12 rounded-xl object-cover border border-slate-100 shrink-0" alt="" />
-                      ) : (
-                        <div className="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center shrink-0">
-                          <Play className="w-4 h-4 text-slate-400" />
-                        </div>
-                      )}
+                      {/* Thumbnail with Error Fallback */}
+                      <PostMediaThumbnail
+                        url={post.media?.[0]?.url}
+                        mediaType={post.media?.[0]?.type}
+                        platform={post._platform}
+                      />
 
                       {/* Content */}
                       <div className="flex-1 min-w-0 space-y-1">
                         <div className="flex items-center gap-1.5 flex-wrap">
                           {post._platform && <PlatformBadge platform={post._platform} />}
                           {post._account_username && (
-                            <span className="text-[10px] text-slate-400">@{post._account_username}</span>
+                            <span className="text-[10px] text-slate-400 truncate">@{post._account_username}</span>
                           )}
-                          <span className="text-[10px] text-slate-400 ml-auto">{fmtDate(post.posted_at)}</span>
+                          <span className="text-[10px] text-slate-400 font-mono sm:ml-auto">{fmtDate(post.posted_at)}</span>
                         </div>
-                        <p className="text-xs text-slate-700 line-clamp-2 leading-relaxed">
+                        <p className="text-xs text-slate-700 line-clamp-2 leading-relaxed font-medium break-words">
                           {post.caption || "Tidak ada caption"}
                         </p>
-                        <div className="flex items-center gap-3 text-[11px] text-slate-500 flex-wrap">
-                          <span className="flex items-center gap-1 text-rose-600 font-semibold"><Heart className="w-3 h-3" />{fmtNum(m.likes)}</span>
-                          <span className="flex items-center gap-1 text-sky-600 font-semibold"><MessageCircle className="w-3 h-3" />{fmtNum(m.comments)}</span>
-                          <span className="flex items-center gap-1 text-emerald-600 font-semibold"><Share2 className="w-3 h-3" />{fmtNum(m.shares)}</span>
-                          {(m.reach ?? 0) > 0 && <span className="flex items-center gap-1 text-amber-600 font-semibold"><Eye className="w-3 h-3" />{fmtNum(m.reach)}</span>}
+                        <div className="flex items-center gap-2.5 sm:gap-3 text-[11px] text-slate-500 flex-wrap pt-0.5">
+                          <span className="flex items-center gap-1 text-rose-600 font-semibold"><Heart className="w-3 h-3 shrink-0" />{fmtNum(m.likes)}</span>
+                          <span className="flex items-center gap-1 text-sky-600 font-semibold"><MessageCircle className="w-3 h-3 shrink-0" />{fmtNum(m.comments)}</span>
+                          <span className="flex items-center gap-1 text-emerald-600 font-semibold"><Share2 className="w-3 h-3 shrink-0" />{fmtNum(m.shares)}</span>
+                          {(m.reach ?? 0) > 0 && <span className="flex items-center gap-1 text-amber-600 font-semibold"><Eye className="w-3 h-3 shrink-0" />{fmtNum(m.reach)}</span>}
                           <span className="ml-auto text-purple-600 font-bold">Eng: {fmtNum(eng)}</span>
                         </div>
                       </div>
@@ -1039,49 +1098,102 @@ export default function StatisticsPage() {
             </div>
           )}
 
-          {/* ─── All Posts Timeline ─── */}
-          {data.posts && data.posts.length > 0 && (
-            <div className="p-6 rounded-3xl glass-card space-y-4">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-4">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-xl bg-slate-100 text-slate-600 flex items-center justify-center">
-                    <Calendar className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">Timeline Post</h3>
-                    <p className="text-[11px] text-slate-500">Semua post dalam periode yang dipilih</p>
-                  </div>
-                </div>
-                <span className="text-[10px] text-slate-400 font-mono">{data.posts.length} post</span>
-              </div>
-              <div className="space-y-2 max-h-[600px] overflow-y-auto pr-1 custom-scrollbar">
-                {data.posts.map((post, idx) => {
-                  const m = post.metrics || {};
-                  return (
-                    <div key={idx} className="flex items-center gap-3 p-3.5 rounded-xl bg-white border border-slate-100 hover:border-purple-200 transition-all text-xs">
-                      <div className="w-2 h-2 rounded-full bg-purple-400 shrink-0" />
-                      <div className="shrink-0 text-[10px] text-slate-400 font-mono w-20">{fmtDate(post.posted_at)}</div>
-                      {post._platform && <PlatformBadge platform={post._platform} />}
-                      {post._account_username && (
-                        <span className="text-[10px] text-slate-400 shrink-0">@{post._account_username}</span>
-                      )}
-                      <p className="flex-1 text-slate-700 truncate">{post.caption || "—"}</p>
-                      <div className="flex items-center gap-2.5 text-[11px] shrink-0">
-                        <span className="text-rose-500 font-bold">♥ {fmtNum(m.likes)}</span>
-                        <span className="text-sky-500 font-bold">💬 {fmtNum(m.comments)}</span>
-                        <span className="text-emerald-500 font-bold">↗ {fmtNum(m.shares)}</span>
-                      </div>
-                      {post.platform_url && (
-                        <a href={post.platform_url} target="_blank" rel="noopener noreferrer" className="text-slate-300 hover:text-purple-600 transition-colors shrink-0">
-                          <ArrowUpRight className="w-3.5 h-3.5" />
-                        </a>
-                      )}
+          {/* ─── All Posts Timeline (Paginated - 10 per page) ─── */}
+          {data.posts && data.posts.length > 0 && (() => {
+            const totalTimelinePages = Math.ceil(data.posts.length / TIMELINE_PER_PAGE);
+            const currentPosts = data.posts.slice(
+              (timelinePage - 1) * TIMELINE_PER_PAGE,
+              timelinePage * TIMELINE_PER_PAGE
+            );
+
+            return (
+              <div className="p-5 sm:p-6 rounded-3xl glass-card space-y-4 min-w-0">
+                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-4">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-xl bg-slate-100 text-slate-600 flex items-center justify-center shrink-0">
+                      <Calendar className="w-4 h-4" />
                     </div>
-                  );
-                })}
+                    <div>
+                      <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">Timeline Post</h3>
+                      <p className="text-[11px] text-slate-500">Postingan terbaru dalam periode</p>
+                    </div>
+                  </div>
+                  <span className="text-[10px] text-slate-400 font-mono">
+                    Total {data.posts.length} post
+                  </span>
+                </div>
+
+                {/* Timeline Items */}
+                <div className="space-y-2.5">
+                  {currentPosts.map((post, idx) => {
+                    const m = post.metrics || {};
+                    return (
+                      <div key={idx} className="flex flex-col sm:flex-row sm:items-center gap-2.5 p-3.5 rounded-2xl bg-white border border-slate-100 hover:border-purple-200 transition-all text-xs min-w-0">
+                        <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                          <PostMediaThumbnail
+                            url={post.media?.[0]?.url}
+                            mediaType={post.media?.[0]?.type}
+                            platform={post._platform}
+                          />
+                          <div className="min-w-0 flex-1 space-y-1">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              {post._platform && <PlatformBadge platform={post._platform} />}
+                              {post._account_username && (
+                                <span className="text-[10px] text-slate-400 truncate">@{post._account_username}</span>
+                              )}
+                              <span className="text-[10px] text-slate-400 font-mono sm:ml-auto">
+                                {fmtDate(post.posted_at)}
+                              </span>
+                            </div>
+                            <p className="text-slate-700 truncate font-medium">{post.caption || "—"}</p>
+                          </div>
+                        </div>
+
+                        {/* Engagement stats & link */}
+                        <div className="flex items-center justify-between sm:justify-end gap-3 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-50 text-[11px] shrink-0">
+                          <div className="flex items-center gap-2.5">
+                            <span className="text-rose-500 font-bold flex items-center gap-1"><Heart className="w-3 h-3 shrink-0" />{fmtNum(m.likes)}</span>
+                            <span className="text-sky-500 font-bold flex items-center gap-1"><MessageCircle className="w-3 h-3 shrink-0" />{fmtNum(m.comments)}</span>
+                            <span className="text-emerald-500 font-bold flex items-center gap-1"><Share2 className="w-3 h-3 shrink-0" />{fmtNum(m.shares)}</span>
+                          </div>
+                          {post.platform_url && (
+                            <a href={post.platform_url} target="_blank" rel="noopener noreferrer" className="text-slate-300 hover:text-purple-600 transition-colors p-1">
+                              <ArrowUpRight className="w-3.5 h-3.5" />
+                            </a>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Pagination Controls */}
+                {totalTimelinePages > 1 && (
+                  <div className="flex items-center justify-between pt-3 border-t border-slate-100 text-xs flex-wrap gap-2">
+                    <span className="text-slate-500 font-medium text-[11px]">
+                      Halaman {timelinePage} dari {totalTimelinePages} ({data.posts.length} post)
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <button
+                        disabled={timelinePage === 1}
+                        onClick={() => setTimelinePage(p => Math.max(1, p - 1))}
+                        className="px-3 py-1.5 rounded-xl bg-white border border-slate-200 text-slate-700 font-semibold text-[11px] hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                      >
+                        ← Prev
+                      </button>
+                      <button
+                        disabled={timelinePage >= totalTimelinePages}
+                        onClick={() => setTimelinePage(p => Math.min(totalTimelinePages, p + 1))}
+                        className="px-3 py-1.5 rounded-xl bg-white border border-slate-200 text-slate-700 font-semibold text-[11px] hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                      >
+                        Next →
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
-            </div>
-          )}
+            );
+          })()}
 
           {/* Empty posts state */}
           {(!data.posts || data.posts.length === 0) && (
