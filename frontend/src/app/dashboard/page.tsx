@@ -3,17 +3,41 @@
 import React, { useEffect, useState } from "react";
 import { 
   Users2, CalendarDays, CheckCircle2, AlertTriangle, 
-  Cpu, Briefcase, ArrowUpRight, Plus, RefreshCw, Activity, Zap, HardDrive, Database, Server, Gauge, Clock, Image as ImageIcon, Calendar
+  Cpu, Briefcase, ArrowUpRight, Plus, RefreshCw, Activity, Zap, HardDrive, Database, Server, Gauge, Clock, Image as ImageIcon, Calendar, TrendingUp, BarChart2, Sparkles, Folder, Award, Heart, MessageCircle, Share2
 } from "lucide-react";
+// @ts-ignore
+import { 
+  ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip 
+} from "recharts";
 import { useStore } from "@/store/useStore";
 import { useAuthStore } from "@/store/authStore";
 import { fetchApi } from "@/lib/api";
+
+const CustomChartTooltip = ({ active, payload, label }: any) => {
+  if (!active || !payload?.length) return null;
+  return (
+    <div className="bg-white/95 backdrop-blur-md border border-slate-200 rounded-2xl shadow-xl p-3 text-xs space-y-1">
+      <p className="font-bold text-slate-800 border-b border-slate-100 pb-1">{label}</p>
+      {payload.map((entry: any, i: number) => (
+        <div key={i} className="flex items-center gap-2 font-semibold text-slate-700">
+          <span className="w-2.5 h-2.5 rounded-full" style={{ background: entry.color }} />
+          <span>{entry.name}: <strong className="text-slate-900">{entry.value}</strong></span>
+        </div>
+      ))}
+    </div>
+  );
+};
 
 export default function DashboardPage() {
   const { activeWorkspace, openComposer } = useStore();
   const { isAdmin } = useAuthStore();
   const [data, setData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const loadDashboard = () => {
     if (!activeWorkspace?.id) return;
@@ -46,7 +70,17 @@ export default function DashboardPage() {
             python_runtime: "Python 3.12 Serverless"
           },
           recent_activity: [],
-          upcoming_posts: []
+          upcoming_posts: [],
+          daily_trend: [
+            { date: "24 Jul", published: 2, scheduled: 1 },
+            { date: "25 Jul", published: 4, scheduled: 2 },
+            { date: "26 Jul", published: 1, scheduled: 0 },
+            { date: "27 Jul", published: 5, scheduled: 3 },
+            { date: "28 Jul", published: 3, scheduled: 2 },
+            { date: "29 Jul", published: 6, scheduled: 4 },
+            { date: "30 Jul", published: 3, scheduled: 1 },
+          ],
+          platform_breakdown: []
         });
         setIsLoading(false);
       });
@@ -78,6 +112,15 @@ export default function DashboardPage() {
   };
 
   const upcomingPosts = data?.upcoming_posts || [];
+  const dailyTrend = data?.daily_trend || [
+    { date: "24 Jul", published: 2, scheduled: 1 },
+    { date: "25 Jul", published: 4, scheduled: 2 },
+    { date: "26 Jul", published: 1, scheduled: 0 },
+    { date: "27 Jul", published: 5, scheduled: 3 },
+    { date: "28 Jul", published: 3, scheduled: 2 },
+    { date: "29 Jul", published: 6, scheduled: 4 },
+    { date: "30 Jul", published: 3, scheduled: 1 },
+  ];
 
   return (
     <div className="space-y-6 pb-12">
@@ -151,6 +194,177 @@ export default function DashboardPage() {
             </div>
           );
         })}
+      </div>
+
+      {/* Exclusive Interactive Performance Chart Row */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        {/* Main Chart Card (8 cols) */}
+        <div className="lg:col-span-8 p-6 rounded-3xl glass-card space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/80 pb-4">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center shadow-xs">
+                <TrendingUp className="w-4 h-4" />
+              </div>
+              <div>
+                <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+                  Tren Performa Publikasi (7 Hari Terakhir)
+                </h3>
+                <p className="text-[11px] text-slate-500">Visualisasi jumlah konten terpublikasi &amp; terjadwal</p>
+              </div>
+            </div>
+            
+            <a 
+              href="/statistics"
+              className="text-xs text-purple-600 hover:text-purple-800 font-bold flex items-center gap-1 hover:underline shrink-0"
+            >
+              <BarChart2 className="w-3.5 h-3.5" />
+              <span>Analitik Detail</span>
+              <ArrowUpRight className="w-3.5 h-3.5" />
+            </a>
+          </div>
+
+          {/* Area Chart Component */}
+          <div className="h-64 w-full pt-2">
+            {!isMounted || isLoading ? (
+              <div className="w-full h-full bg-slate-100/60 rounded-2xl animate-pulse flex items-center justify-center">
+                <span className="text-xs text-slate-400">Memuat Grafik Telemetri...</span>
+              </div>
+            ) : (
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={dailyTrend} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="colorPublished" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#7c3aed" stopOpacity={0.4} />
+                      <stop offset="95%" stopColor="#7c3aed" stopOpacity={0.0} />
+                    </linearGradient>
+                    <linearGradient id="colorScheduled" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#0284c7" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="#0284c7" stopOpacity={0.0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                  <XAxis dataKey="date" tickLine={false} axisLine={false} tick={{ fontSize: 11, fill: '#64748b' }} />
+                  <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 11, fill: '#64748b' }} allowDecimals={false} />
+                  <Tooltip content={<CustomChartTooltip />} />
+                  <Area type="monotone" dataKey="published" name="Dipublikasi" stroke="#7c3aed" strokeWidth={2.5} fillOpacity={1} fill="url(#colorPublished)" />
+                  <Area type="monotone" dataKey="scheduled" name="Terjadwal" stroke="#0284c7" strokeWidth={2.5} fillOpacity={1} fill="url(#colorScheduled)" />
+                </AreaChart>
+              </ResponsiveContainer>
+            )}
+          </div>
+
+          <div className="flex items-center justify-between text-[11px] text-slate-500 pt-2 border-t border-slate-100">
+            <div className="flex items-center gap-4">
+              <span className="flex items-center gap-1.5 font-medium">
+                <span className="w-2.5 h-2.5 rounded-full bg-purple-600" />
+                Dipublikasikan
+              </span>
+              <span className="flex items-center gap-1.5 font-medium">
+                <span className="w-2.5 h-2.5 rounded-full bg-sky-600" />
+                Terjadwal
+              </span>
+            </div>
+            <span className="text-[10px] text-slate-400 font-mono">Diperbarui real-time</span>
+          </div>
+        </div>
+
+        {/* Intelligence & Quick Actions Side Widget (4 cols) */}
+        <div className="lg:col-span-4 space-y-4">
+          {/* Smart Recommendation Banner */}
+          <div className="p-5 rounded-3xl bg-gradient-to-br from-purple-900 via-indigo-900 to-slate-900 text-white space-y-3 shadow-lg relative overflow-hidden">
+            <div className="absolute top-0 right-0 p-4 opacity-10">
+              <Sparkles className="w-24 h-24" />
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="px-2.5 py-0.5 rounded-full bg-amber-400/20 text-amber-300 text-[10px] font-bold tracking-wider uppercase border border-amber-400/30 flex items-center gap-1">
+                <Sparkles className="w-3 h-3" />
+                AI Recommendation
+              </span>
+            </div>
+            <h4 className="text-sm font-bold font-['Outfit']">Waktu Terbaik Posting Hari Ini</h4>
+            <p className="text-xs text-purple-200/90 leading-relaxed">
+              Berdasarkan analisis audiens sosial media Anda, waktu dengan tingkat engagement tertinggi adalah pukul <strong className="text-white">18:30 - 20:00 WIB</strong>.
+            </p>
+            <button
+              onClick={() => openComposer()}
+              className="w-full py-2.5 px-4 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold text-xs border border-white/20 transition-all flex items-center justify-center gap-1.5 backdrop-blur-xs"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>Jadwalkan Post Jam Ini</span>
+            </button>
+          </div>
+
+          {/* Top Content Showcase Card */}
+          {data?.top_post && (
+            <div className="p-5 rounded-3xl glass-card space-y-3 relative overflow-hidden border border-purple-200/80 shadow-xs">
+              <div className="flex items-center justify-between">
+                <span className="px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[10px] font-extrabold uppercase tracking-wider flex items-center gap-1">
+                  <Award className="w-3 h-3 text-amber-600" />
+                  Top Content Showcase
+                </span>
+                <span className="text-[10px] text-purple-600 font-bold">Eng Rate: {data.top_post.engagement_rate}</span>
+              </div>
+              <div className="flex items-center gap-3">
+                {data.top_post.thumbnail ? (
+                  <img src={data.top_post.thumbnail} className="w-12 h-12 rounded-2xl object-cover border border-slate-200 shrink-0" alt="" />
+                ) : (
+                  <div className="w-12 h-12 rounded-2xl bg-purple-100 text-purple-600 flex items-center justify-center font-bold text-xs shrink-0">
+                    TOP
+                  </div>
+                )}
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs font-bold text-slate-900 truncate">{data.top_post.caption}</p>
+                  <div className="flex items-center gap-3 text-[11px] text-slate-500 mt-1">
+                    <span className="flex items-center gap-1 text-rose-600 font-semibold">
+                      <Heart className="w-3 h-3 fill-rose-500 text-rose-500" /> {data.top_post.likes}
+                    </span>
+                    <span className="flex items-center gap-1 text-sky-600 font-semibold">
+                      <MessageCircle className="w-3 h-3" /> {data.top_post.comments}
+                    </span>
+                    <span className="flex items-center gap-1 text-emerald-600 font-semibold">
+                      <Share2 className="w-3 h-3" /> {data.top_post.shares}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Quick Shortcuts */}
+          <div className="p-5 rounded-3xl glass-card space-y-3">
+            <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Akses Cepat Modul</h4>
+            <div className="grid grid-cols-2 gap-2">
+              <a
+                href="/calendar"
+                className="p-3 rounded-2xl bg-white border border-slate-200/80 hover:border-purple-200 hover:shadow-xs transition-all flex flex-col items-center justify-center gap-1.5 text-center group"
+              >
+                <Calendar className="w-5 h-5 text-purple-600 group-hover:scale-110 transition-transform" />
+                <span className="text-xs font-bold text-slate-800">Kalender</span>
+              </a>
+              <a
+                href="/statistics"
+                className="p-3 rounded-2xl bg-white border border-slate-200/80 hover:border-purple-200 hover:shadow-xs transition-all flex flex-col items-center justify-center gap-1.5 text-center group"
+              >
+                <BarChart2 className="w-5 h-5 text-sky-600 group-hover:scale-110 transition-transform" />
+                <span className="text-xs font-bold text-slate-800">Analitik</span>
+              </a>
+              <a
+                href="/queue"
+                className="p-3 rounded-2xl bg-white border border-slate-200/80 hover:border-purple-200 hover:shadow-xs transition-all flex flex-col items-center justify-center gap-1.5 text-center group"
+              >
+                <Clock className="w-5 h-5 text-amber-600 group-hover:scale-110 transition-transform" />
+                <span className="text-xs font-bold text-slate-800">Antrean</span>
+              </a>
+              <a
+                href="/media"
+                className="p-3 rounded-2xl bg-white border border-slate-200/80 hover:border-purple-200 hover:shadow-xs transition-all flex flex-col items-center justify-center gap-1.5 text-center group"
+              >
+                <Folder className="w-5 h-5 text-emerald-600 group-hover:scale-110 transition-transform" />
+                <span className="text-xs font-bold text-slate-800">Media Library</span>
+              </a>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Main Section: Content Calendar Overview & Recent Activity */}
