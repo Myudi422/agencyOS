@@ -4,9 +4,9 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { 
   Calendar, Users, Newspaper, Search, Heart, Star, Sparkles, 
-  ChevronDown, ArrowRight, Hash, Globe, TrendingUp, FileText,
+  ChevronDown, ArrowRight, Hash, TrendingUp, FileText,
   Check, LayoutGrid, FileBarChart, LineChart, Zap, Building2, Share2, ShieldCheck,
-  Flame, CheckCircle2, Sliders, Play, Award, MessageCircle
+  Sliders, Award, MessageCircle, User, Store, Briefcase, Clock, CheckCircle
 } from "lucide-react";
 import { useAuthStore } from "@/store/authStore";
 
@@ -108,7 +108,7 @@ const FEATURES = [
     badge: "1-Click Export",
     badgeColor: "bg-indigo-100 text-indigo-700 border-indigo-200",
     title: "Executive PDF Report Generator",
-    meta: "Generate laporan bulanan berlogo agency Anda dalam format PDF siap kirim ke klien hanya dengan satu klik.",
+    meta: "Generate laporan bulanan berlogo Anda dalam format PDF siap kirim hanya dengan satu klik.",
     metric: "White-Label Ready",
     visualBg: "from-indigo-500/10 via-purple-500/5 to-slate-100",
     visualIcon: FileText,
@@ -132,93 +132,137 @@ const FEATURES = [
   }
 ];
 
+// Target Audience - "Untuk Siapa Shiera Dirancang?"
+const TARGET_AUDIENCE = [
+  {
+    icon: User,
+    iconBg: "bg-purple-100 text-purple-600",
+    badge: "Bebas Capek Upload",
+    title: "Content Creator & Personal Brand",
+    description: "Stop buang 2 jam setiap hari hanya untuk upload ulang postingan satu per satu ke Reels, Shorts, TikTok, & Feed. Buat sekali, jadwalkan untuk sebulan penuh.",
+    tag: "Hemat 10+ Jam/Minggu"
+  },
+  {
+    icon: Store,
+    iconBg: "bg-emerald-100 text-emerald-600",
+    badge: "Fokus Jualan",
+    title: "Pemilik Bisnis & Online Shop (UMKM)",
+    description: "Jaga konsistensi posting promosi di semua akun sosmed tanpa harus bayar admin mahal. Konten promosi tayang otomatis sesuai jam ramai pembeli.",
+    tag: "Tanpa Admin Tambahan"
+  },
+  {
+    icon: Briefcase,
+    iconBg: "bg-sky-100 text-sky-600",
+    badge: "Multi-Client Engine",
+    title: "Digital Agency & Social Media Manager",
+    description: "Kelola puluhan akun sosmed klien dalam workspace terpisah, minta approval klien via 1 link praktis, dan buat laporan bulanan PDF dalam 5 detik.",
+    tag: "Client Approval Portal"
+  },
+  {
+    icon: Newspaper,
+    iconBg: "bg-amber-100 text-amber-600",
+    badge: "Otomatisasi Berita",
+    title: "Media Publisher & Tim Redaksi",
+    description: "Otomatiskan publikasi artikel portal berita langsung dari RSS Feed CMS ke seluruh akun media sosial secara serentak tanpa input manual.",
+    tag: "Auto-Push 3 Detik"
+  }
+];
+
 const PRICING_PLANS = [
   {
     tier: "trial",
     badge: "Gratis 3 Hari",
-    badgeBg: "bg-emerald-50 text-emerald-700 border-emerald-200",
+    badgeBg: "bg-gradient-to-r from-emerald-500 to-teal-600 text-white",
     name: "Starter Trial",
     price: "Rp 0",
     period: "3 hari",
-    posts: "6 Posts",
-    postsDetail: "2 post / hari",
-    highlight: "Uji coba gratis tanpa kartu kredit",
+    posts: "6 posts",
+    postsDetail: "2 post/hari",
+    color: "from-slate-500 to-slate-700",
+    iconBg: "bg-slate-100 text-slate-600",
+    border: "border-slate-200",
     features: [
       "6 posts total (2 post/hari)",
       "Gratis tanpa biaya (Rp 0)",
-      "Unlimited akun sosial media",
+      "Unlimited akun sosmed",
       "Semua 10+ platform didukung",
-      "Wajib Verifikasi WhatsApp OTP",
+      "Wajib verifikasi WhatsApp",
     ],
-    buttonText: "Mulai Free Trial",
-    buttonStyle: "bg-slate-900 text-white hover:bg-slate-800",
+    buttonText: "Mulai Trial",
+    buttonStyle: "bg-emerald-600 text-white hover:bg-emerald-700 shadow-md shadow-emerald-500/20",
     popular: false
   },
   {
     tier: "creator",
-    badge: "Creator Plan",
-    badgeBg: "bg-slate-100 text-slate-700 border-slate-200",
+    badge: null,
+    badgeBg: "",
     name: "Creator",
     price: "Rp 49.000",
     period: "/bulan",
-    posts: "50 Posts",
-    postsDetail: "~1.6 post / hari",
-    highlight: "Cocok untuk Content Creator & Brand Personal",
+    posts: "50 posts",
+    postsDetail: "~1.6 post/hari",
+    color: "from-blue-500 to-indigo-600",
+    iconBg: "bg-blue-100 text-blue-600",
+    border: "border-blue-200",
     features: [
-      "50 posts / bulan",
-      "Unlimited akun sosial media",
+      "50 posts/bulan",
+      "Unlimited akun sosmed",
       "Semua 10+ platform",
-      "Bayar via QRIS, GoPay, VA, Card",
+      "QRIS, GoPay, VA, Kartu Kredit",
       "Scheduling & media library",
     ],
     buttonText: "Pilih Creator",
-    buttonStyle: "bg-slate-100 text-slate-900 hover:bg-slate-200 border border-slate-300",
+    buttonStyle: "bg-slate-100 text-slate-800 hover:bg-slate-200 border border-slate-300",
     popular: false
   },
   {
     tier: "agency",
-    badge: "GUEST FAVORITE",
-    badgeBg: "bg-purple-600 text-white shadow-sm font-bold",
+    badge: "Paling Populer",
+    badgeBg: "bg-gradient-to-r from-purple-500 to-violet-600 text-white",
     name: "Agency",
     price: "Rp 299.000",
     period: "/bulan",
-    posts: "300 Posts",
-    postsDetail: "~10 post / hari",
-    highlight: "Pilihan utama Digital Agency di Indonesia",
+    posts: "300 posts",
+    postsDetail: "~10 post/hari",
+    color: "from-purple-500 to-violet-600",
+    iconBg: "bg-purple-100 text-purple-600",
+    border: "border-purple-300 shadow-purple-100/80",
     features: [
-      "300 posts / bulan",
-      "Unlimited akun sosial media",
-      "Multi-client workspace management",
+      "300 posts/bulan",
+      "Unlimited akun sosmed",
+      "Multi-client management",
       "Semua 10+ platform",
       "Scheduling & media library",
       "Priority queue engine",
-      "Metode bayar Midtrans QRIS/GoPay/VA",
+      "QRIS, GoPay, VA, Kartu Kredit",
     ],
-    buttonText: "Coba Agency Pro",
-    buttonStyle: "bg-purple-600 text-white hover:bg-purple-700 shadow-lg shadow-purple-500/25",
+    buttonText: "Pilih Agency",
+    buttonStyle: "bg-gradient-to-r from-purple-600 to-violet-600 text-white shadow-lg shadow-purple-500/30 hover:shadow-xl hover:shadow-purple-500/40",
     popular: true
   },
   {
     tier: "studio",
     badge: "Terbaik",
-    badgeBg: "bg-amber-100 text-amber-800 border-amber-200",
+    badgeBg: "bg-gradient-to-r from-amber-500 to-orange-500 text-white",
     name: "Studio",
     price: "Rp 749.000",
     period: "/bulan",
-    posts: "1.000 Posts",
-    postsDetail: "~33 post / hari",
-    highlight: "Untuk Large Agency & Publisher Berita",
+    posts: "1.000 posts",
+    postsDetail: "~33 post/hari",
+    color: "from-amber-500 to-orange-600",
+    iconBg: "bg-amber-100 text-amber-600",
+    border: "border-amber-200",
     features: [
-      "1.000 posts / bulan",
-      "Unlimited akun sosial media",
-      "Unlimited clients & workspaces",
+      "1.000 posts/bulan",
+      "Unlimited akun sosmed",
+      "Unlimited clients",
       "Semua 10+ platform",
       "Full media library",
       "API access & priority support",
-      "Metode bayar Midtrans lengkap",
+      "QRIS, GoPay, VA, Kartu Kredit",
     ],
     buttonText: "Pilih Studio",
-    buttonStyle: "bg-slate-100 text-slate-900 hover:bg-slate-200 border border-slate-300",
+    buttonStyle: "bg-slate-100 text-slate-800 hover:bg-slate-200 border border-slate-300",
     popular: false
   }
 ];
@@ -233,16 +277,16 @@ const FAQS = [
     answer: "Anda mendapatkan akses langsung ke paket Starter Trial selama 3 hari dengan kuota 6 postingan (2 post/hari). Pendaftaran sangat mudah dan memerlukan verifikasi OTP WhatsApp aktif untuk mencegah pengiklanan spam."
   },
   {
-    question: "Apakah laporan PDF dapat dipasang logo Agency saya sendiri (White-Label)?",
-    answer: "Ya! Pada paket Agency dan Studio, fitur Executive PDF Report Generator memungkinkan Anda mengunggah logo agency, mengatur warna brand, dan menghapus nama Shiera sehingga laporan terlihat 100% dibuat oleh agency Anda."
+    question: "Apakah laporan PDF dapat dipasang logo saya sendiri (White-Label)?",
+    answer: "Ya! Pada paket Agency dan Studio, fitur Executive PDF Report Generator memungkinkan Anda mengunggah logo sendiri, mengatur warna brand, dan menghapus watermark Shiera."
   },
   {
     question: "Metode pembayaran apa saja yang didukung?",
     answer: "Pembayaran diproses secara aman melalui Midtrans Payment Gateway. Kami menerima QRIS (BCA, Mandiri, GoPay, OVO, ShopeePay), Virtual Account Bank (BCA, Mandiri, BNI, BRI, Permata), dan Kartu Kredit/Debit Visa/Mastercard."
   },
   {
-    question: "Bisakah saya mengelola banyak akun klien dalam satu login?",
-    answer: "Tentu saja. Fitur Workspace Management memungkinkan Anda mengelompokkan sosial media berdasarkan nama klien atau brand, memberi akses tim secara terpisah, dan membuat link review approval untuk klien."
+    question: "Apakah Shiera hanya untuk Agency saja?",
+    answer: "Tidak! Shiera dirancang untuk SIAPA SAJA yang ingin mengelola banyak akun sosmed tanpa harus lelah upload satu per satu. Sangat cocok untuk Content Creator, Pemvilik Olshop / UMKM, Freelancer, maupun Tim Media Publisher."
   }
 ];
 
@@ -251,7 +295,6 @@ export default function LandingHomePage() {
   const [activeCategory, setActiveCategory] = useState("ALL SOLUTIONS");
   const [favorites, setFavorites] = useState<Record<string, boolean>>({});
   const [openFaq, setOpenFaq] = useState<number | null>(0);
-  const [language, setLanguage] = useState<"ID" | "EN">("ID");
 
   const filteredFeatures = activeCategory === "ALL SOLUTIONS" 
     ? FEATURES 
@@ -304,23 +347,13 @@ export default function LandingHomePage() {
         {/* Right Utilities */}
         <div className="flex items-center gap-3 sm:gap-4">
           <Link href="/pricing" className="hidden sm:inline-block text-xs font-semibold text-slate-600 hover:text-purple-600 transition-colors">
-            Untuk Agency
+            Lihat Paket Harga
           </Link>
-
-          {/* Language Switcher */}
-          <button 
-            onClick={() => setLanguage(l => l === "ID" ? "EN" : "ID")}
-            className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-100 px-3 py-1.5 rounded-full transition-all border border-slate-200/60"
-            title="Switch Language"
-          >
-            <Globe className="w-3.5 h-3.5 text-slate-500" />
-            <span>{language}</span>
-          </button>
 
           {isAuthenticated ? (
             <Link 
               href="/dashboard" 
-              className="px-4 py-2.5 rounded-full bg-purple-600 hover:bg-purple-700 text-white font-semibold text-xs sm:text-sm shadow-md shadow-purple-500/20 transition-all hover:scale-[1.02]"
+              className="px-5 py-2.5 rounded-full bg-purple-600 hover:bg-purple-700 text-white font-semibold text-xs sm:text-sm shadow-md shadow-purple-500/20 transition-all hover:scale-[1.02]"
             >
               Go to Dashboard
             </Link>
@@ -331,7 +364,7 @@ export default function LandingHomePage() {
               </Link>
               <Link 
                 href="/login"
-                className="px-4 py-2.5 rounded-full bg-purple-600 hover:bg-purple-700 text-white font-semibold text-xs sm:text-sm shadow-md shadow-purple-500/20 hover:shadow-lg hover:shadow-purple-500/30 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                className="px-5 py-2.5 rounded-full bg-purple-600 hover:bg-purple-700 text-white font-semibold text-xs sm:text-sm shadow-md shadow-purple-500/20 hover:shadow-lg hover:shadow-purple-500/30 transition-all hover:scale-[1.02] active:scale-[0.98]"
               >
                 Mulai Gratis
               </Link>
@@ -351,19 +384,19 @@ export default function LandingHomePage() {
             <span className="font-bold ml-1">4.95 / 5.0</span>
           </div>
           <span className="text-slate-300">|</span>
-          <span className="text-slate-600">Dipercaya oleh 500+ Digital Agency &amp; Media Publisher Indonesia</span>
+          <span className="text-slate-600">Solusi Sosmed Auto-Post #1 di Indonesia</span>
         </div>
 
         {/* Main Headline H1 */}
         <div className="space-y-4 max-w-4xl mx-auto">
           <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold text-slate-900 font-['Outfit'] tracking-tight leading-[1.15]">
-            Kelola Semua Sosmed, Campaign KOL, &amp; Kompetitor Dalam{" "}
+            Posting Sosmed Sekaligus Ke Semua Akun,{" "}
             <span className="bg-gradient-to-r from-purple-600 via-violet-600 to-indigo-600 bg-clip-text text-transparent">
-              Satu Command Center
+              Gak Pake Capek Upload Manual
             </span>
           </h1>
           <p className="text-base sm:text-xl text-slate-600 leading-relaxed max-w-2xl mx-auto">
-            Platform All-in-One hemat waktu untuk Digital Agency &amp; Media Publisher. Publikasi konten multi-channel, pantau performa influencer, dan buat laporan otomatis.
+            Platform All-in-One hemat waktu untuk Creator, Olshop, Agency &amp; Publisher. Satu kali upload, konten langsung terbit otomatis di Instagram, TikTok, FB, LinkedIn, X, &amp; YouTube.
           </p>
         </div>
 
@@ -371,14 +404,14 @@ export default function LandingHomePage() {
         <div className="max-w-4xl mx-auto pt-4">
           <div className="bg-white rounded-full border border-slate-200 shadow-lg shadow-slate-200/60 p-2 sm:p-3 flex flex-col md:flex-row items-center justify-between gap-3 md:gap-0 hover:shadow-xl transition-all">
             
-            {/* Segment 1: Client Workspace */}
+            {/* Segment 1: Client / Brand Workspace */}
             <div className="flex-1 w-full text-left px-5 py-2 md:border-r border-slate-200 hover:bg-slate-50/80 rounded-full cursor-pointer transition-all flex items-center gap-3">
               <div className="w-8 h-8 rounded-full bg-purple-50 flex items-center justify-center shrink-0">
                 <Building2 className="w-4 h-4 text-purple-600" />
               </div>
               <div className="truncate">
                 <div className="text-[11px] font-bold uppercase tracking-wider text-slate-900">Mau posting ke mana?</div>
-                <div className="text-xs text-slate-500 truncate">Pilih Klien / Workspace Klien</div>
+                <div className="text-xs text-slate-500 truncate">Pilih Brand / Workspace Klien</div>
               </div>
             </div>
 
@@ -400,7 +433,7 @@ export default function LandingHomePage() {
               </div>
               <div className="truncate">
                 <div className="text-[11px] font-bold uppercase tracking-wider text-slate-900">Tipe Solusi</div>
-                <div className="text-xs text-slate-500 truncate">Scheduler, KOL, Competitor Spy</div>
+                <div className="text-xs text-slate-500 truncate">Auto Scheduler, KOL, Competitor Spy</div>
               </div>
             </div>
 
@@ -411,7 +444,7 @@ export default function LandingHomePage() {
                 className="w-full md:w-12 h-12 rounded-full bg-purple-600 hover:bg-purple-700 text-white flex items-center justify-center gap-2 px-4 md:px-0 shadow-md shadow-purple-500/30 hover:scale-105 active:scale-95 transition-all"
               >
                 <Search className="w-5 h-5" />
-                <span className="md:hidden text-xs font-bold">Cari Solusi Sekarang</span>
+                <span className="md:hidden text-xs font-bold font-sans">Cari Solusi Sekarang</span>
               </Link>
             </div>
           </div>
@@ -445,8 +478,65 @@ export default function LandingHomePage() {
       </section>
 
 
+      {/* ── [NEW SECTION] "Untuk Siapa Shiera Dirancang?" ────────────────── */}
+      <section className="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-12">
+        <div className="text-center space-y-3 max-w-3xl mx-auto">
+          <span className="text-xs font-bold uppercase tracking-wider text-purple-600 bg-purple-50 px-3 py-1 rounded-full border border-purple-100 flex items-center gap-1.5 w-fit mx-auto">
+            <Users className="w-3.5 h-3.5 text-purple-600" />
+            <span>Solusi Untuk Semua Pengguna</span>
+          </span>
+          <h2 className="text-3xl sm:text-5xl font-extrabold text-slate-900 font-['Outfit'] tracking-tight">
+            Untuk Siapa Shiera Dirancang?
+          </h2>
+          <p className="text-xs sm:text-base text-slate-600 leading-relaxed">
+            Bukan hanya untuk agency besar! Shiera diciptakan untuk <strong>siapa saja yang ingin mengelola sosmed tanpa lelah upload satu per satu</strong> secara manual.
+          </p>
+        </div>
+
+        {/* 4 Audience Cards in Airbnb Style */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {TARGET_AUDIENCE.map((item, idx) => {
+            const Icon = item.icon;
+            return (
+              <div 
+                key={idx}
+                className="bg-white rounded-3xl p-6 border-2 border-slate-200/90 shadow-xs hover:shadow-xl hover:border-purple-300 transition-all duration-300 hover:-translate-y-1 flex flex-col justify-between space-y-4"
+              >
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className={`w-12 h-12 rounded-2xl ${item.iconBg} flex items-center justify-center shadow-xs`}>
+                      <Icon className="w-6 h-6" />
+                    </div>
+                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider bg-slate-100 px-2.5 py-1 rounded-full border border-slate-200">
+                      {item.badge}
+                    </span>
+                  </div>
+
+                  <div className="space-y-2">
+                    <h3 className="font-bold text-lg text-slate-900 font-['Outfit'] leading-snug">
+                      {item.title}
+                    </h3>
+                    <p className="text-xs text-slate-600 leading-relaxed">
+                      {item.description}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
+                  <span className="text-[11px] font-bold text-purple-700 bg-purple-50 px-2.5 py-1 rounded-xl border border-purple-100 flex items-center gap-1">
+                    <CheckCircle className="w-3 h-3 text-purple-600" />
+                    <span>{item.tag}</span>
+                  </span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+
       {/* ── [SECTION 4] Feature Showcase Grid (Airbnb Property Card Layout) ─── */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-10">
+      <section className="py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-10 border-t border-slate-200/80">
         
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div>
@@ -455,7 +545,7 @@ export default function LandingHomePage() {
               <span>Platform Features</span>
             </span>
             <h2 className="text-2xl sm:text-4xl font-bold text-slate-900 font-['Outfit'] tracking-tight mt-2">
-              Fitur Lengkap Dirancang Khusus Untuk Skala Agency
+              Fitur Canggih Yang Membuat Kerja Sosmed Lebih Ringan
             </h2>
           </div>
           <p className="text-xs sm:text-sm text-slate-500 max-w-md">
@@ -567,19 +657,19 @@ export default function LandingHomePage() {
 
             <p className="text-xs sm:text-sm font-bold uppercase tracking-widest text-purple-300 flex items-center justify-center gap-2">
               <Award className="w-4 h-4 text-purple-400" />
-              <span>GUEST &amp; AGENCY FAVORITE</span>
+              <span>DIPERCAYA Creator, Olshop, &amp; Agency</span>
             </p>
           </div>
 
           {/* Headline Statement */}
           <h2 className="text-2xl sm:text-4xl font-extrabold max-w-3xl mx-auto leading-tight font-['Outfit']">
-            &ldquo;Platform SMM Paling Stabil, Hemat Waktu, &amp; Lengkap Di Indonesia&rdquo;
+            &ldquo;Platform SMM Auto-Post Paling Stabil &amp; Hemat Waktu Di Indonesia&rdquo;
           </h2>
 
           {/* Testimonial Quote */}
           <div className="p-8 rounded-3xl bg-white/5 border border-white/10 backdrop-blur-md max-w-2xl mx-auto text-left space-y-4">
             <p className="text-sm sm:text-base text-slate-300 italic leading-relaxed">
-              &ldquo;Shiera menghemat 70% waktu operasional agency kami. Dulu bikin laporan 15 klien butuh waktu 3 hari penuh, sekarang selesai dalam 5 menit otomatis!&rdquo;
+              &ldquo;Dulu capek banget upload satu per satu ke TikTok, Instagram Reels, dan YouTube Shorts. Sekarang dengan Shiera, dalam 10 menit jadwal sebulan langsung beres!&rdquo;
             </p>
             <div className="flex items-center gap-3 pt-2">
               <div className="w-10 h-10 rounded-full bg-purple-600 flex items-center justify-center font-bold text-white text-sm shadow-md">
@@ -587,7 +677,7 @@ export default function LandingHomePage() {
               </div>
               <div>
                 <p className="text-sm font-bold text-white">Budi Pratama</p>
-                <p className="text-xs text-purple-300">Managing Director @ Creative Media Agency</p>
+                <p className="text-xs text-purple-300">Content Creator &amp; Founder Agency</p>
               </div>
             </div>
           </div>
@@ -596,50 +686,50 @@ export default function LandingHomePage() {
       </section>
 
 
-      {/* ── [SECTION 6] Client Approval Portal ─────────────────────────────── */}
+      {/* ── [SECTION 6] Client & Team Workflow Portal ──────────────────────── */}
       <section className="py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-12">
         <div className="text-center space-y-3 max-w-3xl mx-auto">
           <span className="text-xs font-bold uppercase tracking-wider text-purple-600 bg-purple-50 px-3 py-1 rounded-full border border-purple-100 flex items-center gap-1.5 w-fit mx-auto">
-            <Users className="w-3.5 h-3.5 text-purple-600" />
-            <span>Client Collaboration</span>
+            <Clock className="w-3.5 h-3.5 text-purple-600" />
+            <span>Alur Kerja Praktis</span>
           </span>
           <h2 className="text-2xl sm:text-4xl font-bold text-slate-900 font-['Outfit'] tracking-tight">
-            Dapatkan Approval Klien Lebih Cepat Tanpa File Berantakan
+            Review &amp; Approval Konten Tanpa Revisi Berantakan
           </h2>
           <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-            Tidak ada lagi revisi via WhatsApp chat yang tercecer. Kirim link preview profesional yang dapat langsung di-approve oleh klien.
+            Kirim link preview profesional yang dapat langsung di-approve oleh klien atau tim tanpa perlu buat akun.
           </p>
         </div>
 
         {/* 3 Step Workflow Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="p-6 rounded-2xl bg-white border border-slate-200 space-y-4 shadow-xs hover:border-purple-300 transition-all">
+          <div className="p-6 rounded-3xl bg-white border-2 border-slate-200 space-y-4 shadow-xs hover:border-purple-300 transition-all">
             <div className="w-12 h-12 rounded-2xl bg-purple-100 text-purple-700 flex items-center justify-center font-black text-lg">
               1
             </div>
             <h3 className="font-bold text-lg text-slate-900 font-['Outfit']">1. Bagikan Link Review</h3>
             <p className="text-xs text-slate-600 leading-relaxed">
-              Kirim link preview terlindungi kata sandi tanpa meminta klien untuk membuat akun terlebih dahulu.
+              Kirim link preview terlindungi kata sandi tanpa meminta klien / atasan untuk membuat akun terlebih dahulu.
             </p>
           </div>
 
-          <div className="p-6 rounded-2xl bg-white border border-slate-200 space-y-4 shadow-xs hover:border-purple-300 transition-all">
+          <div className="p-6 rounded-3xl bg-white border-2 border-slate-200 space-y-4 shadow-xs hover:border-purple-300 transition-all">
             <div className="w-12 h-12 rounded-2xl bg-purple-100 text-purple-700 flex items-center justify-center font-black text-lg">
               2
             </div>
-            <h3 className="font-bold text-lg text-slate-900 font-['Outfit']">2. Klien Cek &amp; Comment</h3>
+            <h3 className="font-bold text-lg text-slate-900 font-['Outfit']">2. Cek &amp; Beri Catatan</h3>
             <p className="text-xs text-slate-600 leading-relaxed">
-              Klien dapat melihat tampilan visual presisi feed sosial media asli dan meninggalkan catatan revisi per post.
+              Penerima link dapat melihat tampilan visual presisi feed asli dan meninggalkan catatan revisi per post.
             </p>
           </div>
 
-          <div className="p-6 rounded-2xl bg-white border border-slate-200 space-y-4 shadow-xs hover:border-purple-300 transition-all">
+          <div className="p-6 rounded-3xl bg-white border-2 border-slate-200 space-y-4 shadow-xs hover:border-purple-300 transition-all">
             <div className="w-12 h-12 rounded-2xl bg-purple-100 text-purple-700 flex items-center justify-center font-black text-lg">
               3
             </div>
             <h3 className="font-bold text-lg text-slate-900 font-['Outfit']">3. Auto-Schedule Tayang</h3>
             <p className="text-xs text-slate-600 leading-relaxed">
-              Konten yang telah disetujui (&quot;Approved&quot;) langsung masuk ke antrean tayang otomatis tanpa perbaikan manual.
+              Konten yang telah disetujui (&quot;Approved&quot;) langsung masuk ke antrean tayang otomatis sesuai jadwal.
             </p>
           </div>
         </div>
@@ -653,70 +743,76 @@ export default function LandingHomePage() {
           <div className="text-center space-y-3 max-w-3xl mx-auto">
             <span className="text-xs font-bold uppercase tracking-wider text-purple-600 bg-purple-100 px-3 py-1 rounded-full border border-purple-200 flex items-center gap-1.5 w-fit mx-auto">
               <ShieldCheck className="w-3.5 h-3.5 text-purple-600" />
-              <span>Transparan &amp; Tanpa Biaya Tersembunyi</span>
+              <span>Pilihan Paket Fleksibel</span>
             </span>
             <h2 className="text-3xl sm:text-5xl font-extrabold text-slate-900 font-['Outfit'] tracking-tight">
-              Pilih Paket Sesuai Kebutuhan Post Anda
+              Semua Paket, <span className="bg-gradient-to-r from-purple-600 to-violet-600 bg-clip-text text-transparent">Unlimited Akun Sosmed</span>
             </h2>
-            <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-              Semua paket sudah termasuk <strong>Unlimited Akun Sosial Media</strong> dan dukungan 10+ platform. Pembayaran praktis via Midtrans (QRIS, GoPay, VA, Credit Card).
+            <p className="text-xs sm:text-sm text-slate-600 leading-relaxed max-w-lg mx-auto">
+              Tidak ada batasan jumlah akun sosial media. Bedanya hanya di kuota post per periode. Pembayaran aman via <strong>Midtrans (QRIS, GoPay, VA &amp; Card)</strong>.
             </p>
           </div>
 
-          {/* Pricing Grid */}
+          {/* Pricing Grid matching https://shiera.web.id/pricing */}
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 items-stretch">
             {PRICING_PLANS.map((plan) => (
               <div 
                 key={plan.tier}
-                className={`relative flex flex-col rounded-3xl bg-white p-6 border-2 transition-all duration-300 hover:-translate-y-1 ${
-                  plan.popular 
-                    ? "border-purple-600 shadow-xl shadow-purple-500/10" 
-                    : "border-slate-200/90 shadow-xs hover:shadow-lg"
+                className={`relative flex flex-col rounded-3xl border-2 bg-white shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 ${
+                  plan.popular ? "border-purple-400 shadow-purple-100/80" : plan.border
                 }`}
               >
                 {/* Floating Top Badge */}
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                  <span className={`px-3 py-1 rounded-full text-[11px] font-bold ${plan.badgeBg}`}>
-                    {plan.badge}
-                  </span>
-                </div>
+                {plan.badge && (
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                    <span className={`px-3 py-1 rounded-full text-[11px] font-bold shadow-md ${plan.badgeBg}`}>
+                      {plan.badge}
+                    </span>
+                  </div>
+                )}
 
-                <div className="space-y-4 pt-2">
-                  <div>
-                    <h3 className="font-bold text-xl text-slate-900 font-['Outfit']">{plan.name}</h3>
-                    <p className="text-xs text-slate-500 mt-0.5">{plan.highlight}</p>
+                <div className="p-6 space-y-4 flex-1 flex flex-col justify-between">
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-3">
+                      <div className={`w-10 h-10 rounded-2xl ${plan.iconBg} flex items-center justify-center shrink-0`}>
+                        <Zap className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-slate-900 text-base font-['Outfit']">{plan.name}</h3>
+                        <p className="text-xs text-slate-400">{plan.postsDetail}</p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-2xl font-extrabold text-slate-900 font-['Outfit']">{plan.price}</span>
+                      <span className="text-xs text-slate-400">{plan.period}</span>
+                    </div>
+
+                    {/* Post quota highlight box */}
+                    <div className={`p-3 rounded-2xl bg-gradient-to-r ${plan.color} text-white text-center`}>
+                      <p className="text-lg font-bold font-['Outfit']">{plan.posts}</p>
+                      <p className="text-xs opacity-80">post per periode</p>
+                    </div>
+
+                    <ul className="space-y-2">
+                      {plan.features.map((f, i) => (
+                        <li key={i} className="flex items-start gap-2 text-xs text-slate-600">
+                          <Check className="w-3.5 h-3.5 text-emerald-500 shrink-0 mt-0.5" />
+                          <span>{f}</span>
+                        </li>
+                      ))}
+                    </ul>
                   </div>
 
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-3xl font-extrabold text-slate-900 font-['Outfit']">{plan.price}</span>
-                    <span className="text-xs text-slate-400 font-medium">{plan.period}</span>
+                  <div className="pt-4 mt-auto">
+                    <Link
+                      href="/pricing"
+                      className={`w-full py-3 px-4 rounded-2xl font-semibold text-sm flex items-center justify-center gap-2 transition-all hover:scale-[1.02] active:scale-[0.98] ${plan.buttonStyle}`}
+                    >
+                      <span>{plan.buttonText}</span>
+                      <ArrowRight className="w-4 h-4" />
+                    </Link>
                   </div>
-
-                  {/* Post Quota Box */}
-                  <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200 text-center">
-                    <p className="text-lg font-bold text-slate-900 font-['Outfit']">{plan.posts}</p>
-                    <p className="text-[11px] text-slate-500">{plan.postsDetail}</p>
-                  </div>
-
-                  {/* Features List */}
-                  <ul className="space-y-2.5 pt-2">
-                    {plan.features.map((f, i) => (
-                      <li key={i} className="flex items-start gap-2 text-xs text-slate-600">
-                        <Check className="w-4 h-4 text-purple-600 shrink-0 mt-0.5" />
-                        <span>{f}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                <div className="pt-6 mt-auto">
-                  <Link
-                    href="/pricing"
-                    className={`w-full py-3 px-4 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all ${plan.buttonStyle}`}
-                  >
-                    <span>{plan.buttonText}</span>
-                    <ArrowRight className="w-4 h-4" />
-                  </Link>
                 </div>
 
               </div>
@@ -777,11 +873,11 @@ export default function LandingHomePage() {
           </span>
 
           <h2 className="text-3xl sm:text-5xl font-extrabold font-['Outfit'] tracking-tight leading-tight">
-            Tingkatkan Efisiensi Agency Anda Hingga 10x Lipat
+            Bebaskan Diri Dari Rutinitas Upload Sosmed Manual
           </h2>
 
           <p className="text-slate-300 text-sm sm:text-base max-w-xl mx-auto leading-relaxed">
-            Bergabunglah dengan 500+ Digital Agency &amp; Media Publisher di Indonesia yang mengelola media sosial tanpa stres.
+            Bergabunglah dengan ratusan Creator, Olshop, &amp; Agency di Indonesia yang mengelola media sosial tanpa stres.
           </p>
 
           <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -814,7 +910,7 @@ export default function LandingHomePage() {
           <div className="space-y-3">
             <span className="text-lg font-bold text-slate-900 font-['Outfit']">Shiera.</span>
             <p className="text-slate-500 leading-relaxed">
-              Platform Social Media Management #1 untuk Digital Agency, Media Publisher, dan Brand di Indonesia.
+              Platform Social Media Management #1 untuk Creator, Olshop, Digital Agency, dan Media Publisher di Indonesia.
             </p>
           </div>
 
@@ -829,11 +925,11 @@ export default function LandingHomePage() {
           </div>
 
           <div className="space-y-2">
-            <p className="font-bold text-slate-900">Agency &amp; Solutions</p>
+            <p className="font-bold text-slate-900">Solusi &amp; Fitur</p>
             <ul className="space-y-1.5 text-slate-500">
               <li><a href="#pricing" className="hover:text-purple-600 transition-colors">White-Label PDF Reports</a></li>
               <li><a href="#pricing" className="hover:text-purple-600 transition-colors">Client Approval Portal</a></li>
-              <li><a href="#pricing" className="hover:text-purple-600 transition-colors">Harga Paket Agency</a></li>
+              <li><a href="#pricing" className="hover:text-purple-600 transition-colors">Harga Paket Paket</a></li>
             </ul>
           </div>
 
@@ -852,7 +948,7 @@ export default function LandingHomePage() {
         <div className="max-w-7xl mx-auto pt-6 flex flex-col md:flex-row items-center justify-between gap-4 text-slate-400">
           <p>© 2026 Shiera Inc. Designed with Airbnb Visual Elegance in Shiera Electric Purple.</p>
           <div className="flex items-center gap-4 text-slate-500">
-            <span className="flex items-center gap-1"><Globe className="w-3.5 h-3.5" /> Indonesia (IDR)</span>
+            <span>🇮🇩 Indonesia (IDR)</span>
             <span>Privacy</span>
             <span>Terms</span>
           </div>
