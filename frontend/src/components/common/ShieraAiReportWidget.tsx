@@ -70,7 +70,7 @@ function WelcomeScreen({ onSummaryClick }: { onSummaryClick: () => void }) {
   return (
     <div className="flex flex-col items-center justify-center flex-1 px-5 py-8 gap-5 text-center select-none">
       <div className="relative">
-        <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-600 via-indigo-600 to-pink-500 flex items-center justify-center shadow-xl shadow-purple-500/30">
+        <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-600 via-indigo-600 to-indigo-800 flex items-center justify-center shadow-xl shadow-purple-500/30">
           <Sparkles className="w-8 h-8 text-amber-300" />
         </div>
         <span className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-emerald-400 border-2 border-white" />
@@ -87,7 +87,7 @@ function WelcomeScreen({ onSummaryClick }: { onSummaryClick: () => void }) {
 
       <button
         onClick={onSummaryClick}
-        className="w-full flex items-center gap-3 p-4 rounded-2xl bg-gradient-to-r from-purple-600 via-indigo-600 to-pink-600 text-white shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 hover:scale-[1.02] transition-all group"
+        className="w-full flex items-center gap-3 p-4 rounded-2xl bg-gradient-to-r from-purple-600 via-indigo-600 to-indigo-800 text-white shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 hover:scale-[1.02] transition-all group"
       >
         <div className="w-9 h-9 rounded-xl bg-white/15 flex items-center justify-center shrink-0">
           <BarChart2 className="w-5 h-5 text-amber-300" />
@@ -458,7 +458,7 @@ export default function ShieraAiReportWidget() {
             onClick={handleFabClick}
             onMouseEnter={() => { if (!showTooltip) setShowTooltip(true); }}
             onMouseLeave={() => setShowTooltip(false)}
-            className="relative w-14 h-14 rounded-2xl bg-gradient-to-br from-purple-600 via-indigo-600 to-pink-600 text-white shadow-xl shadow-purple-500/35 hover:shadow-purple-500/50 hover:scale-110 active:scale-95 transition-all flex items-center justify-center border border-white/10"
+            className="relative w-14 h-14 rounded-2xl bg-gradient-to-br from-purple-600 via-indigo-600 to-indigo-800 text-white shadow-xl shadow-purple-500/35 hover:shadow-purple-500/50 hover:scale-110 active:scale-95 transition-all flex items-center justify-center border border-white/10"
             title="Shiera AI"
           >
             <Sparkles className="w-6 h-6 text-amber-300" />
@@ -480,7 +480,7 @@ export default function ShieraAiReportWidget() {
           <div className="px-4 py-3.5 bg-gradient-to-r from-slate-900 via-purple-950 to-indigo-950 text-white flex items-center justify-between shrink-0">
             <div className="flex items-center gap-2.5">
               <div className="relative">
-                <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-purple-600 to-pink-500 border border-purple-300/40 flex items-center justify-center">
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-purple-600 to-indigo-800 border border-purple-300/40 flex items-center justify-center">
                   <Sparkles className="w-4.5 h-4.5 text-amber-300 animate-pulse" />
                 </div>
                 <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 border-2 border-slate-900 absolute -bottom-0.5 -right-0.5" />
@@ -688,7 +688,7 @@ export default function ShieraAiReportWidget() {
                     <button
                       onClick={handleRunAnalysis}
                       disabled={aiLoading || (period === "custom" && (!customFrom || !customTo))}
-                      className="w-full py-3 rounded-2xl bg-gradient-to-r from-purple-600 via-indigo-600 to-pink-600 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 hover:scale-[1.01] transition-all disabled:opacity-60"
+                      className="w-full py-3 rounded-2xl bg-gradient-to-r from-purple-600 via-indigo-600 to-indigo-800 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 hover:scale-[1.01] transition-all disabled:opacity-60"
                     >
                       {aiLoading ? (
                         <>
