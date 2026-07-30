@@ -30,7 +30,7 @@ const CustomChartTooltip = ({ active, payload, label }: any) => {
 
 export default function DashboardPage() {
   const { activeWorkspace, openComposer } = useStore();
-  const { isAdmin } = useAuthStore();
+  const { isAdmin, workspaceId: authWorkspaceId } = useAuthStore();
   const [data, setData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isMounted, setIsMounted] = useState(false);
@@ -39,10 +39,14 @@ export default function DashboardPage() {
     setIsMounted(true);
   }, []);
 
+  // Fallback: if activeWorkspace hasn't hydrated yet (non-persisted store),
+  // use the workspaceId persisted in authStore
+  const resolvedWorkspaceId = activeWorkspace?.id || authWorkspaceId;
+
   const loadDashboard = () => {
-    if (!activeWorkspace?.id) return;
+    if (!resolvedWorkspaceId) return;
     setIsLoading(true);
-    fetchApi<any>(`/dashboard/?workspace_id=${activeWorkspace.id}`)
+    fetchApi<any>(`/dashboard/?workspace_id=${resolvedWorkspaceId}`)
       .then((res) => {
         setData(res);
         setIsLoading(false);
@@ -81,7 +85,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     loadDashboard();
-  }, [activeWorkspace?.id]);
+  }, [resolvedWorkspaceId]);
 
   const metrics = data?.metrics || {
     total_accounts: 0,
