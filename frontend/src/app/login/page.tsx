@@ -53,12 +53,9 @@ export default function LoginPage() {
         <div className="relative z-10">
           <a href="/" className="flex items-center gap-2.5">
             <div
-              className="w-9 h-9 rounded-xl flex items-center justify-center"
-              style={{ background: "rgba(255,255,255,0.2)", backdropFilter: "blur(10px)" }}
+              className="w-9 h-9 rounded-xl flex items-center justify-center p-1 bg-white/20 backdrop-blur-md border border-white/30 shadow-sm"
             >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
+              <img src="/logo.png" alt="Shiera Logo" className="w-full h-full object-contain" />
             </div>
             <span className="text-white font-bold text-xl tracking-tight" style={{ fontFamily: "'Outfit', sans-serif" }}>
               Shiera
@@ -109,15 +106,8 @@ export default function LoginPage() {
       {/* ── Right Panel: Login Form ── */}
       <div className="flex-1 flex flex-col items-center justify-center px-6 sm:px-12 lg:px-16 xl:px-24 py-12 bg-white">
         {/* Mobile logo */}
-        <div className="lg:hidden mb-10 flex items-center gap-2">
-          <div
-            className="w-9 h-9 rounded-xl flex items-center justify-center"
-            style={{ background: "#7c3aed" }}
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </div>
+        <div className="lg:hidden mb-10 flex items-center gap-2.5">
+          <img src="/logo.png" alt="Shiera Logo" className="w-9 h-9 object-contain rounded-xl" />
           <span className="font-bold text-xl text-slate-900 tracking-tight" style={{ fontFamily: "'Outfit', sans-serif" }}>
             Shiera
           </span>

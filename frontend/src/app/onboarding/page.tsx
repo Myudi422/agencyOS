@@ -70,7 +70,8 @@ export default function OnboardingPage() {
 
       <div className="w-full max-w-xl relative z-10">
         {/* Brand Header */}
-        <div className="text-center space-y-3 mb-8">
+        <div className="text-center space-y-3 mb-8 flex flex-col items-center">
+          <img src="/logo.png" alt="Shiera Logo" className="w-12 h-12 object-contain rounded-2xl shadow-lg mb-1" />
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-300 text-xs font-semibold">
             <Sparkles className="w-3.5 h-3.5" />
             <span>Selamat Datang di Shiera</span>
