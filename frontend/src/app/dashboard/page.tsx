@@ -44,10 +44,20 @@ export default function DashboardPage() {
   const resolvedWorkspaceId = activeWorkspace?.id || authWorkspaceId;
 
   const loadDashboard = () => {
-    if (!resolvedWorkspaceId) return;
+    console.log("[Dashboard Debug]", {
+      activeWorkspaceId: activeWorkspace?.id,
+      authWorkspaceId,
+      resolvedWorkspaceId,
+    });
+    if (!resolvedWorkspaceId) {
+      console.warn("[Dashboard] No workspace ID found, skipping API call");
+      setIsLoading(false);
+      return;
+    }
     setIsLoading(true);
     fetchApi<any>(`/dashboard/?workspace_id=${resolvedWorkspaceId}`)
       .then((res) => {
+        console.log("[Dashboard API] Response:", res?.metrics);
         setData(res);
         setIsLoading(false);
       })
