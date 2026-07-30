@@ -1,9 +1,10 @@
 import logging
 import asyncio
+import calendar as py_calendar
+from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
-from datetime import datetime
 from typing import Optional, List, Dict, Any
 
 from backend.database import get_db
@@ -26,6 +27,8 @@ class RescheduleRequest(BaseModel):
 @router.get("/")
 async def get_calendar_posts(
     workspace_id: str = Query(..., description="Workspace ID"),
+    year: Optional[int] = Query(None, description="Year e.g. 2026"),
+    month: Optional[int] = Query(None, description="Month 1-12"),
     start_date: Optional[str] = Query(None, description="Start date ISO"),
     end_date: Optional[str] = Query(None, description="End date ISO"),
     force_refresh: bool = Query(False, description="Force bypass cache"),
@@ -35,14 +38,25 @@ async def get_calendar_posts(
     """
     Retrieves scheduled, published, and native historical posts for the authenticated user's workspace.
     - Validates user workspace ownership (multi-tenancy)
-    - Excludes local draft posts
-    - Auto-resolves missing provider account IDs
-    - Fetches live scheduled posts & native historical feed posts
-    - Uses TTL cache only for valid non-empty responses
+    - Filters posts by selected month & year for maximum performance
+    - Fixed 400 Bad Request error by passing valid status params (scheduled, published, processing)
+    - Uses TTL cache for ultra-fast performance
     """
     get_user_workspace(current_user, workspace_id, db)  # Strict multi-tenancy check
 
-    cache_key = f"cal:{workspace_id}"
+    # Compute date range
+    dt_from: Optional[datetime] = None
+    dt_to: Optional[datetime] = None
+
+    if year and month:
+        _, last_day = py_calendar.monthrange(year, month)
+        dt_from = datetime(year, month, 1, 0, 0, 0, tzinfo=timezone.utc)
+        dt_to = datetime(year, month, last_day, 23, 59, 59, 999999, tzinfo=timezone.utc)
+    else:
+        dt_from = _parse_iso(start_date)
+        dt_to = _parse_iso(end_date)
+
+    cache_key = f"cal:{workspace_id}:{year or ''}:{month or ''}"
     now_ts = datetime.utcnow().timestamp()
 
     if not force_refresh:
@@ -89,20 +103,21 @@ async def get_calendar_posts(
     pf_id_to_local = {p.postforme_post_id: p for p in local_posts if p.postforme_post_id}
 
     # 3. Fetch scheduled & published posts from PostForMe API for workspace accounts
+    # Fix: pass valid status list ('scheduled', 'published', 'processing') - 'completed' causes 400 Bad Request
     pf_posts = []
     target_account_ids = list(acc_by_pf_id.keys()) or [a.platform_account_id for a in accounts if a.platform_account_id]
     if target_account_ids:
         try:
             res_pf = await postforme_service.get_posts(
                 social_account_id=target_account_ids,
-                status=["scheduled", "published", "completed", "processing"],
+                status=["scheduled", "published", "processing"],
                 limit=100
             )
             pf_posts = res_pf.get("data", [])
         except Exception as e:
             logger.warning(f"PostForMe calendar get_posts failed: {e}")
 
-    # 4. Fetch native historical social feed posts (including posts published BEFORE connecting)
+    # 4. Fetch native historical social feed posts filtered by selected month/year
     all_real_feed_posts = []
     if accounts:
         semaphore = asyncio.Semaphore(5)
@@ -114,8 +129,8 @@ async def get_calendar_posts(
                     posts = await _fetch_all_posts_for_account(
                         social_account_id=target_id,
                         platform=plat_str,
-                        date_from=None,
-                        date_to=None,
+                        date_from=dt_from,
+                        date_to=dt_to,
                         limit_per_page=50
                     )
                     for p in posts:

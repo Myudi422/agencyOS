@@ -70,20 +70,26 @@ export default function CalendarPage() {
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
 
-  const loadEvents = useCallback((forceRefresh: boolean = false) => {
+  const loadEvents = useCallback((targetYear?: number, targetMonth?: number, forceRefresh: boolean = false) => {
     if (!activeWorkspace?.id) return;
     setLoading(true);
-    const params = new URLSearchParams({ workspace_id: activeWorkspace.id });
+    const y = targetYear ?? year;
+    const m = (targetMonth ?? month) + 1;
+    const params = new URLSearchParams({
+      workspace_id: activeWorkspace.id,
+      year: y.toString(),
+      month: m.toString()
+    });
     if (forceRefresh) params.append("force_refresh", "true");
     fetchApi<any[]>(`/calendar/?${params.toString()}`)
       .then((data) => setEvents(data || []))
       .catch(() => setEvents([]))
       .finally(() => setLoading(false));
-  }, [activeWorkspace?.id]);
+  }, [activeWorkspace?.id, year, month]);
 
   useEffect(() => {
-    loadEvents();
-  }, [loadEvents]);
+    loadEvents(year, month);
+  }, [activeWorkspace?.id, year, month]);
 
   // Month navigation helpers
   const prevMonth = () => setCurrentDate(new Date(year, month - 1, 1));
@@ -151,7 +157,7 @@ export default function CalendarPage() {
           </div>
 
           <button
-            onClick={() => loadEvents(true)}
+            onClick={() => loadEvents(year, month, true)}
             className="p-2.5 rounded-2xl bg-white border border-slate-200 text-slate-600 hover:text-slate-900 shadow-xs transition-all shrink-0"
             title="Refresh Kalender"
           >
@@ -177,10 +183,31 @@ export default function CalendarPage() {
             <span>{monthName}</span>
           </h2>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
+            <select
+              value={month}
+              onChange={(e) => setCurrentDate(new Date(year, parseInt(e.target.value), 1))}
+              className="px-3 py-1.5 rounded-xl text-xs font-bold bg-white border border-slate-200 text-slate-700 outline-none cursor-pointer shadow-xs"
+            >
+              {[
+                "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+                "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+              ].map((mName, idx) => (
+                <option key={idx} value={idx}>{mName}</option>
+              ))}
+            </select>
+            <select
+              value={year}
+              onChange={(e) => setCurrentDate(new Date(parseInt(e.target.value), month, 1))}
+              className="px-3 py-1.5 rounded-xl text-xs font-bold bg-white border border-slate-200 text-slate-700 outline-none cursor-pointer shadow-xs"
+            >
+              {[2024, 2025, 2026, 2027, 2028].map((yNum) => (
+                <option key={yNum} value={yNum}>{yNum}</option>
+              ))}
+            </select>
             <button
               onClick={todayMonth}
-              className="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-purple-50 text-purple-700 hover:bg-purple-100 border border-purple-200 transition-colors"
+              className="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-purple-50 text-purple-700 hover:bg-purple-100 border border-purple-200 transition-colors shadow-xs"
             >
               Hari Ini
             </button>
