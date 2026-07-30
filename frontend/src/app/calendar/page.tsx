@@ -106,8 +106,15 @@ export default function CalendarPage() {
   const monthDays = Array.from({ length: daysInMonth }, (_, i) => i + 1);
 
   const today = new Date();
+  const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+
   const isToday = (day: number) => 
     today.getDate() === day && today.getMonth() === month && today.getFullYear() === year;
+
+  const isPastDay = (day: number) => {
+    const cellDate = new Date(year, month, day);
+    return cellDate < todayStart;
+  };
 
   // Filter events by selected platform
   const filteredEvents = events.filter(ev => {
@@ -273,16 +280,18 @@ export default function CalendarPage() {
                     <span className={`text-xs font-extrabold ${isToday(day) ? "text-purple-700 font-black" : "text-slate-700"}`}>
                       {day}
                     </span>
-                    <button
-                      onClick={() => {
-                        const selectedDate = new Date(year, month, day, 10, 0);
-                        openComposer([], { scheduled_at: selectedDate.toISOString() });
-                      }}
-                      className="opacity-0 group-hover:opacity-100 p-1 text-slate-400 hover:text-purple-600 transition-opacity"
-                      title="Jadwalkan di tanggal ini"
-                    >
-                      <Plus className="w-3.5 h-3.5" />
-                    </button>
+                    {!isPastDay(day) && (
+                      <button
+                        onClick={() => {
+                          const selectedDate = new Date(year, month, day, 10, 0);
+                          openComposer([], { scheduled_at: selectedDate.toISOString() });
+                        }}
+                        className="opacity-0 group-hover:opacity-100 p-1 text-slate-400 hover:text-purple-600 transition-opacity"
+                        title="Jadwalkan di tanggal ini"
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                      </button>
+                    )}
                   </div>
 
                   {/* Day events badges list */}
@@ -446,17 +455,23 @@ export default function CalendarPage() {
 
             {/* Modal Footer */}
             <div className="flex items-center justify-between pt-3 border-t border-slate-100">
-              <button
-                onClick={() => {
-                  const selDate = selectedDayModal.date;
-                  setSelectedDayModal(null);
-                  openComposer([], { scheduled_at: selDate.toISOString() });
-                }}
-                className="px-4 py-2 rounded-xl text-xs font-bold text-white bg-purple-600 hover:bg-purple-700 transition-all flex items-center gap-1.5"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                Tambah Post di Tanggal Ini
-              </button>
+              {!isPastDay(selectedDayModal.day) ? (
+                <button
+                  onClick={() => {
+                    const selDate = selectedDayModal.date;
+                    setSelectedDayModal(null);
+                    openComposer([], { scheduled_at: selDate.toISOString() });
+                  }}
+                  className="px-4 py-2 rounded-xl text-xs font-bold text-white bg-purple-600 hover:bg-purple-700 transition-all flex items-center gap-1.5"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  Tambah Post di Tanggal Ini
+                </button>
+              ) : (
+                <span className="text-[11px] font-semibold text-slate-400 italic">
+                  🗓️ Tanggal ini telah berlalu (Hanya Lihat)
+                </span>
+              )}
               <button
                 onClick={() => setSelectedDayModal(null)}
                 className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100 transition-colors"

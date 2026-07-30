@@ -103,14 +103,12 @@ async def get_calendar_posts(
     pf_id_to_local = {p.postforme_post_id: p for p in local_posts if p.postforme_post_id}
 
     # 3. Fetch scheduled & published posts from PostForMe API for workspace accounts
-    # Fix: pass valid status list ('scheduled', 'published', 'processing') - 'completed' causes 400 Bad Request
     pf_posts = []
     target_account_ids = list(acc_by_pf_id.keys()) or [a.platform_account_id for a in accounts if a.platform_account_id]
     if target_account_ids:
         try:
             res_pf = await postforme_service.get_posts(
                 social_account_id=target_account_ids,
-                status=["scheduled", "published", "processing"],
                 limit=100
             )
             pf_posts = res_pf.get("data", [])
