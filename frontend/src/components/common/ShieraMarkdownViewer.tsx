@@ -16,7 +16,16 @@ interface ShieraMarkdownViewerProps {
 export default function ShieraMarkdownViewer({ content, className = "" }: ShieraMarkdownViewerProps) {
   if (!content) return null;
 
+  // Sanitize out raw Gemini Python Code Interpreter blocks
+  const sanitizedContent = content
+    .replace(/```\w*\?code[^\n]*\n[\s\S]*?```/g, "")
+    .replace(/```[^\n]*codereference[^\n]*\n[\s\S]*?```/g, "")
+    .replace(/```[^\n]*codestdout[^\n]*\n[\s\S]*?```/g, "")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+
   const parseInline = (text: string): React.ReactNode[] => {
+
     if (!text) return [];
     
     // Process code spans (`code`), bold (**text**), italic (*text*), and code ticks
@@ -80,7 +89,8 @@ export default function ShieraMarkdownViewer({ content, className = "" }: Shiera
   };
 
   // Group lines into blocks (headers, tables, lists, blockquotes, paragraphs)
-  const lines = content.split("\n");
+  const lines = sanitizedContent.split("\n");
+
   const blocks: React.ReactNode[] = [];
   let i = 0;
   let blockKey = 0;

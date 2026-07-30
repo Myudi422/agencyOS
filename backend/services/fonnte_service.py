@@ -91,3 +91,27 @@ def send_otp_whatsapp(phone: str, otp_code: str) -> dict:
     except Exception as e:
         logger.error(f"Fonnte unexpected error: {e}", exc_info=True)
         return {"success": False, "message": "Error tidak terduga saat kirim OTP."}
+
+
+def send_whatsapp_notification(phone: str, message_text: str) -> dict:
+    """Kirim pesan notifikasi umum via Fonnte WhatsApp API."""
+    normalized = normalize_phone(phone)
+    url = "https://api.fonnte.com/send"
+    payload = {
+        "target": normalized,
+        "message": message_text,
+        "countryCode": "62",
+    }
+    data = urllib.parse.urlencode(payload).encode("utf-8")
+    req = urllib.request.Request(url, data=data, method="POST")
+    req.add_header("Authorization", settings.FONNTE_TOKEN)
+    try:
+        with urllib.request.urlopen(req, timeout=10) as response:
+            raw = response.read().decode("utf-8")
+            result = json.loads(raw)
+            logger.info(f"Fonnte notification sent to {normalized}: {result}")
+            return {"success": result.get("status") is True, "result": result}
+    except Exception as e:
+        logger.error(f"Fonnte WA notification error to {normalized}: {e}")
+        return {"success": False, "error": str(e)}
+
