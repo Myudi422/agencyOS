@@ -46,8 +46,11 @@ except ModuleNotFoundError:
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("AgencyOS-Main")
 
-# Create Database tables
-Base.metadata.create_all(bind=engine)
+# Create Database tables safely (non-blocking for serverless/cold-start)
+try:
+    Base.metadata.create_all(bind=engine)
+except Exception as e:
+    logger.warning(f"Base.metadata.create_all skipped/warning: {e}")
 
 app = FastAPI(
     title=settings.APP_NAME,
