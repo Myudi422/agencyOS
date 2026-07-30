@@ -48,39 +48,32 @@ export default function DashboardPage() {
         setIsLoading(false);
       })
       .catch((err) => {
-        console.log("Using dashboard fallback metrics", err);
+        console.error("Dashboard API error:", err);
         setData({
           metrics: {
-            total_accounts: 10,
-            connected_accounts: 10,
-            scheduled_today: 1,
-            published_today: 3,
+            total_accounts: 0,
+            connected_accounts: 0,
+            scheduled_today: 0,
+            published_today: 0,
             failed_today: 0,
-            active_clients: 1,
-            active_queue_jobs: 3
+            active_clients: 0,
+            active_queue_jobs: 0
           },
           system_stats: {
-            db_size: "12.4 MB",
-            memory_usage: "38.2 MB",
-            redis_status: "Connected (Upstash)",
-            redis_latency: "9ms",
-            vercel_env: "production",
-            vercel_region: "iad1 (US East)",
-            vercel_status: "Operational (Vercel Serverless)",
-            python_runtime: "Python 3.12 Serverless"
+            db_size: "-",
+            memory_usage: "-",
+            redis_status: "Tidak Terhubung",
+            redis_latency: "-",
+            vercel_env: "-",
+            vercel_region: "-",
+            vercel_status: "Tidak Terhubung",
+            python_runtime: "-"
           },
           recent_activity: [],
           upcoming_posts: [],
-          daily_trend: [
-            { date: "24 Jul", published: 2, scheduled: 1 },
-            { date: "25 Jul", published: 4, scheduled: 2 },
-            { date: "26 Jul", published: 1, scheduled: 0 },
-            { date: "27 Jul", published: 5, scheduled: 3 },
-            { date: "28 Jul", published: 3, scheduled: 2 },
-            { date: "29 Jul", published: 6, scheduled: 4 },
-            { date: "30 Jul", published: 3, scheduled: 1 },
-          ],
-          platform_breakdown: []
+          daily_trend: [],
+          platform_breakdown: [],
+          top_post: null
         });
         setIsLoading(false);
       });
@@ -112,15 +105,7 @@ export default function DashboardPage() {
   };
 
   const upcomingPosts = data?.upcoming_posts || [];
-  const dailyTrend = data?.daily_trend || [
-    { date: "24 Jul", published: 2, scheduled: 1 },
-    { date: "25 Jul", published: 4, scheduled: 2 },
-    { date: "26 Jul", published: 1, scheduled: 0 },
-    { date: "27 Jul", published: 5, scheduled: 3 },
-    { date: "28 Jul", published: 3, scheduled: 2 },
-    { date: "29 Jul", published: 6, scheduled: 4 },
-    { date: "30 Jul", published: 3, scheduled: 1 },
-  ];
+  const dailyTrend = data?.daily_trend || [];
 
   return (
     <div className="space-y-6 pb-12">
