@@ -7,7 +7,8 @@ from global Setting table and generates AI analytics reports.
 import asyncio
 import json
 import logging
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
+
 from sqlalchemy.orm import Session
 
 from backend.models.models import Setting
