@@ -35,6 +35,32 @@ function getProxiedImageUrl(url?: string): string {
   return `${apiUrl}/statistics/proxy-image?url=${encodeURIComponent(url)}`;
 }
 
+function DashboardImageThumbnail({ url, className = "w-10 h-10 rounded-xl" }: { url?: string; className?: string }) {
+  const [imgError, setImgError] = useState(false);
+
+  useEffect(() => {
+    setImgError(false);
+  }, [url]);
+
+  if (!url || imgError) {
+    return (
+      <div className={`${className} bg-purple-50 border border-purple-100 flex items-center justify-center text-purple-600 shrink-0 shadow-xs`}>
+        <ImageIcon className="w-5 h-5 opacity-80" />
+      </div>
+    );
+  }
+
+  return (
+    <img
+      src={getProxiedImageUrl(url)}
+      onError={() => setImgError(true)}
+      crossOrigin="anonymous"
+      className={`${className} object-cover border border-slate-200 shrink-0 shadow-xs`}
+      alt=""
+    />
+  );
+}
+
 export default function DashboardPage() {
   const { activeWorkspace, openComposer } = useStore();
   const { isAdmin, workspaceId: authWorkspaceId } = useAuthStore();
@@ -356,18 +382,7 @@ export default function DashboardPage() {
                 <span className="text-[10px] text-purple-600 font-bold">Eng Rate: {data.top_post.engagement_rate}</span>
               </div>
               <div className="flex items-center gap-3">
-                {data.top_post.thumbnail ? (
-                  <img
-                    src={getProxiedImageUrl(data.top_post.thumbnail)}
-                    crossOrigin="anonymous"
-                    className="w-12 h-12 rounded-2xl object-cover border border-slate-200 shrink-0 shadow-xs"
-                    alt=""
-                  />
-                ) : (
-                  <div className="w-12 h-12 rounded-2xl bg-purple-100 text-purple-600 flex items-center justify-center font-bold text-xs shrink-0">
-                    TOP
-                  </div>
-                )}
+                <DashboardImageThumbnail url={data.top_post.thumbnail} className="w-12 h-12 rounded-2xl" />
                 <div className="min-w-0 flex-1">
                   <p className="text-xs font-bold text-slate-900 truncate">{data.top_post.caption}</p>
                   <div className="flex items-center gap-3 text-[11px] text-slate-500 mt-1">
@@ -382,6 +397,17 @@ export default function DashboardPage() {
                     </span>
                   </div>
                 </div>
+                {data.top_post.platform_url && (
+                  <a
+                    href={data.top_post.platform_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-2 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200/80 transition-all flex items-center justify-center shrink-0 shadow-xs group"
+                    title="Buka Postingan Asli di Social Media"
+                  >
+                    <ArrowUpRight className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                  </a>
+                )}
               </div>
             </div>
           )}
@@ -465,13 +491,7 @@ export default function DashboardPage() {
                 upcomingPosts.slice(0, 6).map((post: any) => (
                   <div key={post.id} className="p-3.5 rounded-2xl bg-white/90 border border-slate-200/80 flex items-center justify-between gap-3 shadow-xs hover:border-purple-200 transition-all">
                     <div className="flex items-center gap-3 min-w-0">
-                      {post.thumbnail ? (
-                        <img src={post.thumbnail} className="w-10 h-10 rounded-xl object-cover border border-slate-200 shrink-0" alt="" />
-                      ) : (
-                        <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-500 border border-purple-100 flex items-center justify-center shrink-0">
-                          <ImageIcon className="w-5 h-5" />
-                        </div>
-                      )}
+                      <DashboardImageThumbnail url={post.thumbnail} className="w-10 h-10 rounded-xl" />
                       <div className="min-w-0">
                         <p className="text-xs font-bold text-slate-900 truncate max-w-xs sm:max-w-md">{post.caption}</p>
                         <div className="flex items-center gap-2 mt-1">
@@ -483,15 +503,28 @@ export default function DashboardPage() {
                       </div>
                     </div>
 
-                    <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase shrink-0 ${
-                      post.status === "published" 
-                        ? "bg-emerald-100 text-emerald-700" 
-                        : post.status === "scheduled"
-                        ? "bg-sky-100 text-sky-700"
-                        : "bg-slate-100 text-slate-600"
-                    }`}>
-                      {post.status}
-                    </span>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase ${
+                        post.status === "published" 
+                          ? "bg-emerald-100 text-emerald-700" 
+                          : post.status === "scheduled"
+                          ? "bg-sky-100 text-sky-700"
+                          : "bg-slate-100 text-slate-600"
+                      }`}>
+                        {post.status}
+                      </span>
+                      {post.platform_url && (
+                        <a
+                          href={post.platform_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="p-1.5 rounded-lg bg-slate-100 hover:bg-purple-100 text-slate-600 hover:text-purple-700 transition-all"
+                          title="Buka Postingan di Sosmed"
+                        >
+                          <ArrowUpRight className="w-3.5 h-3.5" />
+                        </a>
+                      )}
+                    </div>
                   </div>
                 ))
               ) : (
