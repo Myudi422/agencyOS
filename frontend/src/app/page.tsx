@@ -406,51 +406,52 @@ export default function LandingHomePage() {
 
         {/* Floating Search Pill Component (Airbnb Global Search Capsule) */}
         <div className="max-w-4xl mx-auto pt-4">
-          <div className="bg-white rounded-full border border-slate-200 shadow-lg shadow-slate-200/60 p-2 sm:p-3 flex flex-col md:flex-row items-center justify-between gap-3 md:gap-0 hover:shadow-xl transition-all">
+          <div className="bg-white rounded-3xl md:rounded-full border border-slate-200/90 shadow-xl shadow-slate-200/60 p-3 md:p-3 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-2 md:gap-0 hover:shadow-2xl transition-all">
             
             {/* Segment 1: Client / Brand Workspace */}
-            <div className="flex-1 w-full text-left px-5 py-2 md:border-r border-slate-200 hover:bg-slate-50/80 rounded-full cursor-pointer transition-all flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-purple-50 flex items-center justify-center shrink-0">
-                <Building2 className="w-4 h-4 text-purple-600" />
+            <div className="flex-1 text-left px-4 sm:px-5 py-3 md:py-2 border-b md:border-b-0 md:border-r border-slate-100 md:border-slate-200 hover:bg-purple-50/50 rounded-2xl md:rounded-full cursor-pointer transition-all flex items-center gap-3.5 group">
+              <div className="w-9 h-9 rounded-xl md:rounded-full bg-purple-100/70 group-hover:bg-purple-600 flex items-center justify-center shrink-0 transition-colors">
+                <Building2 className="w-4 h-4 text-purple-600 group-hover:text-white transition-colors" />
               </div>
-              <div className="truncate">
+              <div className="min-w-0 flex-1">
                 <div className="text-[11px] font-bold uppercase tracking-wider text-slate-900">Mau posting ke mana?</div>
                 <div className="text-xs text-slate-500 truncate">Pilih Brand / Workspace Klien</div>
               </div>
             </div>
 
             {/* Segment 2: Social Channels */}
-            <div className="flex-1 w-full text-left px-5 py-2 md:border-r border-slate-200 hover:bg-slate-50/80 rounded-full cursor-pointer transition-all flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-purple-50 flex items-center justify-center shrink-0">
-                <Share2 className="w-4 h-4 text-purple-600" />
+            <div className="flex-1 text-left px-4 sm:px-5 py-3 md:py-2 border-b md:border-b-0 md:border-r border-slate-100 md:border-slate-200 hover:bg-purple-50/50 rounded-2xl md:rounded-full cursor-pointer transition-all flex items-center gap-3.5 group">
+              <div className="w-9 h-9 rounded-xl md:rounded-full bg-purple-100/70 group-hover:bg-purple-600 flex items-center justify-center shrink-0 transition-colors">
+                <Share2 className="w-4 h-4 text-purple-600 group-hover:text-white transition-colors" />
               </div>
-              <div className="truncate">
+              <div className="min-w-0 flex-1">
                 <div className="text-[11px] font-bold uppercase tracking-wider text-slate-900">Channel sosmed apa?</div>
                 <div className="text-xs text-slate-500 truncate">Instagram, TikTok, FB, LinkedIn, X, YT</div>
               </div>
             </div>
 
             {/* Segment 3: Solution Type */}
-            <div className="flex-1 w-full text-left px-5 py-2 hover:bg-slate-50/80 rounded-full cursor-pointer transition-all flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-purple-50 flex items-center justify-center shrink-0">
-                <Sparkles className="w-4 h-4 text-purple-600" />
+            <div className="flex-1 text-left px-4 sm:px-5 py-3 md:py-2 hover:bg-purple-50/50 rounded-2xl md:rounded-full cursor-pointer transition-all flex items-center gap-3.5 group">
+              <div className="w-9 h-9 rounded-xl md:rounded-full bg-purple-100/70 group-hover:bg-purple-600 flex items-center justify-center shrink-0 transition-colors">
+                <Sparkles className="w-4 h-4 text-purple-600 group-hover:text-white transition-colors" />
               </div>
-              <div className="truncate">
+              <div className="min-w-0 flex-1">
                 <div className="text-[11px] font-bold uppercase tracking-wider text-slate-900">Tipe Solusi</div>
                 <div className="text-xs text-slate-500 truncate">Auto Scheduler, KOL, Competitor Spy</div>
               </div>
             </div>
 
             {/* Search Orb Button (Electric Purple) */}
-            <div className="w-full md:w-auto flex justify-end shrink-0 pl-2">
+            <div className="w-full md:w-auto shrink-0 md:pl-2 pt-1 md:pt-0">
               <Link 
                 href={isAuthenticated ? "/dashboard" : "/login"}
-                className="w-full md:w-12 h-12 rounded-full bg-purple-600 hover:bg-purple-700 text-white flex items-center justify-center gap-2 px-4 md:px-0 shadow-md shadow-purple-500/30 hover:scale-105 active:scale-95 transition-all"
+                className="w-full md:w-12 h-12 rounded-2xl md:rounded-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-semibold text-sm flex items-center justify-center gap-2 px-5 md:px-0 shadow-lg shadow-purple-500/25 hover:scale-105 active:scale-95 transition-all"
               >
                 <Search className="w-5 h-5" />
-                <span className="md:hidden text-xs font-bold font-sans">Cari Solusi Sekarang</span>
+                <span className="md:hidden">Cari Solusi Sekarang</span>
               </Link>
             </div>
+
           </div>
         </div>
 
