@@ -107,10 +107,13 @@ class GeminiService:
         self,
         stats_data: Dict[str, Any],
         custom_instructions: Optional[str] = None,
+        chat_history: Optional[List[Dict[str, str]]] = None,
+        user_message: Optional[str] = None,
         db: Session = None
     ) -> str:
         """
-        Generate AI summary & analysis report based on workspace statistics feed.
+        Generate AI summary & analysis report or answer follow-up chat messages
+        based on workspace statistics feed.
         """
         if not db:
             raise ValueError("Database session required to fetch Gemini settings.")
@@ -118,7 +121,7 @@ class GeminiService:
         psid, psidts, api_key = self._get_gemini_credentials(db)
 
         if not psid and not api_key:
-            raise ValueError("Admin belum mengatur Cookie Gemini atau Gemini API Key di Control Panel.")
+            raise ValueError("Admin belum mengatur Session Cookie Shiera AI atau API Key di Control Panel.")
 
         # Prepare summary payload text for prompt
         aggregated = stats_data.get("aggregated", {})
@@ -140,9 +143,9 @@ class GeminiService:
             for i, p in enumerate(top_posts)
         ])
 
-        prompt = f"""
+        system_context = f"""
 Kamu adalah Shiera AI Senior Analytics Specialist & Chief Marketing Officer (CMO).
-Tugasmu adalah menganalisis data performa statistik sosial media pengguna Shiera dan memberikan laporan analisis eksekutif yang tajam, profesional, bersih, serta berisi rekomendasi taktis untuk meningkatkan pertumbuhan engagement.
+Tugasmu adalah membantu pengguna Shiera menganalisis statistik sosial media mereka dan berdiskusi secara interaktif.
 
 ### DATA METRIK STATISTIK ({period_label}):
 - Total Postingan: {aggregated.get('total_posts', 0)}
@@ -154,20 +157,46 @@ Tugasmu adalah menganalisis data performa statistik sosial media pengguna Shiera
 - Total Video Views: {aggregated.get('video_views', 0):,}
 - Rata-rata Engagement Rate: {aggregated.get('engagement_rate', 0)}%
 
-### DAFTAR AKUN YANG DIANALISIS:
+### DAFTAR AKUN TERHUBUNG:
 {accounts_summary_str if accounts_summary_str else "Tidak ada akun terhubung."}
 
-### KONTEN DENGAN ENGAGEMENT TERTINGGI (TOP POSTS):
+### KONTEN TERTINGGI (TOP POSTS):
 {top_posts_str if top_posts_str else "Belum ada postingan dalam periode ini."}
-
-{f"### INSTRUKSI TAMBAHAN DARI PENGGUNA:\n{custom_instructions}" if custom_instructions else ""}
 
 ---
 
-### PEDOMAN PENULISAN LAPORAN SHIERA AI:
-1. Tuliskan analisis dalam Bahasa Indonesia yang sangat profesional, ramah, dan solutif.
-2. Gunakan judul bab utama dengan format `## ` dan sub-bab dengan `### `.
-3. Gunakan poin-poin (* atau -) dan teks tebal (**teks**) dengan rapi. Hindari karakter aneh atau simbol mentah yang mengganggu.
+### PEDOMAN KETAT PENULISAN SHIERA AI:
+1. Tuliskan jawaban dalam Bahasa Indonesia yang sangat profesional, ramah, dan solutif.
+2. DILARANG KERAS menggunakan tag HTML mentah, blok kode Python (seperti ```python), atau sintaksis kode pemrograman. HANYA gunakan Bahasa Indonesia murni dan poin-poin markdown sederhana.
+3. Gunakan penulisan bold (**teks**) dan poin list (* ) dengan rapi tanpa simbol mentah yang mengganggu.
+"""
+
+        # Build prompt based on whether it's initial summary generation or a follow-up conversation
+        if user_message:
+            # Build conversation log from chat_history
+            history_str = ""
+            if chat_history:
+                for msg in chat_history[-6:]:
+                    role_label = "Pengguna" if msg.get("sender") == "user" else "Shiera AI"
+                    history_str += f"{role_label}: {msg.get('text', '')}\n\n"
+
+            prompt = f"""
+{system_context}
+
+### RIWAYAT PERCAKAPAN:
+{history_str}
+
+Pengguna: {user_message}
+
+Shiera AI: Berikan jawaban kelanjutan yang membantu, spesifik, dan ramah berdasarkan data statistik di atas.
+"""
+        else:
+            prompt = f"""
+{system_context}
+
+{f"### INSTRUKSI KHUSUS:\n{custom_instructions}" if custom_instructions else ""}
+
+### FORMAT LAPORAN WALKAN PERTAMA:
 
 ## 📊 1. Ringkasan Eksekutif Performa
 (Berikan kesimpulan umum tentang performa dalam 2-3 kalimat tajam, soroti pencapaian utama dan engagement rate)
@@ -190,7 +219,7 @@ Tugasmu adalah menganalisis data performa statistik sosial media pengguna Shiera
                 await client.init()
                 response = await client.generate_content(prompt)
                 text_res = getattr(response, "text", str(response))
-                if text_res and len(text_res.strip()) > 30:
+                if text_res and len(text_res.strip()) > 10:
                     return text_res
             except Exception as exc:
                 logger.warning(f"gemini-webapi generation failed, fallbacking: {exc}")
@@ -209,6 +238,7 @@ Tugasmu adalah menganalisis data performa statistik sosial media pengguna Shiera
                 raise RuntimeError(f"Gagal memproses dengan Shiera AI Engine: {exc}")
 
         raise RuntimeError("Gagal menghasilkan laporan AI. Pastikan Session Cookie Shiera AI atau API Key valid di Admin Settings.")
+
 
 
 

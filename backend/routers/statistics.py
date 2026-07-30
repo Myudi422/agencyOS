@@ -470,12 +470,18 @@ def _compute_daily_breakdown(posts: List[Dict[str, Any]]) -> List[Dict[str, Any]
 
 # ─── Gemini AI Summary Endpoint ────────────────────────────────────────────────
 
+class ChatItem(BaseModel):
+    sender: str
+    text: str
+
 class AISummaryRequest(BaseModel):
     workspace_id: str
     account_ids: Optional[List[str]] = None
     date_from: Optional[str] = None
     date_to: Optional[str] = None
     custom_instructions: Optional[str] = None
+    chat_history: Optional[List[ChatItem]] = None
+    user_message: Optional[str] = None
 
 
 @router.post("/ai-summary")
@@ -485,8 +491,8 @@ async def generate_ai_summary(
     current_user: User = Depends(require_user),
 ):
     """
-    Generate AI Executive Summary and recommendations for workspace social media statistics.
-    Uses admin-configured Gemini WebAPI cookies or Gemini API Key.
+    Generate AI Executive Summary or answer follow-up conversation messages for workspace statistics.
+    Uses admin-configured session credentials.
     """
     from backend.services.gemini_service import gemini_service
 
@@ -502,9 +508,12 @@ async def generate_ai_summary(
     )
 
     try:
+        history_list = [h.dict() for h in req.chat_history] if req.chat_history else None
         summary_text = await gemini_service.generate_statistics_summary(
             stats_data=feed_data,
             custom_instructions=req.custom_instructions,
+            chat_history=history_list,
+            user_message=req.user_message,
             db=db,
         )
         return {
@@ -514,6 +523,7 @@ async def generate_ai_summary(
             "total_accounts": len(feed_data.get("accounts", [])),
             "generated_at": datetime.utcnow().isoformat(),
         }
+
     except Exception as exc:
         logger.error(f"AI Summary generation error: {exc}")
         raise HTTPException(

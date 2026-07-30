@@ -472,10 +472,10 @@ export default function StatisticsPage() {
     setAiSummaryText,
     setAiLoading,
     setAiMeta,
-    aiCustomInstructions,
+    setChatMessages,
   } = useAiReportStore();
 
-  const handleGenerateAiSummary = async (overrideInstructions?: string) => {
+  const handleGenerateAiSummary = async () => {
     if (!activeWorkspace?.id) return;
     openAiModal();
     setAiLoading(true);
@@ -488,15 +488,28 @@ export default function StatisticsPage() {
           account_ids: selectedAccountIds.length > 0 ? selectedAccountIds : undefined,
           date_from: from,
           date_to: to,
-          custom_instructions: overrideInstructions !== undefined ? overrideInstructions : (aiCustomInstructions || undefined),
         }),
       });
-      setAiSummaryText(res.summary || "Tidak ada hasil analisis.");
+      const summaryText = res.summary || "Tidak ada hasil analisis.";
+      setAiSummaryText(summaryText);
       setAiMeta({
         period_label: res.period_label,
         total_accounts: res.total_accounts,
         generated_at: res.generated_at,
+        workspace_id: activeWorkspace.id,
+        account_ids: selectedAccountIds.length > 0 ? selectedAccountIds : undefined,
+        date_from: from,
+        date_to: to,
       });
+      // Initialize chat thread with first overview report message
+      setChatMessages([
+        {
+          id: "init-ai-" + Date.now(),
+          sender: "ai",
+          text: summaryText,
+          timestamp: new Date().toISOString(),
+        },
+      ]);
       toast.success("Laporan Shiera AI berhasil dibuat!");
     } catch (err: any) {
       toast.error(err.message || "Gagal membuat Laporan AI. Pastikan Cookie Session Shiera AI diatur oleh Admin.");
@@ -507,8 +520,6 @@ export default function StatisticsPage() {
   };
 
   const dropdownRef = useRef<HTMLDivElement>(null);
-
-
 
   // ── Reset timeline page on data refresh ──
   useEffect(() => {
@@ -539,11 +550,11 @@ export default function StatisticsPage() {
   }, []);
 
   // ── Fetch statistics ──
-  const loadStats = useCallback(async (forceRefresh: boolean = false) => {
+  const loadStatsWithPeriod = useCallback(async (targetPeriod: PeriodKey, forceRefresh: boolean = false) => {
     if (!activeWorkspace?.id) return;
     setLoading(true);
     try {
-      const { from, to } = getDateRange(period, customFrom, customTo);
+      const { from, to } = getDateRange(targetPeriod, customFrom, customTo);
       const params = new URLSearchParams({ workspace_id: activeWorkspace.id, date_from: from, date_to: to });
       if (forceRefresh) params.append("force_refresh", "true");
       selectedAccountIds.forEach(id => params.append("account_ids", id));
@@ -556,12 +567,20 @@ export default function StatisticsPage() {
     } finally {
       setLoading(false);
     }
-  }, [activeWorkspace?.id, period, customFrom, customTo, selectedAccountIds]);
+  }, [activeWorkspace?.id, customFrom, customTo, selectedAccountIds]);
 
-  // Auto-load when workspace is ready or workspace changes
+  const loadStats = useCallback(async (forceRefresh: boolean = false) => {
+    return loadStatsWithPeriod(period, forceRefresh);
+  }, [loadStatsWithPeriod, period]);
+
+  // Auto-load ONLY when workspace initially loads
   useEffect(() => {
-    if (activeWorkspace?.id) loadStats(false);
-  }, [activeWorkspace?.id, loadStats]);
+    if (activeWorkspace?.id) {
+      loadStatsWithPeriod("today", false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeWorkspace?.id]);
+
 
   // Open PDF Customizer Modal
   const handleOpenPdfModal = () => {
@@ -810,7 +829,13 @@ export default function StatisticsPage() {
           {PERIOD_OPTIONS.map(opt => (
             <button
               key={opt.key}
-              onClick={() => setPeriod(opt.key)}
+              onClick={() => {
+                setPeriod(opt.key);
+                if (opt.key !== "custom") {
+                  loadStatsWithPeriod(opt.key, false);
+                }
+              }}
+
               className={`px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
                 period === opt.key ? "bg-white text-purple-700 shadow-sm" : "text-slate-500 hover:text-slate-700"
               }`}
