@@ -422,3 +422,147 @@ def get_benchmark_matrix(
         "avg_industry_er": avg_industry_er,
         "total_competitors": len(competitors)
     }
+
+
+@router.get("/daily-feed")
+def get_daily_feed(
+    days: int = Query(1, ge=1, le=30),
+    ctx: tuple[User, Workspace] = Depends(get_current_user_and_workspace),
+    db: Session = Depends(get_db)
+):
+    """
+    Get daily update feed across ALL tracked competitor brands in the workspace.
+    Filters posts created within the last N days (default: 1 day / last 24h).
+    """
+    from datetime import timedelta
+    _, workspace = ctx
+
+    cutoff_date = datetime.utcnow() - timedelta(days=days)
+
+    # Query competitor posts joined with competitor accounts for this workspace
+    posts_query = db.query(CompetitorPost, CompetitorAccount).join(
+        CompetitorAccount, CompetitorPost.competitor_id == CompetitorAccount.id
+    ).filter(
+        CompetitorAccount.workspace_id == workspace.id
+    )
+
+    # First attempt: filter by cutoff_date
+    recent_posts = posts_query.filter(
+        CompetitorPost.posted_at >= cutoff_date
+    ).order_by(CompetitorPost.posted_at.desc()).all()
+
+    # Fallback: if no posts in strict N days, get the 30 most recent posts overall across all brands
+    is_fallback = False
+    if not recent_posts:
+        recent_posts = posts_query.order_by(CompetitorPost.posted_at.desc()).limit(30).all()
+        is_fallback = True
+
+    result = []
+    active_brands = set()
+    top_viral_post = None
+    max_er = -1.0
+
+    for post, account in recent_posts:
+        active_brands.add(account.username)
+
+        post_data = {
+            "id": post.id,
+            "competitor_id": account.id,
+            "username": account.username,
+            "full_name": account.full_name,
+            "profile_pic_url": account.profile_pic_url,
+            "is_verified": account.is_verified,
+            "instagram_media_id": post.instagram_media_id,
+            "code": post.code,
+            "post_type": post.post_type,
+            "caption": post.caption,
+            "thumbnail_url": post.thumbnail_url,
+            "media_urls": post.media_urls or [],
+            "like_count": post.like_count,
+            "comment_count": post.comment_count,
+            "engagement_rate": post.engagement_rate,
+            "is_top_performer": post.is_top_performer,
+            "posted_at": post.posted_at.isoformat() if post.posted_at else None,
+            "instagram_url": f"https://www.instagram.com/p/{post.code}/" if post.code else None
+        }
+        result.append(post_data)
+
+        if post.engagement_rate > max_er:
+            max_er = post.engagement_rate
+            top_viral_post = post_data
+
+    return {
+        "days": days,
+        "is_fallback": is_fallback,
+        "total_posts": len(result),
+        "active_brands_count": len(active_brands),
+        "top_viral_post": top_viral_post,
+        "posts": result
+    }
+
+
+@router.post("/sync-all")
+def sync_all_competitors(
+    ctx: tuple[User, Workspace] = Depends(get_current_user_and_workspace),
+    db: Session = Depends(get_db)
+):
+    """Trigger a refresh of profile metrics and latest posts across ALL competitors in workspace."""
+    user, workspace = ctx
+    competitors = db.query(CompetitorAccount).filter(
+        CompetitorAccount.workspace_id == workspace.id
+    ).all()
+
+    if not competitors:
+        return {"status": "ok", "message": "Belum ada kompetitor yang dipantau.", "synced_count": 0}
+
+    synced_count = 0
+    errors = []
+
+    for account in competitors:
+        try:
+            profile_data = instagrapi_service.fetch_competitor_profile(db, account.username)
+            account.followers_count = profile_data["followers_count"]
+            account.following_count = profile_data["following_count"]
+            account.media_count = profile_data["media_count"]
+            account.is_verified = profile_data["is_verified"]
+
+            posts_data = instagrapi_service.fetch_competitor_posts(db, account.username, amount=20)
+            account.avg_likes = posts_data["avg_likes"]
+            account.avg_comments = posts_data["avg_comments"]
+            account.engagement_rate = posts_data["engagement_rate"]
+            account.top_hashtags = posts_data["top_hashtags"]
+            account.last_synced_at = datetime.utcnow()
+
+            # Refresh posts
+            db.query(CompetitorPost).filter(CompetitorPost.competitor_id == account.id).delete()
+
+            for p in posts_data["posts"]:
+                c_post = CompetitorPost(
+                    competitor_id=account.id,
+                    instagram_media_id=p["instagram_media_id"],
+                    code=p["code"],
+                    post_type=p["post_type"],
+                    caption=p["caption"],
+                    thumbnail_url=p["thumbnail_url"],
+                    media_urls=p["media_urls"],
+                    like_count=p["like_count"],
+                    comment_count=p["comment_count"],
+                    engagement_rate=p["engagement_rate"],
+                    is_top_performer=p["is_top_performer"],
+                    posted_at=datetime.fromisoformat(p["posted_at"]) if p["posted_at"] else datetime.utcnow()
+                )
+                db.add(c_post)
+
+            db.commit()
+            synced_count += 1
+        except Exception as e:
+            logger.warning(f"Sync-all error for @{account.username}: {e}")
+            errors.append(f"@{account.username}: {str(e)}")
+
+    return {
+        "status": "ok",
+        "message": f"Sync selesai! {synced_count}/{len(competitors)} brand berhasil diperbarui.",
+        "synced_count": synced_count,
+        "errors": errors
+    }
+

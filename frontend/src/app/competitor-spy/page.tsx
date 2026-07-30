@@ -5,7 +5,8 @@ import {
   Target, Plus, RefreshCw, Trash2, ExternalLink, Flame, Search,
   TrendingUp, Users, Heart, MessageSquare, Award, Sparkles,
   BarChart3, CheckCircle2, AlertCircle, Eye, ArrowUpRight, Copy,
-  Grid, ListFilter, ShieldCheck, Instagram, ChevronRight, X
+  Grid, ListFilter, ShieldCheck, Instagram, ChevronRight, X,
+  CalendarDays, Zap, Clock, Filter
 } from "lucide-react";
 import { fetchApi } from "@/lib/api";
 import { useStore } from "@/store/useStore";
@@ -48,9 +49,15 @@ interface CompetitorPost {
   is_top_performer: boolean;
   posted_at?: string;
   instagram_url?: string;
+
+  // Extra fields in Daily Feed
+  username?: string;
+  full_name?: string;
+  profile_pic_url?: string;
+  is_verified?: boolean;
 }
 
-type ActiveTab = "accounts" | "feed" | "benchmark";
+type ActiveTab = "accounts" | "daily" | "benchmark";
 
 export default function CompetitorSpyPage() {
   const { activeWorkspace, openComposer } = useStore();
@@ -69,6 +76,7 @@ export default function CompetitorSpyPage() {
 
   // Syncing state per competitor ID
   const [syncingMap, setSyncingMap] = useState<Record<string, boolean>>({});
+  const [syncingAll, setSyncingAll] = useState(false);
 
   // Selected competitor for Post Detail modal
   const [selectedCompetitor, setSelectedCompetitor] = useState<Competitor | null>(null);
@@ -79,6 +87,21 @@ export default function CompetitorSpyPage() {
   // Benchmark matrix state
   const [benchmarkData, setBenchmarkData] = useState<any>(null);
   const [benchmarkLoading, setBenchmarkLoading] = useState(false);
+
+  // Daily Update Feed state
+  const [dailyPosts, setDailyPosts] = useState<CompetitorPost[]>([]);
+  const [dailyLoading, setDailyLoading] = useState(false);
+  const [dailyDays, setDailyDays] = useState<number>(1);
+  const [dailyStats, setDailyStats] = useState<{
+    total_posts: number;
+    active_brands_count: number;
+    is_fallback: boolean;
+    top_viral_post: CompetitorPost | null;
+  }>({ total_posts: 0, active_brands_count: 0, is_fallback: false, top_viral_post: null });
+
+  const [dailyBrandFilter, setDailyBrandFilter] = useState<string>("all");
+  const [dailyTypeFilter, setDailyTypeFilter] = useState<string>("all");
+  const [dailyTopOnly, setDailyTopOnly] = useState<boolean>(false);
 
   // Toast message
   const [toast, setToast] = useState<{ type: "ok" | "err"; text: string } | null>(null);
@@ -92,8 +115,10 @@ export default function CompetitorSpyPage() {
   useEffect(() => {
     if (activeTab === "benchmark") {
       loadBenchmark();
+    } else if (activeTab === "daily") {
+      loadDailyFeed(dailyDays);
     }
-  }, [activeTab]);
+  }, [activeTab, dailyDays]);
 
   const showToast = (type: "ok" | "err", text: string) => {
     setToast({ type, text });
@@ -121,6 +146,40 @@ export default function CompetitorSpyPage() {
       showToast("err", "Gagal memuat matrix benchmark.");
     } finally {
       setBenchmarkLoading(false);
+    }
+  };
+
+  const loadDailyFeed = async (days = 1) => {
+    setDailyLoading(true);
+    try {
+      const data: any = await fetchApi(`/competitors/daily-feed?days=${days}`);
+      setDailyPosts(data.posts || []);
+      setDailyStats({
+        total_posts: data.total_posts || 0,
+        active_brands_count: data.active_brands_count || 0,
+        is_fallback: data.is_fallback || false,
+        top_viral_post: data.top_viral_post || null,
+      });
+    } catch (e: any) {
+      showToast("err", "Gagal memuat Daily Update Feed.");
+    } finally {
+      setDailyLoading(false);
+    }
+  };
+
+  const handleSyncAllCompetitors = async () => {
+    setSyncingAll(true);
+    try {
+      const res: any = await fetchApi("/competitors/sync-all", { method: "POST" });
+      showToast("ok", res.message || "Sync semua brand selesai!");
+      loadCompetitors();
+      if (activeTab === "daily") {
+        loadDailyFeed(dailyDays);
+      }
+    } catch (e: any) {
+      showToast("err", `Sync All gagal: ${e.message}`);
+    } finally {
+      setSyncingAll(false);
     }
   };
 
@@ -196,8 +255,9 @@ export default function CompetitorSpyPage() {
     loadCompetitorPosts(comp.id, false);
   };
 
-  const handleUseAsInspiration = (post: CompetitorPost) => {
-    const captionDraft = `[Inspirasi dari @${selectedCompetitor?.username || "Competitor"}]\n\n${post.caption || ""}\n\n#Inspiration #ContentStrategy`;
+  const handleUseAsInspiration = (post: CompetitorPost, brandUsername?: string) => {
+    const author = brandUsername || post.username || selectedCompetitor?.username || "Competitor";
+    const captionDraft = `[Inspirasi dari @${author}]\n\n${post.caption || ""}\n\n#Inspiration #ContentStrategy`;
     openComposer([], {
       caption: captionDraft,
       media_urls: post.media_urls || (post.thumbnail_url ? [post.thumbnail_url] : []),
@@ -210,6 +270,13 @@ export default function CompetitorSpyPage() {
       c.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (c.full_name && c.full_name.toLowerCase().includes(searchQuery.toLowerCase()))
   );
+
+  const filteredDailyPosts = dailyPosts.filter((p) => {
+    if (dailyBrandFilter !== "all" && p.username !== dailyBrandFilter) return false;
+    if (dailyTypeFilter !== "all" && p.post_type !== dailyTypeFilter) return false;
+    if (dailyTopOnly && !p.is_top_performer) return false;
+    return true;
+  });
 
   return (
     <div className="space-y-6 pb-16">
@@ -245,17 +312,19 @@ export default function CompetitorSpyPage() {
               Competitor Spy &amp; Analytics
             </h1>
             <p className="text-xs md:text-sm text-slate-300 max-w-2xl leading-relaxed">
-              Pantau strategi konten, engagement rate, &amp; postingan berkinerja tinggi dari brand kompetitor Anda secara otomatis via Instagrapi.
+              Pantau strategi konten, engagement rate, &amp; postingan harian dari seluruh brand kompetitor Anda secara otomatis via Instagrapi.
             </p>
           </div>
 
           <div className="flex items-center gap-3">
             <button
-              onClick={loadCompetitors}
-              className="p-3 rounded-2xl bg-white/10 hover:bg-white/20 text-white border border-white/15 transition-all text-xs font-semibold flex items-center gap-2"
-              title="Refresh All"
+              onClick={handleSyncAllCompetitors}
+              disabled={syncingAll}
+              className="py-3 px-4 rounded-2xl bg-white/10 hover:bg-white/20 text-white border border-white/15 transition-all text-xs font-bold flex items-center gap-2 disabled:opacity-50"
+              title="Sync All Brands"
             >
-              <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin text-pink-400" : ""}`} />
+              <RefreshCw className={`w-4 h-4 ${syncingAll ? "animate-spin text-pink-400" : ""}`} />
+              <span>{syncingAll ? "Syncing All..." : "Sync All Brands"}</span>
             </button>
             <button
               onClick={() => setIsAddModalOpen(true)}
@@ -273,6 +342,7 @@ export default function CompetitorSpyPage() {
         <div className="flex gap-2 p-1 bg-slate-100/80 rounded-2xl w-fit">
           {[
             { id: "accounts", label: "Daftar Kompetitor", icon: Users, count: competitors.length },
+            { id: "daily", label: "Daily Update Feed", icon: CalendarDays, badge: "Hari Ini" },
             { id: "benchmark", label: "Benchmark Matrix", icon: BarChart3 },
           ].map((tab) => {
             const Icon = tab.icon;
@@ -292,6 +362,11 @@ export default function CompetitorSpyPage() {
                 {tab.count !== undefined && (
                   <span className="px-1.5 py-0.5 rounded-full bg-purple-100 text-purple-700 text-[10px]">
                     {tab.count}
+                  </span>
+                )}
+                {tab.badge && (
+                  <span className="px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[9px] font-extrabold uppercase">
+                    {tab.badge}
                   </span>
                 )}
               </button>
@@ -478,7 +553,228 @@ export default function CompetitorSpyPage() {
         </div>
       )}
 
-      {/* ── TAB 2: BENCHMARK MATRIX ── */}
+      {/* ── TAB 2: DAILY UPDATE FEED ── */}
+      {activeTab === "daily" && (
+        <div className="space-y-5">
+          {/* Top Control Bar & Stats */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="p-5 rounded-3xl bg-white border border-slate-200 shadow-sm flex items-center gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-amber-100 text-amber-600 flex items-center justify-center font-bold">
+                <CalendarDays className="w-6 h-6" />
+              </div>
+              <div>
+                <p className="text-xs text-slate-400 font-medium">Total Postingan Dipantau</p>
+                <p className="text-2xl font-extrabold text-slate-900">
+                  {dailyStats.total_posts} <span className="text-xs font-normal text-slate-400">Post</span>
+                </p>
+              </div>
+            </div>
+
+            <div className="p-5 rounded-3xl bg-white border border-slate-200 shadow-sm flex items-center gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-purple-100 text-purple-600 flex items-center justify-center font-bold">
+                <Users className="w-6 h-6" />
+              </div>
+              <div>
+                <p className="text-xs text-slate-400 font-medium">Brand Aktif memposting</p>
+                <p className="text-2xl font-extrabold text-purple-700">
+                  {dailyStats.active_brands_count} <span className="text-xs font-normal text-slate-400">Brand</span>
+                </p>
+              </div>
+            </div>
+
+            <div className="p-5 rounded-3xl bg-white border border-slate-200 shadow-sm flex items-center gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-pink-100 text-pink-600 flex items-center justify-center font-bold">
+                <Flame className="w-6 h-6" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs text-slate-400 font-medium">Most Viral Today</p>
+                <p className="text-sm font-extrabold text-pink-900 truncate">
+                  {dailyStats.top_viral_post ? `@${dailyStats.top_viral_post.username} (${dailyStats.top_viral_post.engagement_rate}%)` : "Belum ada"}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Time & Filter Row */}
+          <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-xs flex flex-wrap items-center justify-between gap-4">
+            {/* Range selection */}
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold text-slate-600 flex items-center gap-1">
+                <Clock className="w-3.5 h-3.5 text-purple-600" /> Periode:
+              </span>
+              {[
+                { label: "Hari Ini (24 Jam)", value: 1 },
+                { label: "3 Hari Terakhir", value: 3 },
+                { label: "7 Hari Terakhir", value: 7 },
+              ].map((opt) => (
+                <button
+                  key={opt.value}
+                  onClick={() => setDailyDays(opt.value)}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                    dailyDays === opt.value
+                      ? "bg-purple-600 text-white shadow-xs"
+                      : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Filter controls */}
+            <div className="flex flex-wrap items-center gap-2">
+              {/* Brand dropdown */}
+              <select
+                value={dailyBrandFilter}
+                onChange={(e) => setDailyBrandFilter(e.target.value)}
+                className="px-3 py-1.5 rounded-xl border border-slate-200 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-purple-400 bg-white"
+              >
+                <option value="all">Semua Brand</option>
+                {competitors.map((c) => (
+                  <option key={c.id} value={c.username}>@{c.username}</option>
+                ))}
+              </select>
+
+              {/* Type filter */}
+              <select
+                value={dailyTypeFilter}
+                onChange={(e) => setDailyTypeFilter(e.target.value)}
+                className="px-3 py-1.5 rounded-xl border border-slate-200 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-purple-400 bg-white"
+              >
+                <option value="all">Semua Tipe</option>
+                <option value="video">Reels / Video</option>
+                <option value="image">Foto Single</option>
+                <option value="carousel">Carousel Slide</option>
+              </select>
+
+              {/* Top performer toggle */}
+              <button
+                onClick={() => setDailyTopOnly(!dailyTopOnly)}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all flex items-center gap-1.5 ${
+                  dailyTopOnly
+                    ? "bg-amber-500 text-white border-amber-500 shadow-xs"
+                    : "bg-white text-slate-700 border-slate-200 hover:bg-slate-100"
+                }`}
+              >
+                <Flame className={`w-3.5 h-3.5 ${dailyTopOnly ? "text-white" : "text-amber-500"}`} />
+                <span>Top Performers Only</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Daily Posts Grid */}
+          {dailyLoading ? (
+            <div className="flex flex-col items-center justify-center py-16 space-y-3">
+              <div className="w-8 h-8 border-3 border-purple-600 border-t-transparent rounded-full animate-spin" />
+              <p className="text-xs text-slate-400 font-medium">Memuat Daily Feed kompetitor...</p>
+            </div>
+          ) : filteredDailyPosts.length === 0 ? (
+            <div className="p-12 text-center bg-white rounded-3xl border border-dashed border-slate-300 space-y-3">
+              <CalendarDays className="w-10 h-10 text-slate-300 mx-auto" />
+              <h3 className="font-bold text-slate-800 text-sm">Tidak Ada Postingan Untuk Periode Ini</h3>
+              <p className="text-xs text-slate-400 max-w-sm mx-auto">
+                Coba ubah periode ke 3 atau 7 hari terakhir, atau tekan tombol Sync All Brands untuk mengambil update feed terbaru.
+              </p>
+              <button
+                onClick={handleSyncAllCompetitors}
+                disabled={syncingAll}
+                className="py-2.5 px-4 rounded-xl gradient-brand text-white font-semibold text-xs inline-flex items-center gap-1.5 shadow-md shadow-purple-500/20 disabled:opacity-50"
+              >
+                <RefreshCw className={`w-4 h-4 ${syncingAll ? "animate-spin" : ""}`} />
+                <span>Sync All Brands Sekarang</span>
+              </button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {filteredDailyPosts.map((post) => (
+                <div
+                  key={post.id}
+                  className="rounded-2xl border border-slate-200 bg-white overflow-hidden shadow-xs hover:shadow-md transition-all flex flex-col justify-between group"
+                >
+                  <div>
+                    {/* Brand Header */}
+                    <div className="p-3 bg-slate-50/80 border-b border-slate-100 flex items-center gap-2.5">
+                      <img
+                        src={post.profile_pic_url || `https://api.dicebear.com/7.x/initials/svg?seed=${post.username}`}
+                        alt=""
+                        className="w-7 h-7 rounded-xl object-cover border border-slate-200"
+                      />
+                      <div className="min-w-0 flex-1">
+                        <p className="font-bold text-slate-900 text-xs truncate">@{post.username}</p>
+                        <p className="text-[10px] text-slate-400">
+                          {post.posted_at
+                            ? new Date(post.posted_at).toLocaleDateString("id-ID", {
+                                day: "numeric",
+                                month: "short",
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })
+                            : "Baru saja"}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Media Thumbnail Container */}
+                    <div className="relative aspect-square bg-slate-900 overflow-hidden">
+                      <img
+                        src={post.thumbnail_url || post.media_urls[0] || "/placeholder.jpg"}
+                        alt=""
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        onError={(e: any) => {
+                          e.target.src = "https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=500&auto=format&fit=crop";
+                        }}
+                      />
+                      {post.is_top_performer && (
+                        <span className="absolute top-2.5 left-2.5 px-2 py-1 rounded-full bg-amber-500 text-white font-extrabold text-[10px] flex items-center gap-1 shadow-md">
+                          <Flame className="w-3 h-3 text-white fill-white" /> Top Performer
+                        </span>
+                      )}
+
+                      <span className="absolute top-2.5 right-2.5 px-2 py-0.5 rounded-full bg-black/60 backdrop-blur-xs text-white text-[10px] font-bold capitalize">
+                        {post.post_type}
+                      </span>
+                    </div>
+
+                    {/* Caption & Stats */}
+                    <div className="p-3.5 space-y-2">
+                      <p className="text-xs text-slate-700 line-clamp-3 leading-relaxed">
+                        {post.caption || "(Tanpa caption)"}
+                      </p>
+
+                      <div className="flex items-center justify-between text-xs text-slate-500 font-semibold pt-2 border-t border-slate-100">
+                        <span className="flex items-center gap-1 text-pink-600">
+                          <Heart className="w-3.5 h-3.5 fill-pink-600" />
+                          {post.like_count.toLocaleString()}
+                        </span>
+                        <span className="flex items-center gap-1 text-blue-600">
+                          <MessageSquare className="w-3.5 h-3.5" />
+                          {post.comment_count.toLocaleString()}
+                        </span>
+                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-purple-100 text-purple-700">
+                          ER {post.engagement_rate}%
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Action */}
+                  <div className="p-3 bg-slate-50 border-t border-slate-100">
+                    <button
+                      onClick={() => handleUseAsInspiration(post, post.username)}
+                      className="w-full py-2 px-3 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-[11px] flex items-center justify-center gap-1.5 transition-all shadow-xs"
+                    >
+                      <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+                      <span>Gunakan Sebagai Inspirasi</span>
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── TAB 3: BENCHMARK MATRIX ── */}
       {activeTab === "benchmark" && (
         <div className="space-y-5">
           {benchmarkLoading ? (
@@ -800,7 +1096,7 @@ export default function CompetitorSpyPage() {
                       {/* Action */}
                       <div className="p-3 bg-slate-50 border-t border-slate-100">
                         <button
-                          onClick={() => handleUseAsInspiration(post)}
+                          onClick={() => handleUseAsInspiration(post, selectedCompetitor?.username)}
                           className="w-full py-2 px-3 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-[11px] flex items-center justify-center gap-1.5 transition-all shadow-xs"
                         >
                           <Sparkles className="w-3.5 h-3.5 text-amber-300" />
