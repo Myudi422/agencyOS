@@ -244,3 +244,15 @@ def delete_setting(
     db.delete(setting)
     db.commit()
     return {"status": "deleted", "key": key}
+
+
+@router.post("/test-gemini")
+async def test_gemini(
+    admin: User = Depends(require_admin),
+    db: Session = Depends(get_db)
+):
+    """Test Gemini WebAPI cookie or API Key connection."""
+    from backend.services.gemini_service import gemini_service
+    res = await gemini_service.test_connection(db)
+    return res
+

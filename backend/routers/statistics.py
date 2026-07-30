@@ -24,7 +24,8 @@ import logging
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, HTTPException
+from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from backend.database import get_db
@@ -465,3 +466,58 @@ def _compute_daily_breakdown(posts: List[Dict[str, Any]]) -> List[Dict[str, Any]
         daily[day_key]["reach"] += m.get("reach", 0)
         daily[day_key]["video_views"] += m.get("video_views", 0)
     return sorted(daily.values(), key=lambda d: d["date"])
+
+
+# ─── Gemini AI Summary Endpoint ────────────────────────────────────────────────
+
+class AISummaryRequest(BaseModel):
+    workspace_id: str
+    account_ids: Optional[List[str]] = None
+    date_from: Optional[str] = None
+    date_to: Optional[str] = None
+    custom_instructions: Optional[str] = None
+
+
+@router.post("/ai-summary")
+async def generate_ai_summary(
+    req: AISummaryRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_user),
+):
+    """
+    Generate AI Executive Summary and recommendations for workspace social media statistics.
+    Uses admin-configured Gemini WebAPI cookies or Gemini API Key.
+    """
+    from backend.services.gemini_service import gemini_service
+
+    # Fetch stats feed for target workspace & filters
+    feed_data = await get_statistics_feed(
+        workspace_id=req.workspace_id,
+        account_ids=req.account_ids,
+        date_from=req.date_from,
+        date_to=req.date_to,
+        force_refresh=False,
+        db=db,
+        current_user=current_user,
+    )
+
+    try:
+        summary_text = await gemini_service.generate_statistics_summary(
+            stats_data=feed_data,
+            custom_instructions=req.custom_instructions,
+            db=db,
+        )
+        return {
+            "status": "ok",
+            "summary": summary_text,
+            "period_label": feed_data.get("period_label", "Semua Waktu"),
+            "total_accounts": len(feed_data.get("accounts", [])),
+            "generated_at": datetime.utcnow().isoformat(),
+        }
+    except Exception as exc:
+        logger.error(f"AI Summary generation error: {exc}")
+        raise HTTPException(
+            status_code=500,
+            detail=str(exc) or "Gagal membuat ringkasan AI. Silakan periksa pengaturan Gemini di Admin Settings."
+        )
+

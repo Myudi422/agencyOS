@@ -6,7 +6,8 @@ import { useAuthStore } from "@/store/authStore";
 import {
   Settings, Users, CreditCard, Key, RefreshCw,
   Save, Edit2, ChevronRight, Shield, Trash2, Plus,
-  CheckCircle, AlertTriangle, Zap, Crown, Rocket, Building2
+  CheckCircle, AlertTriangle, Zap, Crown, Rocket, Building2,
+  Sparkles, Bot, CheckCircle2, XCircle
 } from "lucide-react";
 import { fetchApi } from "@/lib/api";
 
@@ -46,6 +47,10 @@ export default function AdminPage() {
   const [newSettingKey, setNewSettingKey] = useState("");
   const [newSettingValue, setNewSettingValue] = useState("");
   const [settingsSaving, setSettingsSaving] = useState(false);
+
+  // Gemini Test State
+  const [geminiTesting, setGeminiTesting] = useState(false);
+  const [geminiTestResult, setGeminiTestResult] = useState<any>(null);
 
   const [msg, setMsg] = useState<{ type: "ok" | "err"; text: string } | null>(null);
 
@@ -149,6 +154,26 @@ export default function AdminPage() {
       loadAppSettings();
     } catch { flash("err", "Delete failed"); }
   };
+
+  const testGeminiConnection = async () => {
+    setGeminiTesting(true);
+    setGeminiTestResult(null);
+    try {
+      const res: any = await fetchApi("/admin/test-gemini", { method: "POST" });
+      setGeminiTestResult(res);
+      if (res.success) {
+        flash("ok", res.message || "Koneksi Gemini berhasil!");
+      } else {
+        flash("err", res.message || "Gagal menghubungkan Gemini.");
+      }
+    } catch (e: any) {
+      setGeminiTestResult({ success: false, message: e.message || "Terjadi kesalahan saat menguji Gemini." });
+      flash("err", "Test Gemini gagal");
+    } finally {
+      setGeminiTesting(false);
+    }
+  };
+
 
   if (isLoading || !isAdmin) {
     return (
@@ -357,6 +382,105 @@ export default function AdminPage() {
           <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-800 text-xs">
             ⚠️ API Keys tersimpan di database. Untuk production, gunakan environment variables di Vercel.
           </div>
+
+          {/* ── GEMINI AI WEBAPI COOKIE CONFIGURATION ── */}
+          <div className="p-6 rounded-3xl bg-gradient-to-br from-purple-900 via-indigo-900 to-slate-900 text-white shadow-xl space-y-4 border border-purple-500/20">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-purple-500/20 border border-purple-400/30 flex items-center justify-center text-purple-300">
+                  <Sparkles className="w-5 h-5 animate-pulse" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold font-['Outfit'] text-white">Gemini AI WebAPI Cookie Configuration</h3>
+                  <p className="text-xs text-purple-200">Cookie admin digunakan untuk fitur **Summary AI** seluruh pengguna</p>
+                </div>
+              </div>
+              <button
+                onClick={testGeminiConnection}
+                disabled={geminiTesting}
+                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-purple-500 hover:bg-purple-600 text-white text-xs font-semibold shadow-lg shadow-purple-500/30 transition-all disabled:opacity-60"
+              >
+                {geminiTesting ? (
+                  <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <Bot className="w-3.5 h-3.5" />
+                )}
+                {geminiTesting ? "Mengecek Koneksi..." : "Test Koneksi Gemini"}
+              </button>
+            </div>
+
+            {/* Instruction box */}
+            <div className="p-3.5 rounded-2xl bg-white/5 border border-white/10 text-xs text-purple-100 space-y-1">
+              <p className="font-semibold text-purple-200">💡 Cara Mendapatkan Cookie Gemini (`gemini-webapi`):</p>
+              <ol className="list-decimal list-inside text-[11px] text-purple-300/90 space-y-0.5">
+                <li>Buka <a href="https://gemini.google.com" target="_blank" rel="noreferrer" className="underline text-purple-200">gemini.google.com</a> di browser dan pastikan sudah login akun Google.</li>
+                <li>Tekan <kbd className="px-1 bg-white/10 rounded">F12</kbd> &rarr; tab <strong>Application</strong> / <strong>Storage</strong> &rarr; <strong>Cookies</strong>.</li>
+                <li>Cari cookie bernama <code className="bg-purple-950/80 px-1 py-0.5 rounded font-mono text-purple-200">__Secure-1PSID</code> dan <code className="bg-purple-950/80 px-1 py-0.5 rounded font-mono text-purple-200">__Secure-1PSIDTS</code>, lalu salin nilainya ke bawah.</li>
+              </ol>
+            </div>
+
+            {/* Input fields */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-2">
+              {[
+                { key: "GEMINI_1PSID", label: "__Secure-1PSID (Cookie Utama)", hint: "Wajib untuk gemini-webapi" },
+                { key: "GEMINI_1PSIDTS", label: "__Secure-1PSIDTS (Cookie TS)", hint: "Wajib jika akun memerlukan 1PSIDTS" },
+                { key: "GEMINI_API_KEY", label: "Gemini API Key (Fallback)", hint: "AIzaSy... (Opsional jika cookie exp)" },
+              ].map((s) => (
+                <div key={s.key} className="p-3.5 rounded-2xl bg-white/10 border border-white/10 space-y-2">
+                  <div>
+                    <label className="text-xs font-semibold text-white block">{s.label}</label>
+                    <p className="text-[10px] text-purple-300">{s.hint}</p>
+                  </div>
+                  <div className="flex gap-1.5">
+                    <input
+                      type="password"
+                      defaultValue={appSettings[s.key] || ""}
+                      id={`setting-${s.key}`}
+                      placeholder="Masukkan value..."
+                      className="flex-1 px-3 py-1.5 rounded-xl border border-white/20 text-xs bg-slate-900/60 text-white placeholder-purple-300/40 focus:outline-none focus:ring-2 focus:ring-purple-400 font-mono"
+                    />
+                    <button
+                      onClick={() => {
+                        const el = document.getElementById(`setting-${s.key}`) as HTMLInputElement;
+                        if (el) saveSetting(s.key, el.value);
+                      }}
+                      disabled={settingsSaving}
+                      className="px-3 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-medium transition-all disabled:opacity-60 shrink-0"
+                    >
+                      <Save className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Test Connection Result Box */}
+            {geminiTestResult && (
+              <div className={`p-3.5 rounded-2xl border text-xs flex items-start gap-3 transition-all ${
+                geminiTestResult.success
+                  ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-200"
+                  : "bg-red-500/10 border-red-500/30 text-red-200"
+              }`}>
+                {geminiTestResult.success ? (
+                  <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
+                ) : (
+                  <XCircle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
+                )}
+                <div>
+                  <p className="font-bold">{geminiTestResult.message}</p>
+                  {geminiTestResult.provider && (
+                    <p className="text-[11px] opacity-80">Provider aktif: <strong>{geminiTestResult.provider}</strong></p>
+                  )}
+                  {geminiTestResult.sample && (
+                    <p className="text-[10px] font-mono mt-1 bg-black/30 p-2 rounded-lg opacity-90 truncate max-w-xl">
+                      Response: "{geminiTestResult.sample}"
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+
 
           {/* Quick-add common settings */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
