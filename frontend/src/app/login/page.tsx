@@ -107,7 +107,9 @@ export default function LoginPage() {
       <div className="flex-1 flex flex-col items-center justify-center px-6 sm:px-12 lg:px-16 xl:px-24 py-12 bg-white">
         {/* Mobile logo */}
         <div className="lg:hidden mb-10 flex items-center gap-2.5">
-          <img src="/logo.png" alt="Shiera Logo" className="w-9 h-9 object-contain rounded-xl" />
+          <div className="w-9 h-9 rounded-2xl bg-purple-600 p-1.5 flex items-center justify-center shadow-md shadow-purple-500/20">
+            <img src="/logo.png" alt="Shiera Logo" className="w-full h-full object-contain brightness-0 invert" />
+          </div>
           <span className="font-bold text-xl text-slate-900 tracking-tight" style={{ fontFamily: "'Outfit', sans-serif" }}>
             Shiera
           </span>

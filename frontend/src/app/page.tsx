@@ -313,11 +313,13 @@ export default function LandingHomePage() {
         {/* Brand Logo Left */}
         <div className="flex items-center gap-2">
           <Link href="/" className="flex items-center gap-2.5 group">
-            <img 
-              src="/logo.png" 
-              alt="Shiera Logo" 
-              className="w-10 h-10 object-contain rounded-xl shadow-xs group-hover:scale-105 transition-all" 
-            />
+            <div className="w-10 h-10 rounded-2xl bg-purple-600 p-2 flex items-center justify-center shadow-md shadow-purple-500/20 group-hover:scale-105 transition-all">
+              <img 
+                src="/logo.png" 
+                alt="Shiera Logo" 
+                className="w-full h-full object-contain brightness-0 invert" 
+              />
+            </div>
             <span className="text-xl font-extrabold tracking-tight text-slate-900 font-['Outfit']">
               Shiera<span className="text-purple-600">.</span>
             </span>
@@ -911,7 +913,9 @@ export default function LandingHomePage() {
           
           <div className="space-y-3">
             <div className="flex items-center gap-2.5">
-              <img src="/logo.png" alt="Shiera Logo" className="w-8 h-8 object-contain rounded-lg" />
+              <div className="w-8 h-8 rounded-xl bg-purple-600 p-1.5 flex items-center justify-center shadow-sm">
+                <img src="/logo.png" alt="Shiera Logo" className="w-full h-full object-contain brightness-0 invert" />
+              </div>
               <span className="text-lg font-bold text-slate-900 font-['Outfit']">Shiera<span className="text-purple-600">.</span></span>
             </div>
             <p className="text-slate-500 leading-relaxed">

@@ -105,8 +105,8 @@ export default function Sidebar({ isMobileOpen = false, onCloseMobile }: Sidebar
           {/* Brand Header */}
           <div className="p-4 border-b border-slate-200/80 flex items-center justify-between shrink-0">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl flex items-center justify-center overflow-hidden shrink-0 shadow-xs border border-slate-100">
-                <img src="/logo.png" alt="Shiera Logo" className="w-full h-full object-contain" />
+              <div className="w-8 h-8 rounded-xl bg-purple-600 p-1.5 flex items-center justify-center shrink-0 shadow-md shadow-purple-500/25">
+                <img src="/logo.png" alt="Shiera Logo" className="w-full h-full object-contain brightness-0 invert" />
               </div>
               <div>
                 <h1 className="font-extrabold text-base tracking-tight text-slate-900 font-['Outfit'] leading-none">
