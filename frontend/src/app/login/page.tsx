@@ -4,10 +4,12 @@ import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { signInWithGoogle } from "@/lib/auth";
 import { useAuthStore } from "@/store/authStore";
+import { useSplashStore } from "@/store/useSplashStore";
 
 export default function LoginPage() {
   const router = useRouter();
   const { isAuthenticated, isLoading } = useAuthStore();
+  const { showSplash } = useSplashStore();
   const [signing, setSigning] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -20,6 +22,7 @@ export default function LoginPage() {
   const handleGoogleLogin = async () => {
     setSigning(true);
     setError(null);
+    showSplash("Memverifikasi Autentikasi Google...", 8000);
     try {
       await signInWithGoogle();
       // AuthProvider will handle the redirect after syncing

@@ -13,7 +13,7 @@ import { useAuthStore } from "@/store/authStore";
 import AccountSettingsModal from "@/components/profile/AccountSettingsModal";
 
 import ShieraAiReportWidget from "@/components/common/ShieraAiReportWidget";
-
+import SplashScreen from "@/components/common/SplashScreen";
 
 const PUBLIC_PATHS = ["/landing", "/login", "/pricing", "/billing/success", "/onboarding"];
 
@@ -24,8 +24,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading, needsOnboarding, workspaceId } = useAuthStore();
 
   const isPublicPage = pathname === "/" || PUBLIC_PATHS.some((p) => pathname.startsWith(p));
-
-
 
   // Auth & Onboarding guard
   useEffect(() => {
@@ -47,25 +45,24 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   // Public pages (landing, login, pricing, etc.) rendered without sidebar/header
   if (isPublicPage) {
-    return <>{children}</>;
+    return (
+      <>
+        <SplashScreen />
+        {children}
+      </>
+    );
   }
 
-  // Show loading spinner while auth initializes
+  // Show splash screen while auth initializes
   if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-10 h-10 border-3 border-purple-600 border-t-transparent rounded-full animate-spin" />
-          <p className="text-xs text-slate-400 font-medium">Loading Shiera...</p>
-        </div>
-      </div>
-    );
+    return <SplashScreen />;
   }
 
   if (!isAuthenticated) return null;
 
   return (
     <div className="flex min-h-screen bg-slate-50/50">
+      <SplashScreen />
       <Sidebar
         isMobileOpen={isMobileOpen}
         onCloseMobile={() => setIsMobileOpen(false)}

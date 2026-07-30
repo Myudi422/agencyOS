@@ -13,6 +13,7 @@ import { useStore } from "@/store/useStore";
 import { useAuthStore } from "@/store/authStore";
 import { fetchApi } from "@/lib/api";
 import { signOut } from "@/lib/auth";
+import { useSplashStore } from "@/store/useSplashStore";
 
 interface SidebarProps {
   isMobileOpen?: boolean;
@@ -38,6 +39,7 @@ export default function Sidebar({ isMobileOpen = false, onCloseMobile }: Sidebar
   const router = useRouter();
   const { workspaces, activeWorkspace, setWorkspaces, setActiveWorkspace, openComposer, openSettings } = useStore();
   const { user, subscription, isAdmin, logout } = useAuthStore();
+  const { showSplash } = useSplashStore();
   const [loadingPortal, setLoadingPortal] = useState(false);
 
   useEffect(() => {
@@ -58,6 +60,7 @@ export default function Sidebar({ isMobileOpen = false, onCloseMobile }: Sidebar
   }, []);
 
   const handleLogout = async () => {
+    showSplash("Mengamankan sesi & Keluar...", 1500);
     await signOut();
     logout();
     router.replace("/login");
