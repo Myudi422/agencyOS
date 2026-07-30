@@ -10,14 +10,15 @@ from backend.database import get_db
 from backend.models.models import Post, PostStatus, AccountStatus, SocialAccount, ActivityLog, User
 from backend.routers.firebase_auth import require_user, get_user_workspace
 from backend.services.postforme_service import postforme_service
+from backend.routers.statistics import _fetch_all_posts_for_account, _parse_iso
 
 logger = logging.getLogger("CalendarRouter")
 
 router = APIRouter(prefix="/calendar", tags=["Calendar"])
 
-# In-memory TTL Cache for Calendar (TTL: 5 minutes = 300 seconds)
+# In-memory TTL Cache for Calendar (TTL: 3 minutes = 180 seconds)
 _CALENDAR_CACHE: Dict[str, tuple] = {}
-CALENDAR_CACHE_TTL_SECONDS = 300
+CALENDAR_CACHE_TTL_SECONDS = 180
 
 class RescheduleRequest(BaseModel):
     new_scheduled_at: str  # ISO datetime
@@ -35,9 +36,9 @@ async def get_calendar_posts(
     Retrieves scheduled, published, and native historical posts for the authenticated user's workspace.
     - Validates user workspace ownership (multi-tenancy)
     - Excludes local draft posts
-    - Fetches live scheduled posts from PostForMe API
-    - Fetches historical native feed posts (published BEFORE connecting account to PostForMe)
-    - Uses 5-minute TTL cache for ultra-fast performance
+    - Auto-resolves missing provider account IDs
+    - Fetches live scheduled posts & native historical feed posts
+    - Uses TTL cache only for valid non-empty responses
     """
     get_user_workspace(current_user, workspace_id, db)  # Strict multi-tenancy check
 
@@ -46,10 +47,10 @@ async def get_calendar_posts(
 
     if not force_refresh:
         cached_entry = _CALENDAR_CACHE.get(cache_key)
-        if cached_entry and (now_ts - cached_entry[0] < CALENDAR_CACHE_TTL_SECONDS):
+        if cached_entry and (now_ts - cached_entry[0] < CALENDAR_CACHE_TTL_SECONDS) and len(cached_entry[1]) > 0:
             return cached_entry[1]
 
-    # 1. Fetch connected social accounts for this workspace
+    # 1. Fetch connected social accounts and auto-resolve missing postforme_account_ids
     accounts = (
         db.query(SocialAccount)
         .filter(
@@ -58,14 +59,30 @@ async def get_calendar_posts(
         )
         .all()
     )
+
+    if accounts:
+        try:
+            res_accs = await postforme_service.get_social_accounts(external_id=[workspace_id], limit=100)
+            items_acc = res_accs.get("data", [])
+            for acc in accounts:
+                if not acc.postforme_account_id:
+                    for item in items_acc:
+                        if (item.get("username") and item.get("username").lower() == acc.username.lower()) or item.get("user_id") == acc.platform_account_id:
+                            acc.postforme_account_id = item.get("id")
+                            db.commit()
+                            break
+        except Exception as err:
+            logger.warning(f"Failed to auto-resolve account IDs in calendar: {err}")
+
     acc_by_pf_id = {acc.postforme_account_id: acc for acc in accounts if acc.postforme_account_id}
+    acc_by_plat_id = {acc.platform_account_id: acc for acc in accounts if acc.platform_account_id}
 
     # 2. Fetch non-draft posts from local DB for this workspace
     local_posts = (
         db.query(Post)
         .filter(
             Post.workspace_id == workspace_id,
-            Post.status != PostStatus.DRAFT  # Exclude drafts!
+            Post.status != PostStatus.DRAFT
         )
         .all()
     )
@@ -73,55 +90,45 @@ async def get_calendar_posts(
 
     # 3. Fetch scheduled & published posts from PostForMe API for workspace accounts
     pf_posts = []
-    pf_acc_ids = list(acc_by_pf_id.keys())
-    if pf_acc_ids:
+    target_account_ids = list(acc_by_pf_id.keys()) or [a.platform_account_id for a in accounts if a.platform_account_id]
+    if target_account_ids:
         try:
-            res = await postforme_service.get_posts(
-                social_account_id=pf_acc_ids,
+            res_pf = await postforme_service.get_posts(
+                social_account_id=target_account_ids,
                 status=["scheduled", "published", "completed", "processing"],
                 limit=100
             )
-            pf_posts = res.get("data", [])
+            pf_posts = res_pf.get("data", [])
         except Exception as e:
             logger.warning(f"PostForMe calendar get_posts failed: {e}")
 
-    # 4. Fetch native historical social feed posts (published BEFORE connecting account)
-    all_real_feed_items = []
+    # 4. Fetch native historical social feed posts (including posts published BEFORE connecting)
+    all_real_feed_posts = []
     if accounts:
         semaphore = asyncio.Semaphore(5)
-        async def _fetch_acc_feed(acc):
+        async def _fetch_feed(acc):
             async with semaphore:
                 try:
-                    pf_acc_id = acc.postforme_account_id
-                    if not pf_acc_id:
-                        try:
-                            res_accs = await postforme_service.get_social_accounts(external_id=[acc.workspace_id], limit=100)
-                            for item in res_accs.get("data", []):
-                                if (item.get("username") and item.get("username").lower() == acc.username.lower()) or item.get("user_id") == acc.platform_account_id:
-                                    pf_acc_id = item.get("id")
-                                    acc.postforme_account_id = pf_acc_id
-                                    db.commit()
-                                    break
-                        except Exception:
-                            pass
-
-                    target_id = pf_acc_id or acc.platform_account_id or acc.id
-                    res_feed = await postforme_service.get_account_feed_paginated(
+                    target_id = acc.postforme_account_id or acc.platform_account_id or acc.id
+                    plat_str = acc.platform.value if hasattr(acc.platform, "value") else str(acc.platform)
+                    posts = await _fetch_all_posts_for_account(
                         social_account_id=target_id,
-                        limit=30,
-                        expand_metrics=True
+                        platform=plat_str,
+                        date_from=None,
+                        date_to=None,
+                        limit_per_page=50
                     )
-                    items = res_feed.get("data") or res_feed.get("items") or []
-                    for item in items:
-                        item["_acc"] = acc
-                    return items
-                except Exception:
+                    for p in posts:
+                        p["_acc"] = acc
+                    return posts
+                except Exception as err:
+                    logger.warning(f"Calendar feed fetch error for @{acc.username}: {err}")
                     return []
 
-        feed_results = await asyncio.gather(*[_fetch_acc_feed(a) for a in accounts], return_exceptions=True)
-        for flist in feed_results:
+        feed_lists = await asyncio.gather(*[_fetch_feed(a) for a in accounts], return_exceptions=True)
+        for flist in feed_lists:
             if isinstance(flist, list):
-                all_real_feed_items.extend(flist)
+                all_real_feed_posts.extend(flist)
 
     events = []
     seen_ids = set()
@@ -136,8 +143,8 @@ async def get_calendar_posts(
         local = pf_id_to_local.get(pf_id)
 
         sched_at = pf.get("scheduled_at") or (local.scheduled_at.isoformat() if local and local.scheduled_at else None)
-        created_at = pf.get("created_at") or (local.created_at.isoformat() if local and local.created_at else None)
         published_at = pf.get("published_at") or (local.published_at.isoformat() if local and local.published_at else None)
+        created_at = pf.get("created_at") or (local.created_at.isoformat() if local and local.created_at else None)
         event_time = sched_at or published_at or created_at
         if not event_time:
             continue
@@ -150,10 +157,7 @@ async def get_calendar_posts(
             for t in local.targets:
                 acc = t.social_account
                 if acc:
-                    pub_url = None
-                    if t.publish_results:
-                        pub_url = t.publish_results[0].platform_url
-
+                    pub_url = t.publish_results[0].platform_url if t.publish_results else t.platform_post_id
                     t_status_raw = t.status.value if hasattr(t.status, "value") else str(t.status)
                     t_status_clean = "completed" if t_status_raw in ("published", "completed", "processed") else t_status_raw.lower()
 
@@ -172,7 +176,7 @@ async def get_calendar_posts(
 
             for pf_acc_entry in pf_accounts:
                 pf_acc_id = pf_acc_entry if isinstance(pf_acc_entry, str) else pf_acc_entry.get("id")
-                acc = acc_by_pf_id.get(pf_acc_id)
+                acc = acc_by_pf_id.get(pf_acc_id) or acc_by_plat_id.get(pf_acc_id)
                 if acc:
                     targets.append({
                         "id": acc.id,
@@ -220,10 +224,7 @@ async def get_calendar_posts(
             for t in p.targets:
                 acc = t.social_account
                 if acc:
-                    pub_url = None
-                    if t.publish_results:
-                        pub_url = t.publish_results[0].platform_url
-
+                    pub_url = t.publish_results[0].platform_url if t.publish_results else t.platform_post_id
                     t_status_raw = t.status.value if hasattr(t.status, "value") else str(t.status)
                     t_status_clean = "completed" if t_status_raw in ("published", "completed", "processed") else t_status_raw.lower()
 
@@ -255,7 +256,7 @@ async def get_calendar_posts(
             })
 
     # Include native historical social feed posts (published BEFORE connecting account to Shiera/PostForMe)
-    for item in all_real_feed_items:
+    for item in all_real_feed_posts:
         feed_id = str(item.get("id") or item.get("post_id") or "")
         if not feed_id or feed_id in seen_ids:
             continue

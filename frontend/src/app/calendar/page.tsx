@@ -222,8 +222,9 @@ export default function CalendarPage() {
             {/* Month Days */}
             {monthDays.map((day) => {
               const dayEvents = filteredEvents.filter((e) => {
-                if (!e.scheduled_at) return false;
-                const dt = new Date(e.scheduled_at);
+                const dateStr = e.scheduled_at || e.published_at || e.created_at;
+                if (!dateStr) return false;
+                const dt = new Date(dateStr);
                 return dt.getDate() === day && dt.getMonth() === month && dt.getFullYear() === year;
               });
 
