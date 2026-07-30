@@ -6,7 +6,7 @@ import {
   Send, Clock, Save, CheckCircle2, Sparkles, Folder, Check, Calendar,
   Youtube, MessageSquare, Instagram as InstagramIcon, Twitter, Facebook as FacebookIcon, Share2, 
   Eye, Edit3, Settings2, Link as LinkIcon, AlertCircle, Plus, Play, RefreshCw, AlertTriangle,
-  ChevronLeft, ChevronRight, UploadCloud, Info
+  ChevronLeft, ChevronRight, UploadCloud, Info, Globe
 } from "lucide-react";
 import { useStore } from "@/store/useStore";
 import { toast } from "@/store/useToastStore";
@@ -1148,7 +1148,9 @@ export default function PostComposerModal() {
                     <Calendar className="w-4 h-4 text-purple-600" />
                     <h4 className="text-xs font-bold text-purple-900">Schedule Date &amp; Time</h4>
                   </div>
-                  <span className="text-[10px] text-purple-700 font-mono">Asia/Jakarta (WIB)</span>
+                  <span className="text-[10px] text-purple-700 font-mono bg-purple-100 px-2 py-0.5 rounded-full border border-purple-200">
+                    🕐 Asia/Jakarta (WIB = UTC+7)
+                  </span>
                 </div>
 
                 <input
@@ -1157,6 +1159,33 @@ export default function PostComposerModal() {
                   onChange={(e) => setScheduledAt(e.target.value)}
                   className="w-full glass-input rounded-xl px-3 py-2 text-xs font-semibold focus:outline-none border-purple-200 bg-white"
                 />
+
+                {/* UTC Preview */}
+                {scheduledAt && (() => {
+                  try {
+                    const localDt = new Date(scheduledAt);
+                    const utcStr = localDt.toLocaleString("en-GB", {
+                      timeZone: "UTC",
+                      day: "2-digit", month: "short", year: "numeric",
+                      hour: "2-digit", minute: "2-digit",
+                    });
+                    const wibStr = localDt.toLocaleString("id-ID", {
+                      timeZone: "Asia/Jakarta",
+                      day: "2-digit", month: "short", year: "numeric",
+                      hour: "2-digit", minute: "2-digit",
+                    });
+                    return (
+                      <div className="flex items-start gap-2 p-2.5 rounded-xl bg-blue-50 border border-blue-200">
+                        <Globe className="w-3.5 h-3.5 text-blue-600 shrink-0 mt-0.5" />
+                        <div className="text-[10px] text-blue-800 space-y-0.5">
+                          <p><span className="font-bold">WIB (Lokal):</span> {wibStr}</p>
+                          <p><span className="font-bold">UTC (Dikirim ke API):</span> {utcStr}</p>
+                          <p className="text-blue-600 opacity-80">PostForMe menerima waktu UTC. Konversi dilakukan otomatis saat mengirim.</p>
+                        </div>
+                      </div>
+                    );
+                  } catch { return null; }
+                })()}
 
                 <div className="flex items-center gap-1.5 flex-wrap pt-1">
                   <span className="text-[10px] text-slate-500 font-semibold mr-1">Quick Presets:</span>
@@ -1184,6 +1213,7 @@ export default function PostComposerModal() {
                 </div>
               </div>
             )}
+
 
             {/* 7. Platform Specific Customization Grid */}
             <div className="border border-slate-200 rounded-2xl overflow-hidden bg-white space-y-3 p-4">

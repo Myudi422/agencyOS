@@ -1,13 +1,19 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, BackgroundTasks
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
-from typing import Optional
+from typing import Optional, List
+import logging
+
 from backend.database import get_db
 from backend.models.models import (
     PublishJob, PostTarget, Post, PostPublishResult,
-    SocialAccount, JobStatus, PostStatus
+    SocialAccount, JobStatus, PostStatus, AccountStatus, User
 )
 from backend.services.queue_service import queue_service
+from backend.services.postforme_service import postforme_service
+from backend.routers.firebase_auth import require_user, get_user_workspace
+
+logger = logging.getLogger("QueueRouter")
 
 router = APIRouter(prefix="/queue", tags=["Queue Engine"])
 
@@ -258,3 +264,264 @@ def delete_queue_job(job_id: str, db: Session = Depends(get_db)):
     db.delete(job)
     db.commit()
     return {"status": "success", "message": "Queue job deleted"}
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+#   PostForMe Proxy Endpoints  (used by Queue frontend tab "Terjadwal")
+# ─────────────────────────────────────────────────────────────────────────────
+
+@router.get("/postforme/posts")
+async def get_postforme_posts(
+    workspace_id: str = Query(...),
+    status: Optional[str] = Query(None, description="Comma-separated: scheduled,processing,processed,draft"),
+    limit: int = Query(50),
+    offset: int = Query(0),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_user)
+):
+    """
+    Proxy: Fetch posts from PostForMe API for this workspace's connected accounts.
+    Returns combined list enriched with local account details (username, avatar, platform).
+    Status values accepted: draft, scheduled, processing, processed
+    """
+    get_user_workspace(current_user, workspace_id, db)
+
+    # Gather connected social accounts for this workspace
+    accounts = (
+        db.query(SocialAccount)
+        .filter(
+            SocialAccount.workspace_id == workspace_id,
+            SocialAccount.status == AccountStatus.CONNECTED,
+        )
+        .all()
+    )
+
+    # Auto-resolve PostForMe account IDs if needed
+    if accounts:
+        try:
+            res_accs = await postforme_service.get_social_accounts(external_id=[workspace_id], limit=100)
+            items_acc = res_accs.get("data", [])
+            for acc in accounts:
+                if not acc.postforme_account_id:
+                    for item in items_acc:
+                        if (
+                            (item.get("username") and item.get("username").lower() == acc.username.lower())
+                            or item.get("user_id") == acc.platform_account_id
+                        ):
+                            acc.postforme_account_id = item.get("id")
+                            db.commit()
+                            break
+        except Exception as err:
+            logger.warning(f"PostForMe queue: auto-resolve account IDs failed: {err}")
+
+    acc_by_pf_id = {acc.postforme_account_id: acc for acc in accounts if acc.postforme_account_id}
+    target_acc_ids = list(acc_by_pf_id.keys())
+
+    if not target_acc_ids:
+        return {"data": [], "meta": {"total": 0, "offset": offset, "limit": limit}}
+
+    # Build status list — only valid PostForMe statuses
+    valid_statuses = {"draft", "scheduled", "processing", "processed"}
+    status_list: Optional[List[str]] = None
+    if status:
+        raw = [s.strip() for s in status.split(",")]
+        status_list = [s for s in raw if s in valid_statuses] or None
+
+    try:
+        res = await postforme_service.get_posts(
+            social_account_id=target_acc_ids,
+            status=status_list,
+            limit=limit,
+            offset=offset
+        )
+    except Exception as e:
+        logger.error(f"PostForMe get_posts proxy failed: {e}")
+        return {"data": [], "meta": {"total": 0, "offset": offset, "limit": limit}, "error": str(e)}
+
+    pf_posts = res.get("data", [])
+    pf_meta = res.get("meta", {})
+
+    # Local posts lookup for enrichment
+    local_posts = (
+        db.query(Post)
+        .filter(
+            Post.workspace_id == workspace_id,
+            Post.status != PostStatus.DRAFT
+        )
+        .all()
+    )
+    pf_id_to_local = {p.postforme_post_id: p for p in local_posts if p.postforme_post_id}
+
+    enriched = []
+    for pf in pf_posts:
+        pf_id = pf.get("id")
+        local = pf_id_to_local.get(pf_id)
+        raw_status = pf.get("status", "scheduled")
+
+        caption = (local.caption if local else None) or pf.get("caption", "")
+        media_list = (local.media_urls or []) if local else (pf.get("media") or [])
+        if media_list and isinstance(media_list[0], dict):
+            media_list = [m.get("url") or m.get("media_url") for m in media_list if isinstance(m, dict)]
+
+        targets = []
+        pf_acc_list = pf.get("social_accounts") or []
+        for pf_acc_entry in pf_acc_list:
+            pf_acc_id = pf_acc_entry if isinstance(pf_acc_entry, str) else pf_acc_entry.get("id")
+            acc = acc_by_pf_id.get(pf_acc_id)
+            if acc:
+                targets.append({
+                    "platform": acc.platform.value if hasattr(acc.platform, "value") else str(acc.platform),
+                    "username": acc.username,
+                    "avatar_url": acc.avatar_url,
+                })
+
+        enriched.append({
+            "postforme_id": pf_id,
+            "local_id": local.id if local else None,
+            "status": raw_status,
+            "caption": caption,
+            "scheduled_at": pf.get("scheduled_at") or (local.scheduled_at.isoformat() if local and local.scheduled_at else None),
+            "published_at": pf.get("published_at"),
+            "created_at": pf.get("created_at"),
+            "media_urls": media_list,
+            "targets": targets,
+            "postforme_raw": pf,
+        })
+
+    return {"data": enriched, "meta": pf_meta}
+
+
+@router.get("/postforme/results")
+async def get_postforme_results(
+    workspace_id: str = Query(...),
+    limit: int = Query(50),
+    offset: int = Query(0),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_user)
+):
+    """
+    Proxy: Fetch post results (per-account publish outcomes) from PostForMe API.
+    Enriched with local account info.
+    """
+    get_user_workspace(current_user, workspace_id, db)
+
+    accounts = (
+        db.query(SocialAccount)
+        .filter(
+            SocialAccount.workspace_id == workspace_id,
+            SocialAccount.status == AccountStatus.CONNECTED,
+        )
+        .all()
+    )
+
+    acc_by_pf_id = {acc.postforme_account_id: acc for acc in accounts if acc.postforme_account_id}
+    target_acc_ids = list(acc_by_pf_id.keys())
+
+    if not target_acc_ids:
+        return {"data": [], "meta": {"total": 0, "offset": offset, "limit": limit}}
+
+    try:
+        res = await postforme_service.get_post_results(
+            social_account_id=target_acc_ids,
+            limit=limit,
+            offset=offset
+        )
+    except Exception as e:
+        logger.error(f"PostForMe get_post_results proxy failed: {e}")
+        # Fallback to local results
+        return await _fallback_local_results(workspace_id, limit, offset, db)
+
+    results = res.get("data", [])
+    pf_meta = res.get("meta", {})
+
+    enriched = []
+    for r in results:
+        pf_acc_id = r.get("social_account_id") or r.get("social_account", {}).get("id") if isinstance(r.get("social_account"), dict) else None
+        acc = acc_by_pf_id.get(pf_acc_id) if pf_acc_id else None
+
+        enriched.append({
+            "result_id": r.get("id"),
+            "postforme_post_id": r.get("social_post_id") or r.get("post_id"),
+            "status": r.get("status"),
+            "success": r.get("success"),
+            "platform": acc.platform.value if acc else (r.get("platform") or "unknown"),
+            "username": acc.username if acc else (r.get("username") or "Unknown"),
+            "avatar_url": acc.avatar_url if acc else None,
+            "platform_url": r.get("platform_url") or r.get("url"),
+            "platform_post_id": r.get("platform_post_id"),
+            "error_data": r.get("error") or r.get("error_message"),
+            "published_at": r.get("published_at") or r.get("created_at"),
+            "result_at": r.get("created_at"),
+        })
+
+    return {"data": enriched, "meta": pf_meta}
+
+
+async def _fallback_local_results(workspace_id: str, limit: int, offset: int, db: Session):
+    """Fallback: return local PostPublishResult records when PostForMe API is unavailable."""
+    result_query = (
+        db.query(PostPublishResult)
+        .join(PostTarget, PostPublishResult.post_target_id == PostTarget.id)
+        .join(Post, PostTarget.post_id == Post.id)
+        .filter(Post.workspace_id == workspace_id)
+        .order_by(PostPublishResult.created_at.desc())
+    )
+    total = result_query.count()
+    rows = result_query.offset(offset).limit(limit).all()
+
+    data = []
+    for r in rows:
+        target = r.post_target
+        acc = target.social_account if target else None
+        post = target.post if target else None
+        data.append({
+            "result_id": r.id,
+            "postforme_post_id": r.postforme_post_id,
+            "status": "success" if r.success else ("failed" if r.success is False else "pending"),
+            "success": r.success,
+            "platform": acc.platform.value if acc else "unknown",
+            "username": acc.username if acc else "Unknown",
+            "avatar_url": acc.avatar_url if acc else None,
+            "platform_url": r.platform_url,
+            "platform_post_id": r.platform_post_id,
+            "error_data": r.error_data,
+            "post_caption": (post.caption or "")[:60] if post else "",
+            "media_urls": (post.media_urls or [])[:1] if post else [],
+            "result_at": r.created_at,
+        })
+
+    return {"data": data, "meta": {"total": total, "offset": offset, "limit": limit}}
+
+
+@router.delete("/postforme/{postforme_post_id}")
+async def cancel_postforme_post(
+    postforme_post_id: str,
+    workspace_id: str = Query(...),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_user)
+):
+    """
+    Cancel/delete a scheduled post from PostForMe API and update local DB status.
+    """
+    get_user_workspace(current_user, workspace_id, db)
+
+    # Delete from PostForMe
+    try:
+        await postforme_service.delete_post(postforme_post_id)
+    except Exception as e:
+        logger.error(f"PostForMe delete post failed: {e}")
+        raise HTTPException(status_code=502, detail=f"Failed to delete post in PostForMe: {e}")
+
+    # Update local post status if found
+    local_post = db.query(Post).filter(
+        Post.postforme_post_id == postforme_post_id,
+        Post.workspace_id == workspace_id
+    ).first()
+
+    if local_post:
+        local_post.status = PostStatus.DRAFT
+        local_post.postforme_post_id = None
+        db.commit()
+
+    return {"status": "success", "message": f"Post {postforme_post_id} cancelled and removed."}
+

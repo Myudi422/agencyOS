@@ -2,43 +2,59 @@ import logging
 import asyncio
 import calendar as py_calendar
 from datetime import datetime, timezone
+from typing import Optional, List, Dict, Any
+
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
-from typing import Optional, List, Dict, Any
 
 from backend.database import get_db
 from backend.models.models import Post, PostStatus, AccountStatus, SocialAccount, ActivityLog, User
 from backend.routers.firebase_auth import require_user, get_user_workspace
 from backend.services.postforme_service import postforme_service
-from backend.routers.statistics import _fetch_all_posts_for_account, _parse_iso
+from backend.routers.statistics import _parse_iso
 
 logger = logging.getLogger("CalendarRouter")
 
 router = APIRouter(prefix="/calendar", tags=["Calendar"])
 
-# In-memory TTL Cache for Calendar (TTL: 3 minutes = 180 seconds)
+# In-memory TTL Cache for Calendar (per workspace+month, TTL: 2 minutes)
 _CALENDAR_CACHE: Dict[str, tuple] = {}
-CALENDAR_CACHE_TTL_SECONDS = 180
+CALENDAR_CACHE_TTL_SECONDS = 120
+
 
 class RescheduleRequest(BaseModel):
     new_scheduled_at: str  # ISO datetime
 
+
 def _ensure_utc(dt: Optional[datetime]) -> Optional[datetime]:
+    """Guarantee a datetime is UTC-aware, never naive."""
     if not dt:
         return None
     if dt.tzinfo is None:
         return dt.replace(tzinfo=timezone.utc)
     return dt.astimezone(timezone.utc)
 
+
 def _parse_and_ensure_utc(dt_val: Any) -> Optional[datetime]:
+    """Parse ISO string or datetime and ensure UTC-aware result."""
     if not dt_val:
         return None
     if isinstance(dt_val, datetime):
-        dt = dt_val
-    else:
-        dt = _parse_iso(str(dt_val))
-    return _ensure_utc(dt)
+        return _ensure_utc(dt_val)
+    return _ensure_utc(_parse_iso(str(dt_val)))
+
+
+def _in_range(dt_ev: Optional[datetime], dt_from: Optional[datetime], dt_to: Optional[datetime]) -> bool:
+    """Return True if dt_ev is within [dt_from, dt_to] (inclusive), all UTC-aware."""
+    if dt_ev is None:
+        return True
+    if dt_from and dt_ev < dt_from:
+        return False
+    if dt_to and dt_ev > dt_to:
+        return False
+    return True
+
 
 @router.get("/")
 async def get_calendar_posts(
@@ -52,14 +68,17 @@ async def get_calendar_posts(
     current_user: User = Depends(require_user)
 ):
     """
-    Retrieves scheduled, published, and native historical posts for the authenticated user's workspace.
-    - Validates user workspace ownership (multi-tenancy)
-    - Filters posts by selected month & year for maximum performance
-    - Guarantees timezone-aware comparison for all dates
+    Calendar: PostForMe-first data source.
+    - Fetches scheduled/processing/processed posts from PostForMe API
+    - Supplements with local non-draft posts that have no PostForMe ID yet
+    - Filters by month/year for maximum performance (no full feed scanning)
+    - All datetime comparisons are UTC-aware (no TypeError)
+    - Draft posts are excluded (draft-only stays in Queue/local)
+    - TTL cache per workspace+month key
     """
-    get_user_workspace(current_user, workspace_id, db)  # Strict multi-tenancy check
+    get_user_workspace(current_user, workspace_id, db)
 
-    # Compute date range
+    # ── 1. Compute UTC date range ──────────────────────────────────────────
     dt_from: Optional[datetime] = None
     dt_to: Optional[datetime] = None
 
@@ -68,21 +87,18 @@ async def get_calendar_posts(
         dt_from = datetime(year, month, 1, 0, 0, 0, tzinfo=timezone.utc)
         dt_to = datetime(year, month, last_day, 23, 59, 59, 999999, tzinfo=timezone.utc)
     else:
-        dt_from = _parse_iso(start_date)
-        dt_to = _parse_iso(end_date)
-
-    dt_from = _ensure_utc(dt_from)
-    dt_to = _ensure_utc(dt_to)
+        dt_from = _ensure_utc(_parse_iso(start_date))
+        dt_to = _ensure_utc(_parse_iso(end_date))
 
     cache_key = f"cal:{workspace_id}:{year or ''}:{month or ''}"
     now_ts = datetime.utcnow().timestamp()
 
     if not force_refresh:
-        cached_entry = _CALENDAR_CACHE.get(cache_key)
-        if cached_entry and (now_ts - cached_entry[0] < CALENDAR_CACHE_TTL_SECONDS) and len(cached_entry[1]) > 0:
-            return cached_entry[1]
+        cached = _CALENDAR_CACHE.get(cache_key)
+        if cached and (now_ts - cached[0] < CALENDAR_CACHE_TTL_SECONDS) and len(cached[1]) > 0:
+            return cached[1]
 
-    # 1. Fetch connected social accounts and auto-resolve missing postforme_account_ids
+    # ── 2. Fetch connected social accounts, auto-resolve postforme IDs ────
     accounts = (
         db.query(SocialAccount)
         .filter(
@@ -99,17 +115,20 @@ async def get_calendar_posts(
             for acc in accounts:
                 if not acc.postforme_account_id:
                     for item in items_acc:
-                        if (item.get("username") and item.get("username").lower() == acc.username.lower()) or item.get("user_id") == acc.platform_account_id:
+                        if (
+                            (item.get("username") and item.get("username").lower() == acc.username.lower())
+                            or item.get("user_id") == acc.platform_account_id
+                        ):
                             acc.postforme_account_id = item.get("id")
                             db.commit()
                             break
         except Exception as err:
-            logger.warning(f"Failed to auto-resolve account IDs in calendar: {err}")
+            logger.warning(f"Calendar: auto-resolve account IDs failed: {err}")
 
     acc_by_pf_id = {acc.postforme_account_id: acc for acc in accounts if acc.postforme_account_id}
     acc_by_plat_id = {acc.platform_account_id: acc for acc in accounts if acc.platform_account_id}
 
-    # 2. Fetch non-draft posts from local DB for this workspace
+    # ── 3. Local non-draft posts lookup ───────────────────────────────────
     local_posts = (
         db.query(Post)
         .filter(
@@ -120,49 +139,62 @@ async def get_calendar_posts(
     )
     pf_id_to_local = {p.postforme_post_id: p for p in local_posts if p.postforme_post_id}
 
-    # 3. Fetch scheduled & published posts from PostForMe API for workspace accounts
+    # ── 4. Fetch PostForMe posts (no status filter to avoid 400) ──────────
     pf_posts = []
-    target_account_ids = list(acc_by_pf_id.keys()) or [a.platform_account_id for a in accounts if a.platform_account_id]
-    if target_account_ids:
+    target_acc_ids = list(acc_by_pf_id.keys())
+    if not target_acc_ids:
+        # Fallback to platform_account_id if no pf IDs resolved yet
+        target_acc_ids = [a.platform_account_id for a in accounts if a.platform_account_id]
+
+    if target_acc_ids:
         try:
             res_pf = await postforme_service.get_posts(
-                social_account_id=target_account_ids,
+                social_account_id=target_acc_ids,
                 limit=100
             )
             pf_posts = res_pf.get("data", [])
         except Exception as e:
-            logger.warning(f"PostForMe calendar get_posts failed: {e}")
+            logger.warning(f"Calendar: PostForMe get_posts failed: {e}")
 
-    # 4. Fetch native historical social feed posts filtered by selected month/year
-    all_real_feed_posts = []
-    if accounts:
-        semaphore = asyncio.Semaphore(5)
-        async def _fetch_feed(acc):
-            async with semaphore:
-                try:
-                    target_id = acc.postforme_account_id or acc.platform_account_id or acc.id
-                    plat_str = acc.platform.value if hasattr(acc.platform, "value") else str(acc.platform)
-                    posts = await _fetch_all_posts_for_account(
-                        social_account_id=target_id,
-                        platform=plat_str,
-                        date_from=dt_from,
-                        date_to=dt_to,
-                        limit_per_page=50
-                    )
-                    for p in posts:
-                        p["_acc"] = acc
-                    return posts
-                except Exception as err:
-                    logger.warning(f"Calendar feed fetch error for @{acc.username}: {err}")
-                    return []
-
-        feed_lists = await asyncio.gather(*[_fetch_feed(a) for a in accounts], return_exceptions=True)
-        for flist in feed_lists:
-            if isinstance(flist, list):
-                all_real_feed_posts.extend(flist)
-
+    # ── 5. Build events ────────────────────────────────────────────────────
     events = []
-    seen_ids = set()
+    seen_ids: set = set()
+
+    def _build_targets_from_local(post_obj):
+        targets = []
+        for t in post_obj.targets:
+            acc = t.social_account
+            if not acc:
+                continue
+            pub_url = t.publish_results[0].platform_url if t.publish_results else None
+            t_status = t.status.value if hasattr(t.status, "value") else str(t.status)
+            t_status = "completed" if t_status in ("published", "completed", "processed") else t_status.lower()
+            targets.append({
+                "id": acc.id,
+                "platform": acc.platform.value if hasattr(acc.platform, "value") else str(acc.platform),
+                "username": acc.username,
+                "avatar_url": acc.avatar_url,
+                "status": t_status,
+                "platform_url": pub_url
+            })
+        return targets
+
+    def _build_targets_from_pf(pf_item, raw_status):
+        targets = []
+        status_clean = "completed" if raw_status in ("published", "completed", "processed") else raw_status.lower()
+        for pf_acc_entry in (pf_item.get("social_accounts") or []):
+            pf_acc_id = pf_acc_entry if isinstance(pf_acc_entry, str) else pf_acc_entry.get("id")
+            acc = acc_by_pf_id.get(pf_acc_id) or acc_by_plat_id.get(pf_acc_id)
+            if acc:
+                targets.append({
+                    "id": acc.id,
+                    "platform": acc.platform.value if hasattr(acc.platform, "value") else str(acc.platform),
+                    "username": acc.username,
+                    "avatar_url": acc.avatar_url,
+                    "status": status_clean,
+                    "platform_url": None
+                })
+        return targets
 
     # Process PostForMe API posts
     for pf in pf_posts:
@@ -171,7 +203,6 @@ async def get_calendar_posts(
             continue
 
         local = pf_id_to_local.get(pf_id)
-
         sched_at = pf.get("scheduled_at") or (local.scheduled_at.isoformat() if local and local.scheduled_at else None)
         published_at = pf.get("published_at") or (local.published_at.isoformat() if local and local.published_at else None)
         created_at = pf.get("created_at") or (local.created_at.isoformat() if local and local.created_at else None)
@@ -179,56 +210,17 @@ async def get_calendar_posts(
         if not event_time:
             continue
 
-        # Date range filter check
         dt_ev = _parse_and_ensure_utc(event_time)
-        if dt_from and dt_ev and dt_ev < dt_from:
-            continue
-        if dt_to and dt_ev and dt_ev > dt_to:
+        if not _in_range(dt_ev, dt_from, dt_to):
             continue
 
         seen_ids.add(pf_id)
 
         caption = (local.caption if local else None) or pf.get("caption", "")
-        title = (caption[:45] + ("..." if len(caption) > 45 else "")) if caption else "Untitled Post"
-
-        targets = []
-        if local:
-            for t in local.targets:
-                acc = t.social_account
-                if acc:
-                    pub_url = t.publish_results[0].platform_url if t.publish_results else t.platform_post_id
-                    t_status_raw = t.status.value if hasattr(t.status, "value") else str(t.status)
-                    t_status_clean = "completed" if t_status_raw in ("published", "completed", "processed") else t_status_raw.lower()
-
-                    targets.append({
-                        "id": acc.id,
-                        "platform": acc.platform.value if hasattr(acc.platform, "value") else str(acc.platform),
-                        "username": acc.username,
-                        "avatar_url": acc.avatar_url,
-                        "status": t_status_clean,
-                        "platform_url": pub_url
-                    })
-        else:
-            pf_accounts = pf.get("social_accounts") or []
-            pf_status_raw = pf.get("status", "scheduled")
-            status_clean_target = "completed" if pf_status_raw in ("published", "completed", "processed") else pf_status_raw.lower()
-
-            for pf_acc_entry in pf_accounts:
-                pf_acc_id = pf_acc_entry if isinstance(pf_acc_entry, str) else pf_acc_entry.get("id")
-                acc = acc_by_pf_id.get(pf_acc_id) or acc_by_plat_id.get(pf_acc_id)
-                if acc:
-                    targets.append({
-                        "id": acc.id,
-                        "platform": acc.platform.value if hasattr(acc.platform, "value") else str(acc.platform),
-                        "username": acc.username,
-                        "avatar_url": acc.avatar_url,
-                        "status": status_clean_target,
-                        "platform_url": None
-                    })
-
+        title = (caption[:45] + "...") if len(caption) > 45 else caption or "Untitled Post"
         raw_status = pf.get("status") or (local.status.value if local and hasattr(local.status, "value") else "scheduled")
         status_clean = "completed" if raw_status in ("published", "completed", "processed") else str(raw_status).lower()
-
+        targets = _build_targets_from_local(local) if local else _build_targets_from_pf(pf, raw_status)
         media_list = (local.media_urls or []) if local else (pf.get("media") or [])
         if media_list and isinstance(media_list[0], dict):
             media_list = [m.get("url") or m.get("media_url") for m in media_list if isinstance(m, dict)]
@@ -238,126 +230,60 @@ async def get_calendar_posts(
             "postforme_post_id": pf_id,
             "title": title,
             "caption": caption,
-            "post_type": local.post_type.value if local and hasattr(local.post_type, "value") else "image",
+            "post_type": (local.post_type.value if local and hasattr(local.post_type, "value") else None) or "image",
             "scheduled_at": event_time,
             "published_at": published_at,
+            "created_at": created_at,
             "status": status_clean,
             "media_urls": media_list,
-            "target_accounts": targets,
             "targets": targets,
-            "account_ids": [t["id"] for t in targets]
+            "account_ids": [t["id"] for t in targets],
+            "source": "postforme"
         })
 
-    # Include local scheduled/published posts not fetched in pf_posts list
+    # Supplement with local posts not tracked in PostForMe
     for p in local_posts:
-        if p.id not in seen_ids and (not p.postforme_post_id or p.postforme_post_id not in seen_ids):
-            event_time = p.scheduled_at.isoformat() if p.scheduled_at else (p.published_at.isoformat() if p.published_at else p.created_at.isoformat() if p.created_at else None)
-            if not event_time:
-                continue
-
-            dt_ev = _parse_and_ensure_utc(event_time)
-            if dt_from and dt_ev and dt_ev < dt_from:
-                continue
-            if dt_to and dt_ev and dt_ev > dt_to:
-                continue
-
-            seen_ids.add(p.id)
-            event_time = p.scheduled_at.isoformat() if p.scheduled_at else (p.published_at.isoformat() if p.published_at else p.created_at.isoformat() if p.created_at else None)
-            if not event_time:
-                continue
-
-            caption = p.caption or ""
-            title = (caption[:45] + ("..." if len(caption) > 45 else "")) if caption else "Scheduled Post"
-
-            targets = []
-            for t in p.targets:
-                acc = t.social_account
-                if acc:
-                    pub_url = t.publish_results[0].platform_url if t.publish_results else t.platform_post_id
-                    t_status_raw = t.status.value if hasattr(t.status, "value") else str(t.status)
-                    t_status_clean = "completed" if t_status_raw in ("published", "completed", "processed") else t_status_raw.lower()
-
-                    targets.append({
-                        "id": acc.id,
-                        "platform": acc.platform.value if hasattr(acc.platform, "value") else str(acc.platform),
-                        "username": acc.username,
-                        "avatar_url": acc.avatar_url,
-                        "status": t_status_clean,
-                        "platform_url": pub_url
-                    })
-
-            raw_status = p.status.value if hasattr(p.status, "value") else str(p.status)
-            status_clean = "completed" if raw_status in ("published", "completed", "processed") else raw_status.lower()
-
-            events.append({
-                "id": p.id,
-                "postforme_post_id": p.postforme_post_id,
-                "title": title,
-                "caption": caption,
-                "post_type": p.post_type.value if hasattr(p.post_type, "value") else "image",
-                "scheduled_at": event_time,
-                "published_at": p.published_at.isoformat() if p.published_at else None,
-                "status": status_clean,
-                "media_urls": p.media_urls or [],
-                "target_accounts": targets,
-                "targets": targets,
-                "account_ids": [t["id"] for t in targets]
-            })
-
-    # Include native historical social feed posts (published BEFORE connecting account to Shiera/PostForMe)
-    for item in all_real_feed_posts:
-        feed_id = str(item.get("id") or item.get("post_id") or "")
-        if not feed_id or feed_id in seen_ids:
+        if p.id in seen_ids or (p.postforme_post_id and p.postforme_post_id in seen_ids):
             continue
-        seen_ids.add(feed_id)
-
-        posted_at = item.get("posted_at") or item.get("created_at") or item.get("timestamp")
-        if not posted_at:
+        event_time = (
+            p.scheduled_at.isoformat() if p.scheduled_at
+            else (p.published_at.isoformat() if p.published_at
+                  else (p.created_at.isoformat() if p.created_at else None))
+        )
+        if not event_time:
+            continue
+        dt_ev = _parse_and_ensure_utc(event_time)
+        if not _in_range(dt_ev, dt_from, dt_to):
             continue
 
-        acc = item["_acc"]
-        caption = item.get("caption") or item.get("text") or "Native Social Post"
-        title = (caption[:45] + ("..." if len(caption) > 45 else "")) if caption else "Native Social Post"
-
-        thumb = item.get("media_url") or item.get("url") or item.get("thumbnail_url")
-        if not thumb and item.get("media") and isinstance(item["media"], list):
-            m0 = item["media"][0]
-            thumb = m0.get("url") or m0.get("media_url") if isinstance(m0, dict) else str(m0)
-        media_list = [thumb] if thumb else []
-
-        plat_url = item.get("platform_url") or item.get("permalink") or item.get("url")
-        plat_str = acc.platform.value if hasattr(acc.platform, "value") else str(acc.platform)
+        seen_ids.add(p.id)
+        caption = p.caption or ""
+        title = (caption[:45] + "...") if len(caption) > 45 else caption or "Scheduled Post"
+        raw_status = p.status.value if hasattr(p.status, "value") else str(p.status)
+        status_clean = "completed" if raw_status in ("published", "completed", "processed") else raw_status.lower()
+        targets = _build_targets_from_local(p)
 
         events.append({
-            "id": f"native_{feed_id}",
-            "postforme_post_id": feed_id,
+            "id": p.id,
+            "postforme_post_id": p.postforme_post_id,
             "title": title,
             "caption": caption,
-            "post_type": "image",
-            "scheduled_at": posted_at,
-            "published_at": posted_at,
-            "status": "completed",
-            "media_urls": media_list,
-            "target_accounts": [{
-                "id": acc.id,
-                "platform": plat_str,
-                "username": acc.username,
-                "avatar_url": acc.avatar_url,
-                "status": "completed",
-                "platform_url": plat_url
-            }],
-            "targets": [{
-                "id": acc.id,
-                "platform": plat_str,
-                "username": acc.username,
-                "avatar_url": acc.avatar_url,
-                "status": "completed",
-                "platform_url": plat_url
-            }],
-            "account_ids": [acc.id]
+            "post_type": (p.post_type.value if hasattr(p.post_type, "value") else None) or "image",
+            "scheduled_at": event_time,
+            "published_at": p.published_at.isoformat() if p.published_at else None,
+            "created_at": p.created_at.isoformat() if p.created_at else None,
+            "status": status_clean,
+            "media_urls": p.media_urls or [],
+            "targets": targets,
+            "account_ids": [t["id"] for t in targets],
+            "source": "local"
         })
 
-    _CALENDAR_CACHE[cache_key] = (now_ts, events)
+    # Sort by event time ascending
+    events.sort(key=lambda e: e.get("scheduled_at") or e.get("published_at") or "")
+
+    if events:
+        _CALENDAR_CACHE[cache_key] = (now_ts, events)
     return events
 
 
@@ -368,23 +294,25 @@ async def reschedule_post(
     db: Session = Depends(get_db),
     current_user: User = Depends(require_user)
 ):
-    """Reschedules a post in DB AND in PostForMe API for the current user's workspace."""
+    """Reschedules a post in DB AND in PostForMe API."""
     post = db.query(Post).filter(Post.id == post_id).first()
     if not post:
         raise HTTPException(status_code=404, detail="Post not found")
 
     get_user_workspace(current_user, post.workspace_id, db)
 
-    new_dt = datetime.fromisoformat(data.new_scheduled_at.replace("Z", "+00:00"))
+    new_dt = _ensure_utc(datetime.fromisoformat(data.new_scheduled_at.replace("Z", "+00:00")))
     old_dt_str = post.scheduled_at.isoformat() if post.scheduled_at else "Unscheduled"
 
     post.scheduled_at = new_dt
     post.status = PostStatus.SCHEDULED
 
-    # If postforme_post_id exists, update in PostForMe API
     if post.postforme_post_id:
         try:
-            acc_ids = [t.social_account.postforme_account_id or t.social_account.id for t in post.targets if t.social_account]
+            acc_ids = [
+                t.social_account.postforme_account_id or t.social_account.id
+                for t in post.targets if t.social_account
+            ]
             await postforme_service.create_post(
                 caption=post.caption or "",
                 social_accounts=acc_ids,
@@ -392,7 +320,6 @@ async def reschedule_post(
                 scheduled_at=new_dt.isoformat(),
                 external_id=post.id
             )
-            logger.info(f"Rescheduled post {post.postforme_post_id} in PostForMe to {new_dt.isoformat()}")
         except Exception as e:
             logger.warning(f"Failed to reschedule in PostForMe: {e}")
 
@@ -400,11 +327,15 @@ async def reschedule_post(
         workspace_id=post.workspace_id,
         user_name=current_user.full_name,
         action="SCHEDULE_POST",
-        details=f"Rescheduled post from {old_dt_str} to {new_dt.isoformat()}",
+        details=f"Rescheduled from {old_dt_str} to {new_dt.isoformat()}",
         entity_type="Post",
         entity_id=post.id
     ))
     db.commit()
 
-    return {"status": "success", "post_id": post.id, "new_scheduled_at": post.scheduled_at.isoformat()}
+    # Invalidate calendar cache for this workspace
+    for k in list(_CALENDAR_CACHE.keys()):
+        if k.startswith(f"cal:{post.workspace_id}:"):
+            del _CALENDAR_CACHE[k]
 
+    return {"status": "success", "post_id": post.id, "new_scheduled_at": post.scheduled_at.isoformat()}
