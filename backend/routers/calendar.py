@@ -151,7 +151,6 @@ async def get_calendar_posts(
         pf_id = pf.get("id")
         if not pf_id or pf_id in seen_ids:
             continue
-        seen_ids.add(pf_id)
 
         local = pf_id_to_local.get(pf_id)
 
@@ -161,6 +160,15 @@ async def get_calendar_posts(
         event_time = sched_at or published_at or created_at
         if not event_time:
             continue
+
+        # Date range filter check
+        dt_ev = _parse_iso(event_time)
+        if dt_from and dt_ev and dt_ev < dt_from:
+            continue
+        if dt_to and dt_ev and dt_ev > dt_to:
+            continue
+
+        seen_ids.add(pf_id)
 
         caption = (local.caption if local else None) or pf.get("caption", "")
         title = (caption[:45] + ("..." if len(caption) > 45 else "")) if caption else "Untitled Post"
@@ -225,6 +233,16 @@ async def get_calendar_posts(
     # Include local scheduled/published posts not fetched in pf_posts list
     for p in local_posts:
         if p.id not in seen_ids and (not p.postforme_post_id or p.postforme_post_id not in seen_ids):
+            event_time = p.scheduled_at.isoformat() if p.scheduled_at else (p.published_at.isoformat() if p.published_at else p.created_at.isoformat() if p.created_at else None)
+            if not event_time:
+                continue
+
+            dt_ev = _parse_iso(event_time)
+            if dt_from and dt_ev and dt_ev < dt_from:
+                continue
+            if dt_to and dt_ev and dt_ev > dt_to:
+                continue
+
             seen_ids.add(p.id)
             event_time = p.scheduled_at.isoformat() if p.scheduled_at else (p.published_at.isoformat() if p.published_at else p.created_at.isoformat() if p.created_at else None)
             if not event_time:
