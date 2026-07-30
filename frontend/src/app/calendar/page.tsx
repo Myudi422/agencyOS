@@ -20,6 +20,39 @@ const PLATFORM_LABELS: Record<string, string> = {
   bluesky: "Bluesky", threads: "Threads"
 };
 
+function getProxiedImageUrl(url?: string): string {
+  if (!url) return "";
+  if (url.startsWith("data:") || url.startsWith("blob:")) return url;
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+  return `${apiUrl}/statistics/proxy-image?url=${encodeURIComponent(url)}`;
+}
+
+function CalendarImageThumbnail({ url, className = "w-4 h-4 rounded-md" }: { url?: string; className?: string }) {
+  const [imgError, setImgError] = useState(false);
+
+  useEffect(() => {
+    setImgError(false);
+  }, [url]);
+
+  if (!url || imgError) {
+    return (
+      <div className={`${className} bg-purple-50 border border-purple-100 flex items-center justify-center text-purple-600 shrink-0`}>
+        <ImageIcon className="w-3 h-3 opacity-80" />
+      </div>
+    );
+  }
+
+  return (
+    <img
+      src={getProxiedImageUrl(url)}
+      onError={() => setImgError(true)}
+      crossOrigin="anonymous"
+      className={`${className} object-cover border border-black/10 shrink-0`}
+      alt=""
+    />
+  );
+}
+
 export default function CalendarPage() {
   const { activeWorkspace, openComposer } = useStore();
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -37,10 +70,12 @@ export default function CalendarPage() {
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
 
-  const loadEvents = useCallback(() => {
+  const loadEvents = useCallback((forceRefresh: boolean = false) => {
     if (!activeWorkspace?.id) return;
     setLoading(true);
-    fetchApi<any[]>(`/calendar/?workspace_id=${activeWorkspace.id}`)
+    const params = new URLSearchParams({ workspace_id: activeWorkspace.id });
+    if (forceRefresh) params.append("force_refresh", "true");
+    fetchApi<any[]>(`/calendar/?${params.toString()}`)
       .then((data) => setEvents(data || []))
       .catch(() => setEvents([]))
       .finally(() => setLoading(false));
@@ -116,7 +151,7 @@ export default function CalendarPage() {
           </div>
 
           <button
-            onClick={() => loadEvents()}
+            onClick={() => loadEvents(true)}
             className="p-2.5 rounded-2xl bg-white border border-slate-200 text-slate-600 hover:text-slate-900 shadow-xs transition-all shrink-0"
             title="Refresh Kalender"
           >
@@ -225,10 +260,10 @@ export default function CalendarPage() {
                   {/* Day events badges list */}
                   <div className="space-y-1 mt-1 overflow-hidden">
                     {visibleEvents.map((ev) => {
-                      const isProcessed = ev.status === "processed" || ev.status === "published";
-                      const isProcessing = ev.status === "processing";
-                      const isDraft = ev.status === "draft";
-                      const icon = ev.targets?.[0]?.platform ? PLATFORM_ICONS[ev.targets[0].platform] : "📝";
+                      const isProcessed = ev.status === "completed" || ev.status === "published" || ev.status === "processed";
+                      const isProcessing = ev.status === "processing" || ev.status === "publishing";
+                      const isFailed = ev.status === "failed";
+                      const icon = ev.targets?.[0]?.platform ? PLATFORM_ICONS[ev.targets[0].platform] : "📱";
                       const thumbUrl = ev.media_urls?.[0];
 
                       return (
@@ -240,21 +275,13 @@ export default function CalendarPage() {
                               ? "bg-emerald-50 border-emerald-200 text-emerald-700"
                               : isProcessing
                               ? "bg-amber-50 border-amber-200 text-amber-700"
-                              : isDraft
-                              ? "bg-slate-100 border-slate-200 text-slate-700"
-                              : "bg-purple-50 border-purple-200 text-purple-700"
+                              : isFailed
+                              ? "bg-rose-50 border-rose-200 text-rose-700"
+                              : "bg-sky-50 border-sky-200 text-sky-700"
                           }`}
                           title={`${ev.caption || ev.title} (${ev.status})`}
                         >
-                          {/* Mini Thumbnail */}
-                          {thumbUrl ? (
-                            <img
-                              src={thumbUrl}
-                              alt="thumb"
-                              className="w-4 h-4 rounded-md object-cover shrink-0 mr-1 border border-black/10"
-                            />
-                          ) : null}
-
+                          <CalendarImageThumbnail url={thumbUrl} className="w-4 h-4 rounded-md mr-1" />
                           <span className="truncate flex-1 font-semibold">{ev.caption || ev.title}</span>
                           <span className="shrink-0 ml-1 opacity-80">{icon}</span>
                         </div>
@@ -301,7 +328,6 @@ export default function CalendarPage() {
             {/* List of all posts on this day */}
             <div className="space-y-2.5 max-h-[60vh] overflow-y-auto pr-1">
               {selectedDayModal.events.map((ev) => {
-                const icon = ev.targets?.[0]?.platform ? PLATFORM_ICONS[ev.targets[0].platform] : "📝";
                 const timeStr = ev.scheduled_at
                   ? new Date(ev.scheduled_at).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })
                   : "-";
@@ -311,32 +337,67 @@ export default function CalendarPage() {
                     key={ev.id}
                     className="p-3.5 rounded-2xl border border-slate-200/80 bg-slate-50/50 hover:bg-white hover:border-purple-300 transition-all flex items-start gap-3"
                   >
-                    {/* Media Thumbnail */}
-                    {ev.media_urls?.[0] ? (
-                      <img
-                        src={ev.media_urls[0]}
-                        alt="media"
-                        className="w-12 h-12 rounded-xl object-cover shrink-0 border border-slate-200"
-                      />
-                    ) : (
-                      <div className="w-12 h-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0 border border-purple-100">
-                        <ImageIcon className="w-5 h-5" />
-                      </div>
-                    )}
+                    <CalendarImageThumbnail url={ev.media_urls?.[0]} className="w-12 h-12 rounded-xl" />
 
                     {/* Content */}
-                    <div className="flex-1 min-w-0 space-y-1">
+                    <div className="flex-1 min-w-0 space-y-1.5">
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-white border border-slate-200 text-slate-700">
                           ⏰ {timeStr}
                         </span>
-                        <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-purple-50 text-purple-700 border border-purple-200">
-                          {icon} {ev.targets?.[0]?.platform || "Social"}
+                        <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase border ${
+                          ev.status === "completed" || ev.status === "published"
+                            ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                            : ev.status === "failed"
+                            ? "bg-rose-50 text-rose-700 border-rose-200"
+                            : "bg-sky-50 text-sky-700 border-sky-200"
+                        }`}>
+                          {ev.status === "completed" ? "✓ Dipublikasikan" : ev.status}
                         </span>
                       </div>
+
                       <p className="text-xs font-semibold text-slate-800 line-clamp-2 leading-relaxed">
                         {ev.caption || ev.title}
                       </p>
+
+                      {/* Target accounts per-account status & live post link */}
+                      {ev.targets && ev.targets.length > 0 && (
+                        <div className="flex items-center gap-1.5 flex-wrap pt-1 border-t border-slate-200/60">
+                          {ev.targets.map((tgt: any, idx: number) => {
+                            const tgtIcon = PLATFORM_ICONS[tgt.platform] || "📱";
+                            const isDone = tgt.status === "completed" || tgt.status === "published";
+                            const isFail = tgt.status === "failed";
+
+                            return (
+                              <div
+                                key={idx}
+                                className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold border ${
+                                  isDone
+                                    ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                                    : isFail
+                                    ? "bg-rose-50 text-rose-700 border-rose-200"
+                                    : "bg-sky-50 text-sky-700 border-sky-200"
+                                }`}
+                              >
+                                <span>{tgtIcon} @{tgt.username}</span>
+                                <span className="opacity-80 font-mono">({tgt.status})</span>
+                                {tgt.platform_url && (
+                                  <a
+                                    href={tgt.platform_url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-purple-600 hover:text-purple-900 ml-0.5"
+                                    onClick={(e) => e.stopPropagation()}
+                                    title="Lihat Postingan Asli"
+                                  >
+                                    ↗
+                                  </a>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
                     </div>
 
                     {/* Edit button */}
