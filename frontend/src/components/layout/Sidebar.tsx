@@ -60,7 +60,7 @@ export default function Sidebar({ isMobileOpen = false, onCloseMobile }: Sidebar
   }, []);
 
   const handleLogout = async () => {
-    showSplash("Mengamankan sesi & Keluar...", 1500);
+    showSplash("Mengamankan sesi & Keluar...", 2000);
     await signOut();
     logout();
     router.replace("/login");

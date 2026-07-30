@@ -22,7 +22,7 @@ export default function LoginPage() {
   const handleGoogleLogin = async () => {
     setSigning(true);
     setError(null);
-    showSplash("Memverifikasi Autentikasi Google...", 8000);
+    showSplash("Memverifikasi Autentikasi Google...", 2200);
     try {
       await signInWithGoogle();
       // AuthProvider will handle the redirect after syncing

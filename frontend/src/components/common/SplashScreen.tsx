@@ -5,45 +5,46 @@ import { usePathname } from "next/navigation";
 import { useAuthStore } from "@/store/authStore";
 import { useSplashStore } from "@/store/useSplashStore";
 
+const PUBLIC_SPLASH_PATHS = ["/", "/landing", "/login"];
+
 export default function SplashScreen() {
   const pathname = usePathname();
   const { isLoading: isAuthLoading } = useAuthStore();
   const { isVisible: isStoreVisible, message: storeMessage } = useSplashStore();
   
-  const [initialLoading, setInitialLoading] = useState(true);
-  const [routeTransitioning, setRouteTransitioning] = useState(false);
+  const [initialLpLoading, setInitialLpLoading] = useState(true);
 
-  // Initial load auto-hide
+  // Initial load splash screen (1.4 seconds) for LP & Login
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setInitialLoading(false);
-    }, 600);
-    return () => clearTimeout(timer);
+    const isPublic = pathname === "/" || PUBLIC_SPLASH_PATHS.some((p) => pathname.startsWith(p));
+    if (isPublic) {
+      setInitialLpLoading(true);
+      const timer = setTimeout(() => {
+        setInitialLpLoading(false);
+      }, 1400);
+      return () => clearTimeout(timer);
+    } else {
+      setInitialLpLoading(false);
+    }
   }, []);
 
-  // Smooth route transition on pathname change
-  useEffect(() => {
-    setRouteTransitioning(true);
-    const timer = setTimeout(() => {
-      setRouteTransitioning(false);
-    }, 350);
-    return () => clearTimeout(timer);
-  }, [pathname]);
-
-  const active = initialLoading || isAuthLoading || isStoreVisible || routeTransitioning;
+  const isPublicPage = pathname === "/" || PUBLIC_SPLASH_PATHS.some((p) => pathname.startsWith(p));
+  
+  // Show splash ONLY on LP/Login open, explicit store trigger (Login/Logout), or auth sync on public page
+  const active = (initialLpLoading && isPublicPage) || isStoreVisible || (isAuthLoading && isPublicPage);
   
   const displayMessage = 
-    isAuthLoading ? "Menghubungkan ke Engine Shiera..." :
     isStoreVisible ? storeMessage :
+    isAuthLoading ? "Menghubungkan ke Engine Shiera..." :
     "Memuat Shiera Engine...";
 
   if (!active) return null;
 
   return (
-    <div className="fixed inset-0 z-[99999] bg-slate-950/90 backdrop-blur-2xl flex flex-col items-center justify-center transition-all duration-300 select-none animate-fadeIn">
+    <div className="fixed inset-0 z-[99999] bg-slate-950/90 backdrop-blur-2xl flex flex-col items-center justify-center transition-all duration-500 select-none animate-fadeIn">
       {/* Background Ambient Glow */}
-      <div className="absolute w-[400px] h-[400px] bg-purple-600/20 rounded-full blur-[120px] pointer-events-none" />
-      <div className="absolute w-[250px] h-[250px] bg-indigo-600/15 rounded-full blur-[90px] pointer-events-none" />
+      <div className="absolute w-[420px] h-[420px] bg-purple-600/25 rounded-full blur-[130px] pointer-events-none" />
+      <div className="absolute w-[280px] h-[280px] bg-indigo-600/20 rounded-full blur-[100px] pointer-events-none" />
 
       {/* Main Container */}
       <div className="relative z-10 flex flex-col items-center gap-6 text-center px-4">
@@ -51,10 +52,10 @@ export default function SplashScreen() {
         {/* Animated Logo Badge Container */}
         <div className="relative flex items-center justify-center">
           {/* Outer Spinning Gradient Ring */}
-          <div className="w-24 h-24 rounded-3xl border-2 border-purple-500/20 border-t-purple-500 border-r-purple-400 animate-spin absolute" />
+          <div className="w-24 h-24 rounded-3xl border-2 border-purple-500/30 border-t-purple-500 border-r-purple-400 animate-spin absolute" />
           
           {/* Outer Pulse Ring */}
-          <div className="w-20 h-20 rounded-3xl bg-purple-500/10 animate-ping absolute" />
+          <div className="w-20 h-20 rounded-3xl bg-purple-500/15 animate-ping absolute" />
 
           {/* Central Rounded Logo Badge with 3D Flip/Spin Effect */}
           <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-purple-600 via-purple-700 to-indigo-600 p-3.5 shadow-2xl shadow-purple-500/50 flex items-center justify-center animate-logo-pulse-glow relative z-10 border border-purple-400/30">
@@ -71,13 +72,13 @@ export default function SplashScreen() {
           <h2 className="text-2xl font-extrabold tracking-tight text-white font-['Outfit'] flex items-center justify-center gap-1">
             Shiera<span className="text-purple-400 animate-pulse">.</span>
           </h2>
-          <p className="text-xs font-semibold text-purple-200/80 tracking-wide font-sans max-w-xs">
+          <p className="text-xs font-semibold text-purple-200/90 tracking-wide font-sans max-w-xs">
             {displayMessage}
           </p>
         </div>
 
         {/* Progress Bar Track */}
-        <div className="w-36 h-1.5 bg-slate-800/80 rounded-full overflow-hidden border border-purple-500/20 shadow-inner mt-1">
+        <div className="w-40 h-1.5 bg-slate-800/80 rounded-full overflow-hidden border border-purple-500/20 shadow-inner mt-1">
           <div className="h-full bg-gradient-to-r from-purple-500 via-violet-400 to-indigo-500 rounded-full animate-pulse w-full" />
         </div>
 

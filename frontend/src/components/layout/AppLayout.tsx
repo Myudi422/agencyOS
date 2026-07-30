@@ -62,7 +62,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex min-h-screen bg-slate-50/50">
-      <SplashScreen />
       <Sidebar
         isMobileOpen={isMobileOpen}
         onCloseMobile={() => setIsMobileOpen(false)}
