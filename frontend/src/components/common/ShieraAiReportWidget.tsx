@@ -552,150 +552,176 @@ export default function ShieraAiReportWidget() {
 
           {view === "configure" && (
             <div className="flex-1 overflow-y-auto p-4 space-y-4 flex flex-col justify-between">
-              <div className="space-y-4">
-                <div className="space-y-1">
-                  <h3 className="text-sm font-bold text-slate-800 font-['Outfit']">Summary Analisa</h3>
-                  <p className="text-[11px] text-slate-500">Konfigurasi filter & periode analisa statistik</p>
-                </div>
-
-                {/* Account Filter dropdown */}
-                <div className="space-y-1.5" ref={dropdownRef}>
-                  <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Pilih Akun</label>
-                  <div className="relative">
-                    <button
-                      onClick={() => setAccountDropdownOpen(v => !v)}
-                      className="flex items-center justify-between gap-2 px-3.5 py-2.5 rounded-xl bg-slate-50 hover:bg-slate-100/75 border border-slate-200 text-xs font-semibold text-slate-700 transition-all w-full"
-                    >
-                      <span className="truncate flex-1 text-left">{selectedAccountNames}</span>
-                      <ChevronDown className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                    </button>
-                    
-                    {accountDropdownOpen && (
-                      <div className="absolute top-full mt-1 left-0 z-50 w-full bg-white border border-slate-200 rounded-2xl shadow-xl overflow-hidden max-h-56 overflow-y-auto p-2 space-y-0.5">
-                        <button
-                          onClick={() => { setSelectedAccountIds([]); setAccountDropdownOpen(false); }}
-                          className={`w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold transition-all ${
-                            selectedAccountIds.length === 0 ? "bg-purple-50 text-purple-700" : "text-slate-600 hover:bg-slate-50"
-                          }`}
-                        >
-                          Semua Akun
-                        </button>
-                        {availableAccounts.length === 0 ? (
-                          <p className="text-xs text-slate-400 text-center py-4">Belum ada akun terhubung</p>
-                        ) : (
-                          availableAccounts.map(acc => {
-                            const isSelected = selectedAccountIds.includes(acc.id);
-                            return (
-                              <button
-                                key={acc.id}
-                                onClick={() => {
-                                  setSelectedAccountIds(prev =>
-                                    isSelected ? prev.filter(id => id !== acc.id) : [...prev, acc.id]
-                                  );
-                                }}
-                                className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs transition-all ${
-                                  isSelected ? "bg-purple-50 text-purple-700" : "text-slate-600 hover:bg-slate-50"
-                                }`}
-                              >
-                                {isSelected ? (
-                                  <CheckSquare className="w-4 h-4 text-purple-600 shrink-0" />
-                                ) : (
-                                  <Square className="w-4 h-4 text-slate-300 shrink-0" />
-                                )}
-                                <div className="flex-1 text-left min-w-0">
-                                  <p className="font-semibold truncate">{acc.name}</p>
-                                  <p className="text-[10px] text-slate-400">@{acc.username} · {PLATFORM_ICONS[acc.platform]} {acc.platform}</p>
-                                </div>
-                              </button>
-                            );
-                          })
-                        )}
-                      </div>
-                    )}
+              {availableAccounts.length === 0 ? (
+                <div className="flex-1 flex flex-col items-center justify-center text-center p-4 gap-4 select-none my-auto">
+                  <div className="w-12 h-12 rounded-2xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-500 shadow-sm animate-pulse">
+                    <Users2 className="w-6 h-6" />
                   </div>
-                </div>
-
-                {/* Period Filter pills */}
-                <div className="space-y-1.5">
-                  <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Periode Waktu</label>
-                  <div className="grid grid-cols-4 gap-1 p-1 bg-slate-100 rounded-xl">
-                    {PERIOD_OPTIONS.map(opt => (
-                      <button
-                        key={opt.key}
-                        onClick={() => setPeriod(opt.key)}
-                        className={`py-2 rounded-lg text-[11px] font-bold transition-all whitespace-nowrap text-center ${
-                          period === opt.key ? "bg-white text-purple-700 shadow-sm" : "text-slate-500 hover:text-slate-700"
-                        }`}
-                      >
-                        {opt.label}
-                      </button>
-                    ))}
+                  <div className="space-y-1.5">
+                    <h4 className="text-xs font-bold text-slate-800 font-['Outfit']">
+                      Akun Belum Terhubung
+                    </h4>
+                    <p className="text-[11px] text-slate-500 leading-relaxed max-w-[220px]">
+                      Akun Anda belum terhubung, silahkan hubungkan ke Shiera terlebih dahulu.
+                    </p>
                   </div>
-                </div>
-
-                {/* Custom date range fields */}
-                {period === "custom" && (
-                  <div className="flex items-center gap-2 p-3 bg-slate-50 border border-slate-200 rounded-2xl animate-fade-in">
-                    <div className="flex-1 flex flex-col gap-1">
-                      <span className="text-[9px] font-bold text-slate-400 uppercase">Dari</span>
-                      <input
-                        type="date"
-                        value={customFrom}
-                        onChange={e => setCustomFrom(e.target.value)}
-                        className="px-2.5 py-1.5 rounded-lg text-xs border border-slate-200 bg-white text-slate-700 focus:outline-none focus:ring-1 focus:ring-purple-400"
-                      />
-                    </div>
-                    <span className="text-xs text-slate-400 mt-4">–</span>
-                    <div className="flex-1 flex flex-col gap-1">
-                      <span className="text-[9px] font-bold text-slate-400 uppercase">Sampai</span>
-                      <input
-                        type="date"
-                        value={customTo}
-                        onChange={e => setCustomTo(e.target.value)}
-                        className="px-2.5 py-1.5 rounded-lg text-xs border border-slate-200 bg-white text-slate-700 focus:outline-none focus:ring-1 focus:ring-purple-400"
-                      />
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Submit Buttons */}
-              <div className="space-y-2 pt-4 border-t border-slate-100">
-                <button
-                  onClick={handleRunAnalysis}
-                  disabled={aiLoading || (period === "custom" && (!customFrom || !customTo))}
-                  className="w-full py-3 rounded-2xl bg-gradient-to-r from-purple-600 via-indigo-600 to-pink-600 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 hover:scale-[1.01] transition-all disabled:opacity-60"
-                >
-                  {aiLoading ? (
-                    <>
-                      <RefreshCw className="w-4 h-4 animate-spin text-purple-200" />
-                      <span>Sedang Menganalisis...</span>
-                    </>
-                  ) : (
-                    <>
-                      <Sparkles className="w-4 h-4 text-amber-300" />
-                      <span>Analisis Sekarang</span>
-                    </>
-                  )}
-                </button>
-
-                {hasActiveSession && !aiLoading && (
-                  <button
-                    onClick={() => setView("chat")}
-                    className="w-full py-2.5 rounded-2xl border border-slate-200 text-slate-600 text-xs font-semibold hover:bg-slate-50 transition-colors"
+                  <a
+                    href="https://shiera.web.id/accounts"
+                    className="w-full py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs text-center transition-all block shadow-md shadow-purple-500/20"
                   >
-                    Batal
-                  </button>
-                )}
-                {!hasActiveSession && (
+                    Hubungkan Akun
+                  </a>
                   <button
                     onClick={() => setView("welcome")}
-                    className="w-full py-2.5 rounded-2xl border border-slate-200 text-slate-600 text-xs font-semibold hover:bg-slate-50 transition-colors"
+                    className="w-full py-2 rounded-xl border border-slate-200 text-slate-600 text-xs font-semibold hover:bg-slate-50 transition-colors"
                   >
                     Kembali
                   </button>
-                )}
-              </div>
+                </div>
+              ) : (
+                <>
+                  <div className="space-y-4">
+                    <div className="space-y-1">
+                      <h3 className="text-sm font-bold text-slate-800 font-['Outfit']">Summary Analisa</h3>
+                      <p className="text-[11px] text-slate-500">Konfigurasi filter & periode analisa statistik</p>
+                    </div>
+
+                    {/* Account Filter dropdown */}
+                    <div className="space-y-1.5" ref={dropdownRef}>
+                      <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Pilih Akun</label>
+                      <div className="relative">
+                        <button
+                          onClick={() => setAccountDropdownOpen(v => !v)}
+                          className="flex items-center justify-between gap-2 px-3.5 py-2.5 rounded-xl bg-slate-50 hover:bg-slate-100/75 border border-slate-200 text-xs font-semibold text-slate-700 transition-all w-full"
+                        >
+                          <span className="truncate flex-1 text-left">{selectedAccountNames}</span>
+                          <ChevronDown className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                        </button>
+                        
+                        {accountDropdownOpen && (
+                          <div className="absolute top-full mt-1 left-0 z-50 w-full bg-white border border-slate-200 rounded-2xl shadow-xl overflow-hidden max-h-56 overflow-y-auto p-2 space-y-0.5">
+                            <button
+                              onClick={() => { setSelectedAccountIds([]); setAccountDropdownOpen(false); }}
+                              className={`w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold transition-all ${
+                                selectedAccountIds.length === 0 ? "bg-purple-50 text-purple-700" : "text-slate-600 hover:bg-slate-50"
+                              }`}
+                            >
+                              Semua Akun
+                            </button>
+                            {availableAccounts.map(acc => {
+                              const isSelected = selectedAccountIds.includes(acc.id);
+                              return (
+                                <button
+                                  key={acc.id}
+                                  onClick={() => {
+                                    setSelectedAccountIds(prev =>
+                                      isSelected ? prev.filter(id => id !== acc.id) : [...prev, acc.id]
+                                    );
+                                  }}
+                                  className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs transition-all ${
+                                    isSelected ? "bg-purple-50 text-purple-700" : "text-slate-600 hover:bg-slate-50"
+                                  }`}
+                                >
+                                  {isSelected ? (
+                                    <CheckSquare className="w-4 h-4 text-purple-600 shrink-0" />
+                                  ) : (
+                                    <Square className="w-4 h-4 text-slate-300 shrink-0" />
+                                  )}
+                                  <div className="flex-1 text-left min-w-0">
+                                    <p className="font-semibold truncate">{acc.name}</p>
+                                    <p className="text-[10px] text-slate-400">@{acc.username} · {PLATFORM_ICONS[acc.platform]} {acc.platform}</p>
+                                  </div>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Period Filter pills */}
+                    <div className="space-y-1.5">
+                      <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Periode Waktu</label>
+                      <div className="grid grid-cols-4 gap-1 p-1 bg-slate-100 rounded-xl">
+                        {PERIOD_OPTIONS.map(opt => (
+                          <button
+                            key={opt.key}
+                            onClick={() => setPeriod(opt.key)}
+                            className={`py-2 rounded-lg text-[11px] font-bold transition-all whitespace-nowrap text-center ${
+                              period === opt.key ? "bg-white text-purple-700 shadow-sm" : "text-slate-500 hover:text-slate-700"
+                            }`}
+                          >
+                            {opt.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Custom date range fields */}
+                    {period === "custom" && (
+                      <div className="flex items-center gap-2 p-3 bg-slate-50 border border-slate-200 rounded-2xl animate-fade-in">
+                        <div className="flex-1 flex flex-col gap-1">
+                          <span className="text-[9px] font-bold text-slate-400 uppercase">Dari</span>
+                          <input
+                            type="date"
+                            value={customFrom}
+                            onChange={e => setCustomFrom(e.target.value)}
+                            className="px-2.5 py-1.5 rounded-lg text-xs border border-slate-200 bg-white text-slate-700 focus:outline-none focus:ring-1 focus:ring-purple-400"
+                          />
+                        </div>
+                        <span className="text-xs text-slate-400 mt-4">–</span>
+                        <div className="flex-1 flex flex-col gap-1">
+                          <span className="text-[9px] font-bold text-slate-400 uppercase">Sampai</span>
+                          <input
+                            type="date"
+                            value={customTo}
+                            onChange={e => setCustomTo(e.target.value)}
+                            className="px-2.5 py-1.5 rounded-lg text-xs border border-slate-200 bg-white text-slate-700 focus:outline-none focus:ring-1 focus:ring-purple-400"
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Submit Buttons */}
+                  <div className="space-y-2 pt-4 border-t border-slate-100">
+                    <button
+                      onClick={handleRunAnalysis}
+                      disabled={aiLoading || (period === "custom" && (!customFrom || !customTo))}
+                      className="w-full py-3 rounded-2xl bg-gradient-to-r from-purple-600 via-indigo-600 to-pink-600 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 hover:scale-[1.01] transition-all disabled:opacity-60"
+                    >
+                      {aiLoading ? (
+                        <>
+                          <RefreshCw className="w-4 h-4 animate-spin text-purple-200" />
+                          <span>Sedang Menganalisis...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="w-4 h-4 text-amber-300" />
+                          <span>Analisis Sekarang</span>
+                        </>
+                      )}
+                    </button>
+
+                    {hasActiveSession && !aiLoading && (
+                      <button
+                        onClick={() => setView("chat")}
+                        className="w-full py-2.5 rounded-2xl border border-slate-200 text-slate-600 text-xs font-semibold hover:bg-slate-50 transition-colors"
+                      >
+                        Batal
+                      </button>
+                    )}
+                    {!hasActiveSession && (
+                      <button
+                        onClick={() => setView("welcome")}
+                        className="w-full py-2.5 rounded-2xl border border-slate-200 text-slate-600 text-xs font-semibold hover:bg-slate-50 transition-colors"
+                      >
+                        Kembali
+                      </button>
+                    )}
+                  </div>
+                </>
+              )}
             </div>
           )}
 
