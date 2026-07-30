@@ -120,6 +120,8 @@ export default function DashboardPage() {
 
   const upcomingPosts = data?.upcoming_posts || [];
   const dailyTrend = data?.daily_trend || [];
+  const platformBreakdown = data?.platform_breakdown || [];
+  const recentActivity = data?.recent_activity || [];
 
   return (
     <div className="space-y-6 pb-12">
@@ -265,6 +267,49 @@ export default function DashboardPage() {
             </div>
             <span className="text-[10px] text-slate-400 font-mono">Diperbarui real-time</span>
           </div>
+
+          {/* Platform Channel Telemetry & Distribution (Fills lower empty space) */}
+          <div className="pt-4 border-t border-slate-200/80 space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-purple-600 animate-pulse" />
+                <span className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+                  Distribusi Saluran Akun Platform
+                </span>
+              </div>
+              <span className="text-[11px] text-slate-500 font-mono font-medium">
+                Total {metrics.total_accounts} Akun ({metrics.connected_accounts} Terkoneksi)
+              </span>
+            </div>
+
+            {platformBreakdown.length > 0 ? (
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                {platformBreakdown.map((item: any, idx: number) => (
+                  <div key={idx} className="p-3 rounded-2xl bg-white/80 border border-slate-200/80 space-y-1.5 shadow-xs">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="font-bold text-slate-900 capitalize truncate">{item.platform}</span>
+                      <span className="text-[10px] font-bold text-purple-700 bg-purple-100/80 px-2 py-0.5 rounded-full border border-purple-200/60">
+                        {item.count} Akun
+                      </span>
+                    </div>
+                    <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden border border-slate-200/40">
+                      <div
+                        className="bg-gradient-to-r from-purple-600 to-indigo-600 h-full rounded-full transition-all duration-700"
+                        style={{ width: `${Math.max(item.percentage, 10)}%` }}
+                      />
+                    </div>
+                    <span className="text-[10px] text-slate-400 font-mono block text-right">
+                      {item.percentage}% porsi
+                    </span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="p-3.5 rounded-2xl bg-slate-50/80 border border-dashed border-slate-200 text-center text-xs text-slate-500">
+                Belum ada saluran platform sosial terhubung. Tambahkan akun di menu Akun Sosial.
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Intelligence & Quick Actions Side Widget (4 cols) */}
@@ -405,7 +450,7 @@ export default function DashboardPage() {
                   </div>
                 ))
               ) : upcomingPosts.length > 0 ? (
-                upcomingPosts.map((post: any) => (
+                upcomingPosts.slice(0, 6).map((post: any) => (
                   <div key={post.id} className="p-3.5 rounded-2xl bg-white/90 border border-slate-200/80 flex items-center justify-between gap-3 shadow-xs hover:border-purple-200 transition-all">
                     <div className="flex items-center gap-3 min-w-0">
                       {post.thumbnail ? (
@@ -484,9 +529,9 @@ export default function DashboardPage() {
                   </div>
                 </div>
               ))
-            ) : (data?.recent_activity || []).length > 0 ? (
-              (data?.recent_activity || []).map((act: any, i: number) => (
-                <div key={act.id || i} className="p-3.5 rounded-2xl bg-white/90 border border-slate-200/80 flex items-start gap-3 shadow-xs">
+            ) : recentActivity.length > 0 ? (
+              recentActivity.slice(0, 7).map((act: any, i: number) => (
+                <div key={act.id || i} className="p-3.5 rounded-2xl bg-white/90 border border-slate-200/80 flex items-start gap-3 shadow-xs hover:border-purple-200 transition-all">
                   <div className="w-8 h-8 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0 mt-0.5 border border-purple-100">
                     <Zap className="w-4 h-4" />
                   </div>
