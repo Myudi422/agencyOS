@@ -28,6 +28,13 @@ const CustomChartTooltip = ({ active, payload, label }: any) => {
   );
 };
 
+function getProxiedImageUrl(url?: string): string {
+  if (!url) return "";
+  if (url.startsWith("data:") || url.startsWith("blob:")) return url;
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+  return `${apiUrl}/statistics/proxy-image?url=${encodeURIComponent(url)}`;
+}
+
 export default function DashboardPage() {
   const { activeWorkspace, openComposer } = useStore();
   const { isAdmin, workspaceId: authWorkspaceId } = useAuthStore();
@@ -350,7 +357,12 @@ export default function DashboardPage() {
               </div>
               <div className="flex items-center gap-3">
                 {data.top_post.thumbnail ? (
-                  <img src={data.top_post.thumbnail} className="w-12 h-12 rounded-2xl object-cover border border-slate-200 shrink-0" alt="" />
+                  <img
+                    src={getProxiedImageUrl(data.top_post.thumbnail)}
+                    crossOrigin="anonymous"
+                    className="w-12 h-12 rounded-2xl object-cover border border-slate-200 shrink-0 shadow-xs"
+                    alt=""
+                  />
                 ) : (
                   <div className="w-12 h-12 rounded-2xl bg-purple-100 text-purple-600 flex items-center justify-center font-bold text-xs shrink-0">
                     TOP

@@ -144,8 +144,7 @@ async def get_dashboard_overview(
     # 9. Top Post Showcase (Best Performing Post from Real Social Feed)
     connected_accs = db.query(SocialAccount).filter(
         SocialAccount.workspace_id == workspace_id,
-        SocialAccount.status == AccountStatus.CONNECTED,
-        SocialAccount.platform_account_id.isnot(None)
+        SocialAccount.status == AccountStatus.CONNECTED
     ).all()
 
     all_real_posts = []
@@ -154,8 +153,22 @@ async def get_dashboard_overview(
         async def _fetch_acc(acc):
             async with semaphore:
                 try:
+                    pf_acc_id = acc.postforme_account_id
+                    if not pf_acc_id:
+                        try:
+                            res_accounts = await postforme_service.get_social_accounts(external_id=[acc.workspace_id], limit=100)
+                            for item in res_accounts.get("data", []):
+                                if (item.get("username") and item.get("username").lower() == acc.username.lower()) or item.get("user_id") == acc.platform_account_id:
+                                    pf_acc_id = item.get("id")
+                                    acc.postforme_account_id = pf_acc_id
+                                    db.commit()
+                                    break
+                        except Exception:
+                            pass
+
+                    target_id = pf_acc_id or acc.platform_account_id or acc.id
                     res = await postforme_service.get_account_feed_paginated(
-                        social_account_id=acc.platform_account_id,
+                        social_account_id=target_id,
                         limit=20,
                         expand_metrics=True
                     )
