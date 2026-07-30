@@ -710,8 +710,9 @@ export default function StatisticsPage() {
             <span>{loading ? "Memuat..." : "Refresh"}</span>
           </button>
           <button
-            onClick={handleGenerateAiSummary}
+            onClick={() => handleGenerateAiSummary()}
             disabled={!data || loading}
+
             className="py-2.5 px-4 rounded-2xl bg-gradient-to-r from-purple-600 via-indigo-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold text-xs flex items-center gap-2 shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 hover:scale-[1.02] transition-all disabled:opacity-50"
           >
             <Sparkles className="w-4 h-4 animate-pulse text-amber-300" />

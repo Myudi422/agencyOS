@@ -13,7 +13,7 @@ import { useAuthStore } from "@/store/authStore";
 import AccountSettingsModal from "@/components/profile/AccountSettingsModal";
 
 import ShieraAiReportWidget from "@/components/common/ShieraAiReportWidget";
-import { useAiReportStore } from "@/store/useAiReportStore";
+
 
 const PUBLIC_PATHS = ["/landing", "/login", "/pricing", "/billing/success", "/onboarding"];
 
@@ -22,9 +22,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const { isAuthenticated, isLoading, needsOnboarding, workspaceId } = useAuthStore();
-  const { aiCustomInstructions, setAiCustomInstructions, setAiSummaryText, setAiLoading, setAiMeta, activeWorkspace } = useStore() as any;
 
   const isPublicPage = pathname === "/" || PUBLIC_PATHS.some((p) => pathname.startsWith(p));
+
 
 
   // Auth & Onboarding guard
