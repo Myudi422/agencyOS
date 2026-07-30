@@ -494,12 +494,13 @@ export default function StatisticsPage() {
   }, []);
 
   // ── Fetch statistics ──
-  const loadStats = useCallback(async () => {
+  const loadStats = useCallback(async (forceRefresh: boolean = false) => {
     if (!activeWorkspace?.id) return;
     setLoading(true);
     try {
       const { from, to } = getDateRange(period, customFrom, customTo);
       const params = new URLSearchParams({ workspace_id: activeWorkspace.id, date_from: from, date_to: to });
+      if (forceRefresh) params.append("force_refresh", "true");
       selectedAccountIds.forEach(id => params.append("account_ids", id));
       const result = await fetchApi<StatsFeedResponse>(`/statistics/feed?${params.toString()}`);
       setData(result);
@@ -514,7 +515,7 @@ export default function StatisticsPage() {
 
   // Auto-load when workspace is ready or workspace changes
   useEffect(() => {
-    if (activeWorkspace?.id) loadStats();
+    if (activeWorkspace?.id) loadStats(false);
   }, [activeWorkspace?.id, loadStats]);
 
   // Open PDF Customizer Modal
@@ -656,7 +657,7 @@ export default function StatisticsPage() {
         </div>
         <div className="flex items-center gap-2 z-10 flex-wrap shrink-0">
           <button
-            onClick={loadStats}
+            onClick={() => loadStats(true)}
             disabled={loading}
             className="py-2.5 px-4 rounded-2xl bg-white hover:bg-purple-50/80 border border-slate-200 text-slate-700 font-semibold text-xs flex items-center gap-2 shadow-xs transition-all disabled:opacity-60"
           >
@@ -783,7 +784,7 @@ export default function StatisticsPage() {
         )}
 
         <button
-          onClick={loadStats}
+          onClick={() => loadStats(false)}
           disabled={loading}
           className="flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-purple-600 text-white text-xs font-bold hover:bg-purple-700 transition-all disabled:opacity-60 shadow-sm w-full sm:w-auto sm:ml-auto"
         >

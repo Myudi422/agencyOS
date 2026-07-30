@@ -287,21 +287,25 @@ def get_statistics_accounts(
     ]
 
 
+# In-memory TTL Cache for Statistics Feed (TTL: 5 minutes = 300 seconds)
+_STATS_FEED_CACHE: Dict[str, tuple] = {}
+STATS_CACHE_TTL_SECONDS = 300
+
+
 @router.get("/feed")
 async def get_statistics_feed(
     workspace_id: str = Query(..., description="Workspace ID"),
     account_ids: Optional[List[str]] = Query(None, description="Internal account IDs to filter"),
     date_from: Optional[str] = Query(None, description="ISO 8601 start date"),
     date_to: Optional[str] = Query(None, description="ISO 8601 end date"),
+    force_refresh: bool = Query(False, description="Force bypass cache and fetch fresh feed"),
     db: Session = Depends(get_db),
     current_user: User = Depends(require_user),
 ):
     """
     Aggregate feed + metrics for workspace accounts.
-    - Paginates all PostForMe pages per account
-    - Normalizes platform-specific metric field names
-    - Filters by posted_at date range
-    - Returns accounts, aggregated metrics, posts, top posts, daily breakdown
+    - Uses 5-minute TTL cache per filter query to prevent API rate limit bottleneck
+    - Supports force_refresh=True when explicitly triggered by user
     """
     get_user_workspace(current_user, workspace_id, db)
 
@@ -312,6 +316,15 @@ async def get_statistics_feed(
         now = datetime.now(tz=timezone.utc)
         dt_from = now.replace(hour=0, minute=0, second=0, microsecond=0)
         dt_to = now.replace(hour=23, minute=59, second=59, microsecond=999999)
+
+    cache_key = f"{workspace_id}:{','.join(sorted(account_ids or []))}:{date_from or ''}:{date_to or ''}"
+    now_ts = datetime.utcnow().timestamp()
+
+    if not force_refresh:
+        cached_entry = _STATS_FEED_CACHE.get(cache_key)
+        if cached_entry and (now_ts - cached_entry[0] < STATS_CACHE_TTL_SECONDS):
+            logger.info(f"Serving /statistics/feed from TTL cache for key: {cache_key}")
+            return cached_entry[1]
 
     # Load accounts
     q = db.query(SocialAccount).filter(
@@ -407,7 +420,7 @@ async def get_statistics_feed(
 
     top_posts = sorted(all_posts, key=_eng, reverse=True)[:10]
 
-    return {
+    res_dict = {
         "accounts": account_summaries,
         "aggregated": _sum_metrics(all_posts),
         "posts": all_posts[:200],
@@ -418,6 +431,9 @@ async def get_statistics_feed(
         "period_label": _period_label(dt_from, dt_to),
         "total_accounts_fetched": len(account_summaries),
     }
+
+    _STATS_FEED_CACHE[cache_key] = (now_ts, res_dict)
+    return res_dict
 
 
 def _period_label(dt_from: Optional[datetime], dt_to: Optional[datetime]) -> str:
