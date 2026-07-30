@@ -9,9 +9,10 @@ interface ShieraMarkdownViewerProps {
 
 /**
  * Clean Markdown Renderer for Shiera AI Reports.
- * Parses headers, bold (**), italics (*), blockquotes (>), lists (*/-), and tables (|)
+ * Parses headers, bold (**), italics (*), blockquotes (>), lists (* or -), and tables (|)
  * into rich, beautiful HTML elements without raw markdown syntax junk.
  */
+
 export default function ShieraMarkdownViewer({ content, className = "" }: ShieraMarkdownViewerProps) {
   if (!content) return null;
 

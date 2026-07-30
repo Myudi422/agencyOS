@@ -2,8 +2,9 @@
 
 import React, { useState } from "react";
 import {
-  Sparkles, X, Minimize2, Maximize2, Copy, Check, RefreshCw, Sliders, Bot, ChevronUp
+  Sparkles, X, Minimize2, Maximize2, Copy, Check, RefreshCw, Sliders, Bot
 } from "lucide-react";
+
 import { useAiReportStore } from "@/store/useAiReportStore";
 import ShieraMarkdownViewer from "./ShieraMarkdownViewer";
 import { toast } from "@/store/useToastStore";
