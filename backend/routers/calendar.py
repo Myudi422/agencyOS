@@ -24,6 +24,13 @@ CALENDAR_CACHE_TTL_SECONDS = 180
 class RescheduleRequest(BaseModel):
     new_scheduled_at: str  # ISO datetime
 
+def _ensure_utc(dt: Optional[datetime]) -> Optional[datetime]:
+    if not dt:
+        return None
+    if dt.tzinfo is None:
+        return dt.replace(tzinfo=timezone.utc)
+    return dt.astimezone(timezone.utc)
+
 @router.get("/")
 async def get_calendar_posts(
     workspace_id: str = Query(..., description="Workspace ID"),
@@ -39,8 +46,7 @@ async def get_calendar_posts(
     Retrieves scheduled, published, and native historical posts for the authenticated user's workspace.
     - Validates user workspace ownership (multi-tenancy)
     - Filters posts by selected month & year for maximum performance
-    - Fixed 400 Bad Request error by passing valid status params (scheduled, published, processing)
-    - Uses TTL cache for ultra-fast performance
+    - Fixed offset-naive vs offset-aware datetime comparison TypeError
     """
     get_user_workspace(current_user, workspace_id, db)  # Strict multi-tenancy check
 
@@ -55,6 +61,9 @@ async def get_calendar_posts(
     else:
         dt_from = _parse_iso(start_date)
         dt_to = _parse_iso(end_date)
+
+    dt_from = _ensure_utc(dt_from)
+    dt_to = _ensure_utc(dt_to)
 
     cache_key = f"cal:{workspace_id}:{year or ''}:{month or ''}"
     now_ts = datetime.utcnow().timestamp()
