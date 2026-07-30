@@ -383,16 +383,16 @@ export default function AdminPage() {
             ⚠️ API Keys tersimpan di database. Untuk production, gunakan environment variables di Vercel.
           </div>
 
-          {/* ── GEMINI AI WEBAPI COOKIE CONFIGURATION ── */}
+          {/* ── SHIERA AI ENGINE CONFIGURATION ── */}
           <div className="p-6 rounded-3xl bg-gradient-to-br from-purple-900 via-indigo-900 to-slate-900 text-white shadow-xl space-y-4 border border-purple-500/20">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-2xl bg-purple-500/20 border border-purple-400/30 flex items-center justify-center text-purple-300">
-                  <Sparkles className="w-5 h-5 animate-pulse" />
+                  <Sparkles className="w-5 h-5 animate-pulse text-amber-300" />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold font-['Outfit'] text-white">Gemini AI WebAPI Cookie Configuration</h3>
-                  <p className="text-xs text-purple-200">Cookie admin digunakan untuk fitur **Summary AI** seluruh pengguna</p>
+                  <h3 className="text-base font-bold font-['Outfit'] text-white">Shiera AI Engine Configuration</h3>
+                  <p className="text-xs text-purple-200">Session credential admin digunakan untuk menjalankan fitur **Summary AI** seluruh pengguna Shiera</p>
                 </div>
               </div>
               <button
@@ -403,15 +403,15 @@ export default function AdminPage() {
                 {geminiTesting ? (
                   <RefreshCw className="w-3.5 h-3.5 animate-spin" />
                 ) : (
-                  <Bot className="w-3.5 h-3.5" />
+                  <Bot className="w-3.5 h-3.5 text-amber-300" />
                 )}
-                {geminiTesting ? "Mengecek Koneksi..." : "Test Koneksi Gemini"}
+                {geminiTesting ? "Mengecek Koneksi..." : "Test Koneksi Shiera AI"}
               </button>
             </div>
 
             {/* Instruction box */}
             <div className="p-3.5 rounded-2xl bg-white/5 border border-white/10 text-xs text-purple-100 space-y-1">
-              <p className="font-semibold text-purple-200">💡 Cara Mendapatkan Cookie Gemini (`gemini-webapi`):</p>
+              <p className="font-semibold text-purple-200">💡 Cara Mendapatkan Session Token Shiera AI Engine:</p>
               <ol className="list-decimal list-inside text-[11px] text-purple-300/90 space-y-0.5">
                 <li>Buka <a href="https://gemini.google.com" target="_blank" rel="noreferrer" className="underline text-purple-200">gemini.google.com</a> di browser dan pastikan sudah login akun Google.</li>
                 <li>Tekan <kbd className="px-1 bg-white/10 rounded">F12</kbd> &rarr; tab <strong>Application</strong> / <strong>Storage</strong> &rarr; <strong>Cookies</strong>.</li>
@@ -422,10 +422,11 @@ export default function AdminPage() {
             {/* Input fields */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-2">
               {[
-                { key: "GEMINI_1PSID", label: "__Secure-1PSID (Cookie Utama)", hint: "Wajib untuk gemini-webapi" },
-                { key: "GEMINI_1PSIDTS", label: "__Secure-1PSIDTS (Cookie TS)", hint: "Wajib jika akun memerlukan 1PSIDTS" },
-                { key: "GEMINI_API_KEY", label: "Gemini API Key (Fallback)", hint: "AIzaSy... (Opsional jika cookie exp)" },
+                { key: "GEMINI_1PSID", label: "__Secure-1PSID (Session Utama)", hint: "Wajib untuk Shiera AI Engine" },
+                { key: "GEMINI_1PSIDTS", label: "__Secure-1PSIDTS (Session TS)", hint: "Wajib jika akun memerlukan 1PSIDTS" },
+                { key: "GEMINI_API_KEY", label: "API Key (Fallback Shiera AI)", hint: "AIzaSy... (Opsional jika session exp)" },
               ].map((s) => (
+
                 <div key={s.key} className="p-3.5 rounded-2xl bg-white/10 border border-white/10 space-y-2">
                   <div>
                     <label className="text-xs font-semibold text-white block">{s.label}</label>

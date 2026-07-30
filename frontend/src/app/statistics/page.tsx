@@ -16,8 +16,10 @@ import {
   PieChart, Pie, Cell, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis
 } from "recharts";
 import { useStore } from "@/store/useStore";
+import { useAiReportStore } from "@/store/useAiReportStore";
 import { fetchApi } from "@/lib/api";
 import { toast } from "@/store/useToastStore";
+
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -464,17 +466,18 @@ export default function StatisticsPage() {
   });
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
 
-  // ── Gemini AI Summary State ──
-  const [isAiModalOpen, setIsAiModalOpen] = useState(false);
-  const [aiSummaryText, setAiSummaryText] = useState("");
-  const [aiLoading, setAiLoading] = useState(false);
-  const [aiCustomInstructions, setAiCustomInstructions] = useState("");
-  const [aiCopied, setAiCopied] = useState(false);
-  const [aiMeta, setAiMeta] = useState<any>(null);
+  // ── Shiera AI Summary State (Global Store) ──
+  const {
+    openAiModal,
+    setAiSummaryText,
+    setAiLoading,
+    setAiMeta,
+    aiCustomInstructions,
+  } = useAiReportStore();
 
-  const handleGenerateAiSummary = async () => {
+  const handleGenerateAiSummary = async (overrideInstructions?: string) => {
     if (!activeWorkspace?.id) return;
-    setIsAiModalOpen(true);
+    openAiModal();
     setAiLoading(true);
     try {
       const { from, to } = getDateRange(period, customFrom, customTo);
@@ -485,7 +488,7 @@ export default function StatisticsPage() {
           account_ids: selectedAccountIds.length > 0 ? selectedAccountIds : undefined,
           date_from: from,
           date_to: to,
-          custom_instructions: aiCustomInstructions || undefined,
+          custom_instructions: overrideInstructions !== undefined ? overrideInstructions : (aiCustomInstructions || undefined),
         }),
       });
       setAiSummaryText(res.summary || "Tidak ada hasil analisis.");
@@ -494,24 +497,17 @@ export default function StatisticsPage() {
         total_accounts: res.total_accounts,
         generated_at: res.generated_at,
       });
-      toast.success("Summary AI berhasil dibuat!");
+      toast.success("Laporan Shiera AI berhasil dibuat!");
     } catch (err: any) {
-      toast.error(err.message || "Gagal membuat Summary AI. Pastikan Cookie Gemini diatur oleh Admin.");
+      toast.error(err.message || "Gagal membuat Laporan AI. Pastikan Cookie Session Shiera AI diatur oleh Admin.");
       setAiSummaryText("");
     } finally {
       setAiLoading(false);
     }
   };
 
-  const copyAiSummary = () => {
-    if (!aiSummaryText) return;
-    navigator.clipboard.writeText(aiSummaryText);
-    setAiCopied(true);
-    toast.success("Ringkasan AI disalin ke clipboard!");
-    setTimeout(() => setAiCopied(false), 3000);
-  };
-
   const dropdownRef = useRef<HTMLDivElement>(null);
+
 
 
   // ── Reset timeline page on data refresh ──
@@ -719,8 +715,9 @@ export default function StatisticsPage() {
             className="py-2.5 px-4 rounded-2xl bg-gradient-to-r from-purple-600 via-indigo-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold text-xs flex items-center gap-2 shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 hover:scale-[1.02] transition-all disabled:opacity-50"
           >
             <Sparkles className="w-4 h-4 animate-pulse text-amber-300" />
-            <span>Summary AI (Gemini)</span>
+            <span>Shiera AI Summary</span>
           </button>
+
           <button
             onClick={handleOpenPdfModal}
             disabled={!data || loading}
@@ -2058,143 +2055,8 @@ export default function StatisticsPage() {
           );
         })()}
       </div>
-
-      {/* ─── AI SUMMARY MODAL (GEMINI ANALYTICS) ─── */}
-      {isAiModalOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-900/75 backdrop-blur-md flex items-center justify-center p-4 sm:p-6 overflow-y-auto animate-fade-in">
-          <div className="bg-white border border-slate-200 rounded-3xl shadow-2xl max-w-4xl w-full overflow-hidden flex flex-col max-h-[90vh]">
-            {/* Modal Header */}
-            <div className="p-6 bg-gradient-to-r from-slate-900 via-purple-950 to-indigo-950 text-white flex items-center justify-between border-b border-purple-500/20 shrink-0">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-purple-500/20 border border-purple-400/30 flex items-center justify-center text-purple-300 shadow-inner">
-                  <Sparkles className="w-5 h-5 animate-pulse text-amber-300" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold font-['Outfit'] flex items-center gap-2">
-                    Executive AI Summary & Performa Report
-                  </h3>
-                  <p className="text-xs text-purple-200/80">
-                    Analisis kecerdasan buatan Gemini berdasarkan data statistik sosial media
-                  </p>
-                </div>
-              </div>
-              <button
-                onClick={() => setIsAiModalOpen(false)}
-                className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            {/* Modal Content */}
-            <div className="p-6 space-y-6 overflow-y-auto flex-1 bg-slate-50/50">
-              {/* Custom Instruction Box */}
-              <div className="p-4 rounded-2xl bg-white border border-purple-100 shadow-xs space-y-2">
-                <label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                  <Sliders className="w-3.5 h-3.5 text-purple-600" />
-                  Instruksi Khusus untuk Gemini AI (Opsional):
-                </label>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={aiCustomInstructions}
-                    onChange={(e) => setAiCustomInstructions(e.target.value)}
-                    placeholder="Contoh: Fokus pada strategi meningkatkan jangkauan TikTok & Reels minggu depan..."
-                    className="flex-1 px-3.5 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-purple-400 bg-white"
-                  />
-                  <button
-                    onClick={handleGenerateAiSummary}
-                    disabled={aiLoading}
-                    className="px-4 py-2 rounded-xl bg-purple-600 text-white text-xs font-semibold hover:bg-purple-700 disabled:opacity-60 transition-all flex items-center gap-1.5 shrink-0"
-                  >
-                    {aiLoading ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
-                    {aiLoading ? "Memproses..." : "Regenerate"}
-                  </button>
-                </div>
-              </div>
-
-              {/* Loading State */}
-              {aiLoading && (
-                <div className="py-16 flex flex-col items-center justify-center space-y-4 text-purple-900">
-                  <div className="relative">
-                    <div className="w-16 h-16 rounded-full border-4 border-purple-200 border-t-purple-600 animate-spin" />
-                    <Sparkles className="w-6 h-6 text-purple-600 absolute inset-0 m-auto animate-pulse" />
-                  </div>
-                  <div className="text-center space-y-1">
-                    <p className="font-bold text-sm text-slate-800 font-['Outfit']">Gemini AI Sedang Menganalisis Data...</p>
-                    <p className="text-xs text-slate-500 max-w-sm">
-                      Mengkaji engagement rate, perbandingan platform, serta merumuskan strategi rekomendasi khusus untukmu.
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              {/* AI Report Content Display */}
-              {!aiLoading && aiSummaryText && (
-                <div className="space-y-4">
-                  {/* Meta Bar */}
-                  {aiMeta && (
-                    <div className="flex items-center justify-between text-[11px] text-slate-500 bg-purple-50/80 px-4 py-2 rounded-xl border border-purple-100 flex-wrap gap-2">
-                      <span>Periode: <strong>{aiMeta.period_label}</strong></span>
-                      <span>Akun Teranalisis: <strong>{aiMeta.total_accounts}</strong></span>
-                      <span>Dibuat: <strong>{new Date(aiMeta.generated_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</strong></span>
-                    </div>
-                  )}
-
-                  {/* Formatted Markdown Box */}
-                  <div className="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm text-slate-800 text-xs sm:text-sm leading-relaxed space-y-4">
-                    {aiSummaryText.split('\n\n').map((paragraph, idx) => {
-                      if (paragraph.startsWith('## ')) {
-                        return (
-                          <h2 key={idx} className="text-base font-bold text-purple-900 font-['Outfit'] border-b border-purple-100 pb-2 mt-4 flex items-center gap-2">
-                            {paragraph.replace('## ', '')}
-                          </h2>
-                        );
-                      }
-                      if (paragraph.startsWith('### ')) {
-                        return (
-                          <h3 key={idx} className="text-sm font-bold text-slate-900 mt-3">
-                            {paragraph.replace('### ', '')}
-                          </h3>
-                        );
-                      }
-                      return (
-                        <p key={idx} className="text-slate-700 whitespace-pre-wrap">
-                          {paragraph}
-                        </p>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Modal Footer */}
-            <div className="p-4 bg-white border-t border-slate-200 flex items-center justify-between shrink-0">
-              <div className="text-[11px] text-slate-400">
-                Powered by <strong>Gemini WebAPI</strong>
-              </div>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={copyAiSummary}
-                  disabled={!aiSummaryText || aiLoading}
-                  className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition-all flex items-center gap-1.5 disabled:opacity-50"
-                >
-                  {aiCopied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
-                  {aiCopied ? "Tersalin!" : "Salin Laporan"}
-                </button>
-                <button
-                  onClick={() => setIsAiModalOpen(false)}
-                  className="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold transition-all"
-                >
-                  Selesai
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
+
 

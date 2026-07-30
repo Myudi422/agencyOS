@@ -141,8 +141,8 @@ class GeminiService:
         ])
 
         prompt = f"""
-Kamu adalah Chief Marketing Officer (CMO) & Social Media Data Analyst Senior.
-Tugasmu adalah menganalisis data performa statistik sosial media pengguna agencyOS dan memberikan laporan analisa yang mendalam, profesional, serta memberikan rekomendasi taktis yang dapat mengeksekusi pertumbuhan engagement.
+Kamu adalah Shiera AI Senior Analytics Specialist & Chief Marketing Officer (CMO).
+Tugasmu adalah menganalisis data performa statistik sosial media pengguna Shiera dan memberikan laporan analisis eksekutif yang tajam, profesional, bersih, serta berisi rekomendasi taktis untuk meningkatkan pertumbuhan engagement.
 
 ### DATA METRIK STATISTIK ({period_label}):
 - Total Postingan: {aggregated.get('total_posts', 0)}
@@ -164,7 +164,10 @@ Tugasmu adalah menganalisis data performa statistik sosial media pengguna agency
 
 ---
 
-### FORMAT LAPORAN (Wajib menggunakan Markdown rapi dengan emoji):
+### PEDOMAN PENULISAN LAPORAN SHIERA AI:
+1. Tuliskan analisis dalam Bahasa Indonesia yang sangat profesional, ramah, dan solutif.
+2. Gunakan judul bab utama dengan format `## ` dan sub-bab dengan `### `.
+3. Gunakan poin-poin (* atau -) dan teks tebal (**teks**) dengan rapi. Hindari karakter aneh atau simbol mentah yang mengganggu.
 
 ## 📊 1. Ringkasan Eksekutif Performa
 (Berikan kesimpulan umum tentang performa dalam 2-3 kalimat tajam, soroti pencapaian utama dan engagement rate)
@@ -177,8 +180,6 @@ Tugasmu adalah menganalisis data performa statistik sosial media pengguna agency
 
 ## 🎯 4. Rekomendasi Taktis & Action Plan
 (Berikan 3-5 langkah aksi konkrit yang harus dilakukan pengguna minggu ini untuk meningkatkan reach dan jangkauan konten berikutnya)
-
-Tuliskan analisis dalam Bahasa Indonesia yang profesional, ramah, dan mudah dipahami oleh pembuat konten maupun pemilik bisnis.
 """
 
         # 1. Try gemini-webapi cookie if available
@@ -205,9 +206,10 @@ Tuliskan analisis dalam Bahasa Indonesia yang profesional, ramah, dan mudah dipa
                     return res.text
             except Exception as exc:
                 logger.error(f"google-generativeai API Key generation failed: {exc}")
-                raise RuntimeError(f"Gagal memproses dengan Gemini API Key: {exc}")
+                raise RuntimeError(f"Gagal memproses dengan Shiera AI Engine: {exc}")
 
-        raise RuntimeError("Gagal menghasilkan laporan AI. Pastikan Cookie Gemini (__Secure-1PSID) atau API Key valid.")
+        raise RuntimeError("Gagal menghasilkan laporan AI. Pastikan Session Cookie Shiera AI atau API Key valid di Admin Settings.")
+
 
 
 gemini_service = GeminiService()
