@@ -473,6 +473,7 @@ export default function StatisticsPage() {
   // ── Load available accounts ──
   useEffect(() => {
     if (!activeWorkspace?.id) return;
+    setSelectedAccountIds([]); // Clear previous workspace account filters
     fetchApi<SocialAccountMeta[]>(`/statistics/accounts?workspace_id=${activeWorkspace.id}`)
       .then((accs) => {
         setAvailableAccounts(accs);
@@ -511,10 +512,10 @@ export default function StatisticsPage() {
     }
   }, [activeWorkspace?.id, period, customFrom, customTo, selectedAccountIds]);
 
-  // Auto-load when workspace is ready
+  // Auto-load when workspace is ready or workspace changes
   useEffect(() => {
-    if (activeWorkspace?.id && !hasLoaded) loadStats();
-  }, [activeWorkspace?.id]);
+    if (activeWorkspace?.id) loadStats();
+  }, [activeWorkspace?.id, loadStats]);
 
   // Open PDF Customizer Modal
   const handleOpenPdfModal = () => {

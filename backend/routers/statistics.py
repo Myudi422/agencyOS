@@ -337,8 +337,22 @@ async def get_statistics_feed(
 
     async def _fetch(account: SocialAccount):
         async with semaphore:
+            pf_acc_id = account.postforme_account_id
+            if not pf_acc_id:
+                try:
+                    res = await postforme_service.get_social_accounts(external_id=[account.workspace_id], limit=100)
+                    for item in res.get("data", []):
+                        if (item.get("username") and item.get("username").lower() == account.username.lower()) or item.get("user_id") == account.platform_account_id:
+                            pf_acc_id = item.get("id")
+                            account.postforme_account_id = pf_acc_id
+                            db.commit()
+                            break
+                except Exception as err:
+                    logger.warning(f"Failed to auto-resolve postforme_account_id for @{account.username}: {err}")
+
+            target_id = pf_acc_id or account.platform_account_id or account.id
             posts = await _fetch_all_posts_for_account(
-                social_account_id=account.platform_account_id,
+                social_account_id=target_id,
                 platform=account.platform.value,
                 date_from=dt_from,
                 date_to=dt_to,
