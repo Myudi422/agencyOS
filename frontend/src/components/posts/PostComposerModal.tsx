@@ -436,13 +436,25 @@ export default function PostComposerModal() {
 
   // Schedule Preset Helpers
   const setSchedulePreset = (hoursFromNow: number) => {
+    // Use local WIB time from browser (getHours etc = local timezone)
     const target = new Date(Date.now() + hoursFromNow * 3600 * 1000);
-    const year = target.getFullYear();
-    const month = String(target.getMonth() + 1).padStart(2, "0");
-    const day = String(target.getDate()).padStart(2, "0");
-    const hours = String(target.getHours()).padStart(2, "0");
-    const minutes = String(target.getMinutes()).padStart(2, "0");
+    const year = target.toLocaleString("en-CA", { timeZone: "Asia/Jakarta", year: "numeric" });
+    const month = target.toLocaleString("en-CA", { timeZone: "Asia/Jakarta", month: "2-digit" });
+    const day = target.toLocaleString("en-CA", { timeZone: "Asia/Jakarta", day: "2-digit" });
+    const hours = target.toLocaleString("en-CA", { timeZone: "Asia/Jakarta", hour: "2-digit", hour12: false }).padStart(2, "0");
+    const minutes = target.toLocaleString("en-CA", { timeZone: "Asia/Jakarta", minute: "2-digit" }).padStart(2, "0");
     setScheduledAt(`${year}-${month}-${day}T${hours}:${minutes}`);
+  };
+
+  /**
+   * Convert a datetime-local string (no timezone = user typed as WIB)
+   * to a proper UTC ISO string by treating it as Asia/Jakarta (UTC+7).
+   * e.g. "2026-07-30T13:35" → "2026-07-30T06:35:00.000Z"
+   */
+  const scheduledAtToUtcIso = (localStr: string): string => {
+    if (!localStr) return "";
+    // Append WIB offset so Date() parses it as WIB, not browser-local
+    return new Date(`${localStr}:00+07:00`).toISOString();
   };
 
   if (!isComposerOpen) return null;
@@ -578,7 +590,7 @@ export default function PostComposerModal() {
       caption: fullCaption,
       hashtags: hashtagsFormatted,
       media_urls: mediaUrls,
-      scheduled_at: actionType === "schedule" ? scheduledAt : null,
+      scheduled_at: actionType === "schedule" && scheduledAt ? scheduledAtToUtcIso(scheduledAt) : null,
       action: actionType,
       publish_now: actionType === "publish_now",
       platform_configurations: platformConfigs
@@ -1163,13 +1175,15 @@ export default function PostComposerModal() {
                 {/* UTC Preview */}
                 {scheduledAt && (() => {
                   try {
-                    const localDt = new Date(scheduledAt);
-                    const utcStr = localDt.toLocaleString("en-GB", {
+                    // Treat the input as WIB (UTC+7) explicitly
+                    const wibDt = new Date(`${scheduledAt}:00+07:00`);
+                    const utcStr = wibDt.toLocaleString("en-GB", {
                       timeZone: "UTC",
                       day: "2-digit", month: "short", year: "numeric",
                       hour: "2-digit", minute: "2-digit",
                     });
-                    const wibStr = localDt.toLocaleString("id-ID", {
+                    // Display back in WIB as user typed
+                    const wibStr = wibDt.toLocaleString("id-ID", {
                       timeZone: "Asia/Jakarta",
                       day: "2-digit", month: "short", year: "numeric",
                       hour: "2-digit", minute: "2-digit",
@@ -1178,9 +1192,9 @@ export default function PostComposerModal() {
                       <div className="flex items-start gap-2 p-2.5 rounded-xl bg-blue-50 border border-blue-200">
                         <Globe className="w-3.5 h-3.5 text-blue-600 shrink-0 mt-0.5" />
                         <div className="text-[10px] text-blue-800 space-y-0.5">
-                          <p><span className="font-bold">WIB (Lokal):</span> {wibStr}</p>
-                          <p><span className="font-bold">UTC (Dikirim ke API):</span> {utcStr}</p>
-                          <p className="text-blue-600 opacity-80">PostForMe menerima waktu UTC. Konversi dilakukan otomatis saat mengirim.</p>
+                          <p><span className="font-bold">✅ Tayang (WIB):</span> {wibStr}</p>
+                          <p><span className="font-bold">🌐 Dikirim ke API (UTC):</span> {utcStr}</p>
+                          <p className="text-blue-600 opacity-80">Input kamu diperlakukan sebagai WIB (UTC+7). Konversi ke UTC dilakukan otomatis.</p>
                         </div>
                       </div>
                     );
