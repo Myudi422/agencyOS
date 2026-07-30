@@ -81,7 +81,7 @@ def get_dashboard_overview(
 
     formatted_posts = []
     for p in upcoming_posts:
-        media_list = p.media if isinstance(p.media, list) else []
+        media_list = p.media_urls if isinstance(p.media_urls, list) else []
         thumb = None
         if media_list and isinstance(media_list[0], dict):
             thumb = media_list[0].get("url") or media_list[0].get("media_url")
@@ -148,7 +148,7 @@ def get_dashboard_overview(
     
     top_post_data = None
     if top_post_obj:
-        media_list = top_post_obj.media if isinstance(top_post_obj.media, list) else []
+        media_list = top_post_obj.media_urls if isinstance(top_post_obj.media_urls, list) else []
         thumb = None
         if media_list and isinstance(media_list[0], dict):
             thumb = media_list[0].get("url") or media_list[0].get("media_url")
