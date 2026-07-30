@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect, useCallback } from "react";
 import {
   Sparkles, X, Minimize2, Copy, Check, RefreshCw, Send, Bot, User,
   BarChart2, ChevronRight, TrendingUp, Calendar, Users2, Zap,
+  RotateCcw, ChevronDown, CheckSquare, Square
 } from "lucide-react";
 import { useAiReportStore, ChatMessage, SummaryScope } from "@/store/useAiReportStore";
 import ShieraMarkdownViewer from "./ShieraMarkdownViewer";
@@ -11,30 +12,56 @@ import { fetchApi } from "@/lib/api";
 import { toast } from "@/store/useToastStore";
 import { useStore } from "@/store/useStore";
 
-// ─── Scope options ────────────────────────────────────────────────────────────
-const SCOPE_OPTIONS: { key: SummaryScope; label: string; icon: React.ElementType }[] = [
-  { key: "all",   label: "Semua Akun", icon: Users2 },
-  { key: "today", label: "Hari Ini",   icon: Zap },
-  { key: "7d",    label: "7 Hari",     icon: TrendingUp },
-  { key: "30d",   label: "30 Hari",    icon: Calendar },
+interface SocialAccountMeta {
+  id: string;
+  platform_account_id: string;
+  platform: string;
+  name: string;
+  username: string;
+  avatar_url?: string;
+  followers_count?: number;
+}
+
+const PLATFORM_ICONS: Record<string, string> = {
+  instagram: "📸", facebook: "📘", x: "𝕏", tiktok: "🎵",
+  youtube: "▶️", linkedin: "💼", pinterest: "📌",
+  bluesky: "🦋", threads: "🧵", tiktok_business: "🎵",
+};
+
+type PeriodKey = "today" | "7d" | "30d" | "custom";
+
+const PERIOD_OPTIONS: { key: PeriodKey; label: string }[] = [
+  { key: "today", label: "Hari Ini" },
+  { key: "7d", label: "7 Hari" },
+  { key: "30d", label: "30 Hari" },
+  { key: "custom", label: "Custom" },
 ];
 
-function getDateRangeFromScope(scope: SummaryScope) {
+function getDateRange(period: PeriodKey, customFrom?: string, customTo?: string) {
   const now = new Date();
-  const todayStart = new Date(now); todayStart.setHours(0, 0, 0, 0);
-  const todayEnd   = new Date(now); todayEnd.setHours(23, 59, 59, 999);
-  switch (scope) {
-    case "all":
+  const todayStart = new Date(now);
+  todayStart.setHours(0, 0, 0, 0);
+  const todayEnd = new Date(now);
+  todayEnd.setHours(23, 59, 59, 999);
+
+  switch (period) {
     case "today":
       return { from: todayStart.toISOString(), to: todayEnd.toISOString() };
     case "7d": {
-      const f = new Date(todayStart); f.setDate(f.getDate() - 6);
-      return { from: f.toISOString(), to: todayEnd.toISOString() };
+      const from = new Date(todayStart);
+      from.setDate(from.getDate() - 6);
+      return { from: from.toISOString(), to: todayEnd.toISOString() };
     }
     case "30d": {
-      const f = new Date(todayStart); f.setDate(f.getDate() - 29);
-      return { from: f.toISOString(), to: todayEnd.toISOString() };
+      const from = new Date(todayStart);
+      from.setDate(from.getDate() - 29);
+      return { from: from.toISOString(), to: todayEnd.toISOString() };
     }
+    case "custom":
+      return {
+        from: customFrom ? new Date(customFrom + "T00:00:00").toISOString() : todayStart.toISOString(),
+        to: customTo ? new Date(customTo + "T23:59:59").toISOString() : todayEnd.toISOString(),
+      };
   }
 }
 
@@ -42,7 +69,6 @@ function getDateRangeFromScope(scope: SummaryScope) {
 function WelcomeScreen({ onSummaryClick }: { onSummaryClick: () => void }) {
   return (
     <div className="flex flex-col items-center justify-center flex-1 px-5 py-8 gap-5 text-center select-none">
-      {/* Avatar */}
       <div className="relative">
         <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-600 via-indigo-600 to-pink-500 flex items-center justify-center shadow-xl shadow-purple-500/30">
           <Sparkles className="w-8 h-8 text-amber-300" />
@@ -59,7 +85,6 @@ function WelcomeScreen({ onSummaryClick }: { onSummaryClick: () => void }) {
         </p>
       </div>
 
-      {/* Main CTA */}
       <button
         onClick={onSummaryClick}
         className="w-full flex items-center gap-3 p-4 rounded-2xl bg-gradient-to-r from-purple-600 via-indigo-600 to-pink-600 text-white shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 hover:scale-[1.02] transition-all group"
@@ -69,7 +94,7 @@ function WelcomeScreen({ onSummaryClick }: { onSummaryClick: () => void }) {
         </div>
         <div className="text-left flex-1">
           <p className="text-sm font-bold leading-tight">Summary Analisa</p>
-          <p className="text-[10px] text-purple-200/90 mt-0.5">Ringkasan performa semua akun sosial</p>
+          <p className="text-[10px] text-purple-200/90 mt-0.5">Mulai analisa performa akun sosial Anda</p>
         </div>
         <ChevronRight className="w-4 h-4 text-white/60 group-hover:translate-x-0.5 transition-transform shrink-0" />
       </button>
@@ -77,60 +102,6 @@ function WelcomeScreen({ onSummaryClick }: { onSummaryClick: () => void }) {
       <p className="text-[10px] text-slate-400 leading-relaxed max-w-[200px]">
         Didukung oleh Shiera AI · Analisis mendalam berbasis data real-time
       </p>
-    </div>
-  );
-}
-
-// ─── Scope selector screen ────────────────────────────────────────────────────
-function ScopeSelectorScreen({
-  selectedScope,
-  onSelect,
-  loading,
-}: {
-  selectedScope: SummaryScope;
-  onSelect: (scope: SummaryScope) => void;
-  loading: boolean;
-}) {
-  return (
-    <div className="flex flex-col gap-3 px-4 py-5">
-      <div className="space-y-0.5">
-        <h3 className="text-sm font-bold text-slate-800 font-['Outfit']">Pilih Periode Analisa</h3>
-        <p className="text-[11px] text-slate-500">Shiera AI akan merangkum performa akun Anda</p>
-      </div>
-
-      <div className="grid grid-cols-2 gap-2">
-        {SCOPE_OPTIONS.map(({ key, label, icon: Icon }) => {
-          const active = selectedScope === key;
-          return (
-            <button
-              key={key}
-              onClick={() => !loading && onSelect(key)}
-              disabled={loading}
-              className={`flex flex-col items-start gap-2 p-3.5 rounded-2xl border text-left transition-all disabled:opacity-60 ${
-                active
-                  ? "bg-purple-600 border-purple-600 text-white shadow-md shadow-purple-500/20"
-                  : "bg-white border-slate-200 text-slate-700 hover:border-purple-300 hover:bg-purple-50/50"
-              }`}
-            >
-              <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${
-                active ? "bg-white/20" : "bg-purple-50"
-              }`}>
-                <Icon className={`w-4 h-4 ${active ? "text-amber-300" : "text-purple-600"}`} />
-              </div>
-              <span className={`text-xs font-bold ${active ? "text-white" : "text-slate-700"}`}>
-                {label}
-              </span>
-            </button>
-          );
-        })}
-      </div>
-
-      {loading && (
-        <div className="flex items-center gap-2 px-4 py-3 rounded-2xl bg-purple-50 border border-purple-100 text-purple-700 text-xs font-semibold">
-          <RefreshCw className="w-3.5 h-3.5 animate-spin shrink-0" />
-          Shiera AI sedang menganalisis data...
-        </div>
-      )}
     </div>
   );
 }
@@ -153,7 +124,6 @@ function ChatArea({
 }) {
   return (
     <>
-      {/* Messages */}
       <div
         ref={chatScrollRef}
         className="flex-1 px-3 py-4 overflow-y-auto space-y-3 bg-slate-50/80 min-h-0"
@@ -201,7 +171,6 @@ function ChatArea({
         )}
       </div>
 
-      {/* Input */}
       <form
         onSubmit={onSend}
         className="px-3 py-3 bg-white border-t border-slate-100 flex items-center gap-2 shrink-0"
@@ -227,7 +196,7 @@ function ChatArea({
 }
 
 // ─── Main Widget ──────────────────────────────────────────────────────────────
-type PanelView = "welcome" | "scope-select" | "chat";
+type PanelView = "welcome" | "configure" | "chat";
 
 export default function ShieraAiReportWidget() {
   const { activeWorkspace } = useStore();
@@ -235,12 +204,11 @@ export default function ShieraAiReportWidget() {
   const {
     isFloatingOpen, isAiMinimized,
     aiLoading, aiMeta, chatMessages, hasSummarySession,
-    summaryScope,
     openFloating, closeFloating,
     closeAiModal, minimizeAiModal, restoreAiModal,
     setAiSummaryText, setAiLoading, setAiMeta,
     addChatMessage, setChatMessages,
-    setSummaryScope, setHasSummarySession,
+    setHasSummarySession, resetAiReport
   } = useAiReportStore();
 
   const [view, setView] = useState<PanelView>("welcome");
@@ -250,6 +218,38 @@ export default function ShieraAiReportWidget() {
   const chatScrollRef = useRef<HTMLDivElement>(null);
   const tooltipTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // ── Filters State (Local to matching Statistics screen options) ──
+  const [availableAccounts, setAvailableAccounts] = useState<SocialAccountMeta[]>([]);
+  const [selectedAccountIds, setSelectedAccountIds] = useState<string[]>([]);
+  const [accountDropdownOpen, setAccountDropdownOpen] = useState(false);
+  
+  const [period, setPeriod] = useState<PeriodKey>("today");
+  const [customFrom, setCustomFrom] = useState("");
+  const [customTo, setCustomTo] = useState("");
+
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Fetch Accounts
+  useEffect(() => {
+    if (!activeWorkspace?.id) return;
+    fetchApi<SocialAccountMeta[]>(`/statistics/accounts?workspace_id=${activeWorkspace.id}`)
+      .then((accs) => {
+        setAvailableAccounts(accs);
+      })
+      .catch(() => setAvailableAccounts([]));
+  }, [activeWorkspace?.id]);
+
+  // Outside click for accounts dropdown
+  useEffect(() => {
+    function handler(e: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setAccountDropdownOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
   // Auto-scroll
   useEffect(() => {
     if (chatScrollRef.current) {
@@ -257,7 +257,7 @@ export default function ShieraAiReportWidget() {
     }
   }, [chatMessages, aiLoading]);
 
-  // If session already exists, jump straight to chat
+  // Restore active view state
   useEffect(() => {
     if (isFloatingOpen && hasSummarySession && chatMessages.length > 0) {
       setView("chat");
@@ -266,14 +266,13 @@ export default function ShieraAiReportWidget() {
     }
   }, [isFloatingOpen, hasSummarySession, chatMessages.length]);
 
-  // Tooltip auto-show after 2s on mount
+  // Tooltip trigger
   useEffect(() => {
     tooltipTimerRef.current = setTimeout(() => {
       if (!isFloatingOpen) setShowTooltip(true);
     }, 2000);
     return () => { if (tooltipTimerRef.current) clearTimeout(tooltipTimerRef.current); };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [isFloatingOpen]);
 
   const handleFabClick = () => {
     setShowTooltip(false);
@@ -293,22 +292,32 @@ export default function ShieraAiReportWidget() {
     closeFloating();
   };
 
-  // Trigger summary for selected scope
-  const handleRunSummary = useCallback(async (scope: SummaryScope) => {
+  const handleResetChat = () => {
+    resetAiReport();
+    setSelectedAccountIds([]);
+    setPeriod("today");
+    setCustomFrom("");
+    setCustomTo("");
+    setView("welcome");
+    toast.success("Sesi chat berhasil di-reset!");
+  };
+
+  // Run AI Summary Analysis based on selected Filters
+  const handleRunAnalysis = async () => {
     if (!activeWorkspace?.id) {
       toast.error("Workspace tidak ditemukan.");
       return;
     }
-    setSummaryScope(scope);
-    setView("scope-select"); // keep scope screen visible with loading
+
     setAiLoading(true);
 
     try {
-      const { from, to } = getDateRangeFromScope(scope);
+      const { from, to } = getDateRange(period, customFrom, customTo);
       const res: any = await fetchApi("/statistics/ai-summary", {
         method: "POST",
         body: JSON.stringify({
           workspace_id: activeWorkspace.id,
+          account_ids: selectedAccountIds.length > 0 ? selectedAccountIds : undefined,
           date_from: from,
           date_to: to,
         }),
@@ -321,6 +330,7 @@ export default function ShieraAiReportWidget() {
         total_accounts: res.total_accounts,
         generated_at: res.generated_at,
         workspace_id: activeWorkspace.id,
+        account_ids: selectedAccountIds.length > 0 ? selectedAccountIds : undefined,
         date_from: from,
         date_to: to,
       });
@@ -334,18 +344,12 @@ export default function ShieraAiReportWidget() {
       ]);
       setHasSummarySession(true);
       setView("chat");
-      toast.success("Laporan Shiera AI berhasil dibuat!");
+      toast.success("Analisis Shiera AI berhasil dibuat!");
     } catch (err: any) {
       toast.error(err.message || "Gagal membuat Laporan AI.");
-      setView("welcome");
     } finally {
       setAiLoading(false);
     }
-  }, [activeWorkspace?.id, setAiLoading, setAiMeta, setAiSummaryText,
-      setChatMessages, setHasSummarySession, setSummaryScope]);
-
-  const handleScopeSelect = (scope: SummaryScope) => {
-    handleRunSummary(scope);
   };
 
   const handleSendFollowUp = async (e?: React.FormEvent) => {
@@ -404,14 +408,17 @@ export default function ShieraAiReportWidget() {
     setTimeout(() => setAiCopied(false), 3000);
   };
 
+  const selectedAccountNames = selectedAccountIds.length === 0
+    ? "Semua Akun"
+    : availableAccounts.filter(a => selectedAccountIds.includes(a.id)).map(a => `@${a.username}`).join(", ");
+
   const hasActiveSession = hasSummarySession && chatMessages.length > 0;
 
   return (
     <>
-      {/* ─── FAB BUTTON (always visible on authenticated pages) ─── */}
+      {/* ─── FAB BUTTON ─── */}
       {!isFloatingOpen && (
         <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-2">
-          {/* Tooltip bubble */}
           {showTooltip && !isAiMinimized && (
             <div className="animate-fade-in flex items-center gap-2 bg-slate-900 text-white text-xs font-semibold px-3.5 py-2.5 rounded-2xl shadow-xl border border-white/10 mb-1 whitespace-nowrap">
               <Sparkles className="w-3.5 h-3.5 text-amber-300 animate-pulse shrink-0" />
@@ -425,7 +432,6 @@ export default function ShieraAiReportWidget() {
             </div>
           )}
 
-          {/* Minimized pill (when chat has session but panel is closed) */}
           {isAiMinimized && hasActiveSession && (
             <div
               onClick={handleFabClick}
@@ -448,7 +454,6 @@ export default function ShieraAiReportWidget() {
             </div>
           )}
 
-          {/* Main FAB */}
           <button
             onClick={handleFabClick}
             onMouseEnter={() => { if (!showTooltip) setShowTooltip(true); }}
@@ -457,7 +462,6 @@ export default function ShieraAiReportWidget() {
             title="Shiera AI"
           >
             <Sparkles className="w-6 h-6 text-amber-300" />
-            {/* Active badge */}
             {hasActiveSession && (
               <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-emerald-400 border-2 border-white flex items-center justify-center">
                 <span className="w-2 h-2 rounded-full bg-emerald-300 animate-ping" />
@@ -488,6 +492,15 @@ export default function ShieraAiReportWidget() {
             </div>
 
             <div className="flex items-center gap-1">
+              {hasActiveSession && (
+                <button
+                  onClick={handleResetChat}
+                  className="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-purple-200 hover:text-white transition-colors"
+                  title="Reset Chat"
+                >
+                  <RotateCcw className="w-3.5 h-3.5" />
+                </button>
+              )}
               {view === "chat" && (
                 <button
                   onClick={copyFullReport}
@@ -516,44 +529,173 @@ export default function ShieraAiReportWidget() {
             </div>
           </div>
 
-          {/* Meta bar (only in chat) */}
+          {/* Meta Bar */}
           {view === "chat" && aiMeta && (
             <div className="bg-purple-50 border-b border-purple-100 px-4 py-2 text-[10px] text-slate-600 flex items-center justify-between shrink-0 flex-wrap gap-1">
               <span>Periode: <strong>{aiMeta.period_label}</strong></span>
               <span>{aiMeta.total_accounts} akun teranalisis</span>
               <button
-                onClick={() => setView("scope-select")}
+                onClick={() => setView("configure")}
                 className="text-purple-600 font-bold hover:underline"
               >
-                Ganti Periode →
+                Ubah Filter / Periode →
               </button>
             </div>
           )}
 
-          {/* Body */}
+          {/* Views */}
           {view === "welcome" && (
             <WelcomeScreen
-              onSummaryClick={() => setView("scope-select")}
+              onSummaryClick={() => setView("configure")}
             />
           )}
 
-          {view === "scope-select" && (
-            <div className="flex-1 overflow-y-auto">
-              <ScopeSelectorScreen
-                selectedScope={summaryScope}
-                onSelect={handleScopeSelect}
-                loading={aiLoading}
-              />
-              {hasActiveSession && !aiLoading && (
-                <div className="px-4 pb-4">
+          {view === "configure" && (
+            <div className="flex-1 overflow-y-auto p-4 space-y-4 flex flex-col justify-between">
+              <div className="space-y-4">
+                <div className="space-y-1">
+                  <h3 className="text-sm font-bold text-slate-800 font-['Outfit']">Summary Analisa</h3>
+                  <p className="text-[11px] text-slate-500">Konfigurasi filter & periode analisa statistik</p>
+                </div>
+
+                {/* Account Filter dropdown */}
+                <div className="space-y-1.5" ref={dropdownRef}>
+                  <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Pilih Akun</label>
+                  <div className="relative">
+                    <button
+                      onClick={() => setAccountDropdownOpen(v => !v)}
+                      className="flex items-center justify-between gap-2 px-3.5 py-2.5 rounded-xl bg-slate-50 hover:bg-slate-100/75 border border-slate-200 text-xs font-semibold text-slate-700 transition-all w-full"
+                    >
+                      <span className="truncate flex-1 text-left">{selectedAccountNames}</span>
+                      <ChevronDown className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                    </button>
+                    
+                    {accountDropdownOpen && (
+                      <div className="absolute top-full mt-1 left-0 z-50 w-full bg-white border border-slate-200 rounded-2xl shadow-xl overflow-hidden max-h-56 overflow-y-auto p-2 space-y-0.5">
+                        <button
+                          onClick={() => { setSelectedAccountIds([]); setAccountDropdownOpen(false); }}
+                          className={`w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold transition-all ${
+                            selectedAccountIds.length === 0 ? "bg-purple-50 text-purple-700" : "text-slate-600 hover:bg-slate-50"
+                          }`}
+                        >
+                          Semua Akun
+                        </button>
+                        {availableAccounts.length === 0 ? (
+                          <p className="text-xs text-slate-400 text-center py-4">Belum ada akun terhubung</p>
+                        ) : (
+                          availableAccounts.map(acc => {
+                            const isSelected = selectedAccountIds.includes(acc.id);
+                            return (
+                              <button
+                                key={acc.id}
+                                onClick={() => {
+                                  setSelectedAccountIds(prev =>
+                                    isSelected ? prev.filter(id => id !== acc.id) : [...prev, acc.id]
+                                  );
+                                }}
+                                className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs transition-all ${
+                                  isSelected ? "bg-purple-50 text-purple-700" : "text-slate-600 hover:bg-slate-50"
+                                }`}
+                              >
+                                {isSelected ? (
+                                  <CheckSquare className="w-4 h-4 text-purple-600 shrink-0" />
+                                ) : (
+                                  <Square className="w-4 h-4 text-slate-300 shrink-0" />
+                                )}
+                                <div className="flex-1 text-left min-w-0">
+                                  <p className="font-semibold truncate">{acc.name}</p>
+                                  <p className="text-[10px] text-slate-400">@{acc.username} · {PLATFORM_ICONS[acc.platform]} {acc.platform}</p>
+                                </div>
+                              </button>
+                            );
+                          })
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Period Filter pills */}
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Periode Waktu</label>
+                  <div className="grid grid-cols-4 gap-1 p-1 bg-slate-100 rounded-xl">
+                    {PERIOD_OPTIONS.map(opt => (
+                      <button
+                        key={opt.key}
+                        onClick={() => setPeriod(opt.key)}
+                        className={`py-2 rounded-lg text-[11px] font-bold transition-all whitespace-nowrap text-center ${
+                          period === opt.key ? "bg-white text-purple-700 shadow-sm" : "text-slate-500 hover:text-slate-700"
+                        }`}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Custom date range fields */}
+                {period === "custom" && (
+                  <div className="flex items-center gap-2 p-3 bg-slate-50 border border-slate-200 rounded-2xl animate-fade-in">
+                    <div className="flex-1 flex flex-col gap-1">
+                      <span className="text-[9px] font-bold text-slate-400 uppercase">Dari</span>
+                      <input
+                        type="date"
+                        value={customFrom}
+                        onChange={e => setCustomFrom(e.target.value)}
+                        className="px-2.5 py-1.5 rounded-lg text-xs border border-slate-200 bg-white text-slate-700 focus:outline-none focus:ring-1 focus:ring-purple-400"
+                      />
+                    </div>
+                    <span className="text-xs text-slate-400 mt-4">–</span>
+                    <div className="flex-1 flex flex-col gap-1">
+                      <span className="text-[9px] font-bold text-slate-400 uppercase">Sampai</span>
+                      <input
+                        type="date"
+                        value={customTo}
+                        onChange={e => setCustomTo(e.target.value)}
+                        className="px-2.5 py-1.5 rounded-lg text-xs border border-slate-200 bg-white text-slate-700 focus:outline-none focus:ring-1 focus:ring-purple-400"
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Submit Buttons */}
+              <div className="space-y-2 pt-4 border-t border-slate-100">
+                <button
+                  onClick={handleRunAnalysis}
+                  disabled={aiLoading || (period === "custom" && (!customFrom || !customTo))}
+                  className="w-full py-3 rounded-2xl bg-gradient-to-r from-purple-600 via-indigo-600 to-pink-600 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 hover:scale-[1.01] transition-all disabled:opacity-60"
+                >
+                  {aiLoading ? (
+                    <>
+                      <RefreshCw className="w-4 h-4 animate-spin text-purple-200" />
+                      <span>Sedang Menganalisis...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="w-4 h-4 text-amber-300" />
+                      <span>Analisis Sekarang</span>
+                    </>
+                  )}
+                </button>
+
+                {hasActiveSession && !aiLoading && (
                   <button
                     onClick={() => setView("chat")}
-                    className="w-full py-2.5 rounded-xl border border-purple-200 text-purple-700 text-xs font-bold hover:bg-purple-50 transition-colors"
+                    className="w-full py-2.5 rounded-2xl border border-slate-200 text-slate-600 text-xs font-semibold hover:bg-slate-50 transition-colors"
                   >
-                    ← Kembali ke Chat
+                    Batal
                   </button>
-                </div>
-              )}
+                )}
+                {!hasActiveSession && (
+                  <button
+                    onClick={() => setView("welcome")}
+                    className="w-full py-2.5 rounded-2xl border border-slate-200 text-slate-600 text-xs font-semibold hover:bg-slate-50 transition-colors"
+                  >
+                    Kembali
+                  </button>
+                )}
+              </div>
             </div>
           )}
 
