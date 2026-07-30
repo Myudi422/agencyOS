@@ -31,6 +31,15 @@ def _ensure_utc(dt: Optional[datetime]) -> Optional[datetime]:
         return dt.replace(tzinfo=timezone.utc)
     return dt.astimezone(timezone.utc)
 
+def _parse_and_ensure_utc(dt_val: Any) -> Optional[datetime]:
+    if not dt_val:
+        return None
+    if isinstance(dt_val, datetime):
+        dt = dt_val
+    else:
+        dt = _parse_iso(str(dt_val))
+    return _ensure_utc(dt)
+
 @router.get("/")
 async def get_calendar_posts(
     workspace_id: str = Query(..., description="Workspace ID"),
@@ -46,7 +55,7 @@ async def get_calendar_posts(
     Retrieves scheduled, published, and native historical posts for the authenticated user's workspace.
     - Validates user workspace ownership (multi-tenancy)
     - Filters posts by selected month & year for maximum performance
-    - Fixed offset-naive vs offset-aware datetime comparison TypeError
+    - Guarantees timezone-aware comparison for all dates
     """
     get_user_workspace(current_user, workspace_id, db)  # Strict multi-tenancy check
 
@@ -171,7 +180,7 @@ async def get_calendar_posts(
             continue
 
         # Date range filter check
-        dt_ev = _parse_iso(event_time)
+        dt_ev = _parse_and_ensure_utc(event_time)
         if dt_from and dt_ev and dt_ev < dt_from:
             continue
         if dt_to and dt_ev and dt_ev > dt_to:
@@ -246,7 +255,7 @@ async def get_calendar_posts(
             if not event_time:
                 continue
 
-            dt_ev = _parse_iso(event_time)
+            dt_ev = _parse_and_ensure_utc(event_time)
             if dt_from and dt_ev and dt_ev < dt_from:
                 continue
             if dt_to and dt_ev and dt_ev > dt_to:
