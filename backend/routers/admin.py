@@ -256,3 +256,15 @@ async def test_gemini(
     res = await gemini_service.test_connection(db)
     return res
 
+
+@router.post("/test-instagram")
+def test_instagram(
+    admin: User = Depends(require_admin),
+    db: Session = Depends(get_db)
+):
+    """Test stored Instagram session cookie / credentials using instagrapi."""
+    from backend.services.instagrapi_service import instagrapi_service
+    res = instagrapi_service.test_connection(db)
+    return res
+
+

@@ -1,405 +1,236 @@
-import os
+"""
+Instagrapi Service — Instagram Private API Integration for Competitor Spy
+Uses instagrapi library to load saved session cookies, fetch competitor user profiles,
+retrieve posts, calculate engagement metrics, and extract top performing content.
+"""
+
+import json
 import re
+from typing import Optional, Dict, Any, List
+from collections import Counter
+from datetime import datetime
 import logging
-import tempfile
-import httpx
-from pathlib import Path
-from typing import Dict, Any, Optional, List
+from sqlalchemy.orm import Session
+
+from backend.models.models import Setting
 
 logger = logging.getLogger("InstagrapiService")
 
-# Register FFmpeg for video processing
-try:
-    import imageio_ffmpeg
-    ffmpeg_path = imageio_ffmpeg.get_ffmpeg_exe()
-    if ffmpeg_path and os.path.exists(ffmpeg_path):
-        os.environ["IMAGEIO_FFMPEG_EXE"] = ffmpeg_path
-        logger.info(f"FFmpeg registered: {ffmpeg_path}")
-except Exception as e:
-    logger.warning(f"Could not auto-register imageio-ffmpeg: {e}")
-
-try:
-    from aiograpi import Client
-    INSTAGRAPI_AVAILABLE = True
-    logger.info("aiograpi (async Private API) registered successfully!")
-except ImportError:
-    try:
-        from instagrapi import Client
-        INSTAGRAPI_AVAILABLE = True
-        logger.info("instagrapi registered as fallback.")
-    except ImportError:
-        INSTAGRAPI_AVAILABLE = False
-        logger.warning("Neither aiograpi nor instagrapi is installed.")
-
-try:
-    import instagrapi_extra
-    INSTAGRAPI_EXTRA_AVAILABLE = True
-    logger.info("instagrapi-extra plugin registered successfully!")
-except ImportError:
-    INSTAGRAPI_EXTRA_AVAILABLE = False
-
-class SessionExpired(Exception):
-    """Instagram session expired — user must reconnect with a fresh sessionid."""
-    pass
-
-# Module-level store for pending Instagram login challenges.
-_pending_challenge_clients: Dict[str, Any] = {}
+GLOBAL_WS_ID = "global"
 
 class InstagrapiService:
     def __init__(self):
-        self.enabled = INSTAGRAPI_AVAILABLE
+        pass
 
-    async def _get_client(self, settings_data: Dict[str, Any]) -> Any:
-        """
-        Restore aiograpi client using set_settings().
-        Ensures authorization_data and Authorization (Bearer IGT:2:...) header
-        are explicitly restored so that requests are properly signed per account.
-        """
-        if not INSTAGRAPI_AVAILABLE:
-            raise Exception("aiograpi is not installed.")
+    def _load_stored_session(self, db: Session) -> Optional[Any]:
+        """Fetch saved Instagram session from global settings table."""
+        row = db.query(Setting).filter(
+            Setting.workspace_id == GLOBAL_WS_ID,
+            Setting.key.in_(["INSTAGRAM_SESSION_COOKIE", "INSTAGRAM_SESSION_ID", "INSTAGRAM_COOKIE"])
+        ).first()
 
-        clean_settings = {
-            k: v for k, v in settings_data.items()
-            if not k.startswith("_")
-        }
+        if not row or not row.value:
+            return None
+        return row.value
+
+    def get_client(self, db: Session, override_session: Optional[Any] = None) -> Any:
+        """
+        Initializes an instagrapi Client with session settings.
+        Supports sessionid string, cookie dict, or full exported JSON settings.
+        """
+        try:
+            from instagrapi import Client
+        except ImportError:
+            raise RuntimeError("instagrapi library is not installed.")
 
         cl = Client()
-        if INSTAGRAPI_EXTRA_AVAILABLE:
-            try:
-                instagrapi_extra.apply_country(cl, "ID")
-            except Exception as ex_err:
-                logger.warning(f"apply_country notice: {ex_err}")
+        # Set realistic device settings & timeouts
+        cl.delay_range = [1, 3]
 
-        try:
-            cl.set_settings(clean_settings)
-            logger.info("Session restored via set_settings() in aiograpi.")
-        except Exception as e:
-            logger.warning(f"set_settings() warning: {e}")
+        session_data = override_session or self._load_stored_session(db)
+        if not session_data:
+            raise ValueError("Belum ada Instagram Session Cookie yang dikonfigurasi di Admin Settings.")
 
-        sessionid = (
-            clean_settings.get("sessionid")
-            or clean_settings.get("cookies", {}).get("sessionid")
-            or clean_settings.get("authorization_data", {}).get("sessionid")
-        )
-        ds_user_id = (
-            clean_settings.get("ds_user_id")
-            or clean_settings.get("cookies", {}).get("ds_user_id")
-            or clean_settings.get("authorization_data", {}).get("ds_user_id")
-        )
-
-        if sessionid and ds_user_id:
-            cl.authorization_data = {
-                "ds_user_id": str(ds_user_id),
-                "sessionid": sessionid,
-                "should_use_header_over_cookies": True
-            }
-            if cl.authorization:
-                cl.private.headers["Authorization"] = cl.authorization
-                logger.info(f"Injected Authorization Bearer token for ds_user_id={ds_user_id}")
+        if isinstance(session_data, dict):
+            # Full settings json or cookie dict
+            if "sessionid" in session_data:
+                cl.login_by_sessionid(session_data["sessionid"])
+            else:
+                cl.set_settings(session_data)
+        elif isinstance(session_data, str):
+            session_str = session_data.strip()
+            # If JSON string
+            if session_str.startswith("{") and session_str.endswith("}"):
+                try:
+                    parsed = json.loads(session_str)
+                    if isinstance(parsed, dict) and "sessionid" in parsed:
+                        cl.login_by_sessionid(parsed["sessionid"])
+                    elif isinstance(parsed, dict):
+                        cl.set_settings(parsed)
+                except Exception:
+                    cl.login_by_sessionid(session_str)
+            else:
+                # Plain sessionid string (e.g. 54321234%3AFakE...)
+                cl.login_by_sessionid(session_str)
 
         return cl
 
-    async def _extract_session_info(self, cl: Any, fallback_username: str = "") -> Dict[str, Any]:
-        """
-        Extract account info and build session_settings dict from a logged-in aiograpi Client.
-        """
-        account_info = await cl.account_info()
-        user_dict = account_info.dict() if hasattr(account_info, "dict") else account_info
-        pk = str(user_dict.get("pk") or user_dict.get("id"))
-
-        session_settings = cl.get_settings()
-        if isinstance(session_settings, dict):
-            sessionid = (
-                session_settings.get("cookies", {}).get("sessionid")
-                or session_settings.get("sessionid", "")
-            )
-            session_settings["sessionid"] = sessionid
-            session_settings["ds_user_id"] = pk
-            session_settings["authorization_data"] = {
-                "ds_user_id": pk,
-                "sessionid": sessionid,
-                "should_use_header_over_cookies": True
+    def test_connection(self, db: Session, test_session: Optional[str] = None) -> Dict[str, Any]:
+        """Test Instagram login session with instagrapi."""
+        try:
+            cl = self.get_client(db, override_session=test_session)
+            account_info = cl.account_info()
+            return {
+                "success": True,
+                "username": getattr(account_info, "username", "Unknown"),
+                "full_name": getattr(account_info, "full_name", ""),
+                "pk": getattr(account_info, "pk", ""),
+                "message": f"Koneksi Instagram Berhasil! Logged in as @{getattr(account_info, 'username', '')}"
+            }
+        except Exception as e:
+            logger.error(f"Instagram test connection error: {e}")
+            return {
+                "success": False,
+                "message": f"Gagal menghubungkan Instagram via Instagrapi: {str(e)}"
             }
 
-        logger.info(f"Session extracted (aiograpi): @{user_dict.get('username', fallback_username)} (pk={pk})")
+    def fetch_competitor_profile(self, db: Session, username: str) -> Dict[str, Any]:
+        """Fetch competitor profile information from Instagram."""
+        clean_user = username.strip().lstrip("@").lower()
+        cl = self.get_client(db)
+
+        user_info = cl.user_info_by_username(clean_user)
+        user_dict = user_info.dict() if hasattr(user_info, "dict") else user_info.__dict__
+
         return {
-            "pk": pk,
-            "username": user_dict.get("username", fallback_username),
-            "full_name": user_dict.get("full_name", ""),
-            "profile_pic_url": str(user_dict.get("profile_pic_url", "")),
-            "follower_count": user_dict.get("follower_count", 0),
-            "session_settings": session_settings,
+            "username": clean_user,
+            "instagram_pk": str(getattr(user_info, "pk", "")),
+            "full_name": getattr(user_info, "full_name", clean_user),
+            "profile_pic_url": str(getattr(user_info, "profile_pic_url", "")),
+            "biography": getattr(user_info, "biography", ""),
+            "followers_count": getattr(user_info, "follower_count", 0),
+            "following_count": getattr(user_info, "following_count", 0),
+            "media_count": getattr(user_info, "media_count", 0),
+            "is_verified": getattr(user_info, "is_verified", False),
+            "category_name": getattr(user_info, "category_name", ""),
         }
 
-    async def connect_with_sessionid(
-        self,
-        sessionid: str,
-        username: Optional[str] = None,
-        existing_settings: Optional[Dict[str, Any]] = None
-    ) -> Dict[str, Any]:
+    def fetch_competitor_posts(self, db: Session, user_id_or_username: str, amount: int = 20) -> Dict[str, Any]:
         """
-        Connect via browser sessionid cookie using aiograpi async Client.
+        Fetch recent posts for a competitor, calculate engagement rate, top hashtags,
+        and mark top-performing posts.
         """
-        if not INSTAGRAPI_AVAILABLE:
-            raise Exception("aiograpi is not installed.")
+        cl = self.get_client(db)
+        
+        # Resolve PK if username given
+        if not user_id_or_username.isdigit():
+            user_info = cl.user_info_by_username(user_id_or_username.strip().lstrip("@"))
+            pk = user_info.pk
+            followers_count = user_info.follower_count or 1
+        else:
+            pk = int(user_id_or_username)
+            user_info = cl.user_info(pk)
+            followers_count = getattr(user_info, "follower_count", 1) or 1
 
-        cl = Client()
-        sessionid = sessionid.strip()
+        medias = cl.user_medias(pk, amount=amount)
+        
+        parsed_posts = []
+        total_likes = 0
+        total_comments = 0
+        hashtags_list = []
 
-        if INSTAGRAPI_EXTRA_AVAILABLE:
-            try:
-                instagrapi_extra.apply_country(cl, "ID")
-            except Exception as ex_err:
-                logger.warning(f"apply_country notice: {ex_err}")
-
-        if existing_settings and isinstance(existing_settings, dict):
-            try:
-                cl.set_settings(existing_settings)
-                logger.info("Restored existing session settings.")
-            except Exception as e:
-                logger.warning(f"Could not restore existing settings: {e}")
-
-        logger.info("Authenticating with Instagram via sessionid (safe mode)...")
-        raw_input = sessionid.strip()
-        parsed_cookies: Dict[str, str] = {}
-
-        # Format 1: JSON Cookie Array (from Cookie-Editor / EditThisCookie extension)
-        if raw_input.startswith("[") and raw_input.endswith("]"):
-            try:
-                import json
-                items = json.loads(raw_input)
-                if isinstance(items, list):
-                    for item in items:
-                        if isinstance(item, dict) and "name" in item and "value" in item:
-                            parsed_cookies[item["name"]] = str(item["value"])
-                    logger.info(f"Parsed {len(parsed_cookies)} cookies from JSON array format.")
-            except Exception as json_err:
-                logger.warning(f"Could not parse JSON cookie array: {json_err}")
-
-        # Format 2: Header String (sessionid=...; ds_user_id=...; rur=...)
-        if not parsed_cookies and "=" in raw_input:
-            for item in raw_input.split(";"):
-                item = item.strip()
-                if "=" in item:
-                    k, v = item.split("=", 1)
-                    parsed_cookies[k.strip()] = v.strip()
-            logger.info(f"Parsed {len(parsed_cookies)} cookies from Header string format.")
-
-        # Format 3: Single sessionid string
-        if not parsed_cookies:
-            parsed_cookies["sessionid"] = raw_input
-
-        actual_sessionid = parsed_cookies.get("sessionid", raw_input)
-        user_match = re.search(r"^\d+", actual_sessionid)
-        if not user_match:
-            raise Exception("Invalid sessionid cookie format.")
-        ds_user_id = parsed_cookies.get("ds_user_id") or user_match.group()
-        parsed_cookies["ds_user_id"] = str(ds_user_id)
-        parsed_cookies["sessionid"] = actual_sessionid
-
-        cl.set_settings({
-            "cookies": parsed_cookies,
-            "authorization_data": {
-                "ds_user_id": str(ds_user_id),
-                "sessionid": actual_sessionid,
-                "should_use_header_over_cookies": True,
-            }
-        })
-        cl.private.headers.update(cl.base_headers)
-        if cl.authorization:
-            cl.private.headers.update({"Authorization": cl.authorization})
-
-        return await self._extract_session_info(cl, username or "instagram_user")
-
-    async def connect_with_credentials(self, username: str, password: str) -> Dict[str, Any]:
-        """
-        Connect via username + password using aiograpi mobile login flow.
-        """
-        if not INSTAGRAPI_AVAILABLE:
-            raise Exception("aiograpi is not installed.")
-
-        try:
-            from aiograpi.exceptions import ChallengeRequired
-        except ImportError:
-            try:
-                from instagrapi.exceptions import ChallengeRequired
-            except ImportError:
-                class ChallengeRequired(Exception): pass
-
-        uname = username.strip().lower().replace("@", "")
-        cl = Client()
-        logger.info(f"Attempting credential login (aiograpi) for @{uname}...")
-
-        try:
-            result = await cl.login(uname, password.strip())
-            if not result:
-                raise Exception("Login returned False. Check credentials.")
-
-            logger.info(f"Credential login successful for @{uname}")
-            return await self._extract_session_info(cl, uname)
-
-        except ChallengeRequired:
-            logger.info(f"Challenge required for @{uname} — storing client for resolution")
-            _pending_challenge_clients[uname] = cl
-            try:
-                send_result = await cl.challenge_send_code("email")
-                logger.info(f"Challenge code sent: {send_result}")
-            except Exception as send_err:
-                logger.warning(f"challenge_send_code failed: {send_err}")
-
-            raise Exception(
-                f"challenge_required:{uname}\n"
-                "Instagram requires email/SMS verification. "
-                f"Check the email linked to @{uname} and enter the 6-digit code."
-            )
-
-    async def resolve_challenge(self, username: str, code: str) -> Dict[str, Any]:
-        """
-        Complete a pending Instagram login challenge using aiograpi.
-        """
-        if not INSTAGRAPI_AVAILABLE:
-            raise Exception("aiograpi is not installed.")
-
-        uname = username.strip().lower().replace("@", "")
-        cl = _pending_challenge_clients.get(uname)
-        if not cl:
-            raise Exception(
-                f"No pending challenge session found for @{uname}. "
-                "Please restart the login process."
-            )
-
-        try:
-            result = await cl.challenge_resolve_simple(code.strip())
-            logger.info(f"Challenge resolved for @{uname}: result={result}")
-        except Exception as e:
-            raise Exception(f"Challenge code rejected or error: {str(e)}")
-
-        del _pending_challenge_clients[uname]
-        return await self._extract_session_info(cl, uname)
-
-    async def _download_to_temp(self, url: str, force_square: bool = False) -> tuple:
-        """
-        Async download URL to temp file using httpx.AsyncClient.
-        If force_square=True (for Carousel/Album), resizes & centers image into exact 1080x1080 square canvas.
-        """
-        try:
-            from PIL import Image as PILImage
-            PIL_AVAILABLE = True
-        except ImportError:
-            PIL_AVAILABLE = False
-
-        async with httpx.AsyncClient(follow_redirects=True, timeout=120.0) as http_client:
-            resp = await http_client.get(url)
-            resp.raise_for_status()
-            content_bytes = resp.content
-            content_type = resp.headers.get("content-type", "").lower()
-
-        is_video = "video" in content_type or url.lower().endswith((".mp4", ".mov", ".avi", ".webm"))
-
-        if is_video:
-            f = tempfile.NamedTemporaryFile(suffix=".mp4", delete=False)
-            f.write(content_bytes)
-            f.close()
-            return Path(f.name), True
-
-        f = tempfile.NamedTemporaryFile(suffix=".jpg", delete=False)
-        f.write(content_bytes)
-        f.close()
-
-        if PIL_AVAILABLE:
-            try:
-                img = PILImage.open(f.name)
-                if img.mode not in ("RGB", "L"):
-                    img = img.convert("RGB")
-
-                if force_square:
-                    w, h = img.size
-                    min_side = min(w, h)
-                    left = (w - min_side) // 2
-                    top = (h - min_side) // 2
-                    img = img.crop((left, top, left + min_side, top + min_side))
-                    img = img.resize((1080, 1080), PILImage.LANCZOS)
-                else:
-                    w, h = img.size
-                    ratio = w / h
-                    if ratio > 1.91:
-                        new_w = int(h * 1.91)
-                        left = (w - new_w) // 2
-                        img = img.crop((left, 0, left + new_w, h))
-                    elif ratio < 0.8:
-                        new_h = int(w / 0.8)
-                        top = (h - new_h) // 2
-                        img = img.crop((0, top, w, top + new_h))
-
-                    if img.width > 1080 or img.height > 1080:
-                        img.thumbnail((1080, 1080), PILImage.LANCZOS)
-
-                img.save(f.name, "JPEG", quality=95, subsampling=0)
-                logger.info(f"Image normalized to {img.size} JPEG (force_square={force_square}).")
-            except Exception as pil_err:
-                logger.warning(f"PIL normalization failed (using raw): {pil_err}")
-
-        return Path(f.name), False
-
-    async def publish_post(
-        self,
-        session_settings: Dict[str, Any],
-        media_urls: List[str],
-        caption: str,
-        is_video: bool = False
-    ) -> Dict[str, Any]:
-        """
-        Upload media asynchronously via aiograpi.
-        Detects session expiry from 403 responses and raises SessionExpired.
-        """
-        cl = await self._get_client(session_settings)
-
-        if not media_urls:
-            raise Exception("No media URLs provided.")
-
-        # ── Carousel / Album (2–10 items) ─────────────────────────────────────
-        if len(media_urls) > 1:
-            logger.info(f"Uploading carousel ({len(media_urls)} items) via aiograpi...")
-            paths: List[Path] = []
-            try:
-                for url in media_urls:
-                    p, _ = await self._download_to_temp(url, force_square=True)
-                    paths.append(p)
-                    logger.info(f"  Prepared uniform square item: {p.name}")
-
-                media = await cl.album_upload(
-                    paths=paths,
-                    caption=caption
-                )
-                d = media.dict() if hasattr(media, "dict") else media
-                pk = str(d.get("pk") or d.get("id", "ok"))
-                code = d.get("code", "")
-                logger.info(f"Carousel published via aiograpi! pk={pk} code={code}")
-                return {"id": pk, "code": code, "url": f"https://www.instagram.com/p/{code}/" if code else ""}
-            finally:
-                for p in paths:
-                    p.unlink(missing_ok=True)
-
-        # ── Single media ───────────────────────────────────────────────────────
-        media_url = media_urls[0]
-        path, is_actual_video = await self._download_to_temp(media_url, force_square=False)
-        try:
-            logger.info(f"Uploading {'reel/video' if is_actual_video else 'photo'} via aiograpi...")
-            if is_actual_video:
-                try:
-                    media = await cl.clip_upload(path, caption=caption)
-                except Exception as reel_err:
-                    logger.warning(f"clip_upload failed: {reel_err} — retrying as video_upload...")
-                    media = await cl.video_upload(path, caption=caption)
+        for m in medias:
+            m_dict = m.dict() if hasattr(m, "dict") else m.__dict__
+            media_id = str(getattr(m, "id", getattr(m, "pk", "")))
+            code = getattr(m, "code", "")
+            
+            # Post type mapping
+            media_type = getattr(m, "media_type", 1)
+            product_type = getattr(m, "product_type", "")
+            if media_type == 2 or product_type in ["reels", "clips"]:
+                post_type = "video"
+            elif media_type == 8:
+                post_type = "carousel"
             else:
-                media = await cl.photo_upload(path, caption=caption)
+                post_type = "image"
 
-            d = media.dict() if hasattr(media, "dict") else media
-            pk = str(d.get("pk") or d.get("id", "ok"))
-            code = d.get("code", "")
-            logger.info(f"Single post published via aiograpi! pk={pk} code={code}")
-            return {"id": pk, "code": code, "url": f"https://www.instagram.com/p/{code}/" if code else ""}
-        finally:
-            path.unlink(missing_ok=True)
+            caption_obj = getattr(m, "caption_text", "") or getattr(m, "caption", "")
+            if isinstance(caption_obj, dict):
+                caption_text = caption_obj.get("text", "")
+            else:
+                caption_text = str(caption_obj or "")
+
+            # Extract hashtags
+            found_hashtags = re.findall(r"#(\w+)", caption_text)
+            hashtags_list.extend([h.lower() for h in found_hashtags])
+
+            # Media URLs / Thumbnails
+            thumbnail_url = ""
+            resources = getattr(m, "resources", []) or []
+            media_urls = []
+
+            if hasattr(m, "thumbnail_url") and m.thumbnail_url:
+                thumbnail_url = str(m.thumbnail_url)
+            elif hasattr(m, "display_url") and m.display_url:
+                thumbnail_url = str(m.display_url)
+
+            if resources:
+                for r in resources:
+                    r_url = str(getattr(r, "display_url", getattr(r, "thumbnail_url", "")))
+                    if r_url:
+                        media_urls.append(r_url)
+            if not media_urls and thumbnail_url:
+                media_urls.append(thumbnail_url)
+
+            like_count = getattr(m, "like_count", 0) or 0
+            comment_count = getattr(m, "comment_count", 0) or 0
+            total_likes += like_count
+            total_comments += comment_count
+
+            # Engagement Rate for this single post = ((likes + comments) / followers) * 100
+            post_er = round(((like_count + comment_count) / max(followers_count, 1)) * 100, 2)
+
+            posted_at = getattr(m, "taken_at", None)
+            if isinstance(posted_at, str):
+                try:
+                    posted_at = datetime.fromisoformat(posted_at)
+                except Exception:
+                    posted_at = datetime.utcnow()
+
+            parsed_posts.append({
+                "instagram_media_id": media_id,
+                "code": code,
+                "post_type": post_type,
+                "caption": caption_text,
+                "thumbnail_url": thumbnail_url,
+                "media_urls": media_urls,
+                "like_count": like_count,
+                "comment_count": comment_count,
+                "engagement_rate": post_er,
+                "posted_at": posted_at.isoformat() if posted_at else None,
+            })
+
+        count = len(parsed_posts)
+        avg_likes = round(total_likes / count, 1) if count > 0 else 0.0
+        avg_comments = round(total_comments / count, 1) if count > 0 else 0.0
+        overall_er = round(((avg_likes + avg_comments) / max(followers_count, 1)) * 100, 2)
+
+        # Flag top performers (posts with ER > 1.3x average ER)
+        threshold_er = overall_er * 1.3
+        for p in parsed_posts:
+            p["is_top_performer"] = (p["engagement_rate"] >= threshold_er) or (p["like_count"] >= avg_likes * 1.5 and count >= 3)
+
+        # Top 10 Hashtags
+        top_hashtags = [item[0] for item in Counter(hashtags_list).most_common(10)]
+
+        return {
+            "posts": parsed_posts,
+            "avg_likes": avg_likes,
+            "avg_comments": avg_comments,
+            "engagement_rate": overall_er,
+            "top_hashtags": top_hashtags,
+            "total_posts_scraped": count
+        }
+
 
 instagrapi_service = InstagrapiService()

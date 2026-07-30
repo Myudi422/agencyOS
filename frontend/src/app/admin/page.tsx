@@ -52,6 +52,10 @@ export default function AdminPage() {
   const [geminiTesting, setGeminiTesting] = useState(false);
   const [geminiTestResult, setGeminiTestResult] = useState<any>(null);
 
+  // Instagram Test State
+  const [igTesting, setIgTesting] = useState(false);
+  const [igTestResult, setIgTestResult] = useState<any>(null);
+
   const [msg, setMsg] = useState<{ type: "ok" | "err"; text: string } | null>(null);
 
   useEffect(() => {
@@ -70,6 +74,26 @@ export default function AdminPage() {
     setMsg({ type, text });
     setTimeout(() => setMsg(null), 3000);
   };
+
+  const testInstagramConnection = async () => {
+    setIgTesting(true);
+    setIgTestResult(null);
+    try {
+      const res: any = await fetchApi("/admin/test-instagram", { method: "POST" });
+      setIgTestResult(res);
+      if (res.success) {
+        flash("ok", res.message || "Koneksi Instagram berhasil!");
+      } else {
+        flash("err", res.message || "Gagal menghubungkan Instagram.");
+      }
+    } catch (e: any) {
+      setIgTestResult({ success: false, message: e.message || "Terjadi kesalahan saat menguji Instagram." });
+      flash("err", "Test Instagram gagal");
+    } finally {
+      setIgTesting(false);
+    }
+  };
+
 
   // ── Plans ──────────────────────────────────────────────────────────────────
 
@@ -481,6 +505,92 @@ export default function AdminPage() {
               </div>
             )}
           </div>
+
+          {/* ── INSTAGRAPI COMPETITOR SPY CONFIGURATION ── */}
+          <div className="p-6 rounded-3xl bg-gradient-to-br from-pink-900 via-purple-900 to-slate-900 text-white shadow-xl space-y-4 border border-pink-500/20">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-pink-500/20 border border-pink-400/30 flex items-center justify-center text-pink-300">
+                  <Bot className="w-5 h-5 text-pink-300" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold font-['Outfit'] text-white">Instagram Competitor Spy (Instagrapi Cookie)</h3>
+                  <p className="text-xs text-pink-200">Cookie / Session Token Instagram Admin untuk mengambil data &amp; postingan profil kompetitor</p>
+                </div>
+              </div>
+              <button
+                onClick={testInstagramConnection}
+                disabled={igTesting}
+                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-pink-600 hover:bg-pink-500 text-white text-xs font-semibold shadow-lg shadow-pink-500/30 transition-all disabled:opacity-60"
+              >
+                {igTesting ? (
+                  <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+                )}
+                {igTesting ? "Mengecek Session..." : "Test Koneksi Instagram"}
+              </button>
+            </div>
+
+            {/* Instruction box */}
+            <div className="p-3.5 rounded-2xl bg-white/5 border border-white/10 text-xs text-pink-100 space-y-1">
+              <p className="font-semibold text-pink-200">💡 Cara Mendapatkan Instagram Session Cookie:</p>
+              <ol className="list-decimal list-inside text-[11px] text-pink-300/90 space-y-0.5">
+                <li>Buka <a href="https://www.instagram.com" target="_blank" rel="noreferrer" className="underline text-pink-200">instagram.com</a> dan pastikan sudah login akun admin/toko.</li>
+                <li>Tekan <kbd className="px-1 bg-white/10 rounded">F12</kbd> &rarr; tab <strong>Application / Storage</strong> &rarr; <strong>Cookies</strong>.</li>
+                <li>Cari cookie bernama <code className="bg-pink-950/80 px-1 py-0.5 rounded font-mono text-pink-200">sessionid</code>, lalu salin nilainya (contoh: <code>54321234%3AFakE...</code>).</li>
+              </ol>
+            </div>
+
+            {/* Input field */}
+            <div className="p-3.5 rounded-2xl bg-white/10 border border-white/10 space-y-2">
+              <div>
+                <label className="text-xs font-semibold text-white block">INSTAGRAM_SESSION_COOKIE (sessionid)</label>
+                <p className="text-[10px] text-pink-300">Wajib untuk menjalankan fitur Competitor Spy</p>
+              </div>
+              <div className="flex gap-1.5">
+                <input
+                  type="password"
+                  defaultValue={appSettings["INSTAGRAM_SESSION_COOKIE"] || ""}
+                  id="setting-INSTAGRAM_SESSION_COOKIE"
+                  placeholder="Masukkan sessionid Instagram..."
+                  className="flex-1 px-3 py-1.5 rounded-xl border border-white/20 text-xs bg-slate-900/60 text-white placeholder-pink-300/40 focus:outline-none focus:ring-2 focus:ring-pink-400 font-mono"
+                />
+                <button
+                  onClick={() => {
+                    const el = document.getElementById("setting-INSTAGRAM_SESSION_COOKIE") as HTMLInputElement;
+                    if (el) saveSetting("INSTAGRAM_SESSION_COOKIE", el.value);
+                  }}
+                  disabled={settingsSaving}
+                  className="px-4 py-1.5 rounded-xl bg-pink-600 hover:bg-pink-500 text-white text-xs font-medium transition-all disabled:opacity-60 shrink-0"
+                >
+                  <Save className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Test Connection Result Box */}
+            {igTestResult && (
+              <div className={`p-3.5 rounded-2xl border text-xs flex items-start gap-3 transition-all ${
+                igTestResult.success
+                  ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-200"
+                  : "bg-red-500/10 border-red-500/30 text-red-200"
+              }`}>
+                {igTestResult.success ? (
+                  <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
+                ) : (
+                  <XCircle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
+                )}
+                <div>
+                  <p className="font-bold">{igTestResult.message}</p>
+                  {igTestResult.username && (
+                    <p className="text-[11px] opacity-80 mt-0.5">Logged in as: <strong>@{igTestResult.username}</strong> ({igTestResult.full_name})</p>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+
 
 
           {/* Quick-add common settings */}
