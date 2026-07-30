@@ -13,6 +13,10 @@ from backend.services.postforme_service import postforme_service
 
 router = APIRouter(prefix="/dashboard", tags=["Dashboard Overview"])
 
+# In-memory TTL Cache for Top Post Showcase (10 minutes)
+_TOP_POST_CACHE: dict = {}
+CACHE_TTL_SECONDS = 600
+
 @router.get("/")
 async def get_dashboard_overview(
     workspace_id: str = Query(..., description="Workspace ID"),
@@ -141,11 +145,16 @@ async def get_dashboard_overview(
         pct = round((v / max(1, total_acc_count)) * 100)
         platform_breakdown.append({"platform": k, "count": v, "percentage": pct})
 
-    # 9. Top Post Showcase (Best Performing Post from Real Social Feed)
-    connected_accs = db.query(SocialAccount).filter(
-        SocialAccount.workspace_id == workspace_id,
-        SocialAccount.status == AccountStatus.CONNECTED
-    ).all()
+    # 9. Top Post Showcase (Best Performing Post with 10-minute TTL Cache)
+    now_ts = datetime.utcnow().timestamp()
+    cached_entry = _TOP_POST_CACHE.get(workspace_id)
+    if cached_entry and (now_ts - cached_entry[0] < CACHE_TTL_SECONDS):
+        top_post_data = cached_entry[1]
+    else:
+        connected_accs = db.query(SocialAccount).filter(
+            SocialAccount.workspace_id == workspace_id,
+            SocialAccount.status == AccountStatus.CONNECTED
+        ).all()
 
     all_real_posts = []
     if connected_accs:
@@ -240,6 +249,9 @@ async def get_dashboard_overview(
                 "shares": 0,
                 "engagement_rate": "0.0%"
             }
+
+        # Cache top post result for 10 minutes
+        _TOP_POST_CACHE[workspace_id] = (now_ts, top_post_data)
 
     # 10. System & Infrastructure Metrics (Memory, DB Size, Redis, Vercel)
     import os
