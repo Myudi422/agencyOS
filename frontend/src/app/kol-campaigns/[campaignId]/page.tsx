@@ -3,7 +3,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import AppLayout from "@/components/layout/AppLayout";
 import CampaignRoiCard from "@/components/kol/CampaignRoiCard";
 import KolAddToCampaignModal from "@/components/kol/KolAddToCampaignModal";
 import DeliverableAddModal from "@/components/kol/DeliverableAddModal";
@@ -124,33 +123,29 @@ export default function CampaignDetailPage() {
 
   if (loading) {
     return (
-      <AppLayout>
-        <div className="p-6 max-w-7xl mx-auto space-y-4">
-          <div className="h-20 bg-slate-100 rounded-3xl animate-pulse" />
-          <div className="grid grid-cols-3 gap-6">
-            <div className="h-96 bg-slate-100 rounded-3xl animate-pulse col-span-1" />
-            <div className="h-96 bg-slate-100 rounded-3xl animate-pulse col-span-2" />
-          </div>
+      <div className="p-6 max-w-7xl mx-auto space-y-4">
+        <div className="h-20 bg-slate-100 rounded-3xl animate-pulse" />
+        <div className="grid grid-cols-3 gap-6">
+          <div className="h-96 bg-slate-100 rounded-3xl animate-pulse col-span-1" />
+          <div className="h-96 bg-slate-100 rounded-3xl animate-pulse col-span-2" />
         </div>
-      </AppLayout>
+      </div>
     );
   }
 
   if (!campaign) {
     return (
-      <AppLayout>
-        <div className="p-12 text-center">
-          <p className="text-sm font-bold text-slate-700">Campaign tidak ditemukan.</p>
-          <Link href="/kol-campaigns" className="text-xs text-purple-600 underline mt-2 inline-block">
-            Kembali ke KOL Campaigns
-          </Link>
-        </div>
-      </AppLayout>
+      <div className="p-12 text-center">
+        <p className="text-sm font-bold text-slate-700">Campaign tidak ditemukan.</p>
+        <Link href="/kol-campaigns" className="text-xs text-purple-600 underline mt-2 inline-block">
+          Kembali ke KOL Campaigns
+        </Link>
+      </div>
     );
   }
 
   return (
-    <AppLayout>
+    <div className="space-y-6 pb-20">
       <div className="p-6 max-w-7xl mx-auto space-y-6">
         {/* Navigation & Header */}
         <div className="bg-white p-6 rounded-3xl border border-slate-200/90 shadow-xs space-y-4">
@@ -441,6 +436,6 @@ export default function CampaignDetailPage() {
         accounts={accounts}
         campaignToEdit={campaign}
       />
-    </AppLayout>
+    </div>
   );
 }

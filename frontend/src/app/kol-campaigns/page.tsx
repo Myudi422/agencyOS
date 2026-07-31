@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import AppLayout from "@/components/layout/AppLayout";
 import KolAccountSelector, { AccountItem } from "@/components/kol/KolAccountSelector";
 import CampaignCard, { CampaignItem } from "@/components/kol/CampaignCard";
 import CampaignCreateModal from "@/components/kol/CampaignCreateModal";
@@ -79,7 +78,7 @@ export default function KolCampaignsPage() {
   };
 
   return (
-    <AppLayout>
+    <div className="space-y-6 pb-20">
       <div className="p-6 max-w-7xl mx-auto space-y-6">
         {/* Top Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-slate-200/90 shadow-xs">
@@ -228,6 +227,6 @@ export default function KolCampaignsPage() {
         isOpen={isDatabaseDrawerOpen}
         onClose={() => setIsDatabaseDrawerOpen(false)}
       />
-    </AppLayout>
+    </div>
   );
 }
