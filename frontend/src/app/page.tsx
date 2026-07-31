@@ -554,12 +554,9 @@ export default function LandingHomePage() {
               <span>Platform Features</span>
             </span>
             <h2 className="text-2xl sm:text-4xl font-bold text-slate-900 font-['Outfit'] tracking-tight mt-2">
-              Fitur Canggih Yang Membuat Kerja Sosmed Lebih Ringan
+              Fitur Canggih Yang Membuat Kerja Sosmed
             </h2>
           </div>
-          <p className="text-xs sm:text-sm text-slate-500 max-w-md">
-            Setiap fitur dibangun dengan filosofi efisiensi tinggi, antarmuka bersih, dan integrasi API sosial media resmi.
-          </p>
         </div>
 
         {/* Feature Grid */}
@@ -924,7 +921,7 @@ export default function LandingHomePage() {
               <span className="text-lg font-bold text-slate-900 font-['Outfit']">Shiera<span className="text-purple-600">.</span></span>
             </div>
             <p className="text-slate-500 leading-relaxed">
-              Platform Social Media Management #1 untuk Creator, Olshop, Digital Agency, dan Media Publisher di Indonesia.
+              Platform Social Media Management #1 untuk Creator, Olshop, Digital Agency, dan Brand di Indonesia.
             </p>
           </div>
 
@@ -932,18 +929,18 @@ export default function LandingHomePage() {
             <p className="font-bold text-slate-900">Produk &amp; Fitur</p>
             <ul className="space-y-1.5 text-slate-500">
               <li><a href="#features" className="hover:text-purple-600 transition-colors">Multi-Channel Scheduler</a></li>
+              <li><a href="#features" className="hover:text-purple-600 transition-colors">AI Assistant &amp; Strategy</a></li>
               <li><a href="#features" className="hover:text-purple-600 transition-colors">KOL Campaign Tracker</a></li>
-              <li><a href="#features" className="hover:text-purple-600 transition-colors">RSS Auto Publisher</a></li>
               <li><a href="#features" className="hover:text-purple-600 transition-colors">Competitor Intelligence</a></li>
             </ul>
           </div>
 
           <div className="space-y-2">
-            <p className="font-bold text-slate-900">Solusi &amp; Fitur</p>
+            <p className="font-bold text-slate-900">Solusi &amp; Layanan</p>
             <ul className="space-y-1.5 text-slate-500">
-              <li><a href="#pricing" className="hover:text-purple-600 transition-colors">White-Label PDF Reports</a></li>
+              <li><a href="#pricing" className="hover:text-purple-600 transition-colors">Executive PDF Reports</a></li>
               <li><a href="#pricing" className="hover:text-purple-600 transition-colors">Client Approval Portal</a></li>
-              <li><a href="#pricing" className="hover:text-purple-600 transition-colors">Harga Paket Paket</a></li>
+              <li><a href="#pricing" className="hover:text-purple-600 transition-colors">Pilihan Paket Harga</a></li>
             </ul>
           </div>
 
@@ -952,7 +949,7 @@ export default function LandingHomePage() {
             <ul className="space-y-1.5 text-slate-500">
               <li><Link href="/login" className="hover:text-purple-600 transition-colors">Bantuan WhatsApp</Link></li>
               <li><Link href="/pricing" className="hover:text-purple-600 transition-colors">Verifikasi WA OTP</Link></li>
-              <li><Link href="/login" className="hover:text-purple-600 transition-colors">Dokumentasi API</Link></li>
+              <li><Link href="/login" className="hover:text-purple-600 transition-colors">Syarat &amp; Ketentuan</Link></li>
             </ul>
           </div>
 
@@ -960,11 +957,11 @@ export default function LandingHomePage() {
 
         {/* Legal Bottom Band */}
         <div className="max-w-7xl mx-auto pt-6 flex flex-col md:flex-row items-center justify-between gap-4 text-slate-400">
-          <p>© 2026 Shiera Inc. Designed with Airbnb Visual Elegance in Shiera Electric Purple.</p>
+          <p>© 2026 Shiera Inc. PT. Digital Inter Nusa</p>
           <div className="flex items-center gap-4 text-slate-500">
             <span>🇮🇩 Indonesia (IDR)</span>
-            <span>Privacy</span>
-            <span>Terms</span>
+            <span>Privacy Policy</span>
+            <span>Terms of Service</span>
           </div>
         </div>
       </footer>
