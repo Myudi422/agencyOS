@@ -403,8 +403,8 @@ export default function LandingHomePage() {
               Gak Pake Capek Upload Manual
             </span>
           </h1>
-          <p className="text-base sm:text-xl text-slate-600 leading-relaxed max-w-2xl mx-auto">
-            Platform All-in-One hemat waktu untuk Creator, Olshop, Agency &amp; Brand. Satu kali upload, konten langsung terbit otomatis di Instagram, TikTok, FB, LinkedIn, X, &amp; YouTube.
+          <p className="text-base sm:text-xl text-slate-600 leading-relaxed max-w-3xl mx-auto">
+            Stop buang waktu upload manual. Satu platform untuk auto-post ke 10+ sosmed, AI Assistant strategi &amp; brief, KOL manager, spy kompetitor, hingga laporan PDF executive otomatis.
           </p>
         </div>
 
