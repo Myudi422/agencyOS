@@ -94,6 +94,23 @@ class InstagrapiService:
                 "message": f"Gagal menghubungkan Instagram via Instagrapi: {str(e)}"
             }
 
+    def validate_username(self, db: Session, username: str) -> Dict[str, Any]:
+        """Validate if an Instagram account exists and fetch basic profile preview."""
+        try:
+            profile = self.fetch_competitor_profile(db, username)
+            return {
+                "valid": True,
+                "profile": profile,
+                "message": f"Akun @{profile['username']} ditemukan."
+            }
+        except Exception as e:
+            logger.warning(f"Validation failed for @{username}: {e}")
+            return {
+                "valid": False,
+                "profile": None,
+                "message": f"Akun Instagram @{username} tidak ditemukan atau gagal diakses."
+            }
+
     def fetch_competitor_profile(self, db: Session, username: str) -> Dict[str, Any]:
         """Fetch competitor profile information from Instagram."""
         clean_user = username.strip().lstrip("@").lower()

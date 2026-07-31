@@ -3,12 +3,14 @@ Competitor Spy Router — /competitors
 Endpoints for tracking competitor Instagram accounts, syncing profile stats,
 fetching top performing posts, and retrieving benchmark comparison matrices.
 
-Performance optimizations:
+Performance & Reliability:
 - sync-all runs in a background thread pool (non-blocking, concurrent per brand)
-- daily-feed and benchmark/matrix responses are cached in Upstash Redis (5 min TTL)
+- daily-feed and benchmark/matrix responses are cached in Upstash Redis (3 min TTL)
 - sync status stored in Redis — shared across all worker processes/instances
-- rate limiting: 30 menit cooldown per workspace for sync-all
-- graceful fallback ke in-memory jika Redis tidak available
+- rate limiting: 3 min cooldown per workspace/account for sync-all and individual sync
+- per-connected Instagram account isolation (max 5 competitors per connected IG account)
+- 2-step add process: validation preview -> background async fetch with progress bar
+- graceful fallback to in-memory if Redis is unavailable
 """
 
 from fastapi import APIRouter, Depends, HTTPException, Header, Query, BackgroundTasks
@@ -19,10 +21,12 @@ from datetime import datetime, timedelta
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import logging
 import time
+import uuid
 
 from backend.database import get_db, SessionLocal
 from backend.models.models import (
-    User, Workspace, WorkspaceMember, CompetitorAccount, CompetitorPost, ActivityLog
+    User, Workspace, WorkspaceMember, CompetitorAccount, CompetitorPost, ActivityLog,
+    SocialAccount, AccountPlatform
 )
 from backend.services.firebase_service import verify_firebase_token
 from backend.services.instagrapi_service import instagrapi_service
@@ -35,11 +39,10 @@ from backend.services.redis_service import (
 logger = logging.getLogger("CompetitorsRouter")
 router = APIRouter(prefix="/competitors", tags=["Competitor Spy"])
 
-# TTL values
-_CACHE_TTL = 300       # 5 minutes for list/benchmark/daily-feed
-_SYNC_COOLDOWN = 1800  # 30 minutes cooldown between sync-all runs per workspace
-
-
+# TTL and Cooldown values (3 minutes)
+_CACHE_TTL = 180              # 3 minutes for list/benchmark/daily-feed
+_SYNC_COOLDOWN = 180         # 3 minutes cooldown between sync-all runs
+_ACCOUNT_SYNC_COOLDOWN = 180 # 3 minutes cooldown for individual competitor sync
 
 
 # ─── Auth Dependency ──────────────────────────────────────────────────────────
@@ -78,12 +81,17 @@ def get_current_user_and_workspace(
 
 # ─── Request Schemas ──────────────────────────────────────────────────────────
 
+class ValidateUsernameRequest(BaseModel):
+    username: str
+
 class AddCompetitorRequest(BaseModel):
+    social_account_id: str
     username: str
 
 class CompetitorResponse(BaseModel):
     id: str
     workspace_id: str
+    social_account_id: Optional[str] = None
     username: str
     full_name: Optional[str] = None
     instagram_pk: Optional[str] = None
@@ -101,25 +109,77 @@ class CompetitorResponse(BaseModel):
     last_synced_at: Optional[str] = None
     created_at: str
 
+
 # ─── Endpoints ────────────────────────────────────────────────────────────────
 
-@router.get("/")
-def list_competitors(
+@router.get("/ig-accounts")
+def list_connected_ig_accounts(
     ctx: tuple[User, Workspace] = Depends(get_current_user_and_workspace),
     db: Session = Depends(get_db)
 ):
-    """List all tracked competitors for active workspace. Cached 5 min in Redis."""
+    """List connected Instagram accounts for active workspace to let user select which one to track competitors for."""
     _, workspace = ctx
-    cache_key = f"competitors:list:{workspace.id}"
+    accounts = db.query(SocialAccount).filter(
+        SocialAccount.workspace_id == workspace.id,
+        SocialAccount.platform.in_([AccountPlatform.INSTAGRAM, AccountPlatform.INSTAGRAM_BUSINESS])
+    ).all()
+    
+    result = []
+    for a in accounts:
+        comp_count = db.query(CompetitorAccount).filter(
+            CompetitorAccount.social_account_id == a.id
+        ).count()
+        result.append({
+            "id": a.id,
+            "username": a.username,
+            "name": a.name,
+            "avatar_url": a.avatar_url,
+            "status": a.status.value if hasattr(a.status, "value") else str(a.status),
+            "followers_count": a.followers_count,
+            "competitors_count": comp_count,
+            "max_competitors": 5
+        })
+    return {"accounts": result, "total": len(result)}
+
+
+@router.post("/validate")
+def validate_competitor_username(
+    req: ValidateUsernameRequest,
+    ctx: tuple[User, Workspace] = Depends(get_current_user_and_workspace),
+    db: Session = Depends(get_db)
+):
+    """Step 1 of adding competitor: check if Instagram username exists and preview profile."""
+    clean_username = req.username.strip().lstrip("@").lower()
+    if not clean_username:
+        raise HTTPException(status_code=400, detail="Username Instagram tidak boleh kosong.")
+    
+    res = instagrapi_service.validate_username(db, clean_username)
+    if not res["valid"]:
+        raise HTTPException(status_code=400, detail=res["message"])
+    return res
+
+
+@router.get("/")
+def list_competitors(
+    social_account_id: Optional[str] = Query(None),
+    ctx: tuple[User, Workspace] = Depends(get_current_user_and_workspace),
+    db: Session = Depends(get_db)
+):
+    """List tracked competitors for active workspace and selected IG account. Cached 3 min in Redis."""
+    _, workspace = ctx
+    cache_key = f"competitors:list:{workspace.id}:{social_account_id or 'all'}"
     cached = cache_get(cache_key)
     if cached:
         return cached
 
     from sqlalchemy import func
-    # Single query with aggregated post count to avoid N+1 queries
-    competitors = db.query(CompetitorAccount).filter(
+    query = db.query(CompetitorAccount).filter(
         CompetitorAccount.workspace_id == workspace.id
-    ).order_by(CompetitorAccount.followers_count.desc()).all()
+    )
+    if social_account_id:
+        query = query.filter(CompetitorAccount.social_account_id == social_account_id)
+
+    competitors = query.order_by(CompetitorAccount.followers_count.desc()).all()
 
     competitor_ids = [c.id for c in competitors]
     post_counts = {}
@@ -136,6 +196,7 @@ def list_competitors(
         result.append({
             "id": c.id,
             "workspace_id": c.workspace_id,
+            "social_account_id": c.social_account_id,
             "username": c.username,
             "full_name": c.full_name,
             "instagram_pk": c.instagram_pk,
@@ -160,27 +221,97 @@ def list_competitors(
     return payload
 
 
+def _run_add_competitor_bg(job_id: str, competitor_id: str, username: str, workspace_id: str, social_account_id: str):
+    """Background task to fetch initial posts for a newly added competitor."""
+    cache_set(f"add_job:{job_id}", {
+        "status": "running", "percent": 40, "message": f"Mengambil postingan & menghitung statistik @{username}...", "competitor_id": competitor_id
+    }, ttl_seconds=600)
+    
+    db = SessionLocal()
+    try:
+        account = db.query(CompetitorAccount).filter(CompetitorAccount.id == competitor_id).first()
+        if account:
+            posts_data = instagrapi_service.fetch_competitor_posts(db, username, amount=20)
+            account.avg_likes = posts_data["avg_likes"]
+            account.avg_comments = posts_data["avg_comments"]
+            account.engagement_rate = posts_data["engagement_rate"]
+            account.top_hashtags = posts_data["top_hashtags"]
+
+            for p in posts_data["posts"]:
+                c_post = CompetitorPost(
+                    competitor_id=account.id,
+                    instagram_media_id=p["instagram_media_id"],
+                    code=p["code"],
+                    post_type=p["post_type"],
+                    caption=p["caption"],
+                    thumbnail_url=p["thumbnail_url"],
+                    media_urls=p["media_urls"],
+                    like_count=p["like_count"],
+                    comment_count=p["comment_count"],
+                    engagement_rate=p["engagement_rate"],
+                    is_top_performer=p["is_top_performer"],
+                    posted_at=datetime.fromisoformat(p["posted_at"]) if p["posted_at"] else datetime.utcnow()
+                )
+                db.add(c_post)
+            db.commit()
+
+        # Invalidate caches
+        cache_delete_prefix(f"competitors:list:{workspace_id}")
+        cache_delete_prefix(f"competitors:benchmark:{workspace_id}")
+        cache_delete_prefix(f"competitors:daily:{workspace_id}")
+
+        cache_set(f"add_job:{job_id}", {
+            "status": "done", "percent": 100, "message": f"Kompetitor @{username} berhasil ditambahkan!", "competitor_id": competitor_id
+        }, ttl_seconds=600)
+    except Exception as e:
+        logger.warning(f"Background add post sync warning for @{username}: {e}")
+        cache_set(f"add_job:{job_id}", {
+            "status": "done", "percent": 100, "message": f"Profil @{username} ditambahkan.", "competitor_id": competitor_id
+        }, ttl_seconds=600)
+    finally:
+        db.close()
+
+
 @router.post("/")
 def add_competitor(
     req: AddCompetitorRequest,
+    background_tasks: BackgroundTasks,
     ctx: tuple[User, Workspace] = Depends(get_current_user_and_workspace),
     db: Session = Depends(get_db)
 ):
-    """Add a new competitor by Instagram username and sync profile + posts."""
+    """Step 2: Save competitor profile immediately and trigger non-blocking background post fetching."""
     user, workspace = ctx
     clean_username = req.username.strip().lstrip("@").lower()
 
     if not clean_username:
         raise HTTPException(status_code=400, detail="Username Instagram tidak boleh kosong.")
 
-    # Check duplicate
+    # Validate social_account_id
+    social_account = db.query(SocialAccount).filter(
+        SocialAccount.id == req.social_account_id,
+        SocialAccount.workspace_id == workspace.id
+    ).first()
+    if not social_account:
+        raise HTTPException(status_code=404, detail="Akun Instagram terhubung tidak ditemukan.")
+
+    # Check max 5 competitors limit for this IG account
+    existing_count = db.query(CompetitorAccount).filter(
+        CompetitorAccount.social_account_id == social_account.id
+    ).count()
+    if existing_count >= 5:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Maksimal 5 akun kompetitor per akun Instagram terhubung. Akun @{social_account.username} sudah memantau {existing_count} kompetitor."
+        )
+
+    # Check duplicate for this specific IG account
     existing = db.query(CompetitorAccount).filter(
-        CompetitorAccount.workspace_id == workspace.id,
+        CompetitorAccount.social_account_id == social_account.id,
         CompetitorAccount.username == clean_username
     ).first()
 
     if existing:
-        raise HTTPException(status_code=400, detail=f"Kompetitor @{clean_username} sudah ada dalam daftar pantau.")
+        raise HTTPException(status_code=400, detail=f"Kompetitor @{clean_username} sudah ada dalam daftar pantau akun @{social_account.username}.")
 
     # Fetch profile via instagrapi
     try:
@@ -191,6 +322,7 @@ def add_competitor(
 
     account = CompetitorAccount(
         workspace_id=workspace.id,
+        social_account_id=social_account.id,
         username=profile_data["username"],
         full_name=profile_data["full_name"],
         instagram_pk=profile_data["instagram_pk"],
@@ -207,52 +339,50 @@ def add_competitor(
     db.commit()
     db.refresh(account)
 
-    # Automatically sync posts
-    try:
-        posts_data = instagrapi_service.fetch_competitor_posts(db, account.username, amount=20)
-        account.avg_likes = posts_data["avg_likes"]
-        account.avg_comments = posts_data["avg_comments"]
-        account.engagement_rate = posts_data["engagement_rate"]
-        account.top_hashtags = posts_data["top_hashtags"]
-
-        for p in posts_data["posts"]:
-            c_post = CompetitorPost(
-                competitor_id=account.id,
-                instagram_media_id=p["instagram_media_id"],
-                code=p["code"],
-                post_type=p["post_type"],
-                caption=p["caption"],
-                thumbnail_url=p["thumbnail_url"],
-                media_urls=p["media_urls"],
-                like_count=p["like_count"],
-                comment_count=p["comment_count"],
-                engagement_rate=p["engagement_rate"],
-                is_top_performer=p["is_top_performer"],
-                posted_at=datetime.fromisoformat(p["posted_at"]) if p["posted_at"] else datetime.utcnow()
-            )
-            db.add(c_post)
-
-        db.commit()
-    except Exception as e:
-        logger.warning(f"Initial post sync warning for @{clean_username}: {e}")
-
     # Activity log
     log = ActivityLog(
         workspace_id=workspace.id,
         user_name=user.full_name,
         action="ADD_COMPETITOR",
-        details=f"Menambahkan kompetitor @{account.username} untuk dipantau",
+        details=f"Menambahkan kompetitor @{account.username} untuk dipantau di akun @{social_account.username}",
         entity_type="Competitor",
         entity_id=account.id
     )
     db.add(log)
     db.commit()
 
+    # Queue background task for fetching posts
+    job_id = f"add_{uuid.uuid4().hex[:8]}"
+    cache_set(f"add_job:{job_id}", {
+        "status": "running", "percent": 15, "message": f"Menyimpan @{account.username} & memproses postingan di background...", "competitor_id": account.id
+    }, ttl_seconds=600)
+
+    background_tasks.add_task(
+        _run_add_competitor_bg,
+        job_id, account.id, account.username, workspace.id, social_account.id
+    )
+
+    # Invalidate list cache immediately so newly added competitor profile appears
+    cache_delete_prefix(f"competitors:list:{workspace.id}")
+
     return {
-        "status": "ok",
-        "message": f"Kompetitor @{account.username} berhasil ditambahkan!",
+        "status": "queued",
+        "job_id": job_id,
+        "message": f"Kompetitor @{account.username} berhasil ditambahkan! Memproses postingan di background.",
         "competitor_id": account.id
     }
+
+
+@router.get("/add-status/{job_id}")
+def get_add_competitor_status(
+    job_id: str,
+    ctx: tuple[User, Workspace] = Depends(get_current_user_and_workspace)
+):
+    """Poll progress status of background competitor creation task."""
+    status = cache_get(f"add_job:{job_id}")
+    if not status:
+        return {"status": "done", "percent": 100, "message": "Proses selesai."}
+    return status
 
 
 @router.post("/{competitor_id}/sync")
@@ -261,7 +391,7 @@ def sync_competitor(
     ctx: tuple[User, Workspace] = Depends(get_current_user_and_workspace),
     db: Session = Depends(get_db)
 ):
-    """Re-sync profile stats and recent posts from Instagram via instagrapi."""
+    """Re-sync profile stats and recent posts for a specific competitor. Rate limited 3 min."""
     user, workspace = ctx
     account = db.query(CompetitorAccount).filter(
         CompetitorAccount.id == competitor_id,
@@ -270,6 +400,17 @@ def sync_competitor(
 
     if not account:
         raise HTTPException(status_code=404, detail="Kompetitor tidak ditemukan.")
+
+    # 3 min cooldown per competitor account
+    rate_key = f"sync_account:{competitor_id}"
+    is_limited, remaining = check_rate_limit(rate_key, _ACCOUNT_SYNC_COOLDOWN)
+    if is_limited:
+        minutes = round(remaining / 60, 1)
+        return {
+            "status": "cooldown",
+            "message": f"Sync @{account.username} baru bisa dilakukan lagi dalam {minutes} menit.",
+            "retry_after_seconds": remaining
+        }
 
     # Re-fetch profile
     try:
@@ -319,6 +460,15 @@ def sync_competitor(
         logger.error(f"Sync posts failed for @{account.username}: {e}")
         raise HTTPException(status_code=500, detail=f"Gagal melakukan sync postingan Instagram @{account.username}: {str(e)}")
 
+    # Set rate limit cooldown (3 min)
+    set_rate_limit(rate_key, _ACCOUNT_SYNC_COOLDOWN)
+
+    # Invalidate caches
+    cache_delete_prefix(f"competitors:list:{workspace.id}")
+    cache_delete_prefix(f"competitors:benchmark:{workspace.id}")
+    cache_delete_prefix(f"competitors:daily:{workspace.id}")
+    cache_delete_prefix(f"competitors:posts:{competitor_id}")
+
     return {
         "status": "ok",
         "message": f"Data kompetitor @{account.username} berhasil diperbarui!",
@@ -356,6 +506,12 @@ def delete_competitor(
     db.add(log)
     db.commit()
 
+    # Invalidate caches
+    cache_delete_prefix(f"competitors:list:{workspace.id}")
+    cache_delete_prefix(f"competitors:benchmark:{workspace.id}")
+    cache_delete_prefix(f"competitors:daily:{workspace.id}")
+    cache_delete_prefix(f"competitors:posts:{competitor_id}")
+
     return {"status": "ok", "message": f"Kompetitor @{username} berhasil dihapus."}
 
 
@@ -366,8 +522,13 @@ def get_competitor_posts(
     ctx: tuple[User, Workspace] = Depends(get_current_user_and_workspace),
     db: Session = Depends(get_db)
 ):
-    """Get tracked posts for a specific competitor."""
+    """Get tracked posts for a specific competitor. Cached 3 min in Redis."""
     _, workspace = ctx
+    cache_key = f"competitors:posts:{competitor_id}:{top_only}"
+    cached = cache_get(cache_key)
+    if cached:
+        return cached
+
     account = db.query(CompetitorAccount).filter(
         CompetitorAccount.id == competitor_id,
         CompetitorAccount.workspace_id == workspace.id
@@ -401,7 +562,7 @@ def get_competitor_posts(
             "instagram_url": f"https://www.instagram.com/p/{p.code}/" if p.code else None
         })
 
-    return {
+    payload = {
         "competitor": {
             "id": account.id,
             "username": account.username,
@@ -413,29 +574,35 @@ def get_competitor_posts(
         "posts": result,
         "total": len(result)
     }
+    cache_set(cache_key, payload, ttl_seconds=_CACHE_TTL)
+    return payload
 
 
 @router.get("/benchmark/matrix")
 def get_benchmark_matrix(
+    social_account_id: Optional[str] = Query(None),
     ctx: tuple[User, Workspace] = Depends(get_current_user_and_workspace),
     db: Session = Depends(get_db)
 ):
-    """Comparative analytics matrix across all tracked competitors. Cached 5 min in Redis."""
+    """Comparative analytics matrix across tracked competitors. Cached 3 min in Redis."""
     from sqlalchemy import func
     _, workspace = ctx
-    cache_key = f"competitors:benchmark:{workspace.id}"
+    cache_key = f"competitors:benchmark:{workspace.id}:{social_account_id or 'all'}"
     cached = cache_get(cache_key)
     if cached:
         return cached
 
-    competitors = db.query(CompetitorAccount).filter(
+    query = db.query(CompetitorAccount).filter(
         CompetitorAccount.workspace_id == workspace.id
-    ).all()
+    )
+    if social_account_id:
+        query = query.filter(CompetitorAccount.social_account_id == social_account_id)
+
+    competitors = query.all()
 
     if not competitors:
         return {"matrix": [], "avg_industry_er": 0.0, "total_competitors": 0}
 
-    # Batch top-performer counts in a single query instead of per-competitor query
     competitor_ids = [c.id for c in competitors]
     top_posts_rows = db.query(
         CompetitorPost.competitor_id, func.count(CompetitorPost.id)
@@ -478,28 +645,30 @@ def get_benchmark_matrix(
 @router.get("/daily-feed")
 def get_daily_feed(
     days: int = Query(1, ge=1, le=30),
+    social_account_id: Optional[str] = Query(None),
     ctx: tuple[User, Workspace] = Depends(get_current_user_and_workspace),
     db: Session = Depends(get_db)
 ):
     """
-    Get daily update feed across ALL tracked competitor brands in the workspace.
-    Filters posts created within the last N days (default: 1 day / last 24h).
-    Cached per (workspace_id, days) in Redis for 5 minutes.
+    Get daily update feed across tracked competitor brands in workspace/account.
+    Cached 3 min in Redis.
     """
     _, workspace = ctx
-    cache_key = f"competitors:daily:{workspace.id}:{days}"
+    cache_key = f"competitors:daily:{workspace.id}:{social_account_id or 'all'}:{days}"
     cached = cache_get(cache_key)
     if cached:
         return cached
 
     cutoff_date = datetime.utcnow() - timedelta(days=days)
 
-    # Single optimized JOIN query with ordering — no N+1
     posts_query = db.query(CompetitorPost, CompetitorAccount).join(
         CompetitorAccount, CompetitorPost.competitor_id == CompetitorAccount.id
     ).filter(
         CompetitorAccount.workspace_id == workspace.id
     )
+
+    if social_account_id:
+        posts_query = posts_query.filter(CompetitorAccount.social_account_id == social_account_id)
 
     recent_posts = posts_query.filter(
         CompetitorPost.posted_at >= cutoff_date
@@ -555,10 +724,7 @@ def get_daily_feed(
 
 
 def _sync_one_brand(account_id: str, account_username: str, workspace_id: str) -> dict:
-    """
-    Worker function: syncs one brand in its own DB session.
-    Called concurrently via ThreadPoolExecutor.
-    """
+    """Worker function: syncs one brand in its own DB session."""
     db = SessionLocal()
     try:
         account = db.query(CompetitorAccount).filter(CompetitorAccount.id == account_id).first()
@@ -606,14 +772,13 @@ def _sync_one_brand(account_id: str, account_username: str, workspace_id: str) -
         db.close()
 
 
-def _run_sync_all_bg(workspace_id: str, accounts: list):
+def _run_sync_all_bg(workspace_id: str, social_account_id: Optional[str], accounts: list):
     """Background task: runs all brand syncs concurrently using thread pool."""
     sync_status_set(workspace_id, {
         "running": True, "done": 0, "total": len(accounts), "errors": []
     })
 
     errors = []
-    # Max 3 concurrent Instagram requests to avoid rate-limiting / IP ban
     max_workers = min(3, len(accounts))
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
         futures = {
@@ -625,17 +790,15 @@ def _run_sync_all_bg(workspace_id: str, accounts: list):
             done = sync_status_increment_done(workspace_id)
             if not result["ok"]:
                 errors.append(f"@{result['username']}: {result.get('error', 'Unknown error')}")
-                # Update errors list in Redis
                 status = sync_status_get(workspace_id) or {}
                 status["errors"] = errors
                 sync_status_set(workspace_id, status)
 
-    # Invalidate all caches for this workspace → fresh data served after sync
+    # Invalidate all caches for this workspace
     cache_delete_prefix(f"competitors:list:{workspace_id}")
     cache_delete_prefix(f"competitors:benchmark:{workspace_id}")
     cache_delete_prefix(f"competitors:daily:{workspace_id}")
 
-    # Mark sync complete
     final_status = sync_status_get(workspace_id) or {}
     final_status["running"] = False
     final_status["errors"] = errors
@@ -651,17 +814,16 @@ def _run_sync_all_bg(workspace_id: str, accounts: list):
 @router.post("/sync-all")
 def sync_all_competitors(
     background_tasks: BackgroundTasks,
+    social_account_id: Optional[str] = Query(None),
     ctx: tuple[User, Workspace] = Depends(get_current_user_and_workspace),
     db: Session = Depends(get_db)
 ):
     """
-    Non-blocking: Trigger parallel background refresh of ALL competitors in workspace.
-    Returns immediately. Poll GET /sync-status to check progress.
-    Rate limited: 1x per 30 minutes per workspace.
+    Non-blocking: Trigger parallel background refresh of competitors.
+    Rate limited: 1x per 3 minutes per workspace / IG account.
     """
     _, workspace = ctx
 
-    # 1. Check if sync is already running
     status = sync_status_get(workspace.id)
     if status and status.get("running"):
         return {
@@ -669,32 +831,33 @@ def sync_all_competitors(
             "message": f"Sync sedang berjalan: {status.get('done', 0)}/{status.get('total', 0)} brand selesai.",
         }
 
-    # 2. Check rate limit cooldown (30 menit)
-    rate_key = f"sync:{workspace.id}"
+    # 3 min cooldown
+    rate_key = f"sync:{workspace.id}:{social_account_id or 'all'}"
     is_limited, remaining = check_rate_limit(rate_key, _SYNC_COOLDOWN)
     if is_limited:
-        minutes = remaining // 60
+        minutes = round(remaining / 60, 1)
         return {
             "status": "cooldown",
             "message": f"Sync baru bisa dilakukan lagi dalam {minutes} menit.",
             "retry_after_seconds": remaining
         }
 
-    competitors = db.query(
-        CompetitorAccount.id, CompetitorAccount.username
-    ).filter(
+    query = db.query(CompetitorAccount.id, CompetitorAccount.username).filter(
         CompetitorAccount.workspace_id == workspace.id
-    ).all()
+    )
+    if social_account_id:
+        query = query.filter(CompetitorAccount.social_account_id == social_account_id)
+
+    competitors = query.all()
 
     if not competitors:
         return {"status": "ok", "message": "Belum ada kompetitor yang dipantau.", "synced_count": 0}
 
     accounts = [{"id": c[0], "username": c[1]} for c in competitors]
 
-    # 3. Set rate limit before starting
     set_rate_limit(rate_key, _SYNC_COOLDOWN)
 
-    background_tasks.add_task(_run_sync_all_bg, workspace.id, accounts)
+    background_tasks.add_task(_run_sync_all_bg, workspace.id, social_account_id, accounts)
 
     return {
         "status": "started",
@@ -707,7 +870,7 @@ def sync_all_competitors(
 def get_sync_status(
     ctx: tuple[User, Workspace] = Depends(get_current_user_and_workspace),
 ):
-    """Poll this endpoint to check background sync-all progress. Status stored in Redis."""
+    """Poll background sync-all progress."""
     _, workspace = ctx
     status = sync_status_get(workspace.id)
     if not status:

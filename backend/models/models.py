@@ -182,6 +182,7 @@ class SocialAccount(Base):
     workspace = relationship("Workspace", back_populates="social_accounts")
     client = relationship("Client", back_populates="social_accounts")
     post_targets = relationship("PostTarget", back_populates="social_account", cascade="all, delete-orphan")
+    competitor_accounts = relationship("CompetitorAccount", back_populates="social_account", cascade="all, delete-orphan")
 
 class Media(Base):
     __tablename__ = "media"
@@ -359,6 +360,7 @@ class CompetitorAccount(Base):
 
     id = Column(String(36), primary_key=True, default=generate_uuid)
     workspace_id = Column(String(36), ForeignKey("workspaces.id", ondelete="CASCADE"), nullable=False, index=True)
+    social_account_id = Column(String(36), ForeignKey("social_accounts.id", ondelete="CASCADE"), nullable=True, index=True)
     username = Column(String(255), nullable=False, index=True)
     full_name = Column(String(255), nullable=True)
     instagram_pk = Column(String(255), nullable=True)
@@ -378,6 +380,7 @@ class CompetitorAccount(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     workspace = relationship("Workspace", back_populates="competitor_accounts")
+    social_account = relationship("SocialAccount", back_populates="competitor_accounts")
     posts = relationship("CompetitorPost", back_populates="competitor", cascade="all, delete-orphan")
 
 

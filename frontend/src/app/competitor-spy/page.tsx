@@ -1,20 +1,45 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import {
   Target, Plus, RefreshCw, Trash2, ExternalLink, Flame, Search,
   TrendingUp, Users, Heart, MessageSquare, Award, Sparkles,
-  BarChart3, CheckCircle2, AlertCircle, Eye, ArrowUpRight, Copy,
-  Grid, ListFilter, ShieldCheck, Instagram, ChevronRight, X,
-  CalendarDays, Zap, Clock, Filter
+  BarChart3, CheckCircle2, AlertCircle, Eye, ShieldCheck, Instagram,
+  ChevronRight, X, CalendarDays, Clock, Filter, Loader2, ArrowRight
 } from "lucide-react";
 import { fetchApi } from "@/lib/api";
 import { useStore } from "@/store/useStore";
 import { useSplashStore } from "@/store/useSplashStore";
 
+interface ConnectedIgAccount {
+  id: string;
+  username: string;
+  name: string;
+  avatar_url?: string;
+  status: string;
+  followers_count: number;
+  competitors_count: number;
+  max_competitors: number;
+}
+
+interface CompetitorProfilePreview {
+  username: string;
+  instagram_pk?: string;
+  full_name?: string;
+  profile_pic_url?: string;
+  biography?: string;
+  followers_count: number;
+  following_count: number;
+  media_count: number;
+  is_verified: boolean;
+  category_name?: string;
+}
+
 interface Competitor {
   id: string;
   workspace_id: string;
+  social_account_id?: string;
   username: string;
   full_name?: string;
   profile_pic_url?: string;
@@ -59,20 +84,37 @@ interface CompetitorPost {
 
 type ActiveTab = "accounts" | "daily" | "benchmark";
 
+interface AddJobState {
+  jobId: string;
+  username: string;
+  percent: number;
+  message: string;
+  status: "running" | "done" | "error";
+}
+
 export default function CompetitorSpyPage() {
   const { activeWorkspace, openComposer } = useStore();
   const { showSplash } = useSplashStore();
 
   const [activeTab, setActiveTab] = useState<ActiveTab>("accounts");
+  const [loadingIgAccounts, setLoadingIgAccounts] = useState(true);
+  const [igAccounts, setIgAccounts] = useState<ConnectedIgAccount[]>([]);
+  const [selectedIgAccount, setSelectedIgAccount] = useState<ConnectedIgAccount | null>(null);
+
   const [competitors, setCompetitors] = useState<Competitor[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Add Competitor Modal
+  // Add Competitor Modal 2-Step
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [newUsername, setNewUsername] = useState("");
-  const [addLoading, setAddLoading] = useState(false);
+  const [modalStep, setModalStep] = useState<"input" | "preview">("input");
+  const [inputUsername, setInputUsername] = useState("");
+  const [validating, setValidating] = useState(false);
+  const [validatedProfile, setValidatedProfile] = useState<CompetitorProfilePreview | null>(null);
   const [addError, setAddError] = useState<string | null>(null);
+
+  // Background Add Job State (Floating Progress Bar)
+  const [activeAddJob, setActiveAddJob] = useState<AddJobState | null>(null);
 
   // Syncing state per competitor ID
   const [syncingMap, setSyncingMap] = useState<Record<string, boolean>>({});
@@ -106,29 +148,108 @@ export default function CompetitorSpyPage() {
   // Toast message
   const [toast, setToast] = useState<{ type: "ok" | "err"; text: string } | null>(null);
 
+  // Initial load: IG accounts
   useEffect(() => {
     if (activeWorkspace) {
-      loadCompetitors();
+      loadIgAccounts();
     }
   }, [activeWorkspace]);
 
+  // Load data whenever active IG account changes
   useEffect(() => {
+    if (selectedIgAccount) {
+      loadCompetitors(selectedIgAccount.id);
+      if (activeTab === "benchmark") {
+        loadBenchmark(selectedIgAccount.id);
+      } else if (activeTab === "daily") {
+        loadDailyFeed(selectedIgAccount.id, dailyDays);
+      }
+    }
+  }, [selectedIgAccount]);
+
+  // Load tab specific data
+  useEffect(() => {
+    if (!selectedIgAccount) return;
     if (activeTab === "benchmark") {
-      loadBenchmark();
+      loadBenchmark(selectedIgAccount.id);
     } else if (activeTab === "daily") {
-      loadDailyFeed(dailyDays);
+      loadDailyFeed(selectedIgAccount.id, dailyDays);
     }
   }, [activeTab, dailyDays]);
 
+  // Poll background add job status
+  useEffect(() => {
+    if (!activeAddJob || activeAddJob.status !== "running") return;
+
+    const interval = setInterval(async () => {
+      try {
+        const res: any = await fetchApi(`/competitors/add-status/${activeAddJob.jobId}`);
+        if (res) {
+          if (res.status === "done" || res.percent >= 100) {
+            setActiveAddJob({
+              ...activeAddJob,
+              percent: 100,
+              message: res.message || "Proses selesai!",
+              status: "done"
+            });
+            showToast("ok", res.message || `Kompetitor @${activeAddJob.username} berhasil ditambahkan!`);
+            if (selectedIgAccount) {
+              loadCompetitors(selectedIgAccount.id);
+              loadIgAccounts();
+            }
+            setTimeout(() => setActiveAddJob(null), 3000);
+          } else {
+            setActiveAddJob({
+              ...activeAddJob,
+              percent: res.percent || activeAddJob.percent,
+              message: res.message || activeAddJob.message,
+              status: "running"
+            });
+          }
+        }
+      } catch (e) {
+        console.error("Error polling add job status:", e);
+      }
+    }, 1500);
+
+    return () => clearInterval(interval);
+  }, [activeAddJob, selectedIgAccount]);
+
   const showToast = (type: "ok" | "err", text: string) => {
     setToast({ type, text });
-    setTimeout(() => setToast(null), 3500);
+    setTimeout(() => setToast(null), 4000);
   };
 
-  const loadCompetitors = async () => {
+  const loadIgAccounts = async () => {
+    setLoadingIgAccounts(true);
+    try {
+      const data: any = await fetchApi("/competitors/ig-accounts");
+      const list: ConnectedIgAccount[] = data.accounts || [];
+      setIgAccounts(list);
+      if (list.length > 0) {
+        // Keep active selection if valid, or default to first
+        setSelectedIgAccount((prev) => {
+          if (prev && list.some(a => a.id === prev.id)) {
+            return list.find(a => a.id === prev.id) || list[0];
+          }
+          return list[0];
+        });
+      } else {
+        setSelectedIgAccount(null);
+      }
+    } catch (e: any) {
+      showToast("err", "Gagal memuat daftar akun Instagram terhubung.");
+    } finally {
+      setLoadingIgAccounts(false);
+    }
+  };
+
+  const loadCompetitors = async (socialAccountId?: string) => {
+    const accId = socialAccountId || selectedIgAccount?.id;
+    if (!accId) return;
     setLoading(true);
     try {
-      const data: any = await fetchApi("/competitors/");
+      const data: any = await fetchApi(`/competitors/?social_account_id=${accId}`);
       setCompetitors(data.competitors || []);
     } catch (e: any) {
       showToast("err", "Gagal memuat daftar kompetitor.");
@@ -137,10 +258,12 @@ export default function CompetitorSpyPage() {
     }
   };
 
-  const loadBenchmark = async () => {
+  const loadBenchmark = async (socialAccountId?: string) => {
+    const accId = socialAccountId || selectedIgAccount?.id;
+    if (!accId) return;
     setBenchmarkLoading(true);
     try {
-      const data: any = await fetchApi("/competitors/benchmark/matrix");
+      const data: any = await fetchApi(`/competitors/benchmark/matrix?social_account_id=${accId}`);
       setBenchmarkData(data);
     } catch (e: any) {
       showToast("err", "Gagal memuat matrix benchmark.");
@@ -149,10 +272,12 @@ export default function CompetitorSpyPage() {
     }
   };
 
-  const loadDailyFeed = async (days = 1) => {
+  const loadDailyFeed = async (socialAccountId?: string, days = 1) => {
+    const accId = socialAccountId || selectedIgAccount?.id;
+    if (!accId) return;
     setDailyLoading(true);
     try {
-      const data: any = await fetchApi(`/competitors/daily-feed?days=${days}`);
+      const data: any = await fetchApi(`/competitors/daily-feed?social_account_id=${accId}&days=${days}`);
       setDailyPosts(data.posts || []);
       setDailyStats({
         total_posts: data.total_posts || 0,
@@ -168,13 +293,18 @@ export default function CompetitorSpyPage() {
   };
 
   const handleSyncAllCompetitors = async () => {
+    if (!selectedIgAccount) return;
     setSyncingAll(true);
     try {
-      const res: any = await fetchApi("/competitors/sync-all", { method: "POST" });
-      showToast("ok", res.message || "Sync semua brand selesai!");
-      loadCompetitors();
-      if (activeTab === "daily") {
-        loadDailyFeed(dailyDays);
+      const res: any = await fetchApi(`/competitors/sync-all?social_account_id=${selectedIgAccount.id}`, { method: "POST" });
+      if (res.status === "cooldown") {
+        showToast("err", res.message || "Sync baru saja dilakukan. Mohon tunggu beberapa saat.");
+      } else {
+        showToast("ok", res.message || "Sync semua brand dimulai di background!");
+        loadCompetitors(selectedIgAccount.id);
+        if (activeTab === "daily") {
+          loadDailyFeed(selectedIgAccount.id, dailyDays);
+        }
       }
     } catch (e: any) {
       showToast("err", `Sync All gagal: ${e.message}`);
@@ -183,28 +313,64 @@ export default function CompetitorSpyPage() {
     }
   };
 
-  const handleAddCompetitor = async (e: React.FormEvent) => {
+  // Step 1: Validate Username
+  const handleValidateUsername = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newUsername.trim()) return;
+    if (!inputUsername.trim()) return;
 
-    setAddLoading(true);
+    setValidating(true);
+    setAddError(null);
+    try {
+      const res: any = await fetchApi("/competitors/validate", {
+        method: "POST",
+        body: JSON.stringify({ username: inputUsername.trim() }),
+      });
+      if (res.valid && res.profile) {
+        setValidatedProfile(res.profile);
+        setModalStep("preview");
+      } else {
+        setAddError(res.message || "Akun tidak ditemukan.");
+      }
+    } catch (e: any) {
+      setAddError(e.message || "Gagal memverifikasi akun Instagram.");
+    } finally {
+      setValidating(false);
+    }
+  };
+
+  // Step 2: Confirm Add Competitor (Background execution)
+  const handleConfirmAddCompetitor = async () => {
+    if (!selectedIgAccount || !validatedProfile) return;
+
     setAddError(null);
     try {
       const res: any = await fetchApi("/competitors/", {
         method: "POST",
-        body: JSON.stringify({ username: newUsername.trim() }),
+        body: JSON.stringify({
+          social_account_id: selectedIgAccount.id,
+          username: validatedProfile.username,
+        }),
       });
-      showToast("ok", res.message || `Kompetitor @${newUsername} berhasil ditambahkan!`);
-      setNewUsername("");
+
+      // Close modal immediately and activate floating progress widget
       setIsAddModalOpen(false);
-      loadCompetitors();
+      setInputUsername("");
+      setValidatedProfile(null);
+      setModalStep("input");
+
+      setActiveAddJob({
+        jobId: res.job_id,
+        username: validatedProfile.username,
+        percent: 20,
+        message: `Menambahkan @${validatedProfile.username}...`,
+        status: "running"
+      });
+
+      // Immediately refresh list so empty state transitions to card
+      loadCompetitors(selectedIgAccount.id);
+      loadIgAccounts();
     } catch (e: any) {
-      const msg = e.message || "Terjadi kesalahan saat menambahkan kompetitor.";
-      setAddError(msg.includes("INSTAGRAM_SESSION_COOKIE")
-        ? "Instagram Session Cookie belum diatur di Admin Settings. Harap minta Admin mengisinya di /admin."
-        : msg);
-    } finally {
-      setAddLoading(false);
+      setAddError(e.message || "Gagal menambahkan kompetitor.");
     }
   };
 
@@ -212,10 +378,16 @@ export default function CompetitorSpyPage() {
     setSyncingMap((prev) => ({ ...prev, [id]: true }));
     try {
       const res: any = await fetchApi(`/competitors/${id}/sync`, { method: "POST" });
-      showToast("ok", res.message || `Data @${username} berhasil diperbarui!`);
-      loadCompetitors();
-      if (selectedCompetitor?.id === id) {
-        loadCompetitorPosts(id, filterTopOnly);
+      if (res.status === "cooldown") {
+        showToast("err", res.message || "Silakan tunggu 3 menit sebelum sync ulang.");
+      } else {
+        showToast("ok", res.message || `Data @${username} berhasil diperbarui!`);
+        if (selectedIgAccount) {
+          loadCompetitors(selectedIgAccount.id);
+        }
+        if (selectedCompetitor?.id === id) {
+          loadCompetitorPosts(id, filterTopOnly);
+        }
       }
     } catch (e: any) {
       showToast("err", `Sync gagal untuk @${username}: ${e.message}`);
@@ -231,7 +403,10 @@ export default function CompetitorSpyPage() {
       await fetchApi(`/competitors/${id}`, { method: "DELETE" });
       showToast("ok", `Kompetitor @${username} dihapus.`);
       if (selectedCompetitor?.id === id) setSelectedCompetitor(null);
-      loadCompetitors();
+      if (selectedIgAccount) {
+        loadCompetitors(selectedIgAccount.id);
+        loadIgAccounts();
+      }
     } catch (e: any) {
       showToast("err", "Gagal menghapus kompetitor.");
     }
@@ -262,7 +437,20 @@ export default function CompetitorSpyPage() {
       caption: captionDraft,
       media_urls: post.media_urls || (post.thumbnail_url ? [post.thumbnail_url] : []),
     });
-    showToast("ok", "Ide postingan disalin ke Shiera Post Composer!");
+    showToast("ok", "Ide postingan disalin ke Post Composer!");
+  };
+
+  const openAddModal = () => {
+    if (!selectedIgAccount) return;
+    if (selectedIgAccount.competitors_count >= selectedIgAccount.max_competitors) {
+      showToast("err", `Batas maksimal 5 kompetitor per akun IG tercapai untuk @${selectedIgAccount.username}.`);
+      return;
+    }
+    setModalStep("input");
+    setInputUsername("");
+    setValidatedProfile(null);
+    setAddError(null);
+    setIsAddModalOpen(true);
   };
 
   const filteredCompetitors = competitors.filter(
@@ -278,9 +466,49 @@ export default function CompetitorSpyPage() {
     return true;
   });
 
+  if (loadingIgAccounts) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-3">
+        <Loader2 className="w-8 h-8 text-purple-600 animate-spin" />
+        <p className="text-xs text-slate-500 font-medium">Memuat data akun Instagram...</p>
+      </div>
+    );
+  }
+
+  // Zero-state if no Instagram accounts connected at all
+  if (igAccounts.length === 0) {
+    return (
+      <div className="max-w-3xl mx-auto py-12 px-4 space-y-6">
+        <div className="p-8 md:p-12 rounded-3xl bg-white border border-slate-200 shadow-xl text-center space-y-5">
+          <div className="w-16 h-16 rounded-3xl bg-gradient-to-tr from-purple-500 to-pink-500 text-white flex items-center justify-center mx-auto shadow-lg shadow-purple-500/20">
+            <Instagram className="w-8 h-8" />
+          </div>
+          <div className="space-y-2">
+            <h2 className="text-xl md:text-2xl font-extrabold text-slate-900 font-['Outfit']">
+              Belum Ada Akun Instagram Terhubung
+            </h2>
+            <p className="text-xs md:text-sm text-slate-500 max-w-md mx-auto leading-relaxed">
+              Untuk menggunakan fitur Competitor Spy, hubungkan setidaknya 1 akun Instagram brand Anda terlebih dahulu di menu Social Accounts.
+            </p>
+          </div>
+
+          <div className="pt-2">
+            <Link
+              href="/accounts"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl gradient-brand text-white font-bold text-xs shadow-lg shadow-purple-500/25 hover:scale-105 transition-all"
+            >
+              <span>Hubungkan Akun Instagram</span>
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="space-y-6 pb-16">
-      {/* Toast */}
+    <div className="space-y-6 pb-20">
+      {/* Toast Notification */}
       {toast && (
         <div
           className={`fixed top-4 right-4 z-50 flex items-center gap-2.5 px-4 py-3 rounded-2xl text-xs font-semibold shadow-xl transition-all animate-in fade-in slide-in-from-top-4 ${
@@ -298,6 +526,30 @@ export default function CompetitorSpyPage() {
         </div>
       )}
 
+      {/* Floating Progress Bar Widget for Background Task */}
+      {activeAddJob && (
+        <div className="fixed top-20 right-6 z-50 w-80 max-w-[calc(100vw-2rem)] p-4 rounded-2xl bg-slate-900 text-white shadow-2xl border border-slate-800 animate-in fade-in slide-in-from-top-5">
+          <div className="flex items-center justify-between gap-2 mb-2">
+            <div className="flex items-center gap-2 min-w-0">
+              <Loader2 className={`w-4 h-4 text-pink-400 shrink-0 ${activeAddJob.status === "running" ? "animate-spin" : ""}`} />
+              <p className="text-xs font-bold truncate">@{activeAddJob.username}</p>
+            </div>
+            <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-pink-500/20 text-pink-300">
+              {activeAddJob.percent}%
+            </span>
+          </div>
+
+          <p className="text-[11px] text-slate-300 mb-2.5 truncate">{activeAddJob.message}</p>
+
+          <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-gradient-to-r from-purple-500 to-pink-500 transition-all duration-300"
+              style={{ width: `${activeAddJob.percent}%` }}
+            />
+          </div>
+        </div>
+      )}
+
       {/* Header Card */}
       <div className="p-6 md:p-8 rounded-3xl bg-gradient-to-r from-slate-900 via-purple-950 to-pink-950 text-white shadow-xl relative overflow-hidden">
         <div className="absolute top-0 right-0 w-96 h-96 bg-pink-500/10 rounded-full blur-3xl pointer-events-none" />
@@ -312,14 +564,14 @@ export default function CompetitorSpyPage() {
               Competitor Spy &amp; Analytics
             </h1>
             <p className="text-xs md:text-sm text-slate-300 max-w-2xl leading-relaxed">
-              Pantau strategi konten, engagement rate, &amp; postingan harian dari seluruh brand kompetitor Anda secara otomatis via Instagrapi.
+              Pantau strategi konten, engagement rate, &amp; postingan harian dari seluruh brand kompetitor Anda secara otomatis.
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             <button
               onClick={handleSyncAllCompetitors}
-              disabled={syncingAll}
+              disabled={syncingAll || !selectedIgAccount}
               className="py-3 px-4 rounded-2xl bg-white/10 hover:bg-white/20 text-white border border-white/15 transition-all text-xs font-bold flex items-center gap-2 disabled:opacity-50"
               title="Sync All Brands"
             >
@@ -327,8 +579,9 @@ export default function CompetitorSpyPage() {
               <span>{syncingAll ? "Syncing All..." : "Sync All Brands"}</span>
             </button>
             <button
-              onClick={() => setIsAddModalOpen(true)}
-              className="py-3 px-5 rounded-2xl gradient-brand text-white font-bold text-xs flex items-center gap-2 shadow-lg shadow-purple-500/30 hover:scale-[1.02] active:scale-[0.98] transition-all"
+              onClick={openAddModal}
+              disabled={!selectedIgAccount || (selectedIgAccount.competitors_count >= selectedIgAccount.max_competitors)}
+              className="py-3 px-5 rounded-2xl gradient-brand text-white font-bold text-xs flex items-center gap-2 shadow-lg shadow-purple-500/30 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:scale-100"
             >
               <Plus className="w-4 h-4" />
               <span>Tambah Kompetitor</span>
@@ -337,9 +590,52 @@ export default function CompetitorSpyPage() {
         </div>
       </div>
 
-      {/* Tabs Bar */}
+      {/* Connected Instagram Account Selector Bar */}
+      <div className="p-4 rounded-3xl bg-white border border-slate-200/80 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
+          <span className="text-xs font-bold text-slate-500 shrink-0 mr-1 flex items-center gap-1.5">
+            <Instagram className="w-4 h-4 text-pink-600" /> Pantau Untuk Akun:
+          </span>
+          {igAccounts.map((acc) => {
+            const isSelected = selectedIgAccount?.id === acc.id;
+            return (
+              <button
+                key={acc.id}
+                onClick={() => setSelectedIgAccount(acc)}
+                className={`flex items-center gap-2 px-3.5 py-2 rounded-2xl text-xs font-bold transition-all shrink-0 border ${
+                  isSelected
+                    ? "bg-purple-50 text-purple-900 border-purple-300 shadow-xs"
+                    : "bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100"
+                }`}
+              >
+                <img
+                  src={acc.avatar_url || `https://api.dicebear.com/7.x/initials/svg?seed=${acc.username}`}
+                  alt=""
+                  className="w-5 h-5 rounded-full object-cover border border-slate-300"
+                />
+                <span>@{acc.username}</span>
+                <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${
+                  acc.competitors_count >= acc.max_competitors
+                    ? "bg-amber-100 text-amber-800"
+                    : "bg-purple-100 text-purple-700"
+                }`}>
+                  {acc.competitors_count}/{acc.max_competitors}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
+        {selectedIgAccount && (
+          <div className="text-[11px] text-slate-400 font-semibold shrink-0">
+            Maksimal <strong className="text-slate-700">5 kompetitor</strong> per akun Instagram terhubung
+          </div>
+        )}
+      </div>
+
+      {/* Tabs & Search Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-3">
-        <div className="flex gap-2 p-1 bg-slate-100/80 rounded-2xl w-fit">
+        <div className="flex gap-2 p-1 bg-slate-100/80 rounded-2xl w-fit overflow-x-auto">
           {[
             { id: "accounts", label: "Daftar Kompetitor", icon: Users, count: competitors.length },
             { id: "daily", label: "Daily Update Feed", icon: CalendarDays, badge: "Hari Ini" },
@@ -351,7 +647,7 @@ export default function CompetitorSpyPage() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as ActiveTab)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 ${
                   isActive
                     ? "bg-white text-purple-700 shadow-sm border border-purple-100"
                     : "text-slate-500 hover:text-slate-800"
@@ -380,7 +676,7 @@ export default function CompetitorSpyPage() {
             <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
             <input
               type="text"
-              placeholder="Cari username kompetitor..."
+              placeholder="Cari username..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-9 pr-4 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-purple-400 bg-white"
@@ -394,21 +690,22 @@ export default function CompetitorSpyPage() {
         <div>
           {loading ? (
             <div className="flex flex-col items-center justify-center py-16 space-y-3">
-              <div className="w-8 h-8 border-3 border-purple-600 border-t-transparent rounded-full animate-spin" />
+              <Loader2 className="w-8 h-8 text-purple-600 animate-spin" />
               <p className="text-xs text-slate-400 font-medium">Memuat data kompetitor...</p>
             </div>
           ) : filteredCompetitors.length === 0 ? (
-            <div className="p-12 text-center bg-white rounded-3xl border border-dashed border-slate-300 space-y-3">
+            <div className="p-10 md:p-12 text-center bg-white rounded-3xl border border-dashed border-slate-300 space-y-3">
               <div className="w-12 h-12 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center mx-auto">
                 <Target className="w-6 h-6" />
               </div>
-              <h3 className="font-bold text-slate-800 text-sm">Belum Ada Kompetitor Yang Dipantau</h3>
+              <h3 className="font-bold text-slate-800 text-sm">Belum Ada Kompetitor Dipantau untuk @{selectedIgAccount?.username}</h3>
               <p className="text-xs text-slate-400 max-w-sm mx-auto">
                 Mulai lacak akun Instagram kompetitor brand Anda untuk melihat statistik engagement dan ide postingan terbaik.
               </p>
               <button
-                onClick={() => setIsAddModalOpen(true)}
-                className="py-2.5 px-4 rounded-xl gradient-brand text-white font-semibold text-xs inline-flex items-center gap-1.5 shadow-md shadow-purple-500/20"
+                onClick={openAddModal}
+                disabled={!selectedIgAccount || selectedIgAccount.competitors_count >= selectedIgAccount.max_competitors}
+                className="py-2.5 px-4 rounded-xl gradient-brand text-white font-semibold text-xs inline-flex items-center gap-1.5 shadow-md shadow-purple-500/20 disabled:opacity-50"
               >
                 <Plus className="w-4 h-4" /> Tambah Kompetitor Pertama
               </button>
@@ -468,7 +765,7 @@ export default function CompetitorSpyPage() {
                             onClick={() => handleSyncCompetitor(comp.id, comp.username)}
                             disabled={isSyncing}
                             className="p-2 rounded-xl text-slate-400 hover:text-purple-600 hover:bg-purple-50 transition-all disabled:opacity-50"
-                            title="Sync Data"
+                            title="Sync Data (Cooldown 3m)"
                           >
                             <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? "animate-spin text-purple-600" : ""}`} />
                           </button>
@@ -559,7 +856,7 @@ export default function CompetitorSpyPage() {
           {/* Top Control Bar & Stats */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="p-5 rounded-3xl bg-white border border-slate-200 shadow-sm flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-amber-100 text-amber-600 flex items-center justify-center font-bold">
+              <div className="w-12 h-12 rounded-2xl bg-amber-100 text-amber-600 flex items-center justify-center font-bold shrink-0">
                 <CalendarDays className="w-6 h-6" />
               </div>
               <div>
@@ -571,11 +868,11 @@ export default function CompetitorSpyPage() {
             </div>
 
             <div className="p-5 rounded-3xl bg-white border border-slate-200 shadow-sm flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-purple-100 text-purple-600 flex items-center justify-center font-bold">
+              <div className="w-12 h-12 rounded-2xl bg-purple-100 text-purple-600 flex items-center justify-center font-bold shrink-0">
                 <Users className="w-6 h-6" />
               </div>
               <div>
-                <p className="text-xs text-slate-400 font-medium">Brand Aktif memposting</p>
+                <p className="text-xs text-slate-400 font-medium">Brand Aktif Memposting</p>
                 <p className="text-2xl font-extrabold text-purple-700">
                   {dailyStats.active_brands_count} <span className="text-xs font-normal text-slate-400">Brand</span>
                 </p>
@@ -583,7 +880,7 @@ export default function CompetitorSpyPage() {
             </div>
 
             <div className="p-5 rounded-3xl bg-white border border-slate-200 shadow-sm flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-pink-100 text-pink-600 flex items-center justify-center font-bold">
+              <div className="w-12 h-12 rounded-2xl bg-pink-100 text-pink-600 flex items-center justify-center font-bold shrink-0">
                 <Flame className="w-6 h-6" />
               </div>
               <div className="min-w-0">
@@ -597,9 +894,8 @@ export default function CompetitorSpyPage() {
 
           {/* Time & Filter Row */}
           <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-xs flex flex-wrap items-center justify-between gap-4">
-            {/* Range selection */}
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-bold text-slate-600 flex items-center gap-1">
+            <div className="flex items-center gap-2 overflow-x-auto">
+              <span className="text-xs font-bold text-slate-600 flex items-center gap-1 shrink-0">
                 <Clock className="w-3.5 h-3.5 text-purple-600" /> Periode:
               </span>
               {[
@@ -610,7 +906,7 @@ export default function CompetitorSpyPage() {
                 <button
                   key={opt.value}
                   onClick={() => setDailyDays(opt.value)}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 ${
                     dailyDays === opt.value
                       ? "bg-purple-600 text-white shadow-xs"
                       : "bg-slate-100 text-slate-600 hover:bg-slate-200"
@@ -621,9 +917,7 @@ export default function CompetitorSpyPage() {
               ))}
             </div>
 
-            {/* Filter controls */}
             <div className="flex flex-wrap items-center gap-2">
-              {/* Brand dropdown */}
               <select
                 value={dailyBrandFilter}
                 onChange={(e) => setDailyBrandFilter(e.target.value)}
@@ -635,7 +929,6 @@ export default function CompetitorSpyPage() {
                 ))}
               </select>
 
-              {/* Type filter */}
               <select
                 value={dailyTypeFilter}
                 onChange={(e) => setDailyTypeFilter(e.target.value)}
@@ -647,7 +940,6 @@ export default function CompetitorSpyPage() {
                 <option value="carousel">Carousel Slide</option>
               </select>
 
-              {/* Top performer toggle */}
               <button
                 onClick={() => setDailyTopOnly(!dailyTopOnly)}
                 className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all flex items-center gap-1.5 ${
@@ -657,7 +949,7 @@ export default function CompetitorSpyPage() {
                 }`}
               >
                 <Flame className={`w-3.5 h-3.5 ${dailyTopOnly ? "text-white" : "text-amber-500"}`} />
-                <span>Top Performers Only</span>
+                <span>Top Performers</span>
               </button>
             </div>
           </div>
@@ -665,7 +957,7 @@ export default function CompetitorSpyPage() {
           {/* Daily Posts Grid */}
           {dailyLoading ? (
             <div className="flex flex-col items-center justify-center py-16 space-y-3">
-              <div className="w-8 h-8 border-3 border-purple-600 border-t-transparent rounded-full animate-spin" />
+              <Loader2 className="w-8 h-8 text-purple-600 animate-spin" />
               <p className="text-xs text-slate-400 font-medium">Memuat Daily Feed kompetitor...</p>
             </div>
           ) : filteredDailyPosts.length === 0 ? (
@@ -779,7 +1071,7 @@ export default function CompetitorSpyPage() {
         <div className="space-y-5">
           {benchmarkLoading ? (
             <div className="flex justify-center py-16">
-              <div className="w-8 h-8 border-3 border-purple-600 border-t-transparent rounded-full animate-spin" />
+              <Loader2 className="w-8 h-8 text-purple-600 animate-spin" />
             </div>
           ) : !benchmarkData || benchmarkData.matrix.length === 0 ? (
             <div className="p-12 text-center bg-white rounded-3xl border border-slate-200">
@@ -790,7 +1082,7 @@ export default function CompetitorSpyPage() {
               {/* Summary Stats Banner */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="p-5 rounded-3xl bg-white border border-slate-200 shadow-sm flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-2xl bg-purple-100 text-purple-600 flex items-center justify-center font-bold">
+                  <div className="w-12 h-12 rounded-2xl bg-purple-100 text-purple-600 flex items-center justify-center font-bold shrink-0">
                     <Users className="w-6 h-6" />
                   </div>
                   <div>
@@ -800,7 +1092,7 @@ export default function CompetitorSpyPage() {
                 </div>
 
                 <div className="p-5 rounded-3xl bg-white border border-slate-200 shadow-sm flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-2xl bg-pink-100 text-pink-600 flex items-center justify-center font-bold">
+                  <div className="w-12 h-12 rounded-2xl bg-pink-100 text-pink-600 flex items-center justify-center font-bold shrink-0">
                     <TrendingUp className="w-6 h-6" />
                   </div>
                   <div>
@@ -810,10 +1102,10 @@ export default function CompetitorSpyPage() {
                 </div>
 
                 <div className="p-5 rounded-3xl bg-white border border-slate-200 shadow-sm flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-2xl bg-amber-100 text-amber-600 flex items-center justify-center font-bold">
+                  <div className="w-12 h-12 rounded-2xl bg-amber-100 text-amber-600 flex items-center justify-center font-bold shrink-0">
                     <Flame className="w-6 h-6" />
                   </div>
-                  <div>
+                  <div className="min-w-0">
                     <p className="text-xs text-slate-400 font-medium">Top Performer Brand</p>
                     <p className="text-base font-extrabold text-slate-900 truncate">
                       @{benchmarkData.matrix[0]?.username || "-"}
@@ -912,16 +1204,19 @@ export default function CompetitorSpyPage() {
         </div>
       )}
 
-      {/* ── MODAL 1: ADD COMPETITOR ── */}
+      {/* ── MODAL 1: ADD COMPETITOR (2-Step Validation & Confirmation) ── */}
       {isAddModalOpen && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4 border border-slate-200 animate-in fade-in zoom-in-95">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center">
+                <div className="w-8 h-8 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center font-bold">
                   <Instagram className="w-4 h-4" />
                 </div>
-                <h3 className="font-extrabold text-slate-900 text-base font-['Outfit']">Tambah Kompetitor Baru</h3>
+                <div>
+                  <h3 className="font-extrabold text-slate-900 text-base font-['Outfit']">Tambah Kompetitor Baru</h3>
+                  <p className="text-[10px] text-slate-400">Dipantau dari akun @{selectedIgAccount?.username}</p>
+                </div>
               </div>
               <button
                 onClick={() => setIsAddModalOpen(false)}
@@ -931,52 +1226,133 @@ export default function CompetitorSpyPage() {
               </button>
             </div>
 
-            <form onSubmit={handleAddCompetitor} className="space-y-4">
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
-                  Username Instagram Kompetitor
-                </label>
-                <div className="relative">
-                  <span className="absolute left-3.5 top-2.5 text-slate-400 text-xs font-bold">@</span>
-                  <input
-                    type="text"
-                    required
-                    placeholder="contoh: indomie, nike, brand_x"
-                    value={newUsername}
-                    onChange={(e) => setNewUsername(e.target.value)}
-                    className="w-full pl-8 pr-4 py-2.5 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-purple-400 font-semibold"
-                  />
+            {/* STAGE 1: INPUT & VALIDATE */}
+            {modalStep === "input" && (
+              <form onSubmit={handleValidateUsername} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    Username Instagram Kompetitor
+                  </label>
+                  <div className="relative">
+                    <span className="absolute left-3.5 top-2.5 text-slate-400 text-xs font-bold">@</span>
+                    <input
+                      type="text"
+                      required
+                      placeholder="contoh: indomie, nike, brand_x"
+                      value={inputUsername}
+                      onChange={(e) => setInputUsername(e.target.value)}
+                      className="w-full pl-8 pr-4 py-2.5 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-purple-400 font-semibold"
+                    />
+                  </div>
+                  <p className="text-[10px] text-slate-400 mt-1">
+                    Sistem akan memverifikasi keberadaan akun Instagram publik kompetitor.
+                  </p>
                 </div>
-                <p className="text-[10px] text-slate-400 mt-1">
-                  Instagrapi akan mengambil profil publik, statistik engagement, &amp; 20 postingan terbaru.
+
+                {addError && (
+                  <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-medium flex items-start gap-2">
+                    <AlertCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
+                    <span>{addError}</span>
+                  </div>
+                )}
+
+                <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+                  <button
+                    type="button"
+                    onClick={() => setIsAddModalOpen(false)}
+                    className="px-4 py-2 rounded-xl bg-slate-100 text-slate-600 text-xs font-semibold hover:bg-slate-200"
+                  >
+                    Batal
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={validating}
+                    className="px-5 py-2 rounded-xl gradient-brand text-white text-xs font-bold hover:opacity-90 flex items-center gap-2 shadow-md shadow-purple-500/20 disabled:opacity-60"
+                  >
+                    {validating && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                    <span>{validating ? "Memeriksa Akun..." : "Cek Akun"}</span>
+                  </button>
+                </div>
+              </form>
+            )}
+
+            {/* STAGE 2: PREVIEW & CONFIRM */}
+            {modalStep === "preview" && validatedProfile && (
+              <div className="space-y-4">
+                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-3">
+                  <div className="flex items-center gap-3">
+                    <img
+                      src={validatedProfile.profile_pic_url || `https://api.dicebear.com/7.x/initials/svg?seed=${validatedProfile.username}`}
+                      alt=""
+                      className="w-12 h-12 rounded-2xl object-cover border border-slate-200"
+                    />
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-1">
+                        <h4 className="font-bold text-slate-900 text-sm truncate">@{validatedProfile.username}</h4>
+                        {validatedProfile.is_verified && <ShieldCheck className="w-3.5 h-3.5 text-blue-500" />}
+                      </div>
+                      <p className="text-xs text-slate-500 truncate">{validatedProfile.full_name || `@${validatedProfile.username}`}</p>
+                    </div>
+                  </div>
+
+                  {validatedProfile.biography && (
+                    <p className="text-xs text-slate-600 line-clamp-2 italic">
+                      "{validatedProfile.biography}"
+                    </p>
+                  )}
+
+                  <div className="grid grid-cols-3 gap-2 pt-2 border-t border-slate-200/60 text-center">
+                    <div>
+                      <p className="text-[9px] text-slate-400 uppercase font-bold">Followers</p>
+                      <p className="text-xs font-extrabold text-slate-800">
+                        {validatedProfile.followers_count.toLocaleString()}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-[9px] text-slate-400 uppercase font-bold">Following</p>
+                      <p className="text-xs font-extrabold text-slate-800">
+                        {validatedProfile.following_count.toLocaleString()}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-[9px] text-slate-400 uppercase font-bold">Media</p>
+                      <p className="text-xs font-extrabold text-slate-800">
+                        {validatedProfile.media_count.toLocaleString()}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <p className="text-[11px] text-slate-500 leading-relaxed">
+                  Tekan <strong className="text-slate-800">Mulai Pantau</strong> untuk menambahkan kompetitor ini. Pengambilan postingan &amp; analisis engagement akan diproses di background.
                 </p>
-              </div>
 
-              {addError && (
-                <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-medium flex items-start gap-2">
-                  <AlertCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
-                  <span>{addError}</span>
+                {addError && (
+                  <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-medium flex items-start gap-2">
+                    <AlertCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
+                    <span>{addError}</span>
+                  </div>
+                )}
+
+                <div className="flex items-center justify-between pt-2 border-t border-slate-100">
+                  <button
+                    type="button"
+                    onClick={() => setModalStep("input")}
+                    className="px-3.5 py-2 rounded-xl bg-slate-100 text-slate-600 text-xs font-semibold hover:bg-slate-200"
+                  >
+                    Kembali
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleConfirmAddCompetitor}
+                    className="px-5 py-2 rounded-xl gradient-brand text-white text-xs font-bold hover:opacity-90 flex items-center gap-1.5 shadow-md shadow-purple-500/20"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span>Mulai Pantau</span>
+                  </button>
                 </div>
-              )}
-
-              <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
-                <button
-                  type="button"
-                  onClick={() => setIsAddModalOpen(false)}
-                  className="px-4 py-2 rounded-xl bg-slate-100 text-slate-600 text-xs font-semibold hover:bg-slate-200"
-                >
-                  Batal
-                </button>
-                <button
-                  type="submit"
-                  disabled={addLoading}
-                  className="px-5 py-2 rounded-xl gradient-brand text-white text-xs font-bold hover:opacity-90 flex items-center gap-2 shadow-md shadow-purple-500/20 disabled:opacity-60"
-                >
-                  {addLoading && <RefreshCw className="w-3.5 h-3.5 animate-spin" />}
-                  <span>{addLoading ? "Mengambil Data..." : "Mulai Pantau"}</span>
-                </button>
               </div>
-            </form>
+            )}
           </div>
         </div>
       )}
@@ -987,20 +1363,20 @@ export default function CompetitorSpyPage() {
           <div className="bg-white rounded-3xl max-w-4xl w-full max-h-[90vh] flex flex-col shadow-2xl border border-slate-200 overflow-hidden animate-in fade-in zoom-in-95">
             {/* Header */}
             <div className="p-5 border-b border-slate-200 bg-slate-50 flex items-center justify-between shrink-0">
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 min-w-0">
                 <img
                   src={selectedCompetitor.profile_pic_url || `https://api.dicebear.com/7.x/initials/svg?seed=${selectedCompetitor.username}`}
                   alt=""
-                  className="w-10 h-10 rounded-2xl object-cover border border-slate-200"
+                  className="w-10 h-10 rounded-2xl object-cover border border-slate-200 shrink-0"
                 />
-                <div>
-                  <h3 className="font-bold text-slate-900 text-sm font-['Outfit'] flex items-center gap-1.5">
+                <div className="min-w-0">
+                  <h3 className="font-bold text-slate-900 text-sm font-['Outfit'] flex items-center gap-1.5 truncate">
                     @{selectedCompetitor.username}
-                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 font-normal">
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 font-normal shrink-0">
                       ER {selectedCompetitor.engagement_rate}%
                     </span>
                   </h3>
-                  <p className="text-xs text-slate-500">{selectedCompetitor.followers_count.toLocaleString()} Followers</p>
+                  <p className="text-xs text-slate-500 truncate">{selectedCompetitor.followers_count.toLocaleString()} Followers</p>
                 </div>
               </div>
 
@@ -1034,7 +1410,7 @@ export default function CompetitorSpyPage() {
             <div className="p-6 overflow-y-auto flex-1">
               {postsLoading ? (
                 <div className="flex justify-center py-16">
-                  <div className="w-8 h-8 border-3 border-purple-600 border-t-transparent rounded-full animate-spin" />
+                  <Loader2 className="w-8 h-8 text-purple-600 animate-spin" />
                 </div>
               ) : competitorPosts.length === 0 ? (
                 <div className="text-center py-12 space-y-2">
