@@ -22,7 +22,7 @@ interface KolAccountSelectorProps {
   loading?: boolean;
 }
 
-const PLATFORM_COLORS: Record<string, { bg: string; text: string; border: string }> = {
+const PLATFORM_COLORS: Record<string, { bg: string; border: string }> = {
   instagram: { bg: "bg-pink-50 text-pink-700", border: "border-pink-200" },
   tiktok: { bg: "bg-slate-900 text-white", border: "border-slate-800" },
   youtube: { bg: "bg-red-50 text-red-700", border: "border-red-200" },
