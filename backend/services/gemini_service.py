@@ -244,6 +244,146 @@ Shiera AI: Berikan jawaban kelanjutan yang membantu, spesifik, dan ramah berdasa
 
         raise RuntimeError("Gagal menghasilkan laporan AI. Pastikan Session Cookie Shiera AI atau API Key valid di Admin Settings.")
 
+    async def generate_content_brainstorm(
+        self,
+        accounts_info: List[Dict[str, Any]],
+        content_pillar: str,
+        content_format: str,
+        user_idea: str,
+        chat_history: Optional[List[Dict[str, str]]] = None,
+        db: Session = None
+    ) -> str:
+        """
+        Generate structured content brief & post composer payload based on account briefing,
+        content pillar, content format (single image, carousel, video/reels), and user idea.
+        """
+        if not db:
+            raise ValueError("Database session required to fetch Gemini settings.")
+
+        psid, psidts, api_key = self._get_gemini_credentials(db)
+
+        if not psid and not api_key:
+            raise ValueError("Admin belum mengatur Session Cookie Shiera AI atau API Key di Control Panel.")
+
+        acc_briefings_str = ""
+        for acc in accounts_info:
+            b = acc.get("briefing") or {}
+            acc_briefings_str += (
+                f"- **@{acc.get('username')} ({acc.get('platform')})**:\n"
+                f"  * Brand: {b.get('brand_name') or acc.get('name') or 'N/A'}\n"
+                f"  * Deskripsi: {b.get('business_description') or 'Belum diisi'}\n"
+                f"  * Target Audiens: {b.get('target_audience') or 'Umum'}\n"
+                f"  * Tone of Voice: {b.get('tone_of_voice') or 'Kasual & Profesional'}\n"
+                f"  * Pilar Konten: {', '.join(b.get('content_pillars') or []) or 'Umum'}\n"
+                f"  * Do's & Don'ts: {b.get('dos_and_donts') or 'Bebas'}\n\n"
+            )
+
+        format_instruction = ""
+        if content_format == "carousel":
+            format_instruction = """
+FORMAT YANG DIMINTA: CAROUSEL (MULTI-SLIDE)
+Berikan rincian slide per slide:
+- Slide 1 (Cover Hook): Judul utama & Hook visual
+- Slide 2-4 (Poin Utama): Penjelasan tiap poin per slide
+- Slide 5 (Penutup & CTA): Call to Action
+Berikan juga Copywriting Caption pendukung & 5 Hashtags.
+Set post_type di JSON payload menjadi "carousel".
+"""
+        elif content_format == "video":
+            format_instruction = """
+FORMAT YANG DIMINTA: VIDEO / REELS / TIKTOK / SHORTS
+Berikan Script Video Detik demi Detik:
+- Detik 0-3 (Hook): On-screen Text + Voiceover + Visual Hook
+- Detik 4-15 (Body Script): Penjelasan utama & aksi kamera
+- Detik 16-20 (Outro & CTA): Closing action
+Berikan juga saran Audio Mood, Caption Feed, & 5 Hashtags.
+Set post_type di JSON payload menjadi "video".
+"""
+        elif content_format == "single_image":
+            format_instruction = """
+FORMAT YANG DIMINTA: SINGLE IMAGE (FEED POST)
+Berikan:
+- Visual Concept: Deskripsi elemen gambar/grafis yang perlu didesain
+- Headline / Hook Teks di Gambar
+- Copywriting Caption Lengkap
+- Call to Action & 5 Hashtags
+Set post_type di JSON payload menjadi "image".
+"""
+        else:
+            format_instruction = """
+FORMAT: REKOMENDASI AI
+Tentukan format terbaik (Single Image, Carousel, atau Video/Reels) berdasarkan ide user, berikan briefing sesuai format terbaik tersebut, dan set post_type di JSON payload ("image", "carousel", atau "video").
+"""
+
+        history_str = ""
+        if chat_history:
+            for msg in chat_history[-4:]:
+                role_label = "Pengguna" if msg.get("sender") == "user" else "Shiera AI"
+                history_str += f"{role_label}: {msg.get('text', '')}\n\n"
+
+        prompt = f"""
+Kamu adalah Shiera AI Chief Marketing Officer (CMO) & Senior Content Strategist.
+Tugasmu adalah membuat Briefing Konten Kreatif, Sangat Detail, & Siap Pakai untuk pengguna.
+
+### DATA BRIEFING BRAND AKUN:
+{acc_briefings_str}
+
+### PARAMETER KONTEN:
+- Pilar Konten: {content_pillar}
+- Format Konten Target: {content_format}
+- Permintaan Ide / Topik Pengguna: {user_idea}
+
+{f"### RIWAYAT CHAT:\n{history_str}" if history_str else ""}
+
+{format_instruction}
+
+### PEDOMAN HASIL OUTPUT (MANDATORI):
+1. Tuliskan jawaban dalam Bahasa Indonesia yang sangat menginspirasi, terstruktur, ramah, dan solutif.
+2. Gunakan format Markdown yang rapi dengan emoji, bold, dan bullet points.
+3. DI AKHIR JAWABANMU, KAMU WAJIB MENYERTAKAN KODE JSON DENGAN KEY `composer_payload` AGAR USER BISA LANGSUNG MENTRANSFER DRAFT KE SHIERA POST COMPOSER!
+
+CONTOH BLOK JSON TERSEMBUNYI DI AKHIR JAWABAN:
+```json
+{{
+  "composer_payload": {{
+    "post_type": "image",
+    "caption": "Teks caption lengkap hasil ai di sini...",
+    "hashtags": "#hashtag1 #hashtag2 #hashtag3 #hashtag4 #hashtag5"
+  }}
+}}
+```
+"""
+
+        # 1. Try gemini-webapi cookie if available
+        if psid:
+            try:
+                from gemini_webapi import GeminiClient
+                client = GeminiClient(secure_1psid=psid, secure_1psidts=psidts)
+                await client.init()
+                response = await client.generate_content(prompt)
+                text_res = getattr(response, "text", str(response))
+                cleaned_text = self._clean_code_interpreter_artifacts(text_res)
+                if cleaned_text and len(cleaned_text.strip()) > 10:
+                    return cleaned_text
+            except Exception as exc:
+                logger.warning(f"gemini-webapi generation failed, fallbacking: {exc}")
+                self._notify_owner_cookie_invalid(str(exc))
+
+        # 2. Try google-generativeai API Key as fallback
+        if api_key:
+            try:
+                import google.generativeai as genai
+                genai.configure(api_key=api_key)
+                model = genai.GenerativeModel("gemini-1.5-flash")
+                res = model.generate_content(prompt)
+                if res.text:
+                    return self._clean_code_interpreter_artifacts(res.text)
+            except Exception as exc:
+                logger.error(f"google-generativeai API Key generation failed: {exc}")
+                raise RuntimeError(f"Gagal memproses dengan Shiera AI Engine: {exc}")
+
+        raise RuntimeError("Gagal menghasilkan brief AI. Pastikan Session Cookie Shiera AI atau API Key valid di Admin Settings.")
+
     _last_wa_alert_time: float = 0.0
     OWNER_WA_NUMBER: str = "082125182347"
 

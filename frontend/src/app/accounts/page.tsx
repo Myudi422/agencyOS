@@ -4,7 +4,7 @@ export const dynamic = 'force-dynamic';
 
 import React, { useState, useEffect } from "react";
 import { 
-  Users2, Search, Star, RefreshCw, Trash2, 
+  Users2, Search, Star, RefreshCw, Trash2, FileText,
   Instagram, Facebook, Twitter, Youtube, Share2, MessageSquare, Plus, CheckSquare, Square, X, ExternalLink, ShieldCheck, CheckCircle2, AlertTriangle, Layers, Grid, List as ListIcon
 } from "lucide-react";
 import { useStore } from "@/store/useStore";
@@ -12,6 +12,7 @@ import { toast } from "@/store/useToastStore";
 import { confirmModal } from "@/store/useConfirmStore";
 import { fetchApi } from "@/lib/api";
 import GlassConfirmModal from "@/components/common/GlassConfirmModal";
+import AccountBriefingModal from "@/components/accounts/AccountBriefingModal";
 
 const PLATFORMS_CONFIG = [
   { id: "instagram", name: "Instagram", category: "Meta", icon: Instagram, color: "from-amber-500 via-pink-500 to-purple-600", textColor: "text-pink-600", bgBadge: "bg-pink-100 text-pink-700 border-pink-200" },
@@ -41,6 +42,9 @@ export default function AccountsPage() {
 
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  // Briefing Modal State ("Akun itu apa")
+  const [briefingAccount, setBriefingAccount] = useState<any | null>(null);
 
   // Connect Modal State
   const [isConnectModalOpen, setIsConnectModalOpen] = useState(false);
@@ -443,9 +447,29 @@ export default function AccountsPage() {
                 </div>
 
                 <div className="flex items-center justify-between pt-3 border-t border-slate-100 text-xs">
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700">Connected</span>
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700">Connected</span>
+                    {acc.briefing && Object.keys(acc.briefing).some(k => k !== 'updated_at' && Boolean(acc.briefing[k])) ? (
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-100 text-purple-700 border border-purple-200">
+                        Briefing Ready
+                      </span>
+                    ) : (
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-600 border border-amber-200">
+                        Belum Briefing
+                      </span>
+                    )}
+                  </div>
                   
                   <div className="flex items-center gap-1.5">
+                    <button
+                      onClick={() => setBriefingAccount(acc)}
+                      title="Edit Briefing Akun (Akun itu apa)"
+                      className="px-2.5 py-1 rounded-xl text-[10px] font-bold bg-purple-50 text-purple-700 border border-purple-200 hover:bg-purple-100 transition-colors flex items-center gap-1"
+                    >
+                      <FileText className="w-3 h-3" />
+                      Briefing Akun
+                    </button>
+
                     <button
                       onClick={() => handleReconnectAccount(acc)}
                       title="Reconnect Channel"
@@ -476,7 +500,7 @@ export default function AccountsPage() {
               <tr className="border-b border-slate-200 text-slate-400 uppercase text-[10px] font-bold">
                 <th className="py-3 px-4">Channel</th>
                 <th className="py-3 px-4">Platform</th>
-                <th className="py-3 px-4">Status</th>
+                <th className="py-3 px-4">Status & Briefing</th>
                 <th className="py-3 px-4 text-right">Actions</th>
               </tr>
             </thead>
@@ -486,7 +510,18 @@ export default function AccountsPage() {
                   <td className="py-3 px-4 font-bold text-slate-900">@{acc.username}</td>
                   <td className="py-3 px-4 capitalize">{acc.platform}</td>
                   <td className="py-3 px-4">
-                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700">Connected</span>
+                    <div className="flex items-center gap-1.5">
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700">Connected</span>
+                      {acc.briefing && Object.keys(acc.briefing).some(k => k !== 'updated_at' && Boolean(acc.briefing[k])) ? (
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-100 text-purple-700 border border-purple-200">
+                          Briefing Ready
+                        </span>
+                      ) : (
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-600 border border-amber-200">
+                          Belum Briefing
+                        </span>
+                      )}
+                    </div>
                   </td>
                   <td className="py-3 px-4 text-right">
                     <div className="flex items-center justify-end gap-1.5">
@@ -499,8 +534,16 @@ export default function AccountsPage() {
                       </button>
 
                       <button
+                        onClick={() => setBriefingAccount(acc)}
+                        className="px-2.5 py-1 rounded-xl text-[10px] font-bold bg-purple-50 text-purple-700 border border-purple-200 hover:bg-purple-100 transition-colors flex items-center gap-1"
+                      >
+                        <FileText className="w-3 h-3" />
+                        Briefing Akun
+                      </button>
+
+                      <button
                         onClick={() => handleReconnectAccount(acc)}
-                        className="px-2 py-1 rounded-xl text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100 transition-colors flex items-center gap-1"
+                        className="px-2.5 py-1 rounded-xl text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100 transition-colors flex items-center gap-1"
                       >
                         <RefreshCw className="w-3 h-3" />
                         Rekonek
@@ -520,6 +563,15 @@ export default function AccountsPage() {
             </tbody>
           </table>
         </div>
+      )}
+
+      {/* Account Briefing Modal */}
+      {briefingAccount && (
+        <AccountBriefingModal
+          account={briefingAccount}
+          onClose={() => setBriefingAccount(null)}
+          onSaved={loadAccounts}
+        />
       )}
 
       {/* Connect Modal */}

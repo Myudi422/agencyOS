@@ -70,7 +70,7 @@ const FieldTooltip = ({ text }: { text: string }) => (
 );
 
 export default function PostComposerModal() {
-  const { isComposerOpen, closeComposer, activeWorkspace, composerPreselectedAccounts, composerInitialPost } = useStore();
+  const { isComposerOpen, closeComposer, activeWorkspace, composerPreselectedAccounts, composerInitialPost, composerInitialBrief } = useStore();
 
   // Mobile View Switcher (Editor vs Preview)
   const [mobileTab, setMobileTab] = useState<"editor" | "preview">("editor");
@@ -262,7 +262,7 @@ export default function PostComposerModal() {
       });
   }, [activeWorkspace?.id, composerPreselectedAccounts]);
 
-  // Load initial post data when editing an existing draft/post
+  // Load initial post data or AI brief when opening composer
   useEffect(() => {
     if (isComposerOpen && composerInitialPost) {
       setEditingPostId(composerInitialPost.id);
@@ -285,10 +285,28 @@ export default function PostComposerModal() {
         const accIds = composerInitialPost.targets.map((t: any) => t.account_id).filter(Boolean);
         if (accIds.length > 0) setSelectedAccountIds(accIds);
       }
-    } else if (isComposerOpen && !composerInitialPost) {
+    } else if (isComposerOpen && composerInitialBrief) {
+      setEditingPostId(null);
+      if (composerInitialBrief.caption) setCaption(composerInitialBrief.caption);
+      if (composerInitialBrief.hashtags) setHashtags(composerInitialBrief.hashtags);
+      if (composerInitialBrief.post_type) {
+        const pt = composerInitialBrief.post_type.toLowerCase();
+        if (pt === "video" || pt === "reel" || pt === "reels") {
+          setPostType("video");
+        } else if (pt === "carousel") {
+          setPostType("carousel");
+        } else {
+          setPostType("image");
+        }
+      }
+      if (Array.isArray(composerInitialBrief.account_ids) && composerInitialBrief.account_ids.length > 0) {
+        setSelectedAccountIds(composerInitialBrief.account_ids);
+      }
+      toast.success("Brief & Teks dari Shiera AI berhasil dimasukkan ke Composer!");
+    } else if (isComposerOpen && !composerInitialPost && !composerInitialBrief) {
       setEditingPostId(null);
     }
-  }, [isComposerOpen, composerInitialPost]);
+  }, [isComposerOpen, composerInitialPost, composerInitialBrief]);
 
   const loadMediaLibrary = async () => {
     setIsLoadingLibrary(true);

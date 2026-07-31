@@ -15,6 +15,14 @@ logger = logging.getLogger("AccountsRouter")
 
 router = APIRouter(prefix="/accounts", tags=["Social Accounts"])
 
+class AccountBriefingSchema(BaseModel):
+    brand_name: Optional[str] = None
+    business_description: Optional[str] = None
+    target_audience: Optional[str] = None
+    tone_of_voice: Optional[str] = None
+    content_pillars: Optional[List[str]] = None
+    dos_and_donts: Optional[str] = None
+
 class BulkActionRequest(BaseModel):
     account_ids: List[str]
     action: str  # "favorite", "unfavorite", "reconnect", "delete", "assign_group"
@@ -97,6 +105,7 @@ def get_accounts(
             "is_favorite": a.is_favorite,
             "account_group": a.account_group,
             "followers_count": a.followers_count,
+            "briefing": a.briefing,
             "last_synced_at": a.last_synced_at,
             "connected_at": a.connected_at
         })
@@ -107,6 +116,46 @@ def get_accounts(
         "page": page,
         "limit": limit,
         "pages": (total + limit - 1) // limit
+    }
+
+@router.get("/{account_id}/briefing")
+def get_account_briefing(
+    account_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_user)
+):
+    account = db.query(SocialAccount).filter(SocialAccount.id == account_id).first()
+    if not account:
+        raise HTTPException(status_code=404, detail="Account not found")
+    get_user_workspace(current_user, account.workspace_id, db)
+    return {
+        "account_id": account.id,
+        "username": account.username,
+        "platform": account.platform.value,
+        "briefing": account.briefing or {}
+    }
+
+@router.put("/{account_id}/briefing")
+def update_account_briefing(
+    account_id: str,
+    payload: AccountBriefingSchema,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_user)
+):
+    account = db.query(SocialAccount).filter(SocialAccount.id == account_id).first()
+    if not account:
+        raise HTTPException(status_code=404, detail="Account not found")
+    get_user_workspace(current_user, account.workspace_id, db)
+
+    briefing_data = payload.dict(exclude_unset=True)
+    briefing_data["updated_at"] = datetime.utcnow().isoformat()
+    account.briefing = briefing_data
+    db.commit()
+
+    return {
+        "account_id": account.id,
+        "status": "success",
+        "briefing": account.briefing
     }
 
 @router.post("/{account_id}/favorite")

@@ -177,6 +177,7 @@ class SocialAccount(Base):
     is_favorite = Column(Boolean, default=False)
     account_group = Column(String(100), nullable=True)
     followers_count = Column(Integer, default=0)
+    briefing = Column(JSON, nullable=True)
     last_synced_at = Column(DateTime, default=datetime.utcnow)
     connected_at = Column(DateTime, default=datetime.utcnow)
     created_at = Column(DateTime, default=datetime.utcnow)

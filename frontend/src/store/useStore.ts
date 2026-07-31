@@ -33,6 +33,7 @@ interface StoreState {
   isSettingsOpen: boolean;
   composerPreselectedAccounts: string[];
   composerInitialPost: any | null;
+  composerInitialBrief: { caption?: string; hashtags?: string; post_type?: string; account_ids?: string[] } | null;
   uploadTasks: UploadTask[];
 
   setWorkspaces: (workspaces: Workspace[]) => void;
@@ -40,6 +41,7 @@ interface StoreState {
   setClients: (clients: Client[]) => void;
   setActiveClientId: (id: string | null) => void;
   openComposer: (accountIds?: string[], initialPost?: any) => void;
+  openComposerWithBrief: (brief: { caption?: string; hashtags?: string; post_type?: string; account_ids?: string[] }) => void;
   closeComposer: () => void;
   openSettings: () => void;
   closeSettings: () => void;
@@ -59,6 +61,7 @@ export const useStore = create<StoreState>((set) => ({
   isSettingsOpen: false,
   composerPreselectedAccounts: [],
   composerInitialPost: null,
+  composerInitialBrief: null,
   uploadTasks: [],
 
   setWorkspaces: (workspaces) => set({ 
@@ -68,8 +71,14 @@ export const useStore = create<StoreState>((set) => ({
   setActiveWorkspace: (activeWorkspace) => set({ activeWorkspace }),
   setClients: (clients) => set({ clients }),
   setActiveClientId: (activeClientId) => set({ activeClientId }),
-  openComposer: (accountIds = [], initialPost = null) => set({ isComposerOpen: true, composerPreselectedAccounts: accountIds, composerInitialPost: initialPost }),
-  closeComposer: () => set({ isComposerOpen: false, composerPreselectedAccounts: [], composerInitialPost: null }),
+  openComposer: (accountIds = [], initialPost = null) => set({ isComposerOpen: true, composerPreselectedAccounts: accountIds, composerInitialPost: initialPost, composerInitialBrief: null }),
+  openComposerWithBrief: (brief) => set({
+    isComposerOpen: true,
+    composerPreselectedAccounts: brief.account_ids || [],
+    composerInitialPost: null,
+    composerInitialBrief: brief
+  }),
+  closeComposer: () => set({ isComposerOpen: false, composerPreselectedAccounts: [], composerInitialPost: null, composerInitialBrief: null }),
   openSettings: () => set({ isSettingsOpen: true }),
   closeSettings: () => set({ isSettingsOpen: false }),
 

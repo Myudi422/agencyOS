@@ -531,3 +531,80 @@ async def generate_ai_summary(
             detail=str(exc) or "Gagal membuat ringkasan AI. Silakan periksa pengaturan Gemini di Admin Settings."
         )
 
+
+class AIBrainstormRequest(BaseModel):
+    workspace_id: str
+    account_ids: Optional[List[str]] = None
+    content_pillar: str
+    content_format: str
+    user_idea: str
+    chat_history: Optional[List[ChatItem]] = None
+
+
+@router.post("/ai-brainstorm")
+async def generate_ai_brainstorm(
+    req: AIBrainstormRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_user),
+):
+    """
+    Generate structured content brief & post composer payload based on account briefing,
+    content pillar, content format (single image, carousel, video/reels), and user idea.
+    """
+    from backend.services.gemini_service import gemini_service
+
+    get_user_workspace(current_user, req.workspace_id, db)
+
+    # Fetch accounts & briefings
+    query = db.query(SocialAccount).filter(SocialAccount.workspace_id == req.workspace_id)
+    if req.account_ids:
+        query = query.filter(SocialAccount.id.in_(req.account_ids))
+    accounts = query.all()
+
+    if not accounts:
+        raise HTTPException(status_code=400, detail="Tidak ada akun sosial media terhubung yang dipilih.")
+
+    # Verify at least one account has briefing
+    accounts_with_briefing = [a for a in accounts if a.briefing and any(a.briefing.values())]
+    if not accounts_with_briefing:
+        raise HTTPException(
+            status_code=400,
+            detail="Akun terpilih belum memiliki data Briefing Akun. Silakan lengkapi Briefing Akun terlebih dahulu di halaman /accounts."
+        )
+
+    accounts_info = [
+        {
+            "id": a.id,
+            "name": a.name,
+            "username": a.username,
+            "platform": a.platform.value,
+            "briefing": a.briefing or {}
+        }
+        for a in accounts
+    ]
+
+    try:
+        history_list = [h.dict() for h in req.chat_history] if req.chat_history else None
+        response_text = await gemini_service.generate_content_brainstorm(
+            accounts_info=accounts_info,
+            content_pillar=req.content_pillar,
+            content_format=req.content_format,
+            user_idea=req.user_idea,
+            chat_history=history_list,
+            db=db,
+        )
+        return {
+            "status": "ok",
+            "result": response_text,
+            "accounts_used": [a["username"] for a in accounts_info],
+            "generated_at": datetime.utcnow().isoformat(),
+        }
+
+    except Exception as exc:
+        logger.error(f"AI Brainstorm error: {exc}")
+        raise HTTPException(
+            status_code=500,
+            detail=str(exc) or "Gagal membuat ide konten dengan Shiera AI."
+        )
+
+

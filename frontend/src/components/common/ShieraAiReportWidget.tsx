@@ -4,7 +4,7 @@ import React, { useState, useRef, useEffect, useCallback } from "react";
 import {
   Sparkles, X, Minimize2, Copy, Check, RefreshCw, Send, Bot, User,
   BarChart2, ChevronRight, TrendingUp, Calendar, Users2, Zap,
-  RotateCcw, ChevronDown, CheckSquare, Square
+  RotateCcw, ChevronDown, CheckSquare, Square, FileText, Lightbulb, Video, Layers, Image as ImageIcon, AlertTriangle
 } from "lucide-react";
 import { useAiReportStore, ChatMessage, SummaryScope } from "@/store/useAiReportStore";
 import ShieraMarkdownViewer from "./ShieraMarkdownViewer";
@@ -20,6 +20,7 @@ interface SocialAccountMeta {
   username: string;
   avatar_url?: string;
   followers_count?: number;
+  briefing?: any;
 }
 
 const PLATFORM_ICONS: Record<string, string> = {
@@ -35,6 +36,22 @@ const PERIOD_OPTIONS: { key: PeriodKey; label: string }[] = [
   { key: "7d", label: "7 Hari" },
   { key: "30d", label: "30 Hari" },
   { key: "custom", label: "Custom" },
+];
+
+const CONTENT_PILLARS = [
+  { id: "Edukasi & Tips", name: "📚 Edukasi & Tips", desc: "Tutorial, info bermanfaat, & hacks" },
+  { id: "Promosi & Penjualan", name: "📢 Promosi & Soft-Sell", desc: "Promo gajian, diskon, & penawaran" },
+  { id: "Meme & Entertainment", name: "😂 Meme & Hiburan", desc: "Relatable humor & konten viral" },
+  { id: "Storytelling & Brand", name: "📖 Storytelling Brand", desc: "Kisah inspirasi & behind the scene" },
+  { id: "Behind The Scene", name: "🎬 Behind The Scene", desc: "Proses pembuatan & tim di balik layar" },
+  { id: "Testimoni & Review", name: "🌟 Testimoni & Proof", desc: "Ulasan pembeli & social proof" },
+];
+
+const CONTENT_FORMATS = [
+  { id: "single_image", name: "🖼️ Single Image", desc: "1 Gambar / Feed Post biasa", icon: ImageIcon },
+  { id: "carousel", name: "🎠 Carousel (Multi-Slide)", desc: "Mikro-blogging / slide beruntun", icon: Layers },
+  { id: "video", name: "🎬 Video / Reels / Shorts", desc: "Video pendek + script detik demi detik", icon: Video },
+  { id: "auto", name: "💡 Rekomendasi AI", desc: "Biarkan Shiera AI memilih format terbaik", icon: Sparkles },
 ];
 
 function getDateRange(period: PeriodKey, customFrom?: string, customTo?: string) {
@@ -65,42 +82,75 @@ function getDateRange(period: PeriodKey, customFrom?: string, customTo?: string)
   }
 }
 
+function extractComposerPayload(text: string) {
+  try {
+    const match = text.match(/```json\s*([\s\S]*?)\s*```/);
+    if (match && match[1]) {
+      const parsed = JSON.parse(match[1]);
+      if (parsed.composer_payload) return parsed.composer_payload;
+    }
+  } catch {}
+  return null;
+}
+
 // ─── Welcome / Home screen ────────────────────────────────────────────────────
-function WelcomeScreen({ onSummaryClick }: { onSummaryClick: () => void }) {
+function WelcomeScreen({
+  onSummaryClick,
+  onBrainstormClick,
+}: {
+  onSummaryClick: () => void;
+  onBrainstormClick: () => void;
+}) {
   return (
-    <div className="flex flex-col items-center justify-center flex-1 px-5 py-8 gap-5 text-center select-none">
+    <div className="flex flex-col items-center justify-center flex-1 px-5 py-6 gap-4 text-center select-none">
       <div className="relative">
-        <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-600 via-indigo-600 to-indigo-800 flex items-center justify-center shadow-xl shadow-purple-500/30">
-          <Sparkles className="w-8 h-8 text-amber-300" />
+        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-purple-600 via-indigo-600 to-indigo-800 flex items-center justify-center shadow-xl shadow-purple-500/30">
+          <Sparkles className="w-7 h-7 text-amber-300" />
         </div>
-        <span className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-emerald-400 border-2 border-white" />
+        <span className="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full bg-emerald-400 border-2 border-white" />
       </div>
 
-      <div className="space-y-1.5">
+      <div className="space-y-1">
         <h2 className="text-base font-extrabold text-slate-900 font-['Outfit']">
           Halo! Saya Shiera AI 👋
         </h2>
-        <p className="text-xs text-slate-500 leading-relaxed max-w-[220px]">
-          Asisten CMO digital Anda. Ada yang bisa saya bantu hari ini?
+        <p className="text-xs text-slate-500 leading-relaxed max-w-[230px]">
+          Asisten CMO & Strategi Konten Digital Anda. Ada yang bisa saya bantu hari ini?
         </p>
       </div>
 
-      <button
-        onClick={onSummaryClick}
-        className="w-full flex items-center gap-3 p-4 rounded-2xl bg-gradient-to-r from-purple-600 via-indigo-600 to-indigo-800 text-white shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 hover:scale-[1.02] transition-all group"
-      >
-        <div className="w-9 h-9 rounded-xl bg-white/15 flex items-center justify-center shrink-0">
-          <BarChart2 className="w-5 h-5 text-amber-300" />
-        </div>
-        <div className="text-left flex-1">
-          <p className="text-sm font-bold leading-tight">Summary Analisa</p>
-          <p className="text-[10px] text-purple-200/90 mt-0.5">Mulai analisa performa akun sosial Anda</p>
-        </div>
-        <ChevronRight className="w-4 h-4 text-white/60 group-hover:translate-x-0.5 transition-transform shrink-0" />
-      </button>
+      <div className="w-full space-y-2.5 pt-1">
+        <button
+          onClick={onBrainstormClick}
+          className="w-full flex items-center gap-3 p-3.5 rounded-2xl bg-gradient-to-r from-purple-600 via-indigo-600 to-indigo-800 text-white shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 hover:scale-[1.02] transition-all group"
+        >
+          <div className="w-9 h-9 rounded-xl bg-white/15 flex items-center justify-center shrink-0">
+            <Sparkles className="w-5 h-5 text-amber-300 animate-pulse" />
+          </div>
+          <div className="text-left flex-1 min-w-0">
+            <p className="text-xs font-extrabold leading-tight font-['Outfit']">Brainstorm & Create</p>
+            <p className="text-[10px] text-purple-200/90 mt-0.5 truncate">Buat brief, script & caption otomatis</p>
+          </div>
+          <ChevronRight className="w-4 h-4 text-white/60 group-hover:translate-x-0.5 transition-transform shrink-0" />
+        </button>
 
-      <p className="text-[10px] text-slate-400 leading-relaxed max-w-[200px]">
-        Didukung oleh Shiera AI · Analisis mendalam berbasis data real-time
+        <button
+          onClick={onSummaryClick}
+          className="w-full flex items-center gap-3 p-3.5 rounded-2xl bg-slate-900 text-white shadow-md hover:bg-slate-800 hover:scale-[1.02] transition-all group"
+        >
+          <div className="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center shrink-0">
+            <BarChart2 className="w-5 h-5 text-purple-300" />
+          </div>
+          <div className="text-left flex-1 min-w-0">
+            <p className="text-xs font-extrabold leading-tight font-['Outfit']">Summary Analisa</p>
+            <p className="text-[10px] text-slate-400 mt-0.5 truncate">Analisis performa & statistik akun</p>
+          </div>
+          <ChevronRight className="w-4 h-4 text-white/60 group-hover:translate-x-0.5 transition-transform shrink-0" />
+        </button>
+      </div>
+
+      <p className="text-[10px] text-slate-400 leading-relaxed max-w-[200px] pt-1">
+        Didukung oleh Shiera AI Engine · Briefing & Composer Connected
       </p>
     </div>
   );
@@ -114,6 +164,7 @@ function ChatArea({
   setInputMsg,
   onSend,
   chatScrollRef,
+  onTransferToComposer,
 }: {
   messages: ChatMessage[];
   aiLoading: boolean;
@@ -121,6 +172,7 @@ function ChatArea({
   setInputMsg: (v: string) => void;
   onSend: (e?: React.FormEvent) => void;
   chatScrollRef: React.RefObject<HTMLDivElement>;
+  onTransferToComposer: (payload: any) => void;
 }) {
   return (
     <>
@@ -128,35 +180,56 @@ function ChatArea({
         ref={chatScrollRef}
         className="flex-1 px-3 py-4 overflow-y-auto space-y-3 bg-slate-50/80 min-h-0"
       >
-        {messages.map((msg) => (
-          <div
-            key={msg.id}
-            className={`flex gap-2 ${msg.sender === "user" ? "flex-row-reverse" : "flex-row"}`}
-          >
+        {messages.map((msg) => {
+          const composerPayload = msg.sender === "ai" ? extractComposerPayload(msg.text) : null;
+          // Strip out raw ```json ... ``` from Markdown display
+          const cleanedText = msg.sender === "ai"
+            ? msg.text.replace(/```json\s*[\s\S]*?\s*```/g, "").trim()
+            : msg.text;
+
+          return (
             <div
-              className={`w-7 h-7 rounded-xl flex items-center justify-center shrink-0 shadow-xs mt-0.5 ${
-                msg.sender === "user"
-                  ? "bg-purple-600 text-white"
-                  : "bg-slate-900 text-amber-300 border border-purple-400/30"
-              }`}
+              key={msg.id}
+              className={`flex gap-2 ${msg.sender === "user" ? "flex-row-reverse" : "flex-row"}`}
             >
-              {msg.sender === "user"
-                ? <User className="w-3.5 h-3.5" />
-                : <Sparkles className="w-3.5 h-3.5" />}
+              <div
+                className={`w-7 h-7 rounded-xl flex items-center justify-center shrink-0 shadow-xs mt-0.5 ${
+                  msg.sender === "user"
+                    ? "bg-purple-600 text-white"
+                    : "bg-slate-900 text-amber-300 border border-purple-400/30"
+                }`}
+              >
+                {msg.sender === "user"
+                  ? <User className="w-3.5 h-3.5" />
+                  : <Sparkles className="w-3.5 h-3.5" />}
+              </div>
+              <div
+                className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 text-xs leading-relaxed ${
+                  msg.sender === "user"
+                    ? "bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-medium rounded-tr-sm"
+                    : "bg-white border border-slate-200 text-slate-800 rounded-tl-sm shadow-xs"
+                }`}
+              >
+                {msg.sender === "user" ? (
+                  <p className="whitespace-pre-wrap">{msg.text}</p>
+                ) : (
+                  <>
+                    <ShieraMarkdownViewer content={cleanedText} />
+                    {composerPayload && (
+                      <button
+                        onClick={() => onTransferToComposer(composerPayload)}
+                        className="mt-3 w-full py-2.5 px-3.5 rounded-xl bg-gradient-to-r from-purple-600 via-indigo-600 to-indigo-800 text-white font-bold text-[11px] flex items-center justify-center gap-2 shadow-md shadow-purple-500/25 hover:shadow-lg hover:scale-[1.01] active:scale-[0.99] transition-all cursor-pointer"
+                      >
+                        <Send className="w-3.5 h-3.5 text-amber-300" />
+                        <span>🚀 Transfer ke Post Composer</span>
+                      </button>
+                    )}
+                  </>
+                )}
+              </div>
             </div>
-            <div
-              className={`max-w-[82%] rounded-2xl px-3.5 py-2.5 text-xs leading-relaxed ${
-                msg.sender === "user"
-                  ? "bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-medium rounded-tr-sm"
-                  : "bg-white border border-slate-200 text-slate-800 rounded-tl-sm"
-              }`}
-            >
-              {msg.sender === "user"
-                ? <p className="whitespace-pre-wrap">{msg.text}</p>
-                : <ShieraMarkdownViewer content={msg.text} />}
-            </div>
-          </div>
-        ))}
+          );
+        })}
 
         {aiLoading && (
           <div className="flex gap-2 items-center">
@@ -165,7 +238,7 @@ function ChatArea({
             </div>
             <div className="px-3.5 py-2.5 rounded-2xl bg-white border border-slate-200 text-xs text-purple-700 font-semibold flex items-center gap-2 shadow-xs">
               <RefreshCw className="w-3 h-3 animate-spin" />
-              Shiera AI sedang merumuskan jawaban...
+              Shiera AI sedang merumuskan brief & ide...
             </div>
           </div>
         )}
@@ -179,14 +252,14 @@ function ChatArea({
           type="text"
           value={inputMsg}
           onChange={(e) => setInputMsg(e.target.value)}
-          placeholder="Tanyakan sesuatu..."
+          placeholder="Ketik ide / topik konten Anda..."
           disabled={aiLoading}
           className="flex-1 px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-purple-400 bg-slate-50 font-medium placeholder-slate-400"
         />
         <button
           type="submit"
           disabled={!inputMsg.trim() || aiLoading}
-          className="p-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed shrink-0 shadow-sm"
+          className="p-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed shrink-0 shadow-sm cursor-pointer"
         >
           <Send className="w-3.5 h-3.5" />
         </button>
@@ -196,10 +269,10 @@ function ChatArea({
 }
 
 // ─── Main Widget ──────────────────────────────────────────────────────────────
-type PanelView = "welcome" | "configure" | "chat";
+type PanelView = "welcome" | "configure" | "chat" | "brainstorm_setup" | "brainstorm_pillar" | "brainstorm_format" | "brainstorm_chat";
 
 export default function ShieraAiReportWidget() {
-  const { activeWorkspace } = useStore();
+  const { activeWorkspace, openComposerWithBrief } = useStore();
 
   const {
     isFloatingOpen, isAiMinimized,
@@ -218,11 +291,16 @@ export default function ShieraAiReportWidget() {
   const chatScrollRef = useRef<HTMLDivElement>(null);
   const tooltipTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // ── Filters State (Local to matching Statistics screen options) ──
+  // ── Accounts & Brainstorm State ──
   const [availableAccounts, setAvailableAccounts] = useState<SocialAccountMeta[]>([]);
   const [selectedAccountIds, setSelectedAccountIds] = useState<string[]>([]);
   const [accountDropdownOpen, setAccountDropdownOpen] = useState(false);
   
+  const [selectedPillar, setSelectedPillar] = useState<string>("");
+  const [selectedFormat, setSelectedFormat] = useState<string>("");
+  const [isBrainstormSession, setIsBrainstormSession] = useState(false);
+
+  // Summary Filters State
   const [period, setPeriod] = useState<PeriodKey>("today");
   const [customFrom, setCustomFrom] = useState("");
   const [customTo, setCustomTo] = useState("");
@@ -232,8 +310,9 @@ export default function ShieraAiReportWidget() {
   // Fetch Accounts
   useEffect(() => {
     if (!activeWorkspace?.id) return;
-    fetchApi<SocialAccountMeta[]>(`/statistics/accounts?workspace_id=${activeWorkspace.id}`)
-      .then((accs) => {
+    fetchApi<SocialAccountMeta[]>(`/accounts/?workspace_id=${activeWorkspace.id}&limit=100`)
+      .then((res: any) => {
+        const accs = res.items || (Array.isArray(res) ? res : []);
         setAvailableAccounts(accs);
       })
       .catch(() => setAvailableAccounts([]));
@@ -256,15 +335,6 @@ export default function ShieraAiReportWidget() {
       chatScrollRef.current.scrollTop = chatScrollRef.current.scrollHeight;
     }
   }, [chatMessages, aiLoading]);
-
-  // Restore active view state
-  useEffect(() => {
-    if (isFloatingOpen && hasSummarySession && chatMessages.length > 0) {
-      setView("chat");
-    } else if (isFloatingOpen && !hasSummarySession) {
-      setView("welcome");
-    }
-  }, [isFloatingOpen, hasSummarySession, chatMessages.length]);
 
   // Tooltip trigger
   useEffect(() => {
@@ -295,6 +365,9 @@ export default function ShieraAiReportWidget() {
   const handleResetChat = () => {
     resetAiReport();
     setSelectedAccountIds([]);
+    setSelectedPillar("");
+    setSelectedFormat("");
+    setIsBrainstormSession(false);
     setPeriod("today");
     setCustomFrom("");
     setCustomTo("");
@@ -302,7 +375,7 @@ export default function ShieraAiReportWidget() {
     toast.success("Sesi chat berhasil di-reset!");
   };
 
-  // Run AI Summary Analysis based on selected Filters
+  // Run AI Summary Analysis
   const handleRunAnalysis = async () => {
     if (!activeWorkspace?.id) {
       toast.error("Workspace tidak ditemukan.");
@@ -310,6 +383,7 @@ export default function ShieraAiReportWidget() {
     }
 
     setAiLoading(true);
+    setIsBrainstormSession(false);
 
     try {
       const { from, to } = getDateRange(period, customFrom, customTo);
@@ -352,10 +426,40 @@ export default function ShieraAiReportWidget() {
     }
   };
 
-  const handleSendFollowUp = async (e?: React.FormEvent) => {
+  // Brainstorm Flow Handlers
+  const handleSelectPillar = (pillarId: string) => {
+    setSelectedPillar(pillarId);
+    setView("brainstorm_format");
+  };
+
+  const handleSelectFormat = (formatId: string) => {
+    setSelectedFormat(formatId);
+    setIsBrainstormSession(true);
+
+    const targetAccountName = selectedAccountIds.length === 0
+      ? "@semua_akun"
+      : availableAccounts.filter(a => selectedAccountIds.includes(a.id)).map(a => `@${a.username}`).join(", ");
+
+    const initMsgText = `Sip! Kamu memilih Pilar **${selectedPillar}** dengan Format **${
+      CONTENT_FORMATS.find(f => f.id === formatId)?.name || formatId
+    }** untuk **${targetAccountName}**.\n\nSilakan tuliskan ide, kata kunci, atau topik awal yang ingin kamu buat (contoh: *"promo gajian akhir bulan moisturizer"* atau *"5 kesalahan perawatan kulit kering"*)!`;
+
+    setChatMessages([
+      {
+        id: "brainstorm-init-" + Date.now(),
+        sender: "ai",
+        text: initMsgText,
+        timestamp: new Date().toISOString(),
+      },
+    ]);
+    setHasSummarySession(true);
+    setView("brainstorm_chat");
+  };
+
+  const handleSendBrainstormIdea = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     const text = inputMsg.trim();
-    if (!text || aiLoading || !aiMeta?.workspace_id) return;
+    if (!text || aiLoading || !activeWorkspace?.id) return;
 
     const userMsgObj: ChatMessage = {
       id: "user-" + Date.now(),
@@ -368,7 +472,54 @@ export default function ShieraAiReportWidget() {
     setAiLoading(true);
 
     try {
-      const res: any = await fetchApi("/statistics/ai-summary", {
+      const res: any = await fetchApi("/statistics/ai-brainstorm", {
+        method: "POST",
+        body: JSON.stringify({
+          workspace_id: activeWorkspace.id,
+          account_ids: selectedAccountIds.length > 0 ? selectedAccountIds : undefined,
+          content_pillar: selectedPillar,
+          content_format: selectedFormat,
+          user_idea: text,
+          chat_history: chatMessages.map((m) => ({
+            sender: m.sender,
+            text: m.text,
+          })),
+        }),
+      });
+
+      addChatMessage({
+        id: "ai-" + Date.now(),
+        sender: "ai",
+        text: res.result || "Maaf, saya tidak dapat memproses brief konten.",
+        timestamp: new Date().toISOString(),
+      });
+    } catch (err: any) {
+      toast.error(err.message || "Gagal membuat brief dengan Shiera AI.");
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
+  const handleSendFollowUp = (e?: React.FormEvent) => {
+    if (isBrainstormSession) {
+      handleSendBrainstormIdea(e);
+    } else {
+      // Summary follow-up
+      if (e) e.preventDefault();
+      const text = inputMsg.trim();
+      if (!text || aiLoading || !aiMeta?.workspace_id) return;
+
+      const userMsgObj: ChatMessage = {
+        id: "user-" + Date.now(),
+        sender: "user",
+        text,
+        timestamp: new Date().toISOString(),
+      };
+      addChatMessage(userMsgObj);
+      setInputMsg("");
+      setAiLoading(true);
+
+      fetchApi("/statistics/ai-summary", {
         method: "POST",
         body: JSON.stringify({
           workspace_id: aiMeta.workspace_id,
@@ -381,19 +532,28 @@ export default function ShieraAiReportWidget() {
             text: m.text,
           })),
         }),
-      });
-
-      addChatMessage({
-        id: "ai-" + Date.now(),
-        sender: "ai",
-        text: res.summary || "Maaf, saya tidak dapat memproses tanggapan.",
-        timestamp: new Date().toISOString(),
-      });
-    } catch (err: any) {
-      toast.error(err.message || "Gagal mengirim pesan ke Shiera AI.");
-    } finally {
-      setAiLoading(false);
+      })
+      .then((res: any) => {
+        addChatMessage({
+          id: "ai-" + Date.now(),
+          sender: "ai",
+          text: res.summary || "Maaf, saya tidak dapat memproses tanggapan.",
+          timestamp: new Date().toISOString(),
+        });
+      })
+      .catch((err: any) => toast.error(err.message || "Gagal mengirim pesan."))
+      .finally(() => setAiLoading(false));
     }
+  };
+
+  const handleTransferToComposer = (payload: any) => {
+    openComposerWithBrief({
+      caption: payload.caption || "",
+      hashtags: payload.hashtags || "",
+      post_type: payload.post_type || "image",
+      account_ids: selectedAccountIds.length > 0 ? selectedAccountIds : availableAccounts.map(a => a.id),
+    });
+    closeFloating();
   };
 
   const copyFullReport = () => {
@@ -412,6 +572,7 @@ export default function ShieraAiReportWidget() {
     ? "Semua Akun"
     : availableAccounts.filter(a => selectedAccountIds.includes(a.id)).map(a => `@${a.username}`).join(", ");
 
+  const accountsWithBriefingCount = availableAccounts.filter(a => a.briefing && Object.keys(a.briefing).some(k => k !== 'updated_at' && Boolean(a.briefing[k]))).length;
   const hasActiveSession = hasSummarySession && chatMessages.length > 0;
 
   return (
@@ -425,7 +586,7 @@ export default function ShieraAiReportWidget() {
               Ada yang bisa dibantu?
               <button
                 onClick={() => setShowTooltip(false)}
-                className="ml-1 text-white/50 hover:text-white transition-colors"
+                className="ml-1 text-white/50 hover:text-white transition-colors cursor-pointer"
               >
                 <X className="w-3 h-3" />
               </button>
@@ -458,7 +619,7 @@ export default function ShieraAiReportWidget() {
             onClick={handleFabClick}
             onMouseEnter={() => { if (!showTooltip) setShowTooltip(true); }}
             onMouseLeave={() => setShowTooltip(false)}
-            className="relative w-14 h-14 rounded-2xl bg-gradient-to-br from-purple-600 via-indigo-600 to-indigo-800 text-white shadow-xl shadow-purple-500/35 hover:shadow-purple-500/50 hover:scale-110 active:scale-95 transition-all flex items-center justify-center border border-white/10"
+            className="relative w-14 h-14 rounded-2xl bg-gradient-to-br from-purple-600 via-indigo-600 to-indigo-800 text-white shadow-xl shadow-purple-500/35 hover:shadow-purple-500/50 hover:scale-110 active:scale-95 transition-all flex items-center justify-center border border-white/10 cursor-pointer"
             title="Shiera AI"
           >
             <Sparkles className="w-6 h-6 text-amber-300" />
@@ -473,8 +634,8 @@ export default function ShieraAiReportWidget() {
 
       {/* ─── FLOATING PANEL ─── */}
       {isFloatingOpen && (
-        <div className="fixed bottom-6 right-6 z-50 w-[360px] max-w-[calc(100vw-2rem)] flex flex-col rounded-3xl shadow-2xl shadow-slate-900/20 border border-slate-200 overflow-hidden bg-white animate-slide-up"
-          style={{ height: view === "welcome" ? "auto" : "560px" }}
+        <div className="fixed bottom-6 right-6 z-50 w-[370px] max-w-[calc(100vw-2rem)] flex flex-col rounded-3xl shadow-2xl shadow-slate-900/20 border border-slate-200 overflow-hidden bg-white animate-slide-up"
+          style={{ height: view === "welcome" ? "auto" : "580px" }}
         >
           {/* Header */}
           <div className="px-4 py-3.5 bg-gradient-to-r from-slate-900 via-purple-950 to-indigo-950 text-white flex items-center justify-between shrink-0">
@@ -487,7 +648,7 @@ export default function ShieraAiReportWidget() {
               </div>
               <div>
                 <h3 className="text-sm font-bold font-['Outfit'] text-white">Shiera AI</h3>
-                <p className="text-[10px] text-purple-200/80">CMO & Analytics Specialist</p>
+                <p className="text-[10px] text-purple-200/80">CMO & Content Strategist</p>
               </div>
             </div>
 
@@ -495,33 +656,31 @@ export default function ShieraAiReportWidget() {
               {hasActiveSession && (
                 <button
                   onClick={handleResetChat}
-                  className="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-purple-200 hover:text-white transition-colors"
+                  className="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-purple-200 hover:text-white transition-colors cursor-pointer"
                   title="Reset Chat"
                 >
                   <RotateCcw className="w-3.5 h-3.5" />
                 </button>
               )}
-              {view === "chat" && (
+              {(view === "chat" || view === "brainstorm_chat") && (
                 <button
                   onClick={copyFullReport}
-                  className="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-purple-200 hover:text-white transition-colors"
-                  title="Salin Laporan"
+                  className="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-purple-200 hover:text-white transition-colors cursor-pointer"
+                  title="Salin Pesan"
                 >
                   {aiCopied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
                 </button>
               )}
-              {view === "chat" && (
-                <button
-                  onClick={handleMinimize}
-                  className="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-purple-200 hover:text-white transition-colors"
-                  title="Minimize"
-                >
-                  <Minimize2 className="w-3.5 h-3.5" />
-                </button>
-              )}
+              <button
+                onClick={handleMinimize}
+                className="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-purple-200 hover:text-white transition-colors cursor-pointer"
+                title="Minimize"
+              >
+                <Minimize2 className="w-3.5 h-3.5" />
+              </button>
               <button
                 onClick={handleClose}
-                className="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-purple-200 hover:text-white transition-colors"
+                className="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-purple-200 hover:text-white transition-colors cursor-pointer"
                 title="Tutup"
               >
                 <X className="w-3.5 h-3.5" />
@@ -529,27 +688,238 @@ export default function ShieraAiReportWidget() {
             </div>
           </div>
 
-          {/* Meta Bar */}
-          {view === "chat" && aiMeta && (
-            <div className="bg-purple-50 border-b border-purple-100 px-4 py-2 text-[10px] text-slate-600 flex items-center justify-between shrink-0 flex-wrap gap-1">
-              <span>Periode: <strong>{aiMeta.period_label}</strong></span>
-              <span>{aiMeta.total_accounts} akun teranalisis</span>
-              <button
-                onClick={() => setView("configure")}
-                className="text-purple-600 font-bold hover:underline"
-              >
-                Ubah Filter / Periode →
-              </button>
-            </div>
-          )}
-
           {/* Views */}
           {view === "welcome" && (
             <WelcomeScreen
               onSummaryClick={() => setView("configure")}
+              onBrainstormClick={() => setView("brainstorm_setup")}
             />
           )}
 
+          {/* 1. BRAINSTORM SETUP (ACCOUNT SELECTION & BRIEFING CHECK) */}
+          {view === "brainstorm_setup" && (
+            <div className="flex-1 overflow-y-auto p-4 space-y-4 flex flex-col justify-between">
+              {availableAccounts.length === 0 ? (
+                <div className="flex-1 flex flex-col items-center justify-center text-center p-4 gap-4 select-none my-auto">
+                  <div className="w-12 h-12 rounded-2xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-500 shadow-sm animate-pulse">
+                    <Users2 className="w-6 h-6" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <h4 className="text-xs font-bold text-slate-800 font-['Outfit']">
+                      Akun Belum Terhubung
+                    </h4>
+                    <p className="text-[11px] text-slate-500 leading-relaxed max-w-[230px]">
+                      Akun Anda belum terhubung. Silakan hubungkan akun sosial media ke Shiera terlebih dahulu.
+                    </p>
+                  </div>
+                  <a
+                    href="/accounts"
+                    className="w-full py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs text-center transition-all block shadow-md shadow-purple-500/20"
+                  >
+                    Hubungkan Akun Sekarang
+                  </a>
+                  <button
+                    onClick={() => setView("welcome")}
+                    className="w-full py-2 rounded-xl border border-slate-200 text-slate-600 text-xs font-semibold hover:bg-slate-50 transition-colors"
+                  >
+                    Kembali
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <div className="space-y-4">
+                    <div className="space-y-1">
+                      <h3 className="text-sm font-bold text-slate-800 font-['Outfit']">Brainstorm & Create</h3>
+                      <p className="text-[11px] text-slate-500">Pilih akun yang akan dibuatkan kontennya</p>
+                    </div>
+
+                    {/* Account Selector */}
+                    <div className="space-y-1.5" ref={dropdownRef}>
+                      <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Pilih Akun Target</label>
+                      <div className="relative">
+                        <button
+                          onClick={() => setAccountDropdownOpen(v => !v)}
+                          className="flex items-center justify-between gap-2 px-3.5 py-2.5 rounded-xl bg-slate-50 hover:bg-slate-100/75 border border-slate-200 text-xs font-semibold text-slate-700 transition-all w-full"
+                        >
+                          <span className="truncate flex-1 text-left">{selectedAccountNames}</span>
+                          <ChevronDown className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                        </button>
+                        
+                        {accountDropdownOpen && (
+                          <div className="absolute top-full mt-1 left-0 z-50 w-full bg-white border border-slate-200 rounded-2xl shadow-xl overflow-hidden max-h-56 overflow-y-auto p-2 space-y-0.5">
+                            <button
+                              onClick={() => { setSelectedAccountIds([]); setAccountDropdownOpen(false); }}
+                              className={`w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold transition-all ${
+                                selectedAccountIds.length === 0 ? "bg-purple-50 text-purple-700" : "text-slate-600 hover:bg-slate-50"
+                              }`}
+                            >
+                              Semua Akun
+                            </button>
+                            {availableAccounts.map(acc => {
+                              const isSelected = selectedAccountIds.includes(acc.id);
+                              const hasBriefing = acc.briefing && Object.keys(acc.briefing).some(k => k !== 'updated_at' && Boolean(acc.briefing[k]));
+                              return (
+                                <button
+                                  key={acc.id}
+                                  onClick={() => {
+                                    setSelectedAccountIds(prev =>
+                                      isSelected ? prev.filter(id => id !== acc.id) : [...prev, acc.id]
+                                    );
+                                  }}
+                                  className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs transition-all ${
+                                    isSelected ? "bg-purple-50 text-purple-700" : "text-slate-600 hover:bg-slate-50"
+                                  }`}
+                                >
+                                  {isSelected ? (
+                                    <CheckSquare className="w-4 h-4 text-purple-600 shrink-0" />
+                                  ) : (
+                                    <Square className="w-4 h-4 text-slate-300 shrink-0" />
+                                  )}
+                                  <div className="flex-1 text-left min-w-0">
+                                    <p className="font-semibold truncate flex items-center gap-1.5">
+                                      {acc.name}
+                                      {hasBriefing && (
+                                        <span className="text-[9px] bg-purple-100 text-purple-700 px-1.5 py-0.2 rounded font-bold">Briefing</span>
+                                      )}
+                                    </p>
+                                    <p className="text-[10px] text-slate-400">@{acc.username} · {PLATFORM_ICONS[acc.platform]} {acc.platform}</p>
+                                  </div>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Briefing Warning check */}
+                    {accountsWithBriefingCount === 0 ? (
+                      <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-2xl space-y-2">
+                        <div className="flex items-start gap-2 text-amber-800">
+                          <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                          <div className="text-[11px] leading-relaxed">
+                            <p className="font-bold">Briefing Akun Belum Diisi</p>
+                            <p className="text-amber-700 mt-0.5">
+                              Akun Anda belum diisi briefing ("Akun itu apa"). Mohon lengkapi briefing akun di menu Social Accounts agar Shiera AI mengenal karakteristik brand & audiens Anda.
+                            </p>
+                          </div>
+                        </div>
+                        <a
+                          href="/accounts"
+                          className="w-full py-2 bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs rounded-xl block text-center transition-all shadow-xs"
+                        >
+                          Isi Briefing Akun di /accounts
+                        </a>
+                      </div>
+                    ) : (
+                      <div className="p-3 bg-purple-50 border border-purple-100 rounded-2xl flex items-center gap-2.5">
+                        <Sparkles className="w-4 h-4 text-purple-600 shrink-0" />
+                        <p className="text-[11px] text-purple-800 font-medium leading-tight">
+                          <strong>{accountsWithBriefingCount} Akun</strong> telah memiliki Briefing Siap Pakai!
+                        </p>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="space-y-2 pt-4 border-t border-slate-100">
+                    <button
+                      onClick={() => setView("brainstorm_pillar")}
+                      disabled={accountsWithBriefingCount === 0}
+                      className="w-full py-3 rounded-2xl bg-gradient-to-r from-purple-600 via-indigo-600 to-indigo-800 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 hover:scale-[1.01] transition-all disabled:opacity-50 cursor-pointer"
+                    >
+                      <span>Lanjut Pilih Tipe Konten →</span>
+                    </button>
+                    <button
+                      onClick={() => setView("welcome")}
+                      className="w-full py-2.5 rounded-2xl border border-slate-200 text-slate-600 text-xs font-semibold hover:bg-slate-50 transition-colors"
+                    >
+                      Kembali
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+
+          {/* 2. BRAINSTORM PILLAR SELECTION */}
+          {view === "brainstorm_pillar" && (
+            <div className="flex-1 overflow-y-auto p-4 space-y-4 flex flex-col justify-between">
+              <div className="space-y-3">
+                <div className="space-y-1">
+                  <h3 className="text-sm font-bold text-slate-800 font-['Outfit']">Tipe Pilar Konten</h3>
+                  <p className="text-[11px] text-slate-500">Mau bikin konten tipe (pilar) apa hari ini?</p>
+                </div>
+
+                <div className="grid grid-cols-1 gap-2">
+                  {CONTENT_PILLARS.map((pillar) => (
+                    <button
+                      key={pillar.id}
+                      onClick={() => handleSelectPillar(pillar.id)}
+                      className="w-full p-3 rounded-2xl border border-slate-200 bg-white hover:border-purple-300 hover:bg-purple-50/50 text-left transition-all group shadow-2xs cursor-pointer flex items-center justify-between"
+                    >
+                      <div>
+                        <p className="font-bold text-slate-800 text-xs group-hover:text-purple-700">{pillar.name}</p>
+                        <p className="text-[10px] text-slate-400 mt-0.5">{pillar.desc}</p>
+                      </div>
+                      <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-purple-600 group-hover:translate-x-0.5 transition-all" />
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <button
+                onClick={() => setView("brainstorm_setup")}
+                className="w-full py-2.5 rounded-2xl border border-slate-200 text-slate-600 text-xs font-semibold hover:bg-slate-50 transition-colors"
+              >
+                Kembali
+              </button>
+            </div>
+          )}
+
+          {/* 3. BRAINSTORM FORMAT SELECTION */}
+          {view === "brainstorm_format" && (
+            <div className="flex-1 overflow-y-auto p-4 space-y-4 flex flex-col justify-between">
+              <div className="space-y-3">
+                <div className="space-y-1">
+                  <h3 className="text-sm font-bold text-slate-800 font-['Outfit']">Format Media & Desain</h3>
+                  <p className="text-[11px] text-slate-500">Format media/desain apa yang mau kamu buat?</p>
+                </div>
+
+                <div className="grid grid-cols-1 gap-2">
+                  {CONTENT_FORMATS.map((fmt) => {
+                    const IconComp = fmt.icon;
+                    return (
+                      <button
+                        key={fmt.id}
+                        onClick={() => handleSelectFormat(fmt.id)}
+                        className="w-full p-3 rounded-2xl border border-slate-200 bg-white hover:border-purple-300 hover:bg-purple-50/50 text-left transition-all group shadow-2xs cursor-pointer flex items-center justify-between"
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-8 h-8 rounded-xl bg-purple-50 border border-purple-100 flex items-center justify-center text-purple-600 shrink-0">
+                            <IconComp className="w-4 h-4" />
+                          </div>
+                          <div>
+                            <p className="font-bold text-slate-800 text-xs group-hover:text-purple-700">{fmt.name}</p>
+                            <p className="text-[10px] text-slate-400 mt-0.5">{fmt.desc}</p>
+                          </div>
+                        </div>
+                        <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-purple-600 group-hover:translate-x-0.5 transition-all" />
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <button
+                onClick={() => setView("brainstorm_pillar")}
+                className="w-full py-2.5 rounded-2xl border border-slate-200 text-slate-600 text-xs font-semibold hover:bg-slate-50 transition-colors"
+              >
+                Kembali
+              </button>
+            </div>
+          )}
+
+          {/* 4. SUMMARY CONFIGURATION VIEW */}
           {view === "configure" && (
             <div className="flex-1 overflow-y-auto p-4 space-y-4 flex flex-col justify-between">
               {availableAccounts.length === 0 ? (
@@ -566,7 +936,7 @@ export default function ShieraAiReportWidget() {
                     </p>
                   </div>
                   <a
-                    href="https://shiera.web.id/accounts"
+                    href="/accounts"
                     className="w-full py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs text-center transition-all block shadow-md shadow-purple-500/20"
                   >
                     Hubungkan Akun
@@ -688,7 +1058,7 @@ export default function ShieraAiReportWidget() {
                     <button
                       onClick={handleRunAnalysis}
                       disabled={aiLoading || (period === "custom" && (!customFrom || !customTo))}
-                      className="w-full py-3 rounded-2xl bg-gradient-to-r from-purple-600 via-indigo-600 to-indigo-800 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 hover:scale-[1.01] transition-all disabled:opacity-60"
+                      className="w-full py-3 rounded-2xl bg-gradient-to-r from-purple-600 via-indigo-600 to-indigo-800 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 hover:scale-[1.01] transition-all disabled:opacity-60 cursor-pointer"
                     >
                       {aiLoading ? (
                         <>
@@ -703,29 +1073,20 @@ export default function ShieraAiReportWidget() {
                       )}
                     </button>
 
-                    {hasActiveSession && !aiLoading && (
-                      <button
-                        onClick={() => setView("chat")}
-                        className="w-full py-2.5 rounded-2xl border border-slate-200 text-slate-600 text-xs font-semibold hover:bg-slate-50 transition-colors"
-                      >
-                        Batal
-                      </button>
-                    )}
-                    {!hasActiveSession && (
-                      <button
-                        onClick={() => setView("welcome")}
-                        className="w-full py-2.5 rounded-2xl border border-slate-200 text-slate-600 text-xs font-semibold hover:bg-slate-50 transition-colors"
-                      >
-                        Kembali
-                      </button>
-                    )}
+                    <button
+                      onClick={() => setView(hasActiveSession ? "chat" : "welcome")}
+                      className="w-full py-2.5 rounded-2xl border border-slate-200 text-slate-600 text-xs font-semibold hover:bg-slate-50 transition-colors"
+                    >
+                      Batal
+                    </button>
                   </div>
                 </>
               )}
             </div>
           )}
 
-          {view === "chat" && (
+          {/* 5. CHAT VIEWS */}
+          {(view === "chat" || view === "brainstorm_chat") && (
             <ChatArea
               messages={chatMessages}
               aiLoading={aiLoading}
@@ -733,6 +1094,7 @@ export default function ShieraAiReportWidget() {
               setInputMsg={setInputMsg}
               onSend={handleSendFollowUp}
               chatScrollRef={chatScrollRef as React.RefObject<HTMLDivElement>}
+              onTransferToComposer={handleTransferToComposer}
             />
           )}
         </div>
