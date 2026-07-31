@@ -773,8 +773,9 @@ def _sync_one_brand(account_id: str, account_username: str, workspace_id: str) -
 
 
 def _run_sync_all_bg(workspace_id: str, social_account_id: Optional[str], accounts: list):
-    """Background task: runs all brand syncs concurrently using thread pool."""
-    sync_status_set(workspace_id, {
+    """Background task: runs all brand syncs concurrently for selected IG account."""
+    sync_key = f"{workspace_id}:{social_account_id or 'all'}"
+    sync_status_set(sync_key, {
         "running": True, "done": 0, "total": len(accounts), "errors": []
     })
 
@@ -787,25 +788,25 @@ def _run_sync_all_bg(workspace_id: str, social_account_id: Optional[str], accoun
         }
         for future in as_completed(futures):
             result = future.result()
-            done = sync_status_increment_done(workspace_id)
+            done = sync_status_increment_done(sync_key)
             if not result["ok"]:
                 errors.append(f"@{result['username']}: {result.get('error', 'Unknown error')}")
-                status = sync_status_get(workspace_id) or {}
+                status = sync_status_get(sync_key) or {}
                 status["errors"] = errors
-                sync_status_set(workspace_id, status)
+                sync_status_set(sync_key, status)
 
     # Invalidate all caches for this workspace
     cache_delete_prefix(f"competitors:list:{workspace_id}")
     cache_delete_prefix(f"competitors:benchmark:{workspace_id}")
     cache_delete_prefix(f"competitors:daily:{workspace_id}")
 
-    final_status = sync_status_get(workspace_id) or {}
+    final_status = sync_status_get(sync_key) or {}
     final_status["running"] = False
     final_status["errors"] = errors
-    sync_status_set(workspace_id, final_status)
+    sync_status_set(sync_key, final_status)
 
     logger.info(
-        f"[sync-all] Workspace {workspace_id}: "
+        f"[sync-all] Workspace {workspace_id} (IG Account: {social_account_id or 'all'}): "
         f"{final_status.get('done', 0)}/{len(accounts)} synced, "
         f"{len(errors)} errors"
     )
@@ -819,12 +820,13 @@ def sync_all_competitors(
     db: Session = Depends(get_db)
 ):
     """
-    Non-blocking: Trigger parallel background refresh of competitors.
+    Non-blocking: Trigger parallel background refresh of competitors for selected IG account.
     Rate limited: 1x per 3 minutes per workspace / IG account.
     """
     _, workspace = ctx
+    sync_key = f"{workspace.id}:{social_account_id or 'all'}"
 
-    status = sync_status_get(workspace.id)
+    status = sync_status_get(sync_key)
     if status and status.get("running"):
         return {
             "status": "already_running",
@@ -832,7 +834,7 @@ def sync_all_competitors(
         }
 
     # 3 min cooldown
-    rate_key = f"sync:{workspace.id}:{social_account_id or 'all'}"
+    rate_key = f"sync:{sync_key}"
     is_limited, remaining = check_rate_limit(rate_key, _SYNC_COOLDOWN)
     if is_limited:
         minutes = round(remaining / 60, 1)
@@ -851,7 +853,7 @@ def sync_all_competitors(
     competitors = query.all()
 
     if not competitors:
-        return {"status": "ok", "message": "Belum ada kompetitor yang dipantau.", "synced_count": 0}
+        return {"status": "ok", "message": "Belum ada kompetitor yang dipantau untuk akun ini.", "synced_count": 0}
 
     accounts = [{"id": c[0], "username": c[1]} for c in competitors]
 
@@ -868,11 +870,13 @@ def sync_all_competitors(
 
 @router.get("/sync-status")
 def get_sync_status(
+    social_account_id: Optional[str] = Query(None),
     ctx: tuple[User, Workspace] = Depends(get_current_user_and_workspace),
 ):
-    """Poll background sync-all progress."""
+    """Poll background sync-all progress for selected IG account."""
     _, workspace = ctx
-    status = sync_status_get(workspace.id)
+    sync_key = f"{workspace.id}:{social_account_id or 'all'}"
+    status = sync_status_get(sync_key)
     if not status:
         return {"running": False, "done": 0, "total": 0, "errors": [], "message": "Tidak ada sync yang berjalan."}
 

@@ -58,7 +58,10 @@ export default function CompetitorProgressWidget() {
 
     const interval = setInterval(async () => {
       try {
-        const res: any = await fetchApi("/competitors/sync-status");
+        const url = activeSyncAllJob.socialAccountId
+          ? `/competitors/sync-status?social_account_id=${activeSyncAllJob.socialAccountId}`
+          : "/competitors/sync-status";
+        const res: any = await fetchApi(url);
         if (res) {
           if (!res.running) {
             setSyncAllJob({
