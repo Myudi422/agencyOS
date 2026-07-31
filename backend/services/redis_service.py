@@ -143,9 +143,12 @@ def sync_status_get(workspace_id: str) -> Optional[dict]:
 def sync_status_set(workspace_id: str, data: dict):
     """Update sync-all job status for a workspace."""
     key = f"sync_status:{workspace_id}"
+    inc_key = f"sync_done_counter:{workspace_id}"
     r = _get_redis()
     if r:
         try:
+            if data.get("done") == 0:
+                r.delete(inc_key)
             r.set(key, json.dumps(data, default=str), ex=SYNC_STATUS_TTL)
             return
         except Exception as e:
