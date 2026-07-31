@@ -356,18 +356,20 @@ export default function CampaignDetailPage() {
                         ) : (
                           <div className="space-y-2">
                             {ckol.deliverables.map((d: any) => {
+                              const stBadge = DELIVERABLE_STATUS_COLORS[d.status] || DELIVERABLE_STATUS_COLORS.pending;
                               return (
                                 <div
                                   key={d.id}
-                                  className="p-3 rounded-xl border border-slate-200/90 bg-slate-50/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-slate-50 transition-all"
+                                  className="p-3 rounded-xl border border-slate-200/90 bg-slate-50/50 flex flex-col sm:flex-row sm:items-center justify-between gap-2 hover:bg-slate-50 transition-all"
                                 >
-                                  {/* Left: Deliverable type, Title & Link */}
-                                  <div className="flex items-start gap-2.5 min-w-0">
-                                    <span className="text-[9px] px-1.5 py-0.5 rounded-md font-bold uppercase bg-purple-100 text-purple-800 shrink-0 mt-0.5">
-                                      {d.deliverable_type}
-                                    </span>
-                                    <div className="min-w-0">
-                                      <p className="text-xs font-bold text-slate-800 truncate">{d.title}</p>
+                                  <div className="flex items-start gap-2.5">
+                                    <div className="mt-0.5">
+                                      <span className="text-[9px] px-1.5 py-0.5 rounded-md font-bold uppercase bg-purple-100 text-purple-800">
+                                        {d.deliverable_type}
+                                      </span>
+                                    </div>
+                                    <div>
+                                      <p className="text-xs font-bold text-slate-800">{d.title}</p>
                                       {d.due_date && (
                                         <p className="text-[10px] text-slate-400 font-medium">Due: {d.due_date}</p>
                                       )}
@@ -378,59 +380,59 @@ export default function CampaignDetailPage() {
                                           rel="noreferrer"
                                           className="text-[11px] font-semibold text-purple-600 hover:underline inline-flex items-center gap-1 mt-0.5"
                                         >
-                                          <span>Lihat Postingan</span>
+                                          <span>Link Konten</span>
                                           <ExternalLink className="w-3 h-3" />
                                         </a>
                                       ) : (
-                                        <span className="text-[11px] text-slate-400 italic block mt-0.5">Belum ada link postingan</span>
+                                        <button
+                                          type="button"
+                                          onClick={() => {
+                                            const url = prompt(`Masukkan URL postingan KOL/Reels/TikTok untuk '${d.title}':`);
+                                            if (url && url.trim()) {
+                                              handleUpdateDeliverableContentUrl(d.id, url.trim());
+                                            }
+                                          }}
+                                          className="text-[11px] font-semibold text-slate-400 hover:text-purple-600 underline inline-flex items-center gap-1 mt-0.5"
+                                        >
+                                          <span>+ Input Link Konten</span>
+                                        </button>
                                       )}
                                     </div>
                                   </div>
 
-                                  {/* Right: Stats mini-grid + Actions */}
-                                  <div className="flex flex-col gap-2 shrink-0 sm:items-end">
-                                    {/* Actions */}
-                                    <div className="flex items-center gap-1">
-                                      <button
-                                        onClick={() => {
-                                          setSelectedCkolId(ckol.ckol_id);
-                                          setDeliverableToEdit(d);
-                                          setIsAddDeliverableOpen(true);
-                                        }}
-                                        className="p-1 text-slate-400 hover:text-purple-600"
-                                        title="Edit Deliverable"
-                                      >
-                                        <Edit className="w-3.5 h-3.5" />
-                                      </button>
-                                      <button
-                                        onClick={() => handleDeleteDeliverable(d.id, d.title)}
-                                        className="p-1 text-slate-400 hover:text-red-600"
-                                        title="Hapus Deliverable"
-                                      >
-                                        <Trash2 className="w-3.5 h-3.5" />
-                                      </button>
-                                    </div>
+                                  {/* Status Selector & Actions */}
+                                  <div className="flex items-center gap-2 shrink-0">
+                                    <select
+                                      value={d.status}
+                                      onChange={(e) => handleUpdateDeliverableStatus(d.id, e.target.value)}
+                                      className={`px-2.5 py-1 rounded-xl text-xs font-bold border ${stBadge.bg} ${stBadge.text} cursor-pointer focus:outline-none`}
+                                    >
+                                      <option value="pending">Pending</option>
+                                      <option value="submitted">Submitted</option>
+                                      <option value="approved">Approved ✅</option>
+                                      <option value="revision_requested">Revisi ⚠️</option>
+                                      <option value="rejected">Rejected ❌</option>
+                                    </select>
 
-                                    {/* Stats from KOL */}
-                                    {(d.stat_views != null || d.stat_likes != null || d.stat_comments != null) && (
-                                      <div className="grid grid-cols-3 gap-1">
-                                        {[
-                                          { label: "Views", val: d.stat_views },
-                                          { label: "Likes", val: d.stat_likes },
-                                          { label: "Komen", val: d.stat_comments },
-                                          { label: "Share", val: d.stat_shares },
-                                          { label: "Reach", val: d.stat_reach },
-                                          { label: `${d.stat_period_days ?? 7}h`, val: null, isLabel: true },
-                                        ].map((s) => (
-                                          <div key={s.label} className="text-center px-1.5 py-0.5 rounded-lg bg-white border border-slate-200">
-                                            <span className="block text-[8px] font-bold text-slate-400 uppercase">{s.label}</span>
-                                            <span className="block text-[10px] font-extrabold text-slate-700">
-                                              {s.isLabel ? s.label : (s.val != null ? new Intl.NumberFormat("id-ID").format(s.val) : "—")}
-                                            </span>
-                                          </div>
-                                        ))}
-                                      </div>
-                                    )}
+                                    <button
+                                      onClick={() => {
+                                        setSelectedCkolId(ckol.ckol_id);
+                                        setDeliverableToEdit(d);
+                                        setIsAddDeliverableOpen(true);
+                                      }}
+                                      className="p-1 text-slate-400 hover:text-purple-600"
+                                      title="Edit"
+                                    >
+                                      <Edit className="w-3.5 h-3.5" />
+                                    </button>
+
+                                    <button
+                                      onClick={() => handleDeleteDeliverable(d.id, d.title)}
+                                      className="p-1 text-slate-400 hover:text-red-600"
+                                      title="Hapus"
+                                    >
+                                      <Trash2 className="w-3.5 h-3.5" />
+                                    </button>
                                   </div>
                                 </div>
                               );
