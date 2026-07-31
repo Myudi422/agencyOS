@@ -211,8 +211,8 @@ def list_competitors(
             "avg_comments": c.avg_comments,
             "engagement_rate": c.engagement_rate,
             "top_hashtags": c.top_hashtags or [],
-            "last_synced_at": c.last_synced_at.isoformat() if c.last_synced_at else None,
-            "created_at": c.created_at.isoformat(),
+            "last_synced_at": c.last_synced_at.strftime("%Y-%m-%dT%H:%M:%SZ") if c.last_synced_at else None,
+            "created_at": c.created_at.strftime("%Y-%m-%dT%H:%M:%SZ") if c.created_at else None,
             "posts_count": post_counts.get(c.id, 0)
         })
 
@@ -250,7 +250,7 @@ def _run_add_competitor_bg(job_id: str, competitor_id: str, username: str, works
                     comment_count=p["comment_count"],
                     engagement_rate=p["engagement_rate"],
                     is_top_performer=p["is_top_performer"],
-                    posted_at=datetime.fromisoformat(p["posted_at"]) if p["posted_at"] else datetime.utcnow()
+                    posted_at=datetime.fromisoformat(p["posted_at"].rstrip("Z")) if p.get("posted_at") else datetime.utcnow()
                 )
                 db.add(c_post)
             db.commit()
@@ -558,7 +558,7 @@ def get_competitor_posts(
             "comment_count": p.comment_count,
             "engagement_rate": p.engagement_rate,
             "is_top_performer": p.is_top_performer,
-            "posted_at": p.posted_at.isoformat() if p.posted_at else None,
+            "posted_at": p.posted_at.strftime("%Y-%m-%dT%H:%M:%SZ") if p.posted_at else None,
             "instagram_url": f"https://www.instagram.com/p/{p.code}/" if p.code else None
         })
 
@@ -703,7 +703,7 @@ def get_daily_feed(
             "comment_count": post.comment_count,
             "engagement_rate": post.engagement_rate,
             "is_top_performer": post.is_top_performer,
-            "posted_at": post.posted_at.isoformat() if post.posted_at else None,
+            "posted_at": post.posted_at.strftime("%Y-%m-%dT%H:%M:%SZ") if post.posted_at else None,
             "instagram_url": f"https://www.instagram.com/p/{post.code}/" if post.code else None
         }
         result.append(post_data)
@@ -760,7 +760,7 @@ def _sync_one_brand(account_id: str, account_username: str, workspace_id: str) -
                 comment_count=p["comment_count"],
                 engagement_rate=p["engagement_rate"],
                 is_top_performer=p["is_top_performer"],
-                posted_at=datetime.fromisoformat(p["posted_at"]) if p["posted_at"] else datetime.utcnow()
+                posted_at=datetime.fromisoformat(p["posted_at"].rstrip("Z")) if p.get("posted_at") else datetime.utcnow()
             ))
         db.commit()
         return {"username": account_username, "ok": True}

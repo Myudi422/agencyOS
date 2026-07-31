@@ -11,6 +11,7 @@ import {
 import { fetchApi } from "@/lib/api";
 import { useStore } from "@/store/useStore";
 import { useSplashStore } from "@/store/useSplashStore";
+import { useCompetitorSpyStore } from "@/store/useCompetitorSpyStore";
 
 interface ConnectedIgAccount {
   id: string;
@@ -95,6 +96,7 @@ interface AddJobState {
 export default function CompetitorSpyPage() {
   const { activeWorkspace, openComposer } = useStore();
   const { showSplash } = useSplashStore();
+  const { setAddJob, setSyncAllJob } = useCompetitorSpyStore();
 
   const [activeTab, setActiveTab] = useState<ActiveTab>("accounts");
   const [loadingIgAccounts, setLoadingIgAccounts] = useState(true);
@@ -112,9 +114,6 @@ export default function CompetitorSpyPage() {
   const [validating, setValidating] = useState(false);
   const [validatedProfile, setValidatedProfile] = useState<CompetitorProfilePreview | null>(null);
   const [addError, setAddError] = useState<string | null>(null);
-
-  // Background Add Job State (Floating Progress Bar)
-  const [activeAddJob, setActiveAddJob] = useState<AddJobState | null>(null);
 
   // Syncing state per competitor ID
   const [syncingMap, setSyncingMap] = useState<Record<string, boolean>>({});
@@ -293,14 +292,24 @@ export default function CompetitorSpyPage() {
   };
 
   const handleSyncAllCompetitors = async () => {
-    if (!selectedIgAccount) return;
+    if (!selectedIgAccount || !activeWorkspace) return;
     setSyncingAll(true);
     try {
       const res: any = await fetchApi(`/competitors/sync-all?social_account_id=${selectedIgAccount.id}`, { method: "POST" });
       if (res.status === "cooldown") {
-        showToast("err", res.message || "Sync baru saja dilakukan. Mohon tunggu beberapa saat.");
+        showToast("err", res.message || "Sync baru saja dilakukan. Mohon tunggu 3 menit.");
       } else {
         showToast("ok", res.message || "Sync semua brand dimulai di background!");
+        setSyncAllJob({
+          workspaceId: activeWorkspace.id,
+          socialAccountId: selectedIgAccount.id,
+          running: true,
+          done: 0,
+          total: res.total || competitors.length,
+          percent: 10,
+          message: `Menyinkronisasi brand kompetitor di background...`,
+          errors: []
+        });
         loadCompetitors(selectedIgAccount.id);
         if (activeTab === "daily") {
           loadDailyFeed(selectedIgAccount.id, dailyDays);
@@ -352,13 +361,13 @@ export default function CompetitorSpyPage() {
         }),
       });
 
-      // Close modal immediately and activate floating progress widget
+      // Close modal immediately and set global add job in store
       setIsAddModalOpen(false);
       setInputUsername("");
       setValidatedProfile(null);
       setModalStep("input");
 
-      setActiveAddJob({
+      setAddJob({
         jobId: res.job_id,
         username: validatedProfile.username,
         percent: 20,
@@ -523,30 +532,6 @@ export default function CompetitorSpyPage() {
             <AlertCircle className="w-4 h-4 text-red-200" />
           )}
           {toast.text}
-        </div>
-      )}
-
-      {/* Floating Progress Bar Widget for Background Task */}
-      {activeAddJob && (
-        <div className="fixed top-20 right-6 z-50 w-80 max-w-[calc(100vw-2rem)] p-4 rounded-2xl bg-slate-900 text-white shadow-2xl border border-slate-800 animate-in fade-in slide-in-from-top-5">
-          <div className="flex items-center justify-between gap-2 mb-2">
-            <div className="flex items-center gap-2 min-w-0">
-              <Loader2 className={`w-4 h-4 text-pink-400 shrink-0 ${activeAddJob.status === "running" ? "animate-spin" : ""}`} />
-              <p className="text-xs font-bold truncate">@{activeAddJob.username}</p>
-            </div>
-            <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-pink-500/20 text-pink-300">
-              {activeAddJob.percent}%
-            </span>
-          </div>
-
-          <p className="text-[11px] text-slate-300 mb-2.5 truncate">{activeAddJob.message}</p>
-
-          <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-gradient-to-r from-purple-500 to-pink-500 transition-all duration-300"
-              style={{ width: `${activeAddJob.percent}%` }}
-            />
-          </div>
         </div>
       )}
 

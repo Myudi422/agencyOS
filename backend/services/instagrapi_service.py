@@ -224,7 +224,7 @@ class InstagrapiService:
                 "like_count": like_count,
                 "comment_count": comment_count,
                 "engagement_rate": post_er,
-                "posted_at": posted_at.isoformat() if posted_at else None,
+                "posted_at": posted_at.strftime("%Y-%m-%dT%H:%M:%SZ") if posted_at else None,
             })
 
         count = len(parsed_posts)
