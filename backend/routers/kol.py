@@ -1024,19 +1024,15 @@ def delete_deliverable(
 
 # ─── Public Unauthenticated Portal Endpoints for Influencers ────────────────────
 
-class PublicSubmitDeliverableRequest(BaseModel):
+class PublicSubmitRequest(BaseModel):
     deliverable_id: str
     content_url: str
-    review_notes: Optional[str] = None
-
-class PublicSubmitStatsRequest(BaseModel):
-    deliverable_id: str
     stat_views: Optional[int] = None
     stat_likes: Optional[int] = None
     stat_comments: Optional[int] = None
     stat_shares: Optional[int] = None
     stat_reach: Optional[int] = None
-    stat_period_days: Optional[int] = None  # berapa hari setelah posting diukur
+    stat_period_days: Optional[int] = 7
 
 
 @router.get("/public-portal/{token}")
@@ -1105,15 +1101,15 @@ def get_public_kol_portal(
     }
 
 
-@router.post("/public-portal/{token}/submit-deliverable")
-def submit_public_kol_deliverable(
+@router.post("/public-portal/{token}/submit")
+def submit_public_kol(
     token: str,
-    req: PublicSubmitDeliverableRequest,
+    req: PublicSubmitRequest,
     db: Session = Depends(get_db)
 ):
     """
-    Public endpoint allowing influencer to submit/paste their content URL.
-    Automatically updates status to 'submitted'.
+    Public endpoint: KOL submits content URL + statistics in one call.
+    No approval/rejection flow — agency simply sees the data.
     """
     ckol = db.query(KolCampaignKol).filter(KolCampaignKol.public_token == token).first()
     if not ckol:
@@ -1127,52 +1123,11 @@ def submit_public_kol_deliverable(
     if not deliverable:
         raise HTTPException(status_code=404, detail="Deliverable tidak ditemukan pada portal Anda.")
 
-    # Block editing if already approved
-    current_status = deliverable.status.value if hasattr(deliverable.status, "value") else str(deliverable.status)
-    if current_status == "approved":
-        raise HTTPException(status_code=403, detail="Konten ini sudah disetujui (Approved) dan tidak dapat diubah lagi.")
-
+    # Save content URL
     deliverable.content_url = req.content_url.strip()
     deliverable.status = KolDeliverableStatus.SUBMITTED
-    if req.review_notes:
-        deliverable.review_notes = req.review_notes.strip()
-    deliverable.updated_at = datetime.utcnow()
 
-    db.commit()
-
-    if ckol.campaign:
-        cache_delete_prefix(f"kol:campaigns:{ckol.campaign.workspace_id}")
-
-    return {
-        "status": "ok",
-        "message": f"Link konten untuk '{deliverable.title}' berhasil dikirim! Status diperbarui ke Submitted.",
-        "deliverable_id": deliverable.id,
-        "content_url": deliverable.content_url
-    }
-
-
-@router.post("/public-portal/{token}/submit-stats")
-def submit_public_kol_stats(
-    token: str,
-    req: PublicSubmitStatsRequest,
-    db: Session = Depends(get_db)
-):
-    """
-    Public endpoint allowing influencer to submit post statistics.
-    Can be done regardless of deliverable status (even after approval).
-    """
-    ckol = db.query(KolCampaignKol).filter(KolCampaignKol.public_token == token).first()
-    if not ckol:
-        raise HTTPException(status_code=404, detail="Link portal KOL tidak valid.")
-
-    deliverable = db.query(KolDeliverable).filter(
-        KolDeliverable.id == req.deliverable_id,
-        KolDeliverable.campaign_kol_id == ckol.id
-    ).first()
-
-    if not deliverable:
-        raise HTTPException(status_code=404, detail="Deliverable tidak ditemukan pada portal Anda.")
-
+    # Save statistics
     if req.stat_views is not None:
         deliverable.stat_views = req.stat_views
     if req.stat_likes is not None:
@@ -1196,5 +1151,5 @@ def submit_public_kol_stats(
 
     return {
         "status": "ok",
-        "message": f"Statistik untuk '{deliverable.title}' berhasil dilaporkan. Terima kasih!"
-    }
+        "message": f"Laporan untuk '{deliverable.title}' berhasil disimpan. Terima kasih!"
+f    }
