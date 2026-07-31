@@ -662,6 +662,7 @@ def get_campaign_detail(
         kols_list.append({
             "ckol_id": ckol.id,
             "kol_profile_id": ckol.kol_profile_id,
+            "public_token": ckol.public_token or ckol.id,
             "agreed_rate": ckol.agreed_rate,
             "payment_status": ckol.payment_status.value if hasattr(ckol.payment_status, "value") else str(ckol.payment_status),
             "paid_amount": ckol.paid_amount,
@@ -1019,3 +1020,107 @@ def delete_deliverable(
 
     cache_delete_prefix(f"kol:campaigns:{workspace.id}")
     return {"status": "ok", "message": f"Deliverable '{title}' berhasil dihapus."}
+
+
+# ─── Public Unauthenticated Portal Endpoints for Influencers ────────────────────
+
+class PublicSubmitDeliverableRequest(BaseModel):
+    deliverable_id: str
+    content_url: str
+    review_notes: Optional[str] = None
+
+
+@router.get("/public-portal/{token}")
+def get_public_kol_portal(
+    token: str,
+    db: Session = Depends(get_db)
+):
+    """
+    Public unauthenticated endpoint for influencer to view assigned campaign,
+    deliverables checklist, brief, and submit their content URL.
+    """
+    ckol = db.query(KolCampaignKol).filter(KolCampaignKol.public_token == token).first()
+    if not ckol:
+        raise HTTPException(status_code=404, detail="Link portal KOL tidak valid atau sudah kadaluarsa.")
+
+    campaign = ckol.campaign
+    kol_prof = ckol.kol_profile
+    workspace = campaign.workspace if campaign else None
+    social_acc = campaign.social_account if campaign else None
+
+    deliverables_list = []
+    for d in ckol.deliverables or []:
+        deliverables_list.append({
+            "id": d.id,
+            "deliverable_type": d.deliverable_type.value if hasattr(d.deliverable_type, "value") else str(d.deliverable_type),
+            "title": d.title,
+            "status": d.status.value if hasattr(d.status, "value") else str(d.status),
+            "due_date": d.due_date.strftime("%Y-%m-%d") if d.due_date else None,
+            "content_url": d.content_url,
+            "review_notes": d.review_notes,
+            "approved_at": d.approved_at.strftime("%Y-%m-%dT%H:%M:%SZ") if d.approved_at else None
+        })
+
+    return {
+        "portal_token": ckol.public_token,
+        "kol": {
+            "name": kol_prof.name if kol_prof else "KOL Partner",
+            "username": kol_prof.username if kol_prof else "",
+            "primary_platform": kol_prof.primary_platform.value if hasattr(kol_prof.primary_platform, "value") else str(kol_prof.primary_platform) if kol_prof else "instagram"
+        },
+        "campaign": {
+            "name": campaign.name if campaign else "Campaign",
+            "description": campaign.description if campaign else None,
+            "campaign_brief_url": campaign.campaign_brief_url if campaign else None,
+            "hashtag_mandatory": campaign.hashtag_mandatory if campaign else None,
+            "brand_account": f"@{social_acc.username} ({social_acc.platform.value if hasattr(social_acc.platform, 'value') else str(social_acc.platform)})" if social_acc else None,
+            "agency_name": workspace.name if workspace else "Agency"
+        },
+        "deliverables": deliverables_list,
+        "payment_info": {
+            "agreed_rate": ckol.agreed_rate,
+            "payment_status": ckol.payment_status.value if hasattr(ckol.payment_status, "value") else str(ckol.payment_status),
+            "paid_amount": ckol.paid_amount
+        }
+    }
+
+
+@router.post("/public-portal/{token}/submit-deliverable")
+def submit_public_kol_deliverable(
+    token: str,
+    req: PublicSubmitDeliverableRequest,
+    db: Session = Depends(get_db)
+):
+    """
+    Public endpoint allowing influencer to submit/paste their content URL.
+    Automatically updates status to 'submitted'.
+    """
+    ckol = db.query(KolCampaignKol).filter(KolCampaignKol.public_token == token).first()
+    if not ckol:
+        raise HTTPException(status_code=404, detail="Link portal KOL tidak valid.")
+
+    deliverable = db.query(KolDeliverable).filter(
+        KolDeliverable.id == req.deliverable_id,
+        KolDeliverable.campaign_kol_id == ckol.id
+    ).first()
+
+    if not deliverable:
+        raise HTTPException(status_code=404, detail="Deliverable tidak ditemukan pada portal Anda.")
+
+    deliverable.content_url = req.content_url.strip()
+    deliverable.status = KolDeliverableStatus.SUBMITTED
+    if req.review_notes:
+        deliverable.review_notes = req.review_notes.strip()
+    deliverable.updated_at = datetime.utcnow()
+
+    db.commit()
+
+    if ckol.campaign:
+        cache_delete_prefix(f"kol:campaigns:{ckol.campaign.workspace_id}")
+
+    return {
+        "status": "ok",
+        "message": f"Link konten untuk '{deliverable.title}' berhasil dikirim! Status telah diperbarui ke Submitted.",
+        "deliverable_id": deliverable.id,
+        "content_url": deliverable.content_url
+    }

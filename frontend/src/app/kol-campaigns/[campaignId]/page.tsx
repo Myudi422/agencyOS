@@ -69,6 +69,18 @@ export default function CampaignDetailPage() {
     }
   }, [campaignId, activeWorkspace]);
 
+  const handleUpdateDeliverableContentUrl = async (deliverableId: string, url: string) => {
+    try {
+      await fetchApi(`/kol/deliverables/${deliverableId}`, {
+        method: "PUT",
+        body: JSON.stringify({ content_url: url, status: "submitted" }),
+      });
+      fetchDetail();
+    } catch (err: any) {
+      alert(err.message || "Gagal menyimpan link konten.");
+    }
+  };
+
   const handleUpdateDeliverableStatus = async (deliverableId: string, newStatus: string) => {
     try {
       await fetchApi(`/kol/deliverables/${deliverableId}`, {
@@ -284,7 +296,20 @@ export default function CampaignDetailPage() {
                         </div>
 
                         {/* Payment Dropdown & Actions */}
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <button
+                            onClick={() => {
+                              const portalUrl = `${window.location.origin}/kol-portal/${ckol.public_token}`;
+                              navigator.clipboard.writeText(portalUrl);
+                              alert(`Link Portal KOL disalin ke clipboard!\n\n${portalUrl}\n\nKirimkan link ini ke @${kolProf?.username} via WA/Email. Influencer bisa langsung melihat tugas & mengunggah link postingan TANPA PERLU LOGIN!`);
+                            }}
+                            className="px-2.5 py-1 rounded-xl text-[11px] font-bold bg-purple-50 text-purple-700 border border-purple-200 hover:bg-purple-100 transition-colors flex items-center gap-1"
+                            title="Copy Link Portal khusus Influencer ini (Tanpa Login)"
+                          >
+                            <ExternalLink className="w-3 h-3" />
+                            <span>Copy Link Portal</span>
+                          </button>
+
                           <select
                             value={ckol.payment_status}
                             onChange={(e) => handleUpdatePaymentStatus(ckol.ckol_id, ckol.agreed_rate, ckol.paid_amount, e.target.value)}
@@ -348,7 +373,7 @@ export default function CampaignDetailPage() {
                                       {d.due_date && (
                                         <p className="text-[10px] text-slate-400 font-medium">Due: {d.due_date}</p>
                                       )}
-                                      {d.content_url && (
+                                      {d.content_url ? (
                                         <a
                                           href={d.content_url}
                                           target="_blank"
@@ -358,6 +383,19 @@ export default function CampaignDetailPage() {
                                           <span>Link Konten</span>
                                           <ExternalLink className="w-3 h-3" />
                                         </a>
+                                      ) : (
+                                        <button
+                                          type="button"
+                                          onClick={() => {
+                                            const url = prompt(`Masukkan URL postingan KOL/Reels/TikTok untuk '${d.title}':`);
+                                            if (url && url.trim()) {
+                                              handleUpdateDeliverableContentUrl(d.id, url.trim());
+                                            }
+                                          }}
+                                          className="text-[11px] font-semibold text-slate-400 hover:text-purple-600 underline inline-flex items-center gap-1 mt-0.5"
+                                        >
+                                          <span>+ Input Link Konten</span>
+                                        </button>
                                       )}
                                     </div>
                                   </div>

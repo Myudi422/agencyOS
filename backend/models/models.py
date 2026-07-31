@@ -498,6 +498,7 @@ class KolCampaignKol(Base):
     id = Column(String(36), primary_key=True, default=generate_uuid)
     campaign_id = Column(String(36), ForeignKey("kol_campaigns.id", ondelete="CASCADE"), nullable=False, index=True)
     kol_profile_id = Column(String(36), ForeignKey("kol_profiles.id", ondelete="CASCADE"), nullable=False, index=True)
+    public_token = Column(String(64), unique=True, index=True, default=generate_uuid)
     agreed_rate = Column(Float, default=0.0)
     payment_status = Column(Enum(KolPaymentStatus), default=KolPaymentStatus.UNPAID, nullable=False)
     paid_amount = Column(Float, default=0.0)

@@ -229,7 +229,7 @@ export default function CampaignCreateModal({
               />
             </div>
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5">Estimasi Revenue (Rp)</label>
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">Target Revenue (Rp)</label>
               <input
                 type="number"
                 value={estimatedRevenue}
