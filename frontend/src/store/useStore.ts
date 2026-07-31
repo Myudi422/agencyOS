@@ -33,7 +33,7 @@ interface StoreState {
   isSettingsOpen: boolean;
   composerPreselectedAccounts: string[];
   composerInitialPost: any | null;
-  composerInitialBrief: { caption?: string; hashtags?: string; post_type?: string; account_ids?: string[] } | null;
+  composerInitialBrief: { caption?: string; hashtags?: string; ai_brief?: string; post_type?: string; account_ids?: string[] } | null;
   uploadTasks: UploadTask[];
 
   setWorkspaces: (workspaces: Workspace[]) => void;
@@ -41,7 +41,7 @@ interface StoreState {
   setClients: (clients: Client[]) => void;
   setActiveClientId: (id: string | null) => void;
   openComposer: (accountIds?: string[], initialPost?: any) => void;
-  openComposerWithBrief: (brief: { caption?: string; hashtags?: string; post_type?: string; account_ids?: string[] }) => void;
+  openComposerWithBrief: (brief: { caption?: string; hashtags?: string; ai_brief?: string; post_type?: string; account_ids?: string[] }) => void;
   closeComposer: () => void;
   openSettings: () => void;
   closeSettings: () => void;

@@ -218,6 +218,7 @@ class Post(Base):
     post_type = Column(Enum(PostType), default=PostType.IMAGE, nullable=False)
     caption = Column(Text, nullable=True)
     hashtags = Column(Text, nullable=True)
+    ai_brief = Column(Text, nullable=True) # Catatan Briefing dari Shiera AI
     first_comment = Column(Text, nullable=True)
     location = Column(String(255), nullable=True)
     alt_text = Column(Text, nullable=True)

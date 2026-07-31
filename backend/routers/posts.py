@@ -37,6 +37,7 @@ class PostCreate(BaseModel):
     post_type: str = "image" # image, carousel, video
     caption: Optional[str] = ""
     hashtags: Optional[str] = ""
+    ai_brief: Optional[str] = None # Briefing AI text
     first_comment: Optional[str] = ""
     location: Optional[str] = ""
     alt_text: Optional[str] = ""
@@ -49,6 +50,7 @@ class PostCreate(BaseModel):
 class PostUpdate(BaseModel):
     caption: Optional[str] = None
     hashtags: Optional[str] = None
+    ai_brief: Optional[str] = None
     first_comment: Optional[str] = None
     location: Optional[str] = None
     alt_text: Optional[str] = None
@@ -64,6 +66,7 @@ class PostUpdate(BaseModel):
 class PostPatch(BaseModel):
     """Partial update payload from frontend queue manager."""
     caption: Optional[str] = None
+    ai_brief: Optional[str] = None
     content: Optional[Dict[str, Any]] = None  # Frontend sends { text: str }
     scheduled_at: Optional[str] = None
     status: Optional[str] = None
@@ -171,6 +174,7 @@ async def get_posts(
             "content": {"text": p.caption or ""},
             "caption": p.caption,
             "hashtags": p.hashtags,
+            "ai_brief": p.ai_brief,
             "media_urls": p.media_urls or [],
             "platform_configurations": p.platform_configurations,
             "platforms": platforms,
@@ -268,6 +272,7 @@ async def create_post(
         post_type=PostType(data.post_type) if data.post_type in [p.value for p in PostType] else PostType.IMAGE,
         caption=data.caption,
         hashtags=data.hashtags,
+        ai_brief=data.ai_brief,
         first_comment=data.first_comment,
         location=data.location,
         alt_text=data.alt_text,
@@ -327,6 +332,8 @@ async def update_post(
         post.caption = data.caption
     if data.hashtags is not None:
         post.hashtags = data.hashtags
+    if data.ai_brief is not None:
+        post.ai_brief = data.ai_brief
     if data.first_comment is not None:
         post.first_comment = data.first_comment
     if data.location is not None:
@@ -398,6 +405,9 @@ def patch_post(post_id: str, data: PostPatch, db: Session = Depends(get_db)):
         post.caption = data.caption
     elif data.content is not None and "text" in data.content:
         post.caption = data.content["text"]
+
+    if data.ai_brief is not None:
+        post.ai_brief = data.ai_brief
 
     if data.scheduled_at is not None:
         post.scheduled_at = datetime.fromisoformat(data.scheduled_at.replace("Z", "+00:00"))

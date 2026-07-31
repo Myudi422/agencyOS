@@ -172,7 +172,7 @@ function ChatArea({
   setInputMsg: (v: string) => void;
   onSend: (e?: React.FormEvent) => void;
   chatScrollRef: React.RefObject<HTMLDivElement>;
-  onTransferToComposer: (payload: any) => void;
+  onTransferToComposer: (payload: any, fullText?: string) => void;
 }) {
   return (
     <>
@@ -217,7 +217,7 @@ function ChatArea({
                     <ShieraMarkdownViewer content={cleanedText} />
                     {composerPayload && (
                       <button
-                        onClick={() => onTransferToComposer(composerPayload)}
+                        onClick={() => onTransferToComposer(composerPayload, msg.text)}
                         className="mt-3 w-full py-2.5 px-3.5 rounded-xl bg-gradient-to-r from-purple-600 via-indigo-600 to-indigo-800 text-white font-bold text-[11px] flex items-center justify-center gap-2 shadow-md shadow-purple-500/25 hover:shadow-lg hover:scale-[1.01] active:scale-[0.99] transition-all cursor-pointer"
                       >
                         <Send className="w-3.5 h-3.5 text-amber-300" />
@@ -546,10 +546,12 @@ export default function ShieraAiReportWidget() {
     }
   };
 
-  const handleTransferToComposer = (payload: any) => {
+  const handleTransferToComposer = (payload: any, fullText?: string) => {
+    const cleanBrief = (fullText || "").replace(/```json\s*[\s\S]*?\s*```/g, "").trim();
     openComposerWithBrief({
       caption: payload.caption || "",
       hashtags: payload.hashtags || "",
+      ai_brief: cleanBrief || payload.caption || "",
       post_type: payload.post_type || "image",
       account_ids: selectedAccountIds.length > 0 ? selectedAccountIds : availableAccounts.map(a => a.id),
     });

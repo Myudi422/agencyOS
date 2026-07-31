@@ -88,6 +88,10 @@ export default function PostComposerModal() {
   const [scheduledAt, setScheduledAt] = useState("");
   const [actionType, setActionType] = useState<"publish_now" | "schedule" | "save_draft">("publish_now");
 
+  // AI Content Brief State (Saved in draft for future re-editing)
+  const [aiBriefText, setAiBriefText] = useState("");
+  const [showBriefPanel, setShowBriefPanel] = useState(false);
+
   // Live Feed Preview Carousel Slide Index & Aspect Ratio
   const [previewSlideIndex, setPreviewSlideIndex] = useState(0);
   const [previewAspect, setPreviewAspect] = useState<"1:1" | "4:5" | "16:9" | "9:16">("1:1");
@@ -269,6 +273,13 @@ export default function PostComposerModal() {
       const textVal = composerInitialPost.caption || composerInitialPost.content?.text || "";
       setCaption(textVal);
       if (composerInitialPost.hashtags) setHashtags(composerInitialPost.hashtags);
+      if (composerInitialPost.ai_brief) {
+        setAiBriefText(composerInitialPost.ai_brief);
+        setShowBriefPanel(true);
+      } else {
+        setAiBriefText("");
+        setShowBriefPanel(false);
+      }
       if (Array.isArray(composerInitialPost.media_urls) && composerInitialPost.media_urls.length > 0) {
         setMediaUrls(composerInitialPost.media_urls);
       }
@@ -289,6 +300,13 @@ export default function PostComposerModal() {
       setEditingPostId(null);
       if (composerInitialBrief.caption) setCaption(composerInitialBrief.caption);
       if (composerInitialBrief.hashtags) setHashtags(composerInitialBrief.hashtags);
+      if (composerInitialBrief.ai_brief) {
+        setAiBriefText(composerInitialBrief.ai_brief);
+        setShowBriefPanel(true);
+      } else {
+        setAiBriefText("");
+        setShowBriefPanel(false);
+      }
       if (composerInitialBrief.post_type) {
         const pt = composerInitialBrief.post_type.toLowerCase();
         if (pt === "video" || pt === "reel" || pt === "reels") {
@@ -305,6 +323,8 @@ export default function PostComposerModal() {
       toast.success("Brief & Teks dari Shiera AI berhasil dimasukkan ke Composer!");
     } else if (isComposerOpen && !composerInitialPost && !composerInitialBrief) {
       setEditingPostId(null);
+      setAiBriefText("");
+      setShowBriefPanel(false);
     }
   }, [isComposerOpen, composerInitialPost, composerInitialBrief]);
 
@@ -607,6 +627,7 @@ export default function PostComposerModal() {
       post_type: postType,
       caption: fullCaption,
       hashtags: hashtagsFormatted,
+      ai_brief: aiBriefText.trim() || null,
       media_urls: mediaUrls,
       scheduled_at: actionType === "schedule" && scheduledAt ? scheduledAtToUtcIso(scheduledAt) : null,
       action: actionType,
@@ -885,6 +906,47 @@ export default function PostComposerModal() {
               <p className="text-[10px] text-slate-400">
                 Hashtag ini akan dimasukkan langsung di akhir teks Caption.
               </p>
+            </div>
+
+            {/* 5. Catatan Briefing AI (Shiera AI Brief) */}
+            <div className="space-y-1.5 border border-purple-200/80 bg-purple-50/40 rounded-2xl p-3.5 shadow-2xs">
+              <div className="flex items-center justify-between">
+                <button
+                  type="button"
+                  onClick={() => setShowBriefPanel(v => !v)}
+                  className="flex items-center gap-2 text-xs font-extrabold text-purple-900 font-['Outfit'] hover:text-purple-700 cursor-pointer"
+                >
+                  <Sparkles className="w-4 h-4 text-purple-600 animate-pulse shrink-0" />
+                  <span>Catatan Briefing AI (Shiera Brief)</span>
+                  {aiBriefText && (
+                    <span className="text-[9px] bg-purple-200 text-purple-800 px-2 py-0.5 rounded-full font-bold">
+                      Tersimpan di Draft
+                    </span>
+                  )}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowBriefPanel(v => !v)}
+                  className="text-[11px] text-purple-600 font-bold hover:underline cursor-pointer"
+                >
+                  {showBriefPanel ? "Sembunyikan ↑" : "Lihat / Edit Brief ↓"}
+                </button>
+              </div>
+
+              {showBriefPanel && (
+                <div className="pt-2 space-y-2 animate-fadeIn">
+                  <p className="text-[10px] text-purple-700 leading-relaxed">
+                    Catatan brief dari Shiera AI ini disimpan bersama draft post agar dapat dibaca kembali, digunakan ulang, dan diedit kapan saja.
+                  </p>
+                  <textarea
+                    value={aiBriefText}
+                    onChange={(e) => setAiBriefText(e.target.value)}
+                    placeholder="Isi catatan briefing AI, visual concept, script reels, atau breakdown slide carousel di sini..."
+                    rows={5}
+                    className="w-full px-3 py-2.5 rounded-xl border border-purple-200 bg-white text-xs text-slate-800 font-mono focus:outline-none focus:ring-2 focus:ring-purple-400 leading-relaxed resize-y"
+                  />
+                </div>
+              )}
             </div>
 
             {/* 5. Attached Media & Direct Upload Dropzone */}
