@@ -447,36 +447,40 @@ export default function AccountsPage() {
                 </div>
 
                 <div className="flex items-center justify-between pt-3 border-t border-slate-100 text-xs">
-                  <div className="flex items-center gap-1.5 flex-wrap">
-                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700">Connected</span>
-                    {acc.briefing && Object.keys(acc.briefing).some(k => k !== 'updated_at' && Boolean(acc.briefing[k])) ? (
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-100 text-purple-700 border border-purple-200">
-                        Briefing Ready
-                      </span>
-                    ) : (
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-600 border border-amber-200">
-                        Belum Briefing
-                      </span>
-                    )}
-                  </div>
+                  {/* Status Indicator */}
+                  <span className="inline-flex items-center gap-1.5 text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full shrink-0">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                    Connected
+                  </span>
                   
-                  <div className="flex items-center gap-1.5">
-                    <button
-                      onClick={() => setBriefingAccount(acc)}
-                      title="Edit Briefing Akun (Akun itu apa)"
-                      className="px-2.5 py-1 rounded-xl text-[10px] font-bold bg-purple-50 text-purple-700 border border-purple-200 hover:bg-purple-100 transition-colors flex items-center gap-1"
-                    >
-                      <FileText className="w-3 h-3" />
-                      Briefing Akun
-                    </button>
+                  {/* Action Buttons */}
+                  <div className="flex items-center gap-1 shrink-0">
+                    {(() => {
+                      const isBriefed = acc.briefing && Object.keys(acc.briefing).some(k => k !== 'updated_at' && Boolean(acc.briefing[k]));
+                      return (
+                        <button
+                          onClick={() => setBriefingAccount(acc)}
+                          title={isBriefed ? "Briefing Siap — Klik untuk edit" : "Belum ada Briefing — Klik untuk isi"}
+                          className={`px-2 py-1 rounded-xl text-[10px] font-bold border transition-colors flex items-center gap-1 ${
+                            isBriefed
+                              ? "bg-purple-50 text-purple-700 border-purple-200 hover:bg-purple-100"
+                              : "bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100"
+                          }`}
+                        >
+                          <FileText className="w-3 h-3" />
+                          <span>Briefing</span>
+                          {isBriefed && <span className="text-[8px] text-purple-600 font-extrabold">✓</span>}
+                        </button>
+                      );
+                    })()}
 
                     <button
                       onClick={() => handleReconnectAccount(acc)}
                       title="Reconnect Channel"
-                      className="px-2.5 py-1 rounded-xl text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100 transition-colors flex items-center gap-1"
+                      className="px-2 py-1 rounded-xl text-[10px] font-bold bg-slate-50 text-slate-600 border border-slate-200 hover:bg-slate-100 transition-colors flex items-center gap-1"
                     >
                       <RefreshCw className="w-3 h-3" />
-                      Rekonek
+                      <span>Rekonek</span>
                     </button>
 
                     <button
@@ -505,41 +509,47 @@ export default function AccountsPage() {
               </tr>
             </thead>
             <tbody>
-              {accounts.map((acc) => (
-                <tr key={acc.id} className="border-b border-slate-100 hover:bg-purple-50/40 transition-colors">
-                  <td className="py-3 px-4 font-bold text-slate-900">@{acc.username}</td>
-                  <td className="py-3 px-4 capitalize">{acc.platform}</td>
-                  <td className="py-3 px-4">
-                    <div className="flex items-center gap-1.5">
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700">Connected</span>
-                      {acc.briefing && Object.keys(acc.briefing).some(k => k !== 'updated_at' && Boolean(acc.briefing[k])) ? (
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-100 text-purple-700 border border-purple-200">
-                          Briefing Ready
-                        </span>
-                      ) : (
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-600 border border-amber-200">
-                          Belum Briefing
-                        </span>
-                      )}
-                    </div>
-                  </td>
-                  <td className="py-3 px-4 text-right">
-                    <div className="flex items-center justify-end gap-1.5">
-                      <button 
-                        onClick={() => handleToggleFavorite(acc.id, acc.is_favorite)} 
-                        className="p-1 text-slate-400 hover:text-amber-500"
-                        title="Favorite"
-                      >
-                        <Star className={`w-4 h-4 ${acc.is_favorite ? "fill-amber-400 text-amber-500" : ""}`} />
-                      </button>
+              {accounts.map((acc) => {
+                const isBriefed = acc.briefing && Object.keys(acc.briefing).some(k => k !== 'updated_at' && Boolean(acc.briefing[k]));
+                return (
+                  <tr key={acc.id} className="border-b border-slate-100 hover:bg-purple-50/40 transition-colors">
+                    <td className="py-3 px-4 font-bold text-slate-900">@{acc.username}</td>
+                    <td className="py-3 px-4 capitalize">{acc.platform}</td>
+                    <td className="py-3 px-4">
+                      <div className="flex items-center gap-1.5">
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700">Connected</span>
+                        {isBriefed ? (
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-100 text-purple-700 border border-purple-200">
+                            Briefed ✓
+                          </span>
+                        ) : (
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-600 border border-amber-200">
+                            Belum Briefing
+                          </span>
+                        )}
+                      </div>
+                    </td>
+                    <td className="py-3 px-4 text-right">
+                      <div className="flex items-center justify-end gap-1.5">
+                        <button 
+                          onClick={() => handleToggleFavorite(acc.id, acc.is_favorite)} 
+                          className="p-1 text-slate-400 hover:text-amber-500"
+                          title="Favorite"
+                        >
+                          <Star className={`w-4 h-4 ${acc.is_favorite ? "fill-amber-400 text-amber-500" : ""}`} />
+                        </button>
 
-                      <button
-                        onClick={() => setBriefingAccount(acc)}
-                        className="px-2.5 py-1 rounded-xl text-[10px] font-bold bg-purple-50 text-purple-700 border border-purple-200 hover:bg-purple-100 transition-colors flex items-center gap-1"
-                      >
-                        <FileText className="w-3 h-3" />
-                        Briefing Akun
-                      </button>
+                        <button
+                          onClick={() => setBriefingAccount(acc)}
+                          className={`px-2 py-1 rounded-xl text-[10px] font-bold border transition-colors flex items-center gap-1 ${
+                            isBriefed
+                              ? "bg-purple-50 text-purple-700 border-purple-200 hover:bg-purple-100"
+                              : "bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100"
+                          }`}
+                        >
+                          <FileText className="w-3 h-3" />
+                          <span>Briefing</span>
+                        </button>
 
                       <button
                         onClick={() => handleReconnectAccount(acc)}
@@ -559,7 +569,8 @@ export default function AccountsPage() {
                     </div>
                   </td>
                 </tr>
-              ))}
+              );
+            })}
             </tbody>
           </table>
         </div>
