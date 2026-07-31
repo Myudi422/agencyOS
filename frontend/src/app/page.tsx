@@ -114,6 +114,20 @@ const FEATURES = [
     visualTag: "PDF Report Engine",
     iconColor: "text-indigo-600",
     platforms: ["PDF Report", "Custom Logo", "White Label"]
+  },
+  {
+    id: "approval_portal",
+    category: "SCHEDULER",
+    badge: "Client Portal",
+    badgeColor: "bg-sky-100 text-sky-700 border-sky-200",
+    title: "Client Approval & Media Library",
+    meta: "Bagikan link persetujuan postingan profesional ke klien tanpa login dan kelola galeri aset media terpusat.",
+    metric: "Fast Approval",
+    visualBg: "from-sky-500/10 via-blue-500/5 to-slate-100",
+    visualIcon: Briefcase,
+    visualTag: "Client Portal",
+    iconColor: "text-sky-600",
+    platforms: ["Approval Link", "Media Storage", "Multi-Client"]
   }
 ];
 
@@ -168,11 +182,12 @@ const PRICING_PLANS = [
     border: "border-slate-200",
     features: [
       "6 posts total (2 post/hari)",
-      "Gratis tanpa biaya (Rp 0)",
       "Unlimited akun sosmed",
-      "Semua 10+ platform didukung",
-      "AI Assistant support analisa & brainstorm",
+      "Multi-client management",
+      "Semua 10+ platform",
+      "AI Assistant support analisa, brainstorm & brief",
       "KOL Manager & Deliverable Tracker",
+      "Competitor Spy & Executive PDF Report",
       "Wajib verifikasi WhatsApp",
     ],
     buttonText: "Mulai Trial",
@@ -194,10 +209,11 @@ const PRICING_PLANS = [
     features: [
       "50 posts/bulan",
       "Unlimited akun sosmed",
+      "Multi-client management",
       "Semua 10+ platform",
-      "AI Assistant support analisa & draft post",
+      "AI Assistant support analisa, brainstorm & brief",
       "KOL Manager & Deliverable Tracker",
-      "Scheduling & media library",
+      "Competitor Spy & Executive PDF Report",
     ],
     buttonText: "Pilih Creator",
     buttonStyle: "bg-slate-100 text-slate-800 hover:bg-slate-200 border border-slate-300",
@@ -243,11 +259,11 @@ const PRICING_PLANS = [
     features: [
       "1.000 posts/bulan",
       "Unlimited akun sosmed",
-      "Unlimited clients",
+      "Multi-client management",
       "Semua 10+ platform",
-      "Full AI Assistant strategy & brief creator",
-      "Full KOL Manager & Competitor Spy",
-      "Full media library & priority support",
+      "AI Assistant support analisa, brainstorm & brief",
+      "KOL Manager & Deliverable Tracker",
+      "Competitor Spy & Executive PDF Report",
     ],
     buttonText: "Pilih Studio",
     buttonStyle: "bg-slate-100 text-slate-800 hover:bg-slate-200 border border-slate-300",
