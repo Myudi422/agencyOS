@@ -176,43 +176,7 @@ export default function CompetitorSpyPage() {
     }
   }, [activeTab, dailyDays]);
 
-  // Poll background add job status
-  useEffect(() => {
-    if (!activeAddJob || activeAddJob.status !== "running") return;
 
-    const interval = setInterval(async () => {
-      try {
-        const res: any = await fetchApi(`/competitors/add-status/${activeAddJob.jobId}`);
-        if (res) {
-          if (res.status === "done" || res.percent >= 100) {
-            setActiveAddJob({
-              ...activeAddJob,
-              percent: 100,
-              message: res.message || "Proses selesai!",
-              status: "done"
-            });
-            showToast("ok", res.message || `Kompetitor @${activeAddJob.username} berhasil ditambahkan!`);
-            if (selectedIgAccount) {
-              loadCompetitors(selectedIgAccount.id);
-              loadIgAccounts();
-            }
-            setTimeout(() => setActiveAddJob(null), 3000);
-          } else {
-            setActiveAddJob({
-              ...activeAddJob,
-              percent: res.percent || activeAddJob.percent,
-              message: res.message || activeAddJob.message,
-              status: "running"
-            });
-          }
-        }
-      } catch (e) {
-        console.error("Error polling add job status:", e);
-      }
-    }, 1500);
-
-    return () => clearInterval(interval);
-  }, [activeAddJob, selectedIgAccount]);
 
   const showToast = (type: "ok" | "err", text: string) => {
     setToast({ type, text });
