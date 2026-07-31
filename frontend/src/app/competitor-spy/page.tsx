@@ -999,13 +999,25 @@ export default function CompetitorSpyPage() {
                   </div>
 
                   {/* Action */}
-                  <div className="p-3 bg-slate-50 border-t border-slate-100">
+                  <div className="p-3 bg-slate-50 border-t border-slate-100 flex items-center gap-2">
+                    {(post.instagram_url || post.code) && (
+                      <a
+                        href={post.instagram_url || `https://www.instagram.com/p/${post.code}/`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="py-2 px-2.5 rounded-xl bg-white hover:bg-purple-50 hover:text-purple-600 text-slate-600 font-bold text-[11px] flex items-center justify-center gap-1 transition-all border border-slate-200/80 shadow-2xs shrink-0"
+                        title="Lihat Postingan di Instagram"
+                      >
+                        <ExternalLink className="w-3.5 h-3.5" />
+                        <span className="text-[11px]">IG</span>
+                      </a>
+                    )}
                     <button
                       onClick={() => handleUseAsInspiration(post, post.username)}
-                      className="w-full py-2 px-3 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-[11px] flex items-center justify-center gap-1.5 transition-all shadow-xs"
+                      className="flex-1 py-2 px-3 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-[11px] flex items-center justify-center gap-1.5 transition-all shadow-xs min-w-0"
                     >
-                      <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-                      <span>Gunakan Sebagai Inspirasi</span>
+                      <Sparkles className="w-3.5 h-3.5 text-amber-300 shrink-0" />
+                      <span className="truncate">Gunakan Sebagai Inspirasi</span>
                     </button>
                   </div>
                 </div>
@@ -1419,13 +1431,25 @@ export default function CompetitorSpyPage() {
                       </div>
 
                       {/* Action */}
-                      <div className="p-3 bg-slate-50 border-t border-slate-100">
+                      <div className="p-3 bg-slate-50 border-t border-slate-100 flex items-center gap-2">
+                        {(post.instagram_url || post.code) && (
+                          <a
+                            href={post.instagram_url || `https://www.instagram.com/p/${post.code}/`}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="py-2 px-2.5 rounded-xl bg-white hover:bg-purple-50 hover:text-purple-600 text-slate-600 font-bold text-[11px] flex items-center justify-center gap-1 transition-all border border-slate-200/80 shadow-2xs shrink-0"
+                            title="Lihat Postingan di Instagram"
+                          >
+                            <ExternalLink className="w-3.5 h-3.5" />
+                            <span className="text-[11px]">IG</span>
+                          </a>
+                        )}
                         <button
                           onClick={() => handleUseAsInspiration(post, selectedCompetitor?.username)}
-                          className="w-full py-2 px-3 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-[11px] flex items-center justify-center gap-1.5 transition-all shadow-xs"
+                          className="flex-1 py-2 px-3 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-[11px] flex items-center justify-center gap-1.5 transition-all shadow-xs min-w-0"
                         >
-                          <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-                          <span>Gunakan Sebagai Inspirasi</span>
+                          <Sparkles className="w-3.5 h-3.5 text-amber-300 shrink-0" />
+                          <span className="truncate">Gunakan Sebagai Inspirasi</span>
                         </button>
                       </div>
                     </div>
