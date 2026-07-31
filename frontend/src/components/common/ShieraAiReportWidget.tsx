@@ -548,10 +548,17 @@ export default function ShieraAiReportWidget() {
 
   const handleTransferToComposer = (payload: any, fullText?: string) => {
     const cleanBrief = (fullText || "").replace(/```json\s*[\s\S]*?\s*```/g, "").trim();
+    let rawCaption = payload.caption || "";
+    // Clean caption from any visual concept / markdown headers
+    let cleanCap = rawCaption
+      .replace(/^###?\s*.*(?:Visual Concept|Konsep Visual|Hook|Script|Slide Breakdown)[\s\S]*?(?=\n\n[A-Z0-9]|\n\n[a-z]|$)/gmi, "")
+      .replace(/```json[\s\S]*?```/g, "")
+      .trim();
+
     openComposerWithBrief({
-      caption: payload.caption || "",
+      caption: cleanCap || rawCaption,
       hashtags: payload.hashtags || "",
-      ai_brief: cleanBrief || payload.caption || "",
+      ai_brief: cleanBrief || fullText || "",
       post_type: payload.post_type || "image",
       account_ids: selectedAccountIds.length > 0 ? selectedAccountIds : availableAccounts.map(a => a.id),
     });

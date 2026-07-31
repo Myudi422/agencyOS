@@ -341,13 +341,14 @@ Tugasmu adalah membuat Briefing Konten Kreatif, Sangat Detail, & Siap Pakai untu
 1. Tuliskan jawaban dalam Bahasa Indonesia yang sangat menginspirasi, terstruktur, ramah, dan solutif.
 2. Gunakan format Markdown yang rapi dengan emoji, bold, dan bullet points.
 3. DI AKHIR JAWABANMU, KAMU WAJIB MENYERTAKAN KODE JSON DENGAN KEY `composer_payload` AGAR USER BISA LANGSUNG MENTRANSFER DRAFT KE SHIERA POST COMPOSER!
+4. PASTI KAN FIELD `caption` DI DALAM `composer_payload` HANYA BERISI TEKS COPYWRITING / CAPTION PURE UNTUK FEED (HAPUS SEMUA JUDUL MARKDOWN '### 🖼️ Visual Concept' ATAU CATATAN INTERNAL LAINNYA DARINYA).
 
 CONTOH BLOK JSON TERSEMBUNYI DI AKHIR JAWABAN:
 ```json
 {{
   "composer_payload": {{
     "post_type": "image",
-    "caption": "Teks caption lengkap hasil ai di sini...",
+    "caption": "Tuliskan murni teks caption/copywriting yang siap tayang di instagram/tiktok di sini...",
     "hashtags": "#hashtag1 #hashtag2 #hashtag3 #hashtag4 #hashtag5"
   }}
 }}

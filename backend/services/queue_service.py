@@ -451,9 +451,11 @@ class QueueService:
         if all(s == PostStatus.PUBLISHED for s in statuses):
             post.status = PostStatus.PUBLISHED
             post.published_at = datetime.utcnow()
+            post.ai_brief = None  # Hapus brief dari DB setelah terpublish agar tidak memenuhi database
         elif any(s == PostStatus.PUBLISHED for s in statuses):
             post.status = PostStatus.PUBLISHED
             post.published_at = datetime.utcnow()
+            post.ai_brief = None  # Hapus brief dari DB setelah terpublish
         elif any(s == PostStatus.FAILED for s in statuses):
             post.status = PostStatus.FAILED
         elif any(s == PostStatus.PUBLISHING for s in statuses):

@@ -266,13 +266,16 @@ async def create_post(
     else:
         initial_status = PostStatus.PUBLISHING
 
+    # Brief is only kept for draft or scheduled posts; clear if publishing now
+    final_brief = None if action_type == "publish_now" else data.ai_brief
+
     post = Post(
         workspace_id=data.workspace_id,
         client_id=data.client_id,
         post_type=PostType(data.post_type) if data.post_type in [p.value for p in PostType] else PostType.IMAGE,
         caption=data.caption,
         hashtags=data.hashtags,
-        ai_brief=data.ai_brief,
+        ai_brief=final_brief,
         first_comment=data.first_comment,
         location=data.location,
         alt_text=data.alt_text,
@@ -332,7 +335,9 @@ async def update_post(
         post.caption = data.caption
     if data.hashtags is not None:
         post.hashtags = data.hashtags
-    if data.ai_brief is not None:
+    if action_type == "publish_now":
+        post.ai_brief = None
+    elif data.ai_brief is not None:
         post.ai_brief = data.ai_brief
     if data.first_comment is not None:
         post.first_comment = data.first_comment
