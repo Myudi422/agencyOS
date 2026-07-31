@@ -11,6 +11,7 @@ import {
 import { useStore } from "@/store/useStore";
 import { toast } from "@/store/useToastStore";
 import { fetchApi } from "@/lib/api";
+import ShieraMarkdownViewer from "@/components/common/ShieraMarkdownViewer";
 
 const PLATFORM_BADGES: Record<string, { name: string; color: string; bg: string }> = {
   instagram: { name: "Instagram", color: "from-amber-500 via-pink-500 to-purple-600", bg: "bg-pink-100 text-pink-700 border-pink-200" },
@@ -91,6 +92,30 @@ export default function PostComposerModal() {
   // AI Content Brief State (Saved in draft for future re-editing)
   const [aiBriefText, setAiBriefText] = useState("");
   const [showBriefPanel, setShowBriefPanel] = useState(false);
+  const [briefViewMode, setBriefViewMode] = useState<"preview" | "edit">("preview");
+
+  // Reorder Media Helpers (Move Left / Right)
+  const moveMediaLeft = (idx: number) => {
+    if (idx <= 0) return;
+    setMediaUrls(prev => {
+      const arr = [...prev];
+      const temp = arr[idx - 1];
+      arr[idx - 1] = arr[idx];
+      arr[idx] = temp;
+      return arr;
+    });
+  };
+
+  const moveMediaRight = (idx: number) => {
+    if (idx >= mediaUrls.length - 1) return;
+    setMediaUrls(prev => {
+      const arr = [...prev];
+      const temp = arr[idx + 1];
+      arr[idx + 1] = arr[idx];
+      arr[idx] = temp;
+      return arr;
+    });
+  };
 
   // Live Feed Preview Carousel Slide Index & Aspect Ratio
   const [previewSlideIndex, setPreviewSlideIndex] = useState(0);
@@ -908,7 +933,7 @@ export default function PostComposerModal() {
               </p>
             </div>
 
-            {/* 5. Catatan Briefing AI (Shiera AI Brief) */}
+            {/* 5. Draft Briefing AI */}
             <div className="space-y-1.5 border border-purple-200/80 bg-purple-50/40 rounded-2xl p-3.5 shadow-2xs">
               <div className="flex items-center justify-between">
                 <button
@@ -917,34 +942,61 @@ export default function PostComposerModal() {
                   className="flex items-center gap-2 text-xs font-extrabold text-purple-900 font-['Outfit'] hover:text-purple-700 cursor-pointer"
                 >
                   <Sparkles className="w-4 h-4 text-purple-600 animate-pulse shrink-0" />
-                  <span>Catatan Briefing AI (Shiera Brief)</span>
-                  {aiBriefText && (
-                    <span className="text-[9px] bg-purple-200 text-purple-800 px-2 py-0.5 rounded-full font-bold">
-                      Tersimpan di Draft
-                    </span>
+                  <span>Draft Briefing</span>
+                </button>
+                
+                <div className="flex items-center gap-2">
+                  {showBriefPanel && (
+                    <div className="flex items-center p-0.5 rounded-lg bg-purple-100/80 text-[10px] font-bold">
+                      <button
+                        type="button"
+                        onClick={() => setBriefViewMode("preview")}
+                        className={`px-2 py-0.5 rounded-md transition-all cursor-pointer ${
+                          briefViewMode === "preview" ? "bg-white text-purple-900 shadow-2xs" : "text-purple-700 hover:text-purple-900"
+                        }`}
+                      >
+                        👁 Preview
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setBriefViewMode("edit")}
+                        className={`px-2 py-0.5 rounded-md transition-all cursor-pointer ${
+                          briefViewMode === "edit" ? "bg-white text-purple-900 shadow-2xs" : "text-purple-700 hover:text-purple-900"
+                        }`}
+                      >
+                        ✏️ Edit Text
+                      </button>
+                    </div>
                   )}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setShowBriefPanel(v => !v)}
-                  className="text-[11px] text-purple-600 font-bold hover:underline cursor-pointer"
-                >
-                  {showBriefPanel ? "Sembunyikan ↑" : "Lihat / Edit Brief ↓"}
-                </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowBriefPanel(v => !v)}
+                    className="text-[11px] text-purple-600 font-bold hover:underline cursor-pointer"
+                  >
+                    {showBriefPanel ? "Sembunyikan ↑" : "Lihat / Edit Brief ↓"}
+                  </button>
+                </div>
               </div>
 
               {showBriefPanel && (
                 <div className="pt-2 space-y-2 animate-fadeIn">
-                  <p className="text-[10px] text-purple-700 leading-relaxed">
-                    Catatan brief dari Shiera AI ini disimpan bersama draft post agar dapat dibaca kembali, digunakan ulang, dan diedit kapan saja.
-                  </p>
-                  <textarea
-                    value={aiBriefText}
-                    onChange={(e) => setAiBriefText(e.target.value)}
-                    placeholder="Isi catatan briefing AI, visual concept, script reels, atau breakdown slide carousel di sini..."
-                    rows={5}
-                    className="w-full px-3 py-2.5 rounded-xl border border-purple-200 bg-white text-xs text-slate-800 font-mono focus:outline-none focus:ring-2 focus:ring-purple-400 leading-relaxed resize-y"
-                  />
+                  {briefViewMode === "preview" ? (
+                    <div className="p-3 rounded-xl border border-purple-200 bg-white text-xs leading-relaxed max-h-64 overflow-y-auto shadow-2xs">
+                      {aiBriefText.trim() ? (
+                        <ShieraMarkdownViewer content={aiBriefText} />
+                      ) : (
+                        <p className="text-slate-400 italic">Belum ada catatan briefing.</p>
+                      )}
+                    </div>
+                  ) : (
+                    <textarea
+                      value={aiBriefText}
+                      onChange={(e) => setAiBriefText(e.target.value)}
+                      placeholder="Isi catatan briefing AI, visual concept, script reels, atau breakdown slide carousel di sini..."
+                      rows={5}
+                      className="w-full px-3 py-2.5 rounded-xl border border-purple-200 bg-white text-xs text-slate-800 font-mono focus:outline-none focus:ring-2 focus:ring-purple-400 leading-relaxed resize-y"
+                    />
+                  )}
                 </div>
               )}
             </div>
@@ -1015,33 +1067,71 @@ export default function PostComposerModal() {
                 )}
               </label>
 
-              {/* Attached Media Thumbnails */}
+              {/* Attached Media Thumbnails with Reordering Support */}
               {mediaUrls.length > 0 && (
-                <div className="flex items-center gap-2 overflow-x-auto pb-1 pt-1">
-                  {mediaUrls.map((url, idx) => {
-                    const isVid = postType === "video" || isVideoMedia({ url });
-                    return (
-                      <div key={idx} className="relative group shrink-0">
-                        {isVid ? (
-                          <div className="relative w-14 h-14 rounded-xl overflow-hidden border border-slate-200 shadow-2xs bg-black flex items-center justify-center">
-                            <video src={url} preload="metadata" muted className="w-full h-full object-cover" />
-                            <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
-                              <Play className="w-3.5 h-3.5 fill-white text-white" />
-                            </div>
+                <div className="space-y-1.5 pt-1">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-bold text-slate-500">Urutan Media:</span>
+                    <span className="text-[10px] text-purple-600 font-bold">Gunakan tombol ◄ / ► untuk menukar posisi</span>
+                  </div>
+                  <div className="flex items-center gap-2.5 overflow-x-auto pb-2 pt-1">
+                    {mediaUrls.map((url, idx) => {
+                      const isVid = postType === "video" || isVideoMedia({ url });
+                      return (
+                        <div key={idx} className="relative group shrink-0">
+                          {/* Slide Number Badge */}
+                          <div className="absolute top-1 left-1 z-10 px-1.5 py-0.2 rounded-md bg-slate-900/80 text-white text-[9px] font-mono font-bold backdrop-blur-xs">
+                            #{idx + 1}
                           </div>
-                        ) : (
-                          <img src={url} alt="media" className="w-14 h-14 rounded-xl object-cover border border-slate-200 shadow-2xs" />
-                        )}
-                        <button
-                          type="button"
-                          onClick={() => removeMediaUrl(idx)}
-                          className="absolute -top-1.5 -right-1.5 bg-rose-600 text-white rounded-full p-1 shadow-sm hover:scale-110 transition-transform cursor-pointer"
-                        >
-                          <X className="w-3 h-3" />
-                        </button>
-                      </div>
-                    );
-                  })}
+
+                          {isVid ? (
+                            <div className="relative w-16 h-16 rounded-xl overflow-hidden border border-slate-200 shadow-2xs bg-black flex items-center justify-center">
+                              <video src={url} preload="metadata" muted className="w-full h-full object-cover" />
+                              <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+                                <Play className="w-4 h-4 fill-white text-white" />
+                              </div>
+                            </div>
+                          ) : (
+                            <img src={url} alt={`Media #${idx + 1}`} className="w-16 h-16 rounded-xl object-cover border border-slate-200 shadow-2xs" />
+                          )}
+
+                          {/* Reorder Left Button */}
+                          {idx > 0 && (
+                            <button
+                              type="button"
+                              onClick={() => moveMediaLeft(idx)}
+                              title="Tukar ke Kiri"
+                              className="absolute bottom-1 left-1 z-10 bg-slate-900/85 hover:bg-purple-600 text-white rounded-md p-1 text-[9px] shadow-xs transition-all cursor-pointer"
+                            >
+                              <ChevronLeft className="w-3 h-3" />
+                            </button>
+                          )}
+
+                          {/* Reorder Right Button */}
+                          {idx < mediaUrls.length - 1 && (
+                            <button
+                              type="button"
+                              onClick={() => moveMediaRight(idx)}
+                              title="Tukar ke Kanan"
+                              className="absolute bottom-1 right-1 z-10 bg-slate-900/85 hover:bg-purple-600 text-white rounded-md p-1 text-[9px] shadow-xs transition-all cursor-pointer"
+                            >
+                              <ChevronRight className="w-3 h-3" />
+                            </button>
+                          )}
+
+                          {/* Remove Button */}
+                          <button
+                            type="button"
+                            onClick={() => removeMediaUrl(idx)}
+                            title="Hapus Media"
+                            className="absolute -top-1.5 -right-1.5 z-20 bg-rose-600 text-white rounded-full p-1 shadow-sm hover:scale-110 transition-transform cursor-pointer"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
               )}
 
@@ -2023,114 +2113,109 @@ export default function PostComposerModal() {
                 </div>
               </div>
 
-              {/* Multi-Media Interactive Carousel & Video Feed Preview with Dynamic Aspect Ratio */}
+              {/* Multi-Media Interactive Carousel & Video Feed Preview with Fixed Aspect Ratio Container */}
               {mediaUrls.length > 0 ? (
-                <div className="relative group rounded-xl overflow-hidden border border-slate-100 shadow-2xs bg-black/5 flex items-center justify-center">
-                  {/* Active Slide Rendering with Dynamic Aspect Ratio */}
-                  {(() => {
-                    const currentUrl = mediaUrls[previewSlideIndex] || mediaUrls[0];
-                    const isVid = postType === "video" || isVideoMedia({ url: currentUrl });
+                <div className="w-full flex items-center justify-center bg-slate-900/5 p-2 rounded-2xl border border-slate-100">
+                  <div className={`relative w-full mx-auto overflow-hidden rounded-xl border border-slate-200 shadow-md bg-black ${
+                    previewAspect === "1:1" ? "aspect-square max-w-[340px]" :
+                    previewAspect === "4:5" ? "aspect-[4/5] max-w-[320px]" :
+                    previewAspect === "16:9" ? "aspect-[16/9] max-w-[420px]" :
+                    "aspect-[9/16] max-w-[280px]"
+                  }`}>
+                    {/* Active Slide Rendering */}
+                    {(() => {
+                      const currentUrl = mediaUrls[previewSlideIndex] || mediaUrls[0];
+                      const isVid = postType === "video" || isVideoMedia({ url: currentUrl });
 
-                    if (isVid) {
-                      if (showThumbnailInPreview && reelsThumbnailUrl) {
-                        return (
-                          <div className="relative w-full overflow-hidden bg-black flex items-center justify-center">
-                            <img
-                              src={reelsThumbnailUrl}
-                              alt="Full Cover Thumbnail"
-                              className={`w-full object-cover ${
-                                previewAspect === "1:1" ? "aspect-square max-h-72" :
-                                previewAspect === "4:5" ? "aspect-[4/5] max-h-80" :
-                                previewAspect === "16:9" ? "aspect-[16/9] max-h-56" : "aspect-[9/16] max-h-[380px]"
-                              }`}
-                            />
-                            <div className="absolute inset-0 bg-black/20 flex items-center justify-center pointer-events-none">
-                              <div className="w-11 h-11 rounded-full bg-black/60 backdrop-blur-md border border-white/30 flex items-center justify-center text-white shadow-xl">
-                                <Play className="w-5 h-5 fill-white ml-0.5" />
+                      if (isVid) {
+                        if (showThumbnailInPreview && reelsThumbnailUrl) {
+                          return (
+                            <div className="relative w-full h-full bg-black flex items-center justify-center">
+                              <img
+                                src={reelsThumbnailUrl}
+                                alt="Full Cover Thumbnail"
+                                className="w-full h-full object-cover"
+                              />
+                              <div className="absolute inset-0 bg-black/20 flex items-center justify-center pointer-events-none">
+                                <div className="w-11 h-11 rounded-full bg-black/60 backdrop-blur-md border border-white/30 flex items-center justify-center text-white shadow-xl">
+                                  <Play className="w-5 h-5 fill-white ml-0.5" />
+                                </div>
+                              </div>
+                              <div className="absolute bottom-2 left-2 px-2.5 py-0.5 rounded-full bg-purple-900/90 text-white text-[9px] font-bold backdrop-blur-md shadow-md border border-purple-500/30">
+                                🖼 Full Cover Thumbnail
                               </div>
                             </div>
-                            <div className="absolute bottom-2 left-2 px-2.5 py-0.5 rounded-full bg-purple-900/90 text-white text-[9px] font-bold backdrop-blur-md shadow-md border border-purple-500/30">
-                              🖼 Full Cover Thumbnail
-                            </div>
+                          );
+                        }
+
+                        return (
+                          <div className="relative w-full h-full bg-black flex items-center justify-center">
+                            <video
+                              src={currentUrl}
+                              controls
+                              preload="metadata"
+                              playsInline
+                              className="w-full h-full object-cover bg-black"
+                            />
                           </div>
                         );
                       }
 
                       return (
-                        <div className="relative w-full bg-black flex items-center justify-center">
-                          <video
-                            src={currentUrl}
-                            controls
-                            preload="metadata"
-                            playsInline
-                            className={`w-full object-cover bg-black ${
-                              previewAspect === "1:1" ? "aspect-square max-h-72" :
-                              previewAspect === "4:5" ? "aspect-[4/5] max-h-80" :
-                              previewAspect === "16:9" ? "aspect-[16/9] max-h-56" : "aspect-[9/16] max-h-[380px]"
-                            }`}
-                          />
-                        </div>
+                        <img
+                          src={currentUrl}
+                          alt={`Preview slide ${previewSlideIndex + 1}`}
+                          className="w-full h-full object-cover"
+                        />
                       );
-                    }
+                    })()}
 
-                    return (
-                      <img
-                        src={currentUrl}
-                        alt={`Preview slide ${previewSlideIndex + 1}`}
-                        className={`w-full object-cover ${
-                          previewAspect === "1:1" ? "aspect-square max-h-72" :
-                          previewAspect === "4:5" ? "aspect-[4/5] max-h-80" :
-                          previewAspect === "16:9" ? "aspect-[16/9] max-h-56" : "aspect-[9/16] max-h-[380px]"
-                        }`}
-                      />
-                    );
-                  })()}
+                    {/* Multi-Media Carousel Controls & Badges */}
+                    {mediaUrls.length > 1 && (
+                      <>
+                        {/* Counter Badge */}
+                        <div className="absolute top-2 right-2 px-2.5 py-0.5 rounded-full bg-slate-900/75 backdrop-blur-md text-white text-[10px] font-bold font-mono shadow-sm z-10">
+                          {previewSlideIndex + 1} / {mediaUrls.length}
+                        </div>
 
-                  {/* Multi-Media Carousel Controls & Badges */}
-                  {mediaUrls.length > 1 && (
-                    <>
-                      {/* Counter Badge */}
-                      <div className="absolute top-2 right-2 px-2.5 py-0.5 rounded-full bg-slate-900/75 backdrop-blur-md text-white text-[10px] font-bold font-mono shadow-sm">
-                        {previewSlideIndex + 1} / {mediaUrls.length}
-                      </div>
-
-                      {/* Previous Slide Button */}
-                      {previewSlideIndex > 0 && (
-                        <button
-                          type="button"
-                          onClick={() => setPreviewSlideIndex(prev => Math.max(0, prev - 1))}
-                          className="absolute left-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-slate-900/60 hover:bg-slate-900/90 text-white flex items-center justify-center backdrop-blur-sm transition-all cursor-pointer shadow-md"
-                        >
-                          <ChevronLeft className="w-4 h-4" />
-                        </button>
-                      )}
-
-                      {/* Next Slide Button */}
-                      {previewSlideIndex < mediaUrls.length - 1 && (
-                        <button
-                          type="button"
-                          onClick={() => setPreviewSlideIndex(prev => Math.min(mediaUrls.length - 1, prev + 1))}
-                          className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-slate-900/60 hover:bg-slate-900/90 text-white flex items-center justify-center backdrop-blur-sm transition-all cursor-pointer shadow-md"
-                        >
-                          <ChevronRight className="w-4 h-4" />
-                        </button>
-                      )}
-
-                      {/* Pagination Indicator Dots */}
-                      <div className="absolute bottom-2 inset-x-0 flex items-center justify-center gap-1.5">
-                        {mediaUrls.map((_, idx) => (
+                        {/* Previous Slide Button */}
+                        {previewSlideIndex > 0 && (
                           <button
-                            key={idx}
                             type="button"
-                            onClick={() => setPreviewSlideIndex(idx)}
-                            className={`w-2 h-2 rounded-full transition-all cursor-pointer ${
-                              previewSlideIndex === idx ? "bg-white scale-125 shadow-sm" : "bg-white/50 hover:bg-white/80"
-                            }`}
-                          />
-                        ))}
-                      </div>
-                    </>
-                  )}
+                            onClick={() => setPreviewSlideIndex(prev => Math.max(0, prev - 1))}
+                            className="absolute left-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-slate-900/60 hover:bg-slate-900/90 text-white flex items-center justify-center backdrop-blur-sm transition-all cursor-pointer shadow-md z-10"
+                          >
+                            <ChevronLeft className="w-4 h-4" />
+                          </button>
+                        )}
+
+                        {/* Next Slide Button */}
+                        {previewSlideIndex < mediaUrls.length - 1 && (
+                          <button
+                            type="button"
+                            onClick={() => setPreviewSlideIndex(prev => Math.min(mediaUrls.length - 1, prev + 1))}
+                            className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-slate-900/60 hover:bg-slate-900/90 text-white flex items-center justify-center backdrop-blur-sm transition-all cursor-pointer shadow-md z-10"
+                          >
+                            <ChevronRight className="w-4 h-4" />
+                          </button>
+                        )}
+
+                        {/* Pagination Indicator Dots */}
+                        <div className="absolute bottom-2 inset-x-0 flex items-center justify-center gap-1.5 z-10">
+                          {mediaUrls.map((_, idx) => (
+                            <button
+                              key={idx}
+                              type="button"
+                              onClick={() => setPreviewSlideIndex(idx)}
+                              className={`w-2 h-2 rounded-full transition-all cursor-pointer ${
+                                previewSlideIndex === idx ? "bg-white scale-125 shadow-sm" : "bg-white/50 hover:bg-white/80"
+                              }`}
+                            />
+                          ))}
+                        </div>
+                      </>
+                    )}
+                  </div>
                 </div>
               ) : (
                 <div className="w-full h-36 rounded-xl border border-dashed border-slate-200 bg-slate-50 flex flex-col items-center justify-center text-slate-400 text-xs">
