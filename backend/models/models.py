@@ -126,6 +126,8 @@ class Workspace(Base):
     posts = relationship("Post", back_populates="workspace", cascade="all, delete-orphan")
     activity_logs = relationship("ActivityLog", back_populates="workspace", cascade="all, delete-orphan")
     competitor_accounts = relationship("CompetitorAccount", back_populates="workspace", cascade="all, delete-orphan")
+    kol_profiles = relationship("KolProfile", back_populates="workspace", cascade="all, delete-orphan")
+    kol_campaigns = relationship("KolCampaign", back_populates="workspace", cascade="all, delete-orphan")
 
 
 class WorkspaceMember(Base):
@@ -183,6 +185,7 @@ class SocialAccount(Base):
     client = relationship("Client", back_populates="social_accounts")
     post_targets = relationship("PostTarget", back_populates="social_account", cascade="all, delete-orphan")
     competitor_accounts = relationship("CompetitorAccount", back_populates="social_account", cascade="all, delete-orphan")
+    kol_campaigns = relationship("KolCampaign", back_populates="social_account", cascade="all, delete-orphan")
 
 class Media(Base):
     __tablename__ = "media"
@@ -403,4 +406,123 @@ class CompetitorPost(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
     competitor = relationship("CompetitorAccount", back_populates="posts")
+
+
+class KolCampaignStatus(str, enum.Enum):
+    DRAFT = "draft"
+    ACTIVE = "active"
+    COMPLETED = "completed"
+    PAUSED = "paused"
+    CANCELLED = "cancelled"
+
+class KolDeliverableType(str, enum.Enum):
+    IG_POST = "ig_post"
+    IG_REELS = "ig_reels"
+    IG_STORY = "ig_story"
+    TIKTOK_VIDEO = "tiktok_video"
+    YOUTUBE_VIDEO = "youtube_video"
+    YOUTUBE_SHORT = "youtube_short"
+    TWITTER_POST = "twitter_post"
+    LINKEDIN_POST = "linkedin_post"
+    BLOG_POST = "blog_post"
+
+class KolDeliverableStatus(str, enum.Enum):
+    PENDING = "pending"
+    SUBMITTED = "submitted"
+    APPROVED = "approved"
+    REJECTED = "rejected"
+    REVISION_REQUESTED = "revision_requested"
+
+class KolPaymentStatus(str, enum.Enum):
+    UNPAID = "unpaid"
+    PARTIAL = "partial"
+    PAID = "paid"
+
+
+class KolProfile(Base):
+    __tablename__ = "kol_profiles"
+
+    id = Column(String(36), primary_key=True, default=generate_uuid)
+    workspace_id = Column(String(36), ForeignKey("workspaces.id", ondelete="CASCADE"), nullable=False, index=True)
+    name = Column(String(255), nullable=False)
+    username = Column(String(255), nullable=False, index=True)
+    primary_platform = Column(Enum(AccountPlatform), default=AccountPlatform.INSTAGRAM, nullable=False)
+    niche = Column(String(100), nullable=True)
+    tier = Column(String(50), default="micro") # nano, micro, macro, mega
+    followers_count = Column(Integer, default=0)
+    engagement_rate = Column(Float, default=0.0)
+    avg_views = Column(Integer, nullable=True)
+    contact_name = Column(String(255), nullable=True)
+    contact_wa = Column(String(20), nullable=True)
+    contact_email = Column(String(255), nullable=True)
+    rate_card = Column(JSON, default=dict)
+    profile_pic_url = Column(Text, nullable=True)
+    notes = Column(Text, nullable=True)
+    is_blacklisted = Column(Boolean, default=False)
+    blacklist_reason = Column(Text, nullable=True)
+    tags = Column(JSON, default=list)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    workspace = relationship("Workspace", back_populates="kol_profiles")
+    campaign_kols = relationship("KolCampaignKol", back_populates="kol_profile", cascade="all, delete-orphan")
+
+
+class KolCampaign(Base):
+    __tablename__ = "kol_campaigns"
+
+    id = Column(String(36), primary_key=True, default=generate_uuid)
+    workspace_id = Column(String(36), ForeignKey("workspaces.id", ondelete="CASCADE"), nullable=False, index=True)
+    social_account_id = Column(String(36), ForeignKey("social_accounts.id", ondelete="CASCADE"), nullable=False, index=True)
+    name = Column(String(255), nullable=False)
+    description = Column(Text, nullable=True)
+    status = Column(Enum(KolCampaignStatus), default=KolCampaignStatus.DRAFT, nullable=False, index=True)
+    start_date = Column(DateTime, nullable=True)
+    end_date = Column(DateTime, nullable=True)
+    total_budget = Column(Float, default=0.0)
+    estimated_revenue = Column(Float, nullable=True)
+    campaign_brief_url = Column(Text, nullable=True)
+    hashtag_mandatory = Column(String(255), nullable=True)
+    created_by_user_id = Column(String(36), ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    workspace = relationship("Workspace", back_populates="kol_campaigns")
+    social_account = relationship("SocialAccount", back_populates="kol_campaigns")
+    campaign_kols = relationship("KolCampaignKol", back_populates="campaign", cascade="all, delete-orphan")
+
+
+class KolCampaignKol(Base):
+    __tablename__ = "kol_campaign_kols"
+
+    id = Column(String(36), primary_key=True, default=generate_uuid)
+    campaign_id = Column(String(36), ForeignKey("kol_campaigns.id", ondelete="CASCADE"), nullable=False, index=True)
+    kol_profile_id = Column(String(36), ForeignKey("kol_profiles.id", ondelete="CASCADE"), nullable=False, index=True)
+    agreed_rate = Column(Float, default=0.0)
+    payment_status = Column(Enum(KolPaymentStatus), default=KolPaymentStatus.UNPAID, nullable=False)
+    paid_amount = Column(Float, default=0.0)
+    notes = Column(Text, nullable=True)
+    joined_at = Column(DateTime, default=datetime.utcnow)
+
+    campaign = relationship("KolCampaign", back_populates="campaign_kols")
+    kol_profile = relationship("KolProfile", back_populates="campaign_kols")
+    deliverables = relationship("KolDeliverable", back_populates="campaign_kol", cascade="all, delete-orphan")
+
+
+class KolDeliverable(Base):
+    __tablename__ = "kol_deliverables"
+
+    id = Column(String(36), primary_key=True, default=generate_uuid)
+    campaign_kol_id = Column(String(36), ForeignKey("kol_campaign_kols.id", ondelete="CASCADE"), nullable=False, index=True)
+    deliverable_type = Column(Enum(KolDeliverableType), default=KolDeliverableType.IG_REELS, nullable=False)
+    title = Column(String(255), nullable=False)
+    status = Column(Enum(KolDeliverableStatus), default=KolDeliverableStatus.PENDING, nullable=False, index=True)
+    due_date = Column(DateTime, nullable=True)
+    content_url = Column(Text, nullable=True)
+    review_notes = Column(Text, nullable=True)
+    approved_at = Column(DateTime, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    campaign_kol = relationship("KolCampaignKol", back_populates="deliverables")
 
