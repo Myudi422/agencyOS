@@ -6,7 +6,7 @@ import {
   Calendar, Users, Newspaper, Search, Heart, Star, Sparkles, 
   ChevronDown, ArrowRight, Hash, TrendingUp, FileText,
   Check, LayoutGrid, FileBarChart, LineChart, Zap, Building2, Share2, ShieldCheck,
-  Sliders, Award, MessageCircle, User, Store, Briefcase, Clock, CheckCircle
+  Sliders, Award, MessageCircle, User, Store, Briefcase, Clock, CheckCircle, Target
 } from "lucide-react";
 import { useAuthStore } from "@/store/authStore";
 
@@ -37,11 +37,10 @@ function LaurelWreathRight({ className = "text-purple-400 w-8 h-12" }: { classNa
 const CATEGORIES = [
   { id: "ALL SOLUTIONS", label: "Semua Solusi", icon: LayoutGrid },
   { id: "SCHEDULER", label: "Scheduler & Queue", icon: Calendar },
+  { id: "AI ASSISTANT", label: "AI Assistant", icon: Sparkles },
   { id: "KOL MANAGEMENT", label: "KOL Campaigns", icon: Users },
-  { id: "MEDIA PUBLISHER", label: "Media Publisher", icon: Newspaper },
   { id: "REPORT & ANALYTICS", label: "Report PDF", icon: FileBarChart },
   { id: "CHECK KOMPETITOR", label: "Check Kompetitor", icon: LineChart },
-  { id: "HASHTAG SAVED", label: "Saved Hashtags", icon: Hash },
 ];
 
 // Feature Cards Mock Data matching Airbnb Property Card style
@@ -61,6 +60,20 @@ const FEATURES = [
     platforms: ["Instagram", "TikTok", "Facebook", "LinkedIn", "X", "YouTube", "Bluesky"]
   },
   {
+    id: "ai_assistant",
+    category: "AI ASSISTANT",
+    badge: "AI Powered",
+    badgeColor: "bg-purple-100 text-purple-700 border-purple-200",
+    title: "AI Assistant Support Analisa & Brainstorm",
+    meta: "Analisis statistik akun otomatis, brainstorming ide konten viral, serta buat caption & brief postingan dalam hitungan detik.",
+    metric: "Instant Strategy",
+    visualBg: "from-purple-500/10 via-indigo-500/5 to-slate-100",
+    visualIcon: Sparkles,
+    visualTag: "Shiera AI Co-Pilot",
+    iconColor: "text-purple-600",
+    platforms: ["AI Analisa", "Brainstorm Ide", "Content & Brief"]
+  },
+  {
     id: "kol",
     category: "KOL MANAGEMENT",
     badge: "NEW FEATURE",
@@ -75,20 +88,6 @@ const FEATURES = [
     platforms: ["TikTok", "Instagram", "YouTube"]
   },
   {
-    id: "media",
-    category: "MEDIA PUBLISHER",
-    badge: "Khusus Media",
-    badgeColor: "bg-sky-100 text-sky-700 border-sky-200",
-    title: "RSS Feed Auto-Push & Breaking News",
-    meta: "Otomatisasi publikasi berita dari CMS portal media Anda langsung ke semua sosmed dalam waktu 3 detik.",
-    metric: "Instant Broadcast",
-    visualBg: "from-sky-500/10 via-blue-500/5 to-slate-100",
-    visualIcon: Newspaper,
-    visualTag: "Auto RSS Engine",
-    iconColor: "text-sky-600",
-    platforms: ["Portal News", "WordPress", "RSS Feed"]
-  },
-  {
     id: "competitor",
     category: "CHECK KOMPETITOR",
     badge: "AI Powered",
@@ -97,7 +96,7 @@ const FEATURES = [
     meta: "Pantau jam posting rahasia, postingan terlaris, dan strategi engagement rate kompetitor secara otomatis.",
     metric: "Real-Time Insights",
     visualBg: "from-amber-500/10 via-orange-500/5 to-slate-100",
-    visualIcon: TrendingUp,
+    visualIcon: LineChart,
     visualTag: "Competitor Spy",
     iconColor: "text-amber-600",
     platforms: ["Instagram", "TikTok", "LinkedIn"]
@@ -114,21 +113,7 @@ const FEATURES = [
     visualIcon: FileText,
     visualTag: "PDF Report Engine",
     iconColor: "text-indigo-600",
-    platforms: ["PDF", "Custom Logo", "White Label"]
-  },
-  {
-    id: "clipper",
-    category: "HASHTAG SAVED",
-    badge: "Power Feature",
-    badgeColor: "bg-rose-100 text-rose-700 border-rose-200",
-    title: "Saved Hashtag Presets & AI Reels Clipper",
-    meta: "Simpan grup hashtag terlaris per industri dan potong video YouTube panjang menjadi video pendek Reels/Shorts.",
-    metric: "1-Click Insert",
-    visualBg: "from-rose-500/10 via-pink-500/5 to-slate-100",
-    visualIcon: Hash,
-    visualTag: "AI Video & Tag Helper",
-    iconColor: "text-rose-600",
-    platforms: ["Reels", "Shorts", "TikTok Clips"]
+    platforms: ["PDF Report", "Custom Logo", "White Label"]
   }
 ];
 
@@ -159,12 +144,12 @@ const TARGET_AUDIENCE = [
     tag: "Client Approval Portal"
   },
   {
-    icon: Newspaper,
+    icon: Target,
     iconBg: "bg-amber-100 text-amber-600",
-    badge: "Otomatisasi Berita",
-    title: "Media Publisher & Tim Redaksi",
-    description: "Otomatiskan publikasi artikel portal berita langsung dari RSS Feed CMS ke seluruh akun media sosial secara serentak tanpa input manual.",
-    tag: "Auto-Push 3 Detik"
+    badge: "Efisiensi Marketing",
+    title: "Social Media Specialist & Tim Marketing",
+    description: "Pantau tren & strategi kompetitor, atur brief campaign influencer, serta analisis performa statistik sosmed secara real-time dalam satu platform.",
+    tag: "All-in-One Growth Toolkit"
   }
 ];
 
@@ -186,6 +171,8 @@ const PRICING_PLANS = [
       "Gratis tanpa biaya (Rp 0)",
       "Unlimited akun sosmed",
       "Semua 10+ platform didukung",
+      "AI Assistant support analisa & brainstorm",
+      "KOL Manager & Deliverable Tracker",
       "Wajib verifikasi WhatsApp",
     ],
     buttonText: "Mulai Trial",
@@ -208,7 +195,8 @@ const PRICING_PLANS = [
       "50 posts/bulan",
       "Unlimited akun sosmed",
       "Semua 10+ platform",
-      "QRIS, GoPay, VA, Kartu Kredit",
+      "AI Assistant support analisa & draft post",
+      "KOL Manager & Deliverable Tracker",
       "Scheduling & media library",
     ],
     buttonText: "Pilih Creator",
@@ -232,9 +220,9 @@ const PRICING_PLANS = [
       "Unlimited akun sosmed",
       "Multi-client management",
       "Semua 10+ platform",
-      "Scheduling & media library",
-      "Priority queue engine",
-      "QRIS, GoPay, VA, Kartu Kredit",
+      "AI Assistant support analisa, brainstorm & brief",
+      "KOL Manager & Deliverable Tracker",
+      "Competitor Spy & Executive PDF Report",
     ],
     buttonText: "Pilih Agency",
     buttonStyle: "bg-gradient-to-r from-purple-600 to-violet-600 text-white shadow-lg shadow-purple-500/30 hover:shadow-xl hover:shadow-purple-500/40",
@@ -257,9 +245,9 @@ const PRICING_PLANS = [
       "Unlimited akun sosmed",
       "Unlimited clients",
       "Semua 10+ platform",
-      "Full media library",
-      "API access & priority support",
-      "QRIS, GoPay, VA, Kartu Kredit",
+      "Full AI Assistant strategy & brief creator",
+      "Full KOL Manager & Competitor Spy",
+      "Full media library & priority support",
     ],
     buttonText: "Pilih Studio",
     buttonStyle: "bg-slate-100 text-slate-800 hover:bg-slate-200 border border-slate-300",
@@ -340,10 +328,10 @@ export default function LandingHomePage() {
             </span>
           </button>
           <button className="flex items-center gap-2 font-semibold text-sm text-slate-500 hover:text-slate-900 transition-colors pb-1 relative">
-            <Newspaper className="w-4 h-4 text-slate-400 group-hover:text-purple-600" />
-            <span>Media Publishers</span>
+            <Sparkles className="w-4 h-4 text-purple-600 group-hover:text-purple-600" />
+            <span>AI Assistant</span>
             <span className="px-1.5 py-0.5 rounded-full bg-purple-100 text-purple-700 text-[9px] font-bold uppercase tracking-wider">
-              NEW
+              AI
             </span>
           </button>
         </nav>
@@ -400,7 +388,7 @@ export default function LandingHomePage() {
             </span>
           </h1>
           <p className="text-base sm:text-xl text-slate-600 leading-relaxed max-w-2xl mx-auto">
-            Platform All-in-One hemat waktu untuk Creator, Olshop, Agency &amp; Publisher. Satu kali upload, konten langsung terbit otomatis di Instagram, TikTok, FB, LinkedIn, X, &amp; YouTube.
+            Platform All-in-One hemat waktu untuk Creator, Olshop, Agency &amp; Brand. Satu kali upload, konten langsung terbit otomatis di Instagram, TikTok, FB, LinkedIn, X, &amp; YouTube.
           </p>
         </div>
 
@@ -458,33 +446,8 @@ export default function LandingHomePage() {
       </section>
 
 
-      {/* ── [SECTION 3] Category Pill Strip (Interactive Vector Filters) ────── */}
-      <section className="border-y border-slate-200/80 bg-slate-50/50 py-4 px-4 sm:px-8">
-        <div className="max-w-7xl mx-auto overflow-x-auto no-scrollbar flex items-center gap-2 sm:gap-3 py-1">
-          {CATEGORIES.map((cat) => {
-            const Icon = cat.icon;
-            const isActive = activeCategory === cat.id;
-            return (
-              <button
-                key={cat.id}
-                onClick={() => setActiveCategory(cat.id)}
-                className={`whitespace-nowrap px-4 py-2 rounded-full text-xs font-semibold flex items-center gap-2 transition-all shrink-0 ${
-                  isActive
-                    ? "bg-purple-100 text-purple-700 border-2 border-purple-600 shadow-xs font-bold"
-                    : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200 hover:text-slate-900"
-                }`}
-              >
-                <Icon className={`w-3.5 h-3.5 ${isActive ? "text-purple-600" : "text-slate-500"}`} />
-                <span>{cat.label}</span>
-              </button>
-            );
-          })}
-        </div>
-      </section>
-
-
       {/* ── [NEW SECTION] "Untuk Siapa Shiera Dirancang?" ────────────────── */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-12">
+      <section className="py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-12">
         <div className="text-center space-y-3 max-w-3xl mx-auto">
           <span className="text-xs font-bold uppercase tracking-wider text-purple-600 bg-purple-50 px-3 py-1 rounded-full border border-purple-100 flex items-center gap-1.5 w-fit mx-auto">
             <Users className="w-3.5 h-3.5 text-purple-600" />
@@ -534,6 +497,31 @@ export default function LandingHomePage() {
                   </span>
                 </div>
               </div>
+            );
+          })}
+        </div>
+      </section>
+
+
+      {/* ── [SECTION 3] Category Pill Strip (Interactive Vector Filters) ────── */}
+      <section className="border-y border-slate-200/80 bg-slate-50/50 py-4 px-4 sm:px-8">
+        <div className="max-w-7xl mx-auto overflow-x-auto no-scrollbar flex items-center gap-2 sm:gap-3 py-1">
+          {CATEGORIES.map((cat) => {
+            const Icon = cat.icon;
+            const isActive = activeCategory === cat.id;
+            return (
+              <button
+                key={cat.id}
+                onClick={() => setActiveCategory(cat.id)}
+                className={`whitespace-nowrap px-4 py-2 rounded-full text-xs font-semibold flex items-center gap-2 transition-all shrink-0 ${
+                  isActive
+                    ? "bg-purple-100 text-purple-700 border-2 border-purple-600 shadow-xs font-bold"
+                    : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200 hover:text-slate-900"
+                }`}
+              >
+                <Icon className={`w-3.5 h-3.5 ${isActive ? "text-purple-600" : "text-slate-500"}`} />
+                <span>{cat.label}</span>
+              </button>
             );
           })}
         </div>
