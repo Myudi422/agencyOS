@@ -522,6 +522,14 @@ class KolDeliverable(Base):
     content_url = Column(Text, nullable=True)
     review_notes = Column(Text, nullable=True)
     approved_at = Column(DateTime, nullable=True)
+    # KOL-submitted statistics (wajib dilaporkan KOL)
+    stat_views = Column(Integer, nullable=True)
+    stat_likes = Column(Integer, nullable=True)
+    stat_comments = Column(Integer, nullable=True)
+    stat_shares = Column(Integer, nullable=True)
+    stat_reach = Column(Integer, nullable=True)
+    stat_reported_at = Column(DateTime, nullable=True)
+    stat_period_days = Column(Integer, nullable=True)  # berapa hari setelah posting diukur
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
