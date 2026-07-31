@@ -398,7 +398,7 @@ export default function LandingHomePage() {
         {/* Main Headline H1 */}
         <div className="space-y-4 max-w-4xl mx-auto">
           <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold text-slate-900 font-['Outfit'] tracking-tight leading-[1.15]">
-            Posting Sosmed Sekaligus Ke Semua Akun,{" "}
+            Kelola &amp; Posting Semua Sosmed Dalam 1 Platform,{" "}
             <span className="bg-gradient-to-r from-purple-600 via-violet-600 to-indigo-600 bg-clip-text text-transparent">
               Gak Pake Capek Upload Manual
             </span>
