@@ -146,7 +146,7 @@ export default function CampaignDetailPage() {
 
   return (
     <div className="space-y-6 pb-20">
-      <div className="p-6 max-w-7xl mx-auto space-y-6">
+      <div className="p-3 sm:p-6 max-w-7xl mx-auto space-y-6">
         {/* Navigation & Header */}
         <div className="bg-white p-6 rounded-3xl border border-slate-200/90 shadow-xs space-y-4">
           <div className="flex items-center justify-between">

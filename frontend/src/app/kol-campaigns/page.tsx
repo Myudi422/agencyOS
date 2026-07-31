@@ -8,7 +8,7 @@ import KolDatabaseDrawer from "@/components/kol/KolDatabaseDrawer";
 import { fetchApi } from "@/lib/api";
 import { useStore } from "@/store/useStore";
 import {
-  Sparkles, Plus, Users, Search, RefreshCw, AlertCircle, Filter, FolderKanban
+  Megaphone, Plus, Users2, Search, RefreshCw, AlertCircle, Filter, FolderKanban, Globe
 } from "lucide-react";
 
 export default function KolCampaignsPage() {
@@ -79,15 +79,15 @@ export default function KolCampaignsPage() {
 
   return (
     <div className="space-y-6 pb-20">
-      <div className="p-6 max-w-7xl mx-auto space-y-6">
+      <div className="p-3 sm:p-6 max-w-7xl mx-auto space-y-6">
         {/* Top Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-slate-200/90 shadow-xs">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-5 sm:p-6 rounded-3xl border border-slate-200/90 shadow-xs">
           <div>
-            <div className="flex items-center gap-2 mb-1">
-              <div className="w-8 h-8 rounded-xl bg-purple-600 text-white flex items-center justify-center font-bold text-sm shadow-md shadow-purple-500/25">
-                🤝
+            <div className="flex flex-wrap items-center gap-2 mb-1">
+              <div className="w-8 h-8 rounded-xl bg-purple-600 text-white flex items-center justify-center font-bold text-sm shadow-md shadow-purple-500/25 shrink-0">
+                <Megaphone className="w-4 h-4" />
               </div>
-              <h1 className="text-xl font-extrabold text-slate-900 tracking-tight">
+              <h1 className="text-lg sm:text-xl font-extrabold text-slate-900 tracking-tight">
                 KOL Campaign &amp; Deliverable Tracker
               </h1>
               <span className="px-2.5 py-0.5 rounded-full bg-purple-100 text-purple-700 font-bold text-[10px] uppercase border border-purple-200">
@@ -99,12 +99,12 @@ export default function KolCampaignsPage() {
             </p>
           </div>
 
-          <div className="flex items-center gap-2.5 shrink-0">
+          <div className="flex flex-wrap items-center gap-2.5 shrink-0">
             <button
               onClick={() => setIsDatabaseDrawerOpen(true)}
-              className="px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold text-xs flex items-center gap-2 transition-all"
+              className="px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold text-xs flex items-center gap-2 transition-all"
             >
-              <Users className="w-4 h-4 text-purple-600" />
+              <Users2 className="w-4 h-4 text-purple-600" />
               <span>Master KOL Database</span>
             </button>
 
@@ -133,7 +133,7 @@ export default function KolCampaignsPage() {
           {/* Right Column: Campaign Cards List */}
           <div className="md:col-span-2 space-y-4">
             {/* Filter Bar */}
-            <div className="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-xs flex flex-wrap items-center justify-between gap-3">
+            <div className="bg-white p-3.5 sm:p-4 rounded-2xl border border-slate-200/90 shadow-xs flex flex-wrap items-center justify-between gap-3">
               <div className="flex items-center gap-2">
                 <span className="text-xs font-bold text-slate-700 flex items-center gap-1">
                   <Filter className="w-3.5 h-3.5 text-slate-400" />
@@ -178,7 +178,7 @@ export default function KolCampaignsPage() {
                 ))}
               </div>
             ) : campaigns.length === 0 ? (
-              <div className="bg-white rounded-3xl border border-dashed border-slate-300 p-12 text-center">
+              <div className="bg-white rounded-3xl border border-dashed border-slate-300 p-8 sm:p-12 text-center">
                 <FolderKanban className="w-10 h-10 text-slate-300 mx-auto mb-3" />
                 <h3 className="text-sm font-extrabold text-slate-800 mb-1">
                   Belum ada Campaign KOL

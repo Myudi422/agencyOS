@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { X, Loader2, Sparkles, Calendar, DollarSign, Link as LinkIcon, Hash } from "lucide-react";
+import { X, Loader2, Megaphone, Calendar, DollarSign, Link as LinkIcon, Hash } from "lucide-react";
 import { AccountItem } from "./KolAccountSelector";
 import { fetchApi } from "@/lib/api";
 
@@ -113,13 +113,20 @@ export default function CampaignCreateModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs animate-in fade-in duration-150">
-      <div className="bg-white rounded-3xl border border-slate-200 shadow-2xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4">
+      {/* Full Backdrop */}
+      <div
+        onClick={onClose}
+        className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity animate-in fade-in duration-150"
+      />
+
+      {/* Modal Dialog */}
+      <div className="relative z-10 bg-white rounded-3xl border border-slate-200 shadow-2xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-150">
         {/* Header */}
-        <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+        <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50 shrink-0">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center font-bold">
-              <Sparkles className="w-4 h-4 text-purple-600" />
+              <Megaphone className="w-4 h-4 text-purple-600" />
             </div>
             <div>
               <h3 className="text-base font-extrabold text-slate-900">
@@ -139,7 +146,7 @@ export default function CampaignCreateModal({
         </div>
 
         {/* Form Body */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-4 overflow-y-auto flex-1">
+        <form onSubmit={handleSubmit} className="p-5 sm:p-6 space-y-4 overflow-y-auto flex-1">
           {error && (
             <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-xs font-semibold text-red-700">
               ⚠️ {error}
@@ -210,7 +217,7 @@ export default function CampaignCreateModal({
           </div>
 
           {/* Budget & Revenue */}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1.5">Total Budget (Rp)</label>
               <input
@@ -234,7 +241,7 @@ export default function CampaignCreateModal({
           </div>
 
           {/* Dates */}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1.5">Tanggal Mulai</label>
               <input
@@ -256,7 +263,7 @@ export default function CampaignCreateModal({
           </div>
 
           {/* Hashtag & Brief URL */}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1.5">Hashtag Wajib</label>
               <input

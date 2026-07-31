@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { CheckCircle2, ChevronRight, AlertCircle, Plus } from "lucide-react";
+import { CheckCircle2, ChevronRight, AlertCircle, Plus, Globe } from "lucide-react";
 
 export interface AccountItem {
   id: string;
@@ -58,15 +58,15 @@ export default function KolAccountSelector({
         }`}
       >
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-xl bg-purple-600 text-white flex items-center justify-center font-bold text-xs shadow-xs">
-            🌐
+          <div className="w-8 h-8 rounded-xl bg-purple-600 text-white flex items-center justify-center font-bold text-xs shadow-xs shrink-0">
+            <Globe className="w-4 h-4" />
           </div>
           <div>
             <p className="text-xs font-bold text-slate-800">Semua Akun</p>
             <p className="text-[10px] text-slate-500">Tampilkan seluruh campaign</p>
           </div>
         </div>
-        {selectedAccountId === null && <CheckCircle2 className="w-4 h-4 text-purple-600" />}
+        {selectedAccountId === null && <CheckCircle2 className="w-4 h-4 text-purple-600 shrink-0" />}
       </button>
 
       {loading ? (

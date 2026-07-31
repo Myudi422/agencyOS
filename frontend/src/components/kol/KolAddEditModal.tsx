@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { X, Loader2, User, Phone, Mail, Instagram, Sparkles, AlertCircle } from "lucide-react";
+import { X, Loader2, User, Phone, Mail, Instagram, Users2, AlertCircle } from "lucide-react";
 import { fetchApi } from "@/lib/api";
 
 interface KolAddEditModalProps {
@@ -134,13 +134,19 @@ export default function KolAddEditModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs animate-in fade-in duration-150">
-      <div className="bg-white rounded-3xl border border-slate-200 shadow-2xl w-full max-w-xl overflow-hidden flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 z-[110] flex items-center justify-center p-3 sm:p-4">
+      {/* Backdrop */}
+      <div
+        onClick={onClose}
+        className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity animate-in fade-in duration-150"
+      />
+
+      <div className="relative z-10 bg-white rounded-3xl border border-slate-200 shadow-2xl w-full max-w-xl overflow-hidden flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-150">
         {/* Header */}
-        <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+        <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50 shrink-0">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center font-bold">
-              👤
+              <Users2 className="w-4 h-4 text-purple-600" />
             </div>
             <div>
               <h3 className="text-base font-extrabold text-slate-900">
@@ -158,7 +164,7 @@ export default function KolAddEditModal({
         </div>
 
         {/* Body */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-4 overflow-y-auto flex-1">
+        <form onSubmit={handleSubmit} className="p-5 sm:p-6 space-y-4 overflow-y-auto flex-1">
           {error && (
             <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-xs font-semibold text-red-700">
               ⚠️ {error}
@@ -166,7 +172,7 @@ export default function KolAddEditModal({
           )}
 
           {/* Name & Handle */}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1">
                 Nama Lengkap / Brand <span className="text-red-500">*</span>
@@ -196,7 +202,7 @@ export default function KolAddEditModal({
           </div>
 
           {/* Platform, Niche, Tier */}
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1">Platform Utama</label>
               <select
@@ -239,7 +245,7 @@ export default function KolAddEditModal({
           </div>
 
           {/* Stats: Followers, ER%, Avg Views */}
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1">Followers</label>
               <input
@@ -278,7 +284,7 @@ export default function KolAddEditModal({
           {/* Contact Details */}
           <div className="bg-slate-50 p-3.5 rounded-2xl border border-slate-100 space-y-3">
             <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider">Kontak PIC / Manajer</h4>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
               <input
                 type="text"
                 value={contactName}
@@ -306,7 +312,7 @@ export default function KolAddEditModal({
           {/* Rate Card Estimates */}
           <div className="bg-purple-50/50 p-3.5 rounded-2xl border border-purple-100 space-y-3">
             <h4 className="text-xs font-bold text-purple-900 uppercase tracking-wider">Estimasi Rate Card (Rp)</h4>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
               <div>
                 <span className="text-[10px] text-purple-700 font-semibold block mb-1">IG Reels</span>
                 <input
@@ -341,7 +347,7 @@ export default function KolAddEditModal({
           </div>
 
           {/* Avatar URL & Notes */}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1">Avatar / Foto URL</label>
               <input
