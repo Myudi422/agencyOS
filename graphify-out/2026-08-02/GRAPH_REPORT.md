@@ -1,7 +1,7 @@
 # Graph Report - agencyOS  (2026-08-02)
 
 ## Corpus Check
-- 131 files · ~752,831 words
+- 131 files · ~752,770 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
@@ -166,8 +166,8 @@ Cohesion: 0.13
 Nodes (31): get, root(), Post, PostStatus, PostTarget, PostType, create_media_upload_url(), create_post() (+23 more)
 
 ### Community 14 - "User"
-Cohesion: 0.10
-Nodes (39): User, AccountBriefingSchema, bulk_action(), BulkActionRequest, delete_account(), get_account_briefing(), get_accounts(), BaseModel (+31 more)
+Cohesion: 0.12
+Nodes (34): User, AccountBriefingSchema, bulk_action(), BulkActionRequest, delete_account(), get_account_briefing(), get_accounts(), BaseModel (+26 more)
 
 ### Community 15 - "GeminiService"
 Cohesion: 0.12
@@ -270,8 +270,8 @@ Cohesion: 0.33
 Nodes (5): app, { createServer }, handle, next, { parse }
 
 ### Community 40 - "Client"
-Cohesion: 0.26
-Nodes (13): Client, create_workspace(), get_workspaces(), OnboardingSetupRequest, BaseModel, get, post, Session (+5 more)
+Cohesion: 0.18
+Nodes (18): Client, ClientCreate, create_client(), BaseModel, post, Creates a new client under a workspace owned by the current user., create_workspace(), get_workspaces() (+10 more)
 
 ### Community 41 - "AgencyOS Backend Documentation"
 Cohesion: 0.11
