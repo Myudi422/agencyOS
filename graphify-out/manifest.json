@@ -600,8 +600,8 @@
     "semantic_hash": "ea5402e223e0559f2c17cc7eef9c2294"
   },
   ".agents/rules/graphify.md": {
-    "mtime": 1785635380.0791721,
-    "ast_hash": "a0e4d192b9e2e17256124dbfc8e24e6a",
+    "mtime": 1785637132.198901,
+    "ast_hash": "93230e0edd857671ce6e0732018de06c",
     "semantic_hash": ""
   },
   ".agents/workflows/graphify.md": {
