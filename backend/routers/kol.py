@@ -6,6 +6,7 @@ deliverable checklists, and real-time campaign ROI calculation.
 
 from fastapi import APIRouter, Depends, HTTPException, Header, Query
 from pydantic import BaseModel, Field
+# pyrefly: ignore [missing-import]
 from sqlalchemy.orm import Session
 from typing import Optional, List, Any, Dict
 from datetime import datetime
@@ -1127,13 +1128,9 @@ def submit_public_kol_deliverable(
     if not deliverable:
         raise HTTPException(status_code=404, detail="Deliverable tidak ditemukan pada portal Anda.")
 
-    # Block editing if already approved
-    current_status = deliverable.status.value if hasattr(deliverable.status, "value") else str(deliverable.status)
-    if current_status == "approved":
-        raise HTTPException(status_code=403, detail="Konten ini sudah disetujui (Approved) dan tidak dapat diubah lagi.")
-
     deliverable.content_url = req.content_url.strip()
-    deliverable.status = KolDeliverableStatus.SUBMITTED
+    deliverable.status = KolDeliverableStatus.APPROVED
+    deliverable.approved_at = datetime.utcnow()
     if req.review_notes:
         deliverable.review_notes = req.review_notes.strip()
     deliverable.updated_at = datetime.utcnow()
@@ -1145,7 +1142,7 @@ def submit_public_kol_deliverable(
 
     return {
         "status": "ok",
-        "message": f"Link konten untuk '{deliverable.title}' berhasil dikirim! Status diperbarui ke Submitted.",
+        "message": f"Link postingan untuk '{deliverable.title}' berhasil disimpan!",
         "deliverable_id": deliverable.id,
         "content_url": deliverable.content_url
     }

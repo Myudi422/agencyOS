@@ -1,16 +1,16 @@
 # Graph Report - agencyOS  (2026-08-02)
 
 ## Corpus Check
-- 131 files · ~752,654 words
+- 131 files · ~752,770 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1301 nodes · 2994 edges · 67 communities (50 shown, 17 thin omitted)
+- 1301 nodes · 2998 edges · 67 communities (50 shown, 17 thin omitted)
 - Extraction: 87% EXTRACTED · 13% INFERRED · 0% AMBIGUOUS · INFERRED: 378 edges (avg confidence: 0.5)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `77630a84`
+- Built from commit: `08a90ac5`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -23,7 +23,7 @@
 - PostForMeService
 - SocialAccount
 - media.py
-- fetchApi
+- pricing/page.tsx
 - models.py
 - useStore
 - useAuthStore
@@ -32,7 +32,7 @@
 - User
 - GeminiService
 - compilerOptions
-- kol-campaigns/page.tsx
+- fetchApi
 - QueueService
 - require_user
 - InstagrapiService
@@ -64,7 +64,7 @@
 - rules/graphify.md
 - workflows/graphify.md
 - [token]/page.tsx
-- dashboard/page.tsx
+- useConfirmStore.ts
 - date-fns
 - firebase
 - next.config.js
@@ -83,8 +83,8 @@
 ## God Nodes (most connected - your core abstractions)
 1. `User` - 141 edges
 2. `ActivityLog` - 57 edges
-3. `SocialAccount` - 53 edges
-4. `fetchApi()` - 53 edges
+3. `fetchApi()` - 56 edges
+4. `SocialAccount` - 53 edges
 5. `useStore` - 42 edges
 6. `WorkspaceMember` - 38 edges
 7. `Workspace` - 37 edges
@@ -141,21 +141,21 @@ Nodes (37): AccountStatus, RoleEnum, SocialAccount, BlueskyConnectRequest, Chall
 Cohesion: 0.08
 Nodes (33): Media, bulk_delete_media(), bulk_move_media(), BulkDeleteRequest, BulkMoveRequest, delete_folder(), delete_media(), get_media_items() (+25 more)
 
-### Community 8 - "fetchApi"
-Cohesion: 0.08
-Nodes (30): AdminPage(), TabType, TIER_COLORS, TIER_ICONS, BillingSuccessContent(), dynamic, CalendarImageThumbnail(), CalendarPage() (+22 more)
+### Community 8 - "pricing/page.tsx"
+Cohesion: 0.29
+Nodes (6): PLANS, PricingPage(), Window, Step, WaVerifyModal(), WaVerifyModalProps
 
 ### Community 9 - "models.py"
 Cohesion: 0.15
 Nodes (13): Settings, get_db(), Script perbaikan langsung: Ambil hasil dari PostForMe API untuk semua post yang…, JobStatus, PostPublishResult, PublishJob, Menyimpan hasil aktual publish dari PostForMe API (/v1/social-post-results).…, Reset Subscriptions Script — Clears all user subscriptions in DB. Run: python… (+5 more)
 
 ### Community 10 - "useStore"
-Cohesion: 0.11
-Nodes (25): AccountsPage(), dynamic, PLATFORMS_CONFIG, ActivityPage(), OAuthCallbackHandler(), ClientsPage(), MediaPage(), OnboardingPage() (+17 more)
+Cohesion: 0.09
+Nodes (27): AccountsPage(), dynamic, PLATFORMS_CONFIG, ActivityPage(), OAuthCallbackHandler(), CalendarImageThumbnail(), CalendarPage(), getProxiedImageUrl() (+19 more)
 
 ### Community 11 - "useAuthStore"
-Cohesion: 0.14
-Nodes (22): LoginPage(), SubscriptionGuard(), TIER_META, PUBLIC_SPLASH_PATHS, SplashScreen(), AppLayout(), PUBLIC_PATHS, Header() (+14 more)
+Cohesion: 0.10
+Nodes (28): AdminPage(), TabType, TIER_COLORS, TIER_ICONS, BillingSuccessContent(), dynamic, LoginPage(), SubscriptionGuard() (+20 more)
 
 ### Community 12 - "statistics.py"
 Cohesion: 0.09
@@ -177,9 +177,9 @@ Nodes (19): generate_otp(), normalize_phone(), Fonnte WhatsApp OTP Service Mengi
 Cohesion: 0.07
 Nodes (26): compilerOptions, allowJs, esModuleInterop, incremental, isolatedModules, jsx, lib, module (+18 more)
 
-### Community 17 - "kol-campaigns/page.tsx"
-Cohesion: 0.11
-Nodes (22): KolCampaignsPage(), formatNumberToRupiahString(), getTerbilangShort(), parseRupiahStringToNumber(), RupiahInput(), RupiahInputProps, CampaignCard(), CampaignCardProps (+14 more)
+### Community 17 - "fetchApi"
+Cohesion: 0.09
+Nodes (32): CampaignDetailPage(), DELIVERABLE_STATUS_COLORS, PAYMENT_STATUS_BADGES, KolCampaignsPage(), formatNumberToRupiahString(), getTerbilangShort(), parseRupiahStringToNumber(), RupiahInput() (+24 more)
 
 ### Community 18 - "QueueService"
 Cohesion: 0.06
@@ -194,8 +194,8 @@ Cohesion: 0.21
 Nodes (10): InstagrapiService, Any, Session, Instagrapi Service — Instagram Private API Integration for Competitor Spy Uses…, Fetch competitor profile information from Instagram., Fetch recent posts for a competitor, calculate engagement rate, top hashtags,…, Fetch saved Instagram session from global settings table., Initializes an instagrapi Client with session settings. Supports sessionid… (+2 more)
 
 ### Community 21 - "useToastStore.ts"
-Cohesion: 0.22
-Nodes (6): GlassToastManager(), PLATFORM_BADGES, PostComposerModal(), ToastItem, ToastState, useToastStore
+Cohesion: 0.15
+Nodes (11): OnboardingPage(), AccountBriefingModal(), AccountBriefingModalProps, DEFAULT_PILLARS, GlassToastManager(), PLATFORM_BADGES, PostComposerModal(), toast (+3 more)
 
 ### Community 22 - "Component: Firebase Auth (Backend)"
 Cohesion: 0.06
@@ -289,16 +289,16 @@ Nodes (12): 🚀 1. Overview & Arsitektur Sistem, 🛠️ 2. Komponen Teknis Ter
 Cohesion: 0.20
 Nodes (9): 1. Run Backend (FastAPI), 2. Run Frontend (Next.js 15), AgencyOS - Enterprise Digital Agency Social Management Platform, Backend, Default Configured Credentials, Frontend, Getting Started, Key Features MVP 1.0 (+1 more)
 
-### Community 49 - "dashboard/page.tsx"
-Cohesion: 0.50
-Nodes (3): DashboardImageThumbnail(), DashboardPage(), getProxiedImageUrl()
+### Community 49 - "useConfirmStore.ts"
+Cohesion: 0.47
+Nodes (4): GlobalGlassConfirmModal(), ConfirmOptions, ConfirmState, useConfirmStore
 
 ### Community 62 - "reschedule_post"
 Cohesion: 0.40
 Nodes (5): BaseModel, put, Reschedules a post in DB AND in PostForMe API., reschedule_post(), RescheduleRequest
 
 ## Knowledge Gaps
-- **290 isolated node(s):** `RupiahInputProps`, `CampaignCreateModalProps`, `KolAddEditModalProps`, `KolAddToCampaignModalProps`, `Settings` (+285 more)
+- **289 isolated node(s):** `Settings`, `nextConfig`, `name`, `version`, `private` (+284 more)
   These have ≤1 connection - possible missing edges or undocumented components.
 - **17 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
@@ -306,10 +306,10 @@ Nodes (5): BaseModel, put, Reschedules a post in DB AND in PostForMe API., resch
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `User` connect `User` to `UserSubscription`, `competitors.py`, `kol.py`, `SocialAccount`, `Client`, `models.py`, `statistics.py`, `posts.py`, `QueueService`, `require_user`, `reschedule_post`?**
-  _High betweenness centrality (0.108) - this node is a cross-community bridge._
+  _High betweenness centrality (0.110) - this node is a cross-community bridge._
 - **Why does `PostForMeService` connect `PostForMeService` to `models.py`?**
-  _High betweenness centrality (0.028) - this node is a cross-community bridge._
-- **Why does `dependencies` connect `dependencies` to `package.json`, `date-fns`, `firebase`, `html2canvas`, `next`, `react`, `tailwind-merge`, `zustand`?**
+  _High betweenness centrality (0.027) - this node is a cross-community bridge._
+- **Why does `fetchApi()` connect `fetchApi` to `statistics/page.tsx`, `pricing/page.tsx`, `useStore`, `useAuthStore`, `useToastStore.ts`, `competitor-spy/page.tsx`, `queue/page.tsx`?**
   _High betweenness centrality (0.020) - this node is a cross-community bridge._
 - **Are the 42 inferred relationships involving `User` (e.g. with `AccountBriefingSchema` and `BulkActionRequest`) actually correct?**
   _`User` has 42 INFERRED edges - model-reasoned connections that need verification._
@@ -317,5 +317,5 @@ _Questions this graph is uniquely positioned to answer:_
   _`ActivityLog` has 30 INFERRED edges - model-reasoned connections that need verification._
 - **Are the 33 inferred relationships involving `SocialAccount` (e.g. with `AccountBriefingSchema` and `BulkActionRequest`) actually correct?**
   _`SocialAccount` has 33 INFERRED edges - model-reasoned connections that need verification._
-- **What connects `RupiahInputProps`, `CampaignCreateModalProps`, `KolAddEditModalProps` to the rest of the system?**
-  _290 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **What connects `Settings`, `nextConfig`, `name` to the rest of the system?**
+  _289 weakly-connected nodes found - possible documentation gaps or missing edges._

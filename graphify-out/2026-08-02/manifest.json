@@ -310,9 +310,9 @@
     "semantic_hash": "52ea8c49c81213a5bc66e967b970b5b2"
   },
   "frontend/src/app/kol-campaigns/[campaignId]/page.tsx": {
-    "mtime": 1785503766.829882,
-    "ast_hash": "7877dd9a20508b1c3c441e6312a6825c",
-    "semantic_hash": "7877dd9a20508b1c3c441e6312a6825c"
+    "mtime": 1785636724.852925,
+    "ast_hash": "35fd4de36fd56980e6c191f024beb6e6",
+    "semantic_hash": ""
   },
   "frontend/src/app/kol-campaigns/page.tsx": {
     "mtime": 1785503766.829882,
@@ -320,9 +320,9 @@
     "semantic_hash": "3855bb634887c81a30dfbc68a69f3df5"
   },
   "frontend/src/app/kol-portal/[token]/page.tsx": {
-    "mtime": 1785503766.8303945,
-    "ast_hash": "9bc63649b2e6069fe5b0db5d6186aea8",
-    "semantic_hash": "9bc63649b2e6069fe5b0db5d6186aea8"
+    "mtime": 1785636731.0173035,
+    "ast_hash": "5c01e64947fc08acaf2a6a9e05ddc56e",
+    "semantic_hash": ""
   },
   "frontend/src/app/landing/page.tsx": {
     "mtime": 1785365900.0452986,

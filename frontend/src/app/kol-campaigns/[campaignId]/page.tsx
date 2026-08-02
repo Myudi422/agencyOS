@@ -11,15 +11,15 @@ import { fetchApi } from "@/lib/api";
 import { useStore } from "@/store/useStore";
 import {
   ArrowLeft, Plus, CheckCircle2, Clock, AlertTriangle, Trash2, Edit, ExternalLink,
-  DollarSign, Hash, Calendar, RefreshCw, UserMinus, ShieldAlert
+  DollarSign, Hash, Calendar, RefreshCw, UserMinus, ShieldAlert, Send
 } from "lucide-react";
 
 const DELIVERABLE_STATUS_COLORS: Record<string, { label: string; bg: string; text: string }> = {
-  pending: { label: "Pending", bg: "bg-slate-100", text: "text-slate-600" },
-  submitted: { label: "Submitted", bg: "bg-blue-100", text: "text-blue-700" },
-  approved: { label: "Approved ✅", bg: "bg-emerald-100", text: "text-emerald-800" },
-  revision_requested: { label: "Revisi ⚠️", bg: "bg-amber-100", text: "text-amber-800" },
-  rejected: { label: "Rejected ❌", bg: "bg-red-100", text: "text-red-800" },
+  pending: { label: "Belum Post", bg: "bg-slate-100", text: "text-slate-600" },
+  approved: { label: "Sudah Post ✅", bg: "bg-emerald-100", text: "text-emerald-800" },
+  submitted: { label: "Sudah Post ✅", bg: "bg-emerald-100", text: "text-emerald-800" },
+  revision_requested: { label: "Belum Post", bg: "bg-slate-100", text: "text-slate-600" },
+  rejected: { label: "Belum Post", bg: "bg-slate-100", text: "text-slate-600" },
 };
 
 const PAYMENT_STATUS_BADGES: Record<string, { label: string; bg: string; text: string }> = {
@@ -307,7 +307,24 @@ export default function CampaignDetailPage() {
                             title="Copy Link Portal khusus Influencer ini (Tanpa Login)"
                           >
                             <ExternalLink className="w-3 h-3" />
-                            <span>Copy Link Portal</span>
+                            <span>Copy Link</span>
+                          </button>
+
+                          <button
+                            onClick={() => {
+                              const portalUrl = `${window.location.origin}/kol-portal/${ckol.public_token}`;
+                              const waNum = kolProf?.contact_wa ? kolProf.contact_wa.replace(/[^\d]/g, "") : "";
+                              const msg = encodeURIComponent(
+                                `Halo @${kolProf?.username || "Partner"}! 👋\n\nBerikut link portal tugas campaign *${campaign?.name || "KOL Campaign"}* dari *${campaign?.social_account?.name || "Agency"}*:\n\n🔗 ${portalUrl}\n\nDi portal ini kamu bisa lihat brief, tempel link konten yang sudah tayang, & update statistik tanpa perlu login akun. Terima kasih! 🙏`
+                              );
+                              const waUrl = waNum ? `https://wa.me/${waNum}?text=${msg}` : `https://wa.me/?text=${msg}`;
+                              window.open(waUrl, "_blank");
+                            }}
+                            className="px-2.5 py-1 rounded-xl text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-colors flex items-center gap-1"
+                            title="Kirim Link Portal ke WhatsApp KOL (Pre-filled Chat)"
+                          >
+                            <Send className="w-3 h-3" />
+                            <span>Kirim WA</span>
                           </button>
 
                           <select
@@ -403,15 +420,12 @@ export default function CampaignDetailPage() {
                                   {/* Status Selector & Actions */}
                                   <div className="flex items-center gap-2 shrink-0">
                                     <select
-                                      value={d.status}
+                                      value={d.status === "submitted" ? "approved" : d.status}
                                       onChange={(e) => handleUpdateDeliverableStatus(d.id, e.target.value)}
                                       className={`px-2.5 py-1 rounded-xl text-xs font-bold border ${stBadge.bg} ${stBadge.text} cursor-pointer focus:outline-none`}
                                     >
-                                      <option value="pending">Pending</option>
-                                      <option value="submitted">Submitted</option>
-                                      <option value="approved">Approved ✅</option>
-                                      <option value="revision_requested">Revisi ⚠️</option>
-                                      <option value="rejected">Rejected ❌</option>
+                                      <option value="pending">Belum Post (Pending)</option>
+                                      <option value="approved">Sudah Post (Live ✅)</option>
                                     </select>
 
                                     <button

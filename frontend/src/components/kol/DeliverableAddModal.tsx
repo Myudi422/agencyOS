@@ -166,11 +166,8 @@ export default function DeliverableAddModal({
                 onChange={(e) => setStatus(e.target.value)}
                 className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-purple-500"
               >
-                <option value="pending">Pending (Belum)</option>
-                <option value="submitted">Submitted (Sudah Tayang)</option>
-                <option value="approved">Approved (Disetujui ✅)</option>
-                <option value="revision_requested">Revisi Diminta ⚠️</option>
-                <option value="rejected">Rejected (Ditolak ❌)</option>
+                <option value="pending">Belum Post (Pending)</option>
+                <option value="approved">Sudah Post (Live ✅)</option>
               </select>
             </div>
             <div>
