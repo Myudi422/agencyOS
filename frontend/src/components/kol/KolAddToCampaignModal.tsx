@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { X, Loader2, Plus, Search, UserCheck } from "lucide-react";
 import { fetchApi } from "@/lib/api";
+import RupiahInput from "@/components/common/RupiahInput";
 
 interface KolAddToCampaignModalProps {
   isOpen: boolean;
@@ -186,22 +187,18 @@ export default function KolAddToCampaignModal({
 
           {/* Agreed Rate & Payment Status */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5">Tarif Disepakati (Rp)</label>
-              <input
-                type="number"
-                value={agreedRate}
-                onChange={(e) => setAgreedRate(e.target.value === "" ? "" : Number(e.target.value))}
-                placeholder="750000"
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-800"
-              />
-            </div>
+            <RupiahInput
+              label="Tarif Disepakati"
+              value={agreedRate}
+              onChange={(val) => setAgreedRate(val)}
+              placeholder="750.000"
+            />
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1.5">Status Pembayaran</label>
               <select
                 value={paymentStatus}
                 onChange={(e) => setPaymentStatus(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-800"
+                className="w-full px-3 py-2.5 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-purple-500"
               >
                 <option value="unpaid">Belum Dibayar (Unpaid)</option>
                 <option value="partial">Dibayar Sebagian (Partial)</option>
@@ -211,16 +208,12 @@ export default function KolAddToCampaignModal({
           </div>
 
           {/* Paid Amount */}
-          <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1.5">Jumlah Sudah Dibayar (Rp)</label>
-            <input
-              type="number"
-              value={paidAmount}
-              onChange={(e) => setPaidAmount(e.target.value === "" ? "" : Number(e.target.value))}
-              placeholder="350000"
-              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-800"
-            />
-          </div>
+          <RupiahInput
+            label="Jumlah Sudah Dibayar"
+            value={paidAmount}
+            onChange={(val) => setPaidAmount(val)}
+            placeholder="350.000"
+          />
 
           {/* Notes */}
           <div>

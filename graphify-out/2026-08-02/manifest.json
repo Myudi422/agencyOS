@@ -598,5 +598,170 @@
     "mtime": 1785157420.0026398,
     "ast_hash": "ea5402e223e0559f2c17cc7eef9c2294",
     "semantic_hash": "ea5402e223e0559f2c17cc7eef9c2294"
+  },
+  ".agents/rules/graphify.md": {
+    "mtime": 1785635380.0791721,
+    "ast_hash": "a0e4d192b9e2e17256124dbfc8e24e6a",
+    "semantic_hash": ""
+  },
+  ".agents/workflows/graphify.md": {
+    "mtime": 1785635380.0791721,
+    "ast_hash": "a831cf3669f1e6ab85d8a80ebe655f99",
+    "semantic_hash": ""
+  },
+  "DESIGN-airbnb.md": {
+    "mtime": 1785283420.519485,
+    "ast_hash": "b235d533e49c18b1494af8c32df45519",
+    "semantic_hash": ""
+  },
+  "README.md": {
+    "mtime": 1784989363.6613376,
+    "ast_hash": "5bddd415a8d7ce302099e8cce8342f79",
+    "semantic_hash": ""
+  },
+  "Untitled-1.txt": {
+    "mtime": 1785118612.5036402,
+    "ast_hash": "c5e0e4543db805d05d7a38989ec726e3",
+    "semantic_hash": ""
+  },
+  "Untitled-2.txt": {
+    "mtime": 1785118608.6602325,
+    "ast_hash": "9740263f7d6aaa03b79f04d91f91e8b4",
+    "semantic_hash": ""
+  },
+  "ai.md": {
+    "mtime": 1785417831.4597423,
+    "ast_hash": "ec446b94cd3864ead4f950f0cf1f414c",
+    "semantic_hash": ""
+  },
+  "backend/README.md": {
+    "mtime": 1784989890.8738825,
+    "ast_hash": "62340746e53c1044f979a78436b713d6",
+    "semantic_hash": ""
+  },
+  "backend/requirements.txt": {
+    "mtime": 1785452876.4800627,
+    "ast_hash": "e494a706f2ca32817228964ddca308b4",
+    "semantic_hash": ""
+  },
+  "implementation_plan.md": {
+    "mtime": 1784990292.0954275,
+    "ast_hash": "4fdb89332a6161cc2f4a291da5e90061",
+    "semantic_hash": ""
+  },
+  "implementation_plan_price.md": {
+    "mtime": 1785158952.0962055,
+    "ast_hash": "5a945ceaf86ab159d03723b36f363e22",
+    "semantic_hash": ""
+  },
+  "landingpage.md": {
+    "mtime": 1785365900.0503972,
+    "ast_hash": "36618d55530fd50a8cef730d54bf113b",
+    "semantic_hash": ""
+  },
+  "load.md": {
+    "mtime": 1785417831.4725869,
+    "ast_hash": "7da9f46888c07b7092a527b65773a4fc",
+    "semantic_hash": ""
+  },
+  "models/models--Systran--faster-whisper-tiny/snapshots/d90ca5fe260221311c53c58e660288d3deb8d356/vocabulary.txt": {
+    "mtime": 1785067927.223305,
+    "ast_hash": "c1120a13c94a8cbb132489655cdd1854",
+    "semantic_hash": ""
+  },
+  "requirements.txt": {
+    "mtime": 1785452866.04665,
+    "ast_hash": "33b5de68b8b65dcb055bd78675e48371",
+    "semantic_hash": ""
+  },
+  "favicon/android-chrome-192x192.png": {
+    "mtime": 1785393116.0,
+    "ast_hash": "6419ee8f35c01d19090515ad250acb2a",
+    "semantic_hash": ""
+  },
+  "favicon/android-chrome-512x512.png": {
+    "mtime": 1785393116.0,
+    "ast_hash": "f5f9e3501a0062bf56639349423339e6",
+    "semantic_hash": ""
+  },
+  "favicon/apple-touch-icon.png": {
+    "mtime": 1785393116.0,
+    "ast_hash": "9803bc469b54d391081d563d1b05d942",
+    "semantic_hash": ""
+  },
+  "favicon/favicon-16x16.png": {
+    "mtime": 1785393116.0,
+    "ast_hash": "57547a61a753ca360a8179999bbb0b46",
+    "semantic_hash": ""
+  },
+  "favicon/favicon-32x32.png": {
+    "mtime": 1785393116.0,
+    "ast_hash": "1f3c13f18bfad3ee7f19c7aa7d8a501c",
+    "semantic_hash": ""
+  },
+  "frontend/logo.png": {
+    "mtime": 1785418211.9207232,
+    "ast_hash": "a78ed16cb4b49b51af1cb187377f06e2",
+    "semantic_hash": ""
+  },
+  "frontend/public/android-chrome-192x192.png": {
+    "mtime": 1785393116.0,
+    "ast_hash": "6419ee8f35c01d19090515ad250acb2a",
+    "semantic_hash": ""
+  },
+  "frontend/public/android-chrome-512x512.png": {
+    "mtime": 1785393116.0,
+    "ast_hash": "f5f9e3501a0062bf56639349423339e6",
+    "semantic_hash": ""
+  },
+  "frontend/public/apple-touch-icon.png": {
+    "mtime": 1785393116.0,
+    "ast_hash": "9803bc469b54d391081d563d1b05d942",
+    "semantic_hash": ""
+  },
+  "frontend/public/favicon-16x16.png": {
+    "mtime": 1785393116.0,
+    "ast_hash": "57547a61a753ca360a8179999bbb0b46",
+    "semantic_hash": ""
+  },
+  "frontend/public/favicon-32x32.png": {
+    "mtime": 1785393116.0,
+    "ast_hash": "1f3c13f18bfad3ee7f19c7aa7d8a501c",
+    "semantic_hash": ""
+  },
+  "frontend/public/logo.png": {
+    "mtime": 1785418211.9207232,
+    "ast_hash": "a78ed16cb4b49b51af1cb187377f06e2",
+    "semantic_hash": ""
+  },
+  "frontend/public/shiera-logo.png": {
+    "mtime": 1785418211.9207232,
+    "ast_hash": "a78ed16cb4b49b51af1cb187377f06e2",
+    "semantic_hash": ""
+  },
+  "generated/gemini_img_06fcb514.png": {
+    "mtime": 1785111286.6981523,
+    "ast_hash": "cd051502e5287c6aa379520565e9c9d6",
+    "semantic_hash": ""
+  },
+  "generated/gemini_img_2370c328.png": {
+    "mtime": 1785072152.475806,
+    "ast_hash": "62661e8034f16e3e98131baaefddda22",
+    "semantic_hash": ""
+  },
+  "generated/gemini_img_4bdd6232.png": {
+    "mtime": 1785072255.6822739,
+    "ast_hash": "55aa78ac2778ca365c80bf06d9490527",
+    "semantic_hash": ""
+  },
+  "generated/gemini_img_72bedd6d.png": {
+    "mtime": 1785071932.92719,
+    "ast_hash": "616e13954e3e460c834c6e9a24558ace",
+    "semantic_hash": ""
+  },
+  "generated/gemini_img_bc77ee1c.png": {
+    "mtime": 1785072034.8942313,
+    "ast_hash": "3fddc0f3a5c46c97fd426bdbc910c16c",
+    "semantic_hash": ""
   }
 }

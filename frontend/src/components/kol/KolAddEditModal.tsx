@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { X, Loader2, User, Phone, Mail, Instagram, Users2, AlertCircle } from "lucide-react";
 import { fetchApi } from "@/lib/api";
+import RupiahInput from "@/components/common/RupiahInput";
 
 interface KolAddEditModalProps {
   isOpen: boolean;
@@ -313,36 +314,24 @@ export default function KolAddEditModal({
           <div className="bg-purple-50/50 p-3.5 rounded-2xl border border-purple-100 space-y-3">
             <h4 className="text-xs font-bold text-purple-900 uppercase tracking-wider">Estimasi Rate Card (Rp)</h4>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-              <div>
-                <span className="text-[10px] text-purple-700 font-semibold block mb-1">IG Reels</span>
-                <input
-                  type="number"
-                  value={igReelsRate}
-                  onChange={(e) => setIgReelsRate(e.target.value === "" ? "" : Number(e.target.value))}
-                  placeholder="750000"
-                  className="w-full px-3 py-2 rounded-xl border border-purple-200 text-xs font-semibold bg-white"
-                />
-              </div>
-              <div>
-                <span className="text-[10px] text-purple-700 font-semibold block mb-1">TikTok Video</span>
-                <input
-                  type="number"
-                  value={tiktokRate}
-                  onChange={(e) => setTiktokRate(e.target.value === "" ? "" : Number(e.target.value))}
-                  placeholder="1000000"
-                  className="w-full px-3 py-2 rounded-xl border border-purple-200 text-xs font-semibold bg-white"
-                />
-              </div>
-              <div>
-                <span className="text-[10px] text-purple-700 font-semibold block mb-1">YouTube Video</span>
-                <input
-                  type="number"
-                  value={youtubeRate}
-                  onChange={(e) => setYoutubeRate(e.target.value === "" ? "" : Number(e.target.value))}
-                  placeholder="2500000"
-                  className="w-full px-3 py-2 rounded-xl border border-purple-200 text-xs font-semibold bg-white"
-                />
-              </div>
+              <RupiahInput
+                label="IG Reels"
+                value={igReelsRate}
+                onChange={(val) => setIgReelsRate(val)}
+                placeholder="750.000"
+              />
+              <RupiahInput
+                label="TikTok Video"
+                value={tiktokRate}
+                onChange={(val) => setTiktokRate(val)}
+                placeholder="1.000.000"
+              />
+              <RupiahInput
+                label="YouTube Video"
+                value={youtubeRate}
+                onChange={(val) => setYoutubeRate(val)}
+                placeholder="2.500.000"
+              />
             </div>
           </div>
 

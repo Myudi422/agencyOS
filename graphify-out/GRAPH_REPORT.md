@@ -1,40 +1,40 @@
 # Graph Report - agencyOS  (2026-08-02)
 
 ## Corpus Check
-- 130 files · ~752,432 words
+- 131 files · ~752,654 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1295 nodes · 2984 edges · 62 communities (48 shown, 14 thin omitted)
+- 1301 nodes · 2998 edges · 68 communities (51 shown, 17 thin omitted)
 - Extraction: 87% EXTRACTED · 13% INFERRED · 0% AMBIGUOUS · INFERRED: 378 edges (avg confidence: 0.5)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `24c5d858`
+- Built from commit: `a5b57de4`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
 ## Community Hubs (Navigation)
 - UserSubscription
 - competitors.py
-- User
+- kol.py
 - yt_clipper_agent.py
 - statistics/page.tsx
 - PostForMeService
-- statistics.py
+- User
 - media.py
-- fetchApi
-- database.py
+- pricing/page.tsx
+- models.py
 - useStore
 - useAuthStore
-- get_calendar_posts
-- models.py
+- statistics.py
+- posts.py
 - get_user_workspace
 - GeminiService
 - compilerOptions
-- kol-campaigns/page.tsx
-- Session
-- queue.py
+- fetchApi
+- QueueService
+- require_user
 - InstagrapiService
 - useToastStore.ts
 - Component: Firebase Auth (Backend)
@@ -55,7 +55,7 @@
 - package.json
 - services
 - server.js
-- dashboard/page.tsx
+- get_clients
 - AgencyOS Backend Documentation
 - 🚀 AgencyOS Server Upscaling & Load Management Guide (`load.md`)
 - migrate_kol_stats.py
@@ -64,7 +64,7 @@
 - rules/graphify.md
 - workflows/graphify.md
 - [token]/page.tsx
-- GlobalGlassConfirmModal.tsx
+- useConfirmStore.ts
 - date-fns
 - firebase
 - next.config.js
@@ -74,6 +74,12 @@
 - react
 - tailwind-merge
 - zustand
+- reschedule_post
+- get_dashboard_overview
+- migrate_competitor_accounts.py
+- migrate_db.py
+- migrate_kol.py
+- migrate_wa_otp.py
 
 ## God Nodes (most connected - your core abstractions)
 1. `User` - 141 edges
@@ -94,27 +100,27 @@
   backend/routers/accounts.py → backend/models/models.py
 - `BulkActionRequest` --uses--> `AccountPlatform`  [INFERRED]
   backend/routers/accounts.py → backend/models/models.py
-- `AddCompetitorRequest` --uses--> `AccountPlatform`  [INFERRED]
-  backend/routers/competitors.py → backend/models/models.py
-- `CompetitorResponse` --uses--> `AccountPlatform`  [INFERRED]
-  backend/routers/competitors.py → backend/models/models.py
+- `BlueskyConnectRequest` --uses--> `AccountPlatform`  [INFERRED]
+  backend/routers/auth.py → backend/models/models.py
+- `ChallengeResolveRequest` --uses--> `AccountPlatform`  [INFERRED]
+  backend/routers/auth.py → backend/models/models.py
 
 ## Import Cycles
 - None detected.
 
-## Communities (62 total, 14 thin omitted)
+## Communities (68 total, 17 thin omitted)
 
 ### Community 0 - "UserSubscription"
-Cohesion: 0.06
-Nodes (77): PlanTier, Paket langganan — semua plan unlimited akun sosmed, beda di quota post., Subscription aktif milik satu user., Menyimpan OTP WhatsApp sementara untuk verifikasi sebelum claim trial., Setting, SubscriptionPlan, SubscriptionStatus, UserSubscription (+69 more)
+Cohesion: 0.05
+Nodes (80): PlanTier, Paket langganan — semua plan unlimited akun sosmed, beda di quota post., Subscription aktif milik satu user., Menyimpan OTP WhatsApp sementara untuk verifikasi sebelum claim trial., Setting, SubscriptionPlan, SubscriptionStatus, UserSubscription (+72 more)
 
 ### Community 1 - "competitors.py"
 Cohesion: 0.07
-Nodes (69): CompetitorAccount, CompetitorPost, Reset Competitor Data Script Deletes all records from competitor_posts and…, reset_competitors(), add_competitor(), AddCompetitorRequest, CompetitorResponse, delete_competitor() (+61 more)
+Nodes (62): CompetitorPost, add_competitor(), delete_competitor(), get_add_competitor_status(), get_benchmark_matrix(), get_competitor_posts(), get_current_user_and_workspace(), get_daily_feed() (+54 more)
 
-### Community 2 - "User"
-Cohesion: 0.07
-Nodes (113): AccountPlatform, Client, KolCampaign, KolCampaignKol, KolCampaignStatus, KolDeliverable, KolDeliverableStatus, KolDeliverableType (+105 more)
+### Community 2 - "kol.py"
+Cohesion: 0.12
+Nodes (72): AccountPlatform, ActivityLog, CompetitorAccount, KolCampaign, KolCampaignKol, KolCampaignStatus, KolDeliverable, KolDeliverableStatus (+64 more)
 
 ### Community 3 - "yt_clipper_agent.py"
 Cohesion: 0.06
@@ -128,41 +134,41 @@ Nodes (39): AccountMetrics, AccountSummary, CHART_COLORS, CustomTooltip(), Daily
 Cohesion: 0.09
 Nodes (22): PostForMeService, Any, Get connected social accounts from PostForMe. Endpoint: GET /v1/social-accounts, Manually register or update a social account in PostForMe. Endpoint: POST…, Disconnect a social account in PostForMe. Endpoint: POST /v1/social-…, Delete a social account in PostForMe. Endpoint: DELETE /v1/social-accounts/{id}, Create a post across multi-platform social accounts in PostForMe. Endpoint:…, Delete a post from PostForMe. Endpoint: DELETE /v1/social-posts/{id} (+14 more)
 
-### Community 6 - "statistics.py"
-Cohesion: 0.52
-Nodes (6): AccountStatus, AIBrainstormRequest, AISummaryRequest, ChatItem, BaseModel, Statistics Router — Shiera Analytics Fetches social account feed + metrics from…
+### Community 6 - "User"
+Cohesion: 0.10
+Nodes (55): Client, RoleEnum, SocialAccount, User, BlueskyConnectRequest, ChallengeResolveRequest, CookieLoginRequest, CredentialLoginRequest (+47 more)
 
 ### Community 7 - "media.py"
 Cohesion: 0.08
 Nodes (33): Media, bulk_delete_media(), bulk_move_media(), BulkDeleteRequest, BulkMoveRequest, delete_folder(), delete_media(), get_media_items() (+25 more)
 
-### Community 8 - "fetchApi"
-Cohesion: 0.09
-Nodes (28): AdminPage(), TabType, TIER_COLORS, TIER_ICONS, BillingSuccessContent(), dynamic, CalendarImageThumbnail(), CalendarPage() (+20 more)
+### Community 8 - "pricing/page.tsx"
+Cohesion: 0.29
+Nodes (6): PLANS, PricingPage(), Window, Step, WaVerifyModal(), WaVerifyModalProps
 
-### Community 9 - "database.py"
-Cohesion: 0.05
-Nodes (24): Settings, get_db(), get, root(), Migration Script: Add briefing column to social_accounts table, Migration Script: Add social_account_id column to competitor_accounts table, Database Migration Script — Migrate database schema from Stripe to Midtrans.…, Migration Script: Create KOL Campaign & Deliverable Tracker tables (+16 more)
+### Community 9 - "models.py"
+Cohesion: 0.15
+Nodes (13): Settings, get_db(), Script perbaikan langsung: Ambil hasil dari PostForMe API untuk semua post yang…, JobStatus, PostPublishResult, PublishJob, Menyimpan hasil aktual publish dari PostForMe API (/v1/social-post-results).…, Reset Subscriptions Script — Clears all user subscriptions in DB. Run: python… (+5 more)
 
 ### Community 10 - "useStore"
-Cohesion: 0.13
-Nodes (21): AccountsPage(), dynamic, PLATFORMS_CONFIG, ActivityPage(), OAuthCallbackHandler(), ClientsPage(), MediaPage(), GlassConfirmModal() (+13 more)
+Cohesion: 0.09
+Nodes (27): AccountsPage(), dynamic, PLATFORMS_CONFIG, ActivityPage(), OAuthCallbackHandler(), CalendarImageThumbnail(), CalendarPage(), getProxiedImageUrl() (+19 more)
 
 ### Community 11 - "useAuthStore"
-Cohesion: 0.14
-Nodes (22): LoginPage(), SubscriptionGuard(), TIER_META, PUBLIC_SPLASH_PATHS, SplashScreen(), AppLayout(), PUBLIC_PATHS, Header() (+14 more)
+Cohesion: 0.10
+Nodes (28): AdminPage(), TabType, TIER_COLORS, TIER_ICONS, BillingSuccessContent(), dynamic, LoginPage(), SubscriptionGuard() (+20 more)
 
-### Community 12 - "get_calendar_posts"
-Cohesion: 0.07
-Nodes (44): _ensure_utc(), get_calendar_posts(), _in_range(), _parse_and_ensure_utc(), Any, datetime, get, put (+36 more)
+### Community 12 - "statistics.py"
+Cohesion: 0.09
+Nodes (42): _ensure_utc(), get_calendar_posts(), _in_range(), _parse_and_ensure_utc(), Any, datetime, get, Session (+34 more)
 
-### Community 13 - "models.py"
-Cohesion: 0.15
-Nodes (33): ActivityLog, Post, PostStatus, PostTarget, PostType, SocialAccount, BaseModel, RescheduleRequest (+25 more)
+### Community 13 - "posts.py"
+Cohesion: 0.13
+Nodes (31): get, root(), Post, PostStatus, PostTarget, PostType, create_media_upload_url(), create_post() (+23 more)
 
 ### Community 14 - "get_user_workspace"
-Cohesion: 0.11
-Nodes (30): AccountBriefingSchema, bulk_action(), BulkActionRequest, delete_account(), get_account_briefing(), get_accounts(), BaseModel, delete (+22 more)
+Cohesion: 0.16
+Nodes (24): AccountStatus, AccountBriefingSchema, bulk_action(), BulkActionRequest, delete_account(), get_account_briefing(), get_accounts(), BaseModel (+16 more)
 
 ### Community 15 - "GeminiService"
 Cohesion: 0.12
@@ -172,17 +178,17 @@ Nodes (19): generate_otp(), normalize_phone(), Fonnte WhatsApp OTP Service Mengi
 Cohesion: 0.07
 Nodes (26): compilerOptions, allowJs, esModuleInterop, incremental, isolatedModules, jsx, lib, module (+18 more)
 
-### Community 17 - "kol-campaigns/page.tsx"
-Cohesion: 0.12
-Nodes (16): KolCampaignsPage(), CampaignCard(), CampaignCardProps, CampaignItem, STATUS_BADGES, CampaignCreateModalProps, AccountItem, KolAccountSelector() (+8 more)
+### Community 17 - "fetchApi"
+Cohesion: 0.09
+Nodes (32): CampaignDetailPage(), DELIVERABLE_STATUS_COLORS, PAYMENT_STATUS_BADGES, KolCampaignsPage(), formatNumberToRupiahString(), getTerbilangShort(), parseRupiahStringToNumber(), RupiahInput() (+24 more)
 
-### Community 18 - "Session"
-Cohesion: 0.11
-Nodes (23): cancel_postforme_post(), delete_queue_job(), _fallback_local_results(), get_postforme_posts(), get_postforme_results(), get_publish_history(), get_queue_status(), BackgroundTasks (+15 more)
+### Community 18 - "QueueService"
+Cohesion: 0.06
+Nodes (32): Migration Script: Add briefing column to social_accounts table, Migration Script: Add ai_brief column to posts table, Migration: Tambah tabel post_publish_results dan kolom baru ke posts. Jalankan:…, delete_queue_job(), _fallback_local_results(), get_postforme_results(), get_publish_history(), get_queue_status() (+24 more)
 
-### Community 19 - "queue.py"
-Cohesion: 0.13
-Nodes (18): Script perbaikan langsung: Ambil hasil dari PostForMe API untuk semua post yang…, JobStatus, PostPublishResult, PublishJob, Menyimpan hasil aktual publish dari PostForMe API (/v1/social-post-results).…, _process_post_result_event(), Webhook handler untuk menerima event dari PostForMe API. PostForMe mengirim…, Background task: Proses event social.post.result.created. Update status… (+10 more)
+### Community 19 - "require_user"
+Cohesion: 0.38
+Nodes (7): get_current_user_from_token(), Session, Dependency: extracts Firebase token from Authorization header and returns DB…, Dependency: requires admin user., Dependency: requires authenticated user., require_admin(), require_user()
 
 ### Community 20 - "InstagrapiService"
 Cohesion: 0.21
@@ -264,9 +270,9 @@ Nodes (8): entrypoint, root, framework, root, rewrites, services, backend, front
 Cohesion: 0.33
 Nodes (5): app, { createServer }, handle, next, { parse }
 
-### Community 40 - "dashboard/page.tsx"
-Cohesion: 0.50
-Nodes (3): DashboardImageThumbnail(), DashboardPage(), getProxiedImageUrl()
+### Community 40 - "get_clients"
+Cohesion: 0.33
+Nodes (6): delete_client(), get_clients(), delete, get, Session, Retrieves all clients under a workspace owned by the current user.
 
 ### Community 41 - "AgencyOS Backend Documentation"
 Cohesion: 0.11
@@ -284,20 +290,32 @@ Nodes (12): 🚀 1. Overview & Arsitektur Sistem, 🛠️ 2. Komponen Teknis Ter
 Cohesion: 0.20
 Nodes (9): 1. Run Backend (FastAPI), 2. Run Frontend (Next.js 15), AgencyOS - Enterprise Digital Agency Social Management Platform, Backend, Default Configured Credentials, Frontend, Getting Started, Key Features MVP 1.0 (+1 more)
 
+### Community 49 - "useConfirmStore.ts"
+Cohesion: 0.47
+Nodes (4): GlobalGlassConfirmModal(), ConfirmOptions, ConfirmState, useConfirmStore
+
+### Community 62 - "reschedule_post"
+Cohesion: 0.40
+Nodes (5): BaseModel, put, Reschedules a post in DB AND in PostForMe API., reschedule_post(), RescheduleRequest
+
+### Community 63 - "get_dashboard_overview"
+Cohesion: 0.50
+Nodes (4): get_dashboard_overview(), get, Session, Sub-300ms fast executive dashboard endpoint returning real-time metrics, queue…
+
 ## Knowledge Gaps
-- **288 isolated node(s):** `Settings`, `nextConfig`, `name`, `version`, `private` (+283 more)
+- **289 isolated node(s):** `Settings`, `nextConfig`, `name`, `version`, `private` (+284 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **14 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **17 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `User` connect `User` to `UserSubscription`, `competitors.py`, `statistics.py`, `database.py`, `get_calendar_posts`, `models.py`, `get_user_workspace`, `Session`, `queue.py`?**
-  _High betweenness centrality (0.111) - this node is a cross-community bridge._
-- **Why does `PostForMeService` connect `PostForMeService` to `queue.py`?**
-  _High betweenness centrality (0.028) - this node is a cross-community bridge._
-- **Why does `fetchApi()` connect `fetchApi` to `statistics/page.tsx`, `dashboard/page.tsx`, `useStore`, `useAuthStore`, `kol-campaigns/page.tsx`, `useToastStore.ts`, `competitor-spy/page.tsx`, `queue/page.tsx`?**
-  _High betweenness centrality (0.017) - this node is a cross-community bridge._
+- **Why does `User` connect `User` to `UserSubscription`, `competitors.py`, `kol.py`, `get_clients`, `models.py`, `statistics.py`, `posts.py`, `get_user_workspace`, `QueueService`, `require_user`, `reschedule_post`, `get_dashboard_overview`?**
+  _High betweenness centrality (0.110) - this node is a cross-community bridge._
+- **Why does `PostForMeService` connect `PostForMeService` to `models.py`?**
+  _High betweenness centrality (0.027) - this node is a cross-community bridge._
+- **Why does `fetchApi()` connect `fetchApi` to `statistics/page.tsx`, `pricing/page.tsx`, `useStore`, `useAuthStore`, `useToastStore.ts`, `competitor-spy/page.tsx`, `queue/page.tsx`?**
+  _High betweenness centrality (0.020) - this node is a cross-community bridge._
 - **Are the 42 inferred relationships involving `User` (e.g. with `AccountBriefingSchema` and `BulkActionRequest`) actually correct?**
   _`User` has 42 INFERRED edges - model-reasoned connections that need verification._
 - **Are the 30 inferred relationships involving `ActivityLog` (e.g. with `AccountBriefingSchema` and `BulkActionRequest`) actually correct?**
@@ -305,4 +323,4 @@ _Questions this graph is uniquely positioned to answer:_
 - **Are the 33 inferred relationships involving `SocialAccount` (e.g. with `AccountBriefingSchema` and `BulkActionRequest`) actually correct?**
   _`SocialAccount` has 33 INFERRED edges - model-reasoned connections that need verification._
 - **What connects `Settings`, `nextConfig`, `name` to the rest of the system?**
-  _288 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _289 weakly-connected nodes found - possible documentation gaps or missing edges._

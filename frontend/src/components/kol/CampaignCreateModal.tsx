@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { X, Loader2, Megaphone, Calendar, DollarSign, Link as LinkIcon, Hash } from "lucide-react";
 import { AccountItem } from "./KolAccountSelector";
 import { fetchApi } from "@/lib/api";
+import RupiahInput from "@/components/common/RupiahInput";
 
 interface CampaignCreateModalProps {
   isOpen: boolean;
@@ -218,26 +219,18 @@ export default function CampaignCreateModal({
 
           {/* Budget & Revenue */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5">Total Budget (Rp)</label>
-              <input
-                type="number"
-                value={totalBudget}
-                onChange={(e) => setTotalBudget(e.target.value === "" ? "" : Number(e.target.value))}
-                placeholder="5000000"
-                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-purple-500"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5">Target Revenue (Rp)</label>
-              <input
-                type="number"
-                value={estimatedRevenue}
-                onChange={(e) => setEstimatedRevenue(e.target.value === "" ? "" : Number(e.target.value))}
-                placeholder="15000000"
-                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-purple-500"
-              />
-            </div>
+            <RupiahInput
+              label="Total Budget"
+              value={totalBudget}
+              onChange={(val) => setTotalBudget(val)}
+              placeholder="5.000.000"
+            />
+            <RupiahInput
+              label="Target Revenue"
+              value={estimatedRevenue}
+              onChange={(val) => setEstimatedRevenue(val)}
+              placeholder="15.000.000"
+            />
           </div>
 
           {/* Dates */}
