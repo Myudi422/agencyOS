@@ -23,10 +23,25 @@ function OAuthCallbackHandler() {
     const platform = searchParams.get("platform");
     const callbackStatus = searchParams.get("status");
 
-    if (error) {
+    // PostForMe sometimes returns "External Id already exists" when the same social account
+    // is being reconnected by a different workspace. This is NOT a fatal error —
+    // the account is still accessible in PostForMe. We just need to sync it.
+    const isExternalIdConflict = (
+      errorDescription?.toLowerCase().includes("external id already exists") ||
+      errorDescription?.toLowerCase().includes("external_id") ||
+      error?.toLowerCase().includes("external_id")
+    );
+
+    if (error && !isExternalIdConflict) {
+      // Only show hard error for non-recoverable OAuth failures
       setStatus("error");
       setMessage(`OAuth Error: ${errorDescription || error}`);
       return;
+    }
+
+    // If it's an external_id conflict, log it but continue to sync
+    if (isExternalIdConflict) {
+      console.warn("[OAuth] external_id conflict detected — proceeding to sync instead:", errorDescription);
     }
 
     // Prevent double execution in React 19 StrictMode
@@ -37,7 +52,7 @@ function OAuthCallbackHandler() {
       try {
         // Detect if this is a PostForMe OAuth callback:
         // PostForMe redirects back with social_account_id/platform/status — NOT a Meta code.
-        const isPostForMeCallback = !!(accountId || platform || callbackStatus);
+        const isPostForMeCallback = !!(accountId || platform || callbackStatus || isExternalIdConflict);
 
         // 1. Direct Meta OAuth code flow (only if code present AND this is NOT a PostForMe redirect)
         if (code && !isPostForMeCallback) {
@@ -71,7 +86,7 @@ function OAuthCallbackHandler() {
         const accountId = searchParams.get("account_id") || searchParams.get("social_account_id");
         const platform = searchParams.get("platform");
         const callbackStatus = searchParams.get("status");
-        if (accountId || callbackStatus === "connected" || platform) {
+        if (accountId || callbackStatus === "connected" || platform || isExternalIdConflict) {
           setStatus("success");
           setMessage("Koneksi saluran sosial selesai! Periksa halaman Accounts.");
           setTimeout(() => {
