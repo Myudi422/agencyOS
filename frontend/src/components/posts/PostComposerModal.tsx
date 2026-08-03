@@ -85,7 +85,7 @@ export default function PostComposerModal() {
   ]);
   const [newMediaInput, setNewMediaInput] = useState("");
   const [showUrlInput, setShowUrlInput] = useState(false);
-  const [isDragOver, setIsDragOver] = useState(false);
+  const [scheduledAt, setScheduledAt] = useState("");
   const [actionType, setActionType] = useState<"publish_now" | "schedule" | "save_draft">("publish_now");
 
   // Watermark Toggle State (Default OFF)
