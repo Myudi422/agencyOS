@@ -176,99 +176,99 @@ async def get_dashboard_overview(
             SocialAccount.status == AccountStatus.CONNECTED
         ).all()
 
-    all_real_posts = []
-    if connected_accs:
-        semaphore = asyncio.Semaphore(5)
-        async def _fetch_acc(acc):
-            async with semaphore:
-                try:
-                    pf_acc_id = acc.postforme_account_id
-                    if not pf_acc_id:
-                        try:
-                            res_accounts = await postforme_service.get_social_accounts(external_id=[acc.workspace_id], limit=100)
-                            for item in res_accounts.get("data", []):
-                                if (item.get("username") and item.get("username").lower() == acc.username.lower()) or item.get("user_id") == acc.platform_account_id:
-                                    pf_acc_id = item.get("id")
-                                    acc.postforme_account_id = pf_acc_id
-                                    db.commit()
-                                    break
-                        except Exception:
-                            pass
+        all_real_posts = []
+        if connected_accs:
+            semaphore = asyncio.Semaphore(5)
+            async def _fetch_acc(acc):
+                async with semaphore:
+                    try:
+                        pf_acc_id = acc.postforme_account_id
+                        if not pf_acc_id:
+                            try:
+                                res_accounts = await postforme_service.get_social_accounts(limit=100)
+                                for item in res_accounts.get("data", []):
+                                    if (item.get("username") and item.get("username").lower() == acc.username.lower()) or item.get("user_id") == acc.platform_account_id:
+                                        pf_acc_id = item.get("id")
+                                        acc.postforme_account_id = pf_acc_id
+                                        db.commit()
+                                        break
+                            except Exception:
+                                pass
 
-                    target_id = pf_acc_id or acc.platform_account_id or acc.id
-                    res = await postforme_service.get_account_feed_paginated(
-                        social_account_id=target_id,
-                        limit=20,
-                        expand_metrics=True
-                    )
-                    items = res.get("data") or res.get("items") or []
-                    for item in items:
-                        item["_platform"] = acc.platform.value if hasattr(acc.platform, "value") else str(acc.platform)
-                    return items
-                except Exception:
-                    return []
+                        target_id = pf_acc_id or acc.platform_account_id or acc.id
+                        res = await postforme_service.get_account_feed_paginated(
+                            social_account_id=target_id,
+                            limit=20,
+                            expand_metrics=True
+                        )
+                        items = res.get("data") or res.get("items") or []
+                        for item in items:
+                            item["_platform"] = acc.platform.value if hasattr(acc.platform, "value") else str(acc.platform)
+                        return items
+                    except Exception:
+                        return []
 
-        acc_posts_lists = await asyncio.gather(*[_fetch_acc(a) for a in connected_accs], return_exceptions=True)
-        for plist in acc_posts_lists:
-            if isinstance(plist, list):
-                all_real_posts.extend(plist)
+            acc_posts_lists = await asyncio.gather(*[_fetch_acc(a) for a in connected_accs], return_exceptions=True)
+            for plist in acc_posts_lists:
+                if isinstance(plist, list):
+                    all_real_posts.extend(plist)
 
-    top_post_data = None
-    if all_real_posts:
-        for p in all_real_posts:
-            plat = p.get("_platform", "instagram")
-            p["_norm"] = _normalize_metrics(p.get("metrics") or {}, plat)
-            p["_eng"] = p["_norm"].get("likes", 0) + p["_norm"].get("comments", 0) + p["_norm"].get("shares", 0)
-        
-        top_real = max(all_real_posts, key=lambda x: x.get("_eng", 0))
-        norm = top_real.get("_norm", {})
-        thumb = top_real.get("media_url") or top_real.get("url") or top_real.get("thumbnail_url")
-        if not thumb and top_real.get("media") and isinstance(top_real["media"], list):
-            m0 = top_real["media"][0]
-            thumb = m0.get("url") or m0.get("media_url") if isinstance(m0, dict) else str(m0)
+        top_post_data = None
+        if all_real_posts:
+            for p in all_real_posts:
+                plat = p.get("_platform", "instagram")
+                p["_norm"] = _normalize_metrics(p.get("metrics") or {}, plat)
+                p["_eng"] = p["_norm"].get("likes", 0) + p["_norm"].get("comments", 0) + p["_norm"].get("shares", 0)
+            
+            top_real = max(all_real_posts, key=lambda x: x.get("_eng", 0))
+            norm = top_real.get("_norm", {})
+            thumb = top_real.get("media_url") or top_real.get("url") or top_real.get("thumbnail_url")
+            if not thumb and top_real.get("media") and isinstance(top_real["media"], list):
+                m0 = top_real["media"][0]
+                thumb = m0.get("url") or m0.get("media_url") if isinstance(m0, dict) else str(m0)
 
-        reach = max(1, norm.get("reach", 0) or norm.get("video_views", 0))
-        eng_rate_num = round((top_real.get("_eng", 0) / reach) * 100, 1)
-
-        top_post_data = {
-            "id": top_real.get("id") or top_real.get("post_id", "real_top"),
-            "caption": top_real.get("caption") or top_real.get("text") or "Tanpa Judul",
-            "thumbnail": thumb,
-            "platform_url": top_real.get("platform_url") or top_real.get("url") or top_real.get("permalink"),
-            "platform": top_real.get("_platform") or "instagram",
-            "created_at": top_real.get("posted_at") or top_real.get("created_at"),
-            "likes": norm.get("likes", 0),
-            "comments": norm.get("comments", 0),
-            "shares": norm.get("shares", 0),
-            "engagement_rate": f"{eng_rate_num}%"
-        }
-    else:
-        top_post_obj = (
-            db.query(Post)
-            .filter(Post.workspace_id == workspace_id)
-            .order_by(Post.created_at.desc())
-            .first()
-        )
-        if top_post_obj:
-            media_list = top_post_obj.media_urls if isinstance(top_post_obj.media_urls, list) else []
-            thumb = None
-            if media_list and isinstance(media_list[0], dict):
-                thumb = media_list[0].get("url") or media_list[0].get("media_url")
-            elif media_list and isinstance(media_list[0], str):
-                thumb = media_list[0]
+            reach = max(1, norm.get("reach", 0) or norm.get("video_views", 0))
+            eng_rate_num = round((top_real.get("_eng", 0) / reach) * 100, 1)
 
             top_post_data = {
-                "id": top_post_obj.id,
-                "caption": top_post_obj.caption or "Tanpa Judul",
+                "id": top_real.get("id") or top_real.get("post_id", "real_top"),
+                "caption": top_real.get("caption") or top_real.get("text") or "Tanpa Judul",
                 "thumbnail": thumb,
-                "platform_url": None,
-                "platform": "instagram",
-                "created_at": top_post_obj.created_at.isoformat() if top_post_obj.created_at else None,
-                "likes": 0,
-                "comments": 0,
-                "shares": 0,
-                "engagement_rate": "0.0%"
+                "platform_url": top_real.get("platform_url") or top_real.get("url") or top_real.get("permalink"),
+                "platform": top_real.get("_platform") or "instagram",
+                "created_at": top_real.get("posted_at") or top_real.get("created_at"),
+                "likes": norm.get("likes", 0),
+                "comments": norm.get("comments", 0),
+                "shares": norm.get("shares", 0),
+                "engagement_rate": f"{eng_rate_num}%"
             }
+        else:
+            top_post_obj = (
+                db.query(Post)
+                .filter(Post.workspace_id == workspace_id)
+                .order_by(Post.created_at.desc())
+                .first()
+            )
+            if top_post_obj:
+                media_list = top_post_obj.media_urls if isinstance(top_post_obj.media_urls, list) else []
+                thumb = None
+                if media_list and isinstance(media_list[0], dict):
+                    thumb = media_list[0].get("url") or media_list[0].get("media_url")
+                elif media_list and isinstance(media_list[0], str):
+                    thumb = media_list[0]
+
+                top_post_data = {
+                    "id": top_post_obj.id,
+                    "caption": top_post_obj.caption or "Tanpa Judul",
+                    "thumbnail": thumb,
+                    "platform_url": None,
+                    "platform": "instagram",
+                    "created_at": top_post_obj.created_at.isoformat() if top_post_obj.created_at else None,
+                    "likes": 0,
+                    "comments": 0,
+                    "shares": 0,
+                    "engagement_rate": "0.0%"
+                }
 
         # Cache top post result for 10 minutes
         _TOP_POST_CACHE[workspace_id] = (now_ts, top_post_data)

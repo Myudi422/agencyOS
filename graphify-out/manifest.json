@@ -110,8 +110,8 @@
     "semantic_hash": ""
   },
   "backend/routers/auth.py": {
-    "mtime": 1785762247.3600442,
-    "ast_hash": "dc0944c663a85e0050dabce6bdc93c0f",
+    "mtime": 1785762613.287838,
+    "ast_hash": "76adcbf474220691995955a0a793a459",
     "semantic_hash": ""
   },
   "backend/routers/billing.py": {
@@ -135,8 +135,8 @@
     "semantic_hash": ""
   },
   "backend/routers/dashboard.py": {
-    "mtime": 1785759668.1019485,
-    "ast_hash": "9a8cc40f04f2c312c1ac2a4e1ce60cc9",
+    "mtime": 1785762430.2153256,
+    "ast_hash": "fd9ae9e53e8040d0e147340bbc1761e2",
     "semantic_hash": ""
   },
   "backend/routers/firebase_auth.py": {

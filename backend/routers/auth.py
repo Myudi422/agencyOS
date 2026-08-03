@@ -131,12 +131,30 @@ async def postforme_auth_url(
         from backend.services.postforme_service import postforme_service
         target_ws, _ = _get_user_target_workspace(db, current_user, req.workspace_id, req.client_id)
 
-        res = await postforme_service.generate_auth_url(
-            platform=req.platform,
-            platform_data=req.platform_data,
-            external_id=None,  # Omit external_id to allow reconnecting existing PostForMe accounts seamlessly
-            permissions=req.permissions
-        )
+        try:
+            # Send external_id so PostForMe tags this account to this workspace
+            res = await postforme_service.generate_auth_url(
+                platform=req.platform,
+                platform_data=req.platform_data,
+                external_id=target_ws.id,
+                permissions=req.permissions
+            )
+        except Exception as pf_err:
+            err_str = str(pf_err).lower()
+            # If the account was previously connected under a different workspace/external_id,
+            # PostForMe rejects the tag — fall back to no external_id so user can still connect
+            if "external id already exists" in err_str or "external_id" in err_str:
+                logger.warning(f"PostForMe external_id conflict for workspace {target_ws.id}, retrying without external_id: {pf_err}")
+                res = await postforme_service.generate_auth_url(
+                    platform=req.platform,
+                    platform_data=req.platform_data,
+                    external_id=None,
+                    permissions=req.permissions
+                )
+                # Tag the response so sync knows to match by username instead
+                res["_fallback_workspace_id"] = target_ws.id
+            else:
+                raise
         return res
     except Exception as e:
         logger.error(f"PostForMe Auth URL error: {e}", exc_info=True)
@@ -210,9 +228,30 @@ async def postforme_sync_accounts(
 
     try:
         from backend.services.postforme_service import postforme_service
-        # Fetch all active accounts from PostForMe project
-        pf_res = await postforme_service.get_social_accounts(limit=100)
+
+        # Step 1: Fetch accounts tagged to this specific workspace via external_id
+        pf_res = await postforme_service.get_social_accounts(external_id=[target_ws.id], limit=100)
         pf_accounts = pf_res.get("data", [])
+
+        # Step 2: Also fetch accounts already linked in local DB for this workspace (for re-sync)
+        local_pf_ids = set(
+            row.postforme_account_id
+            for row in db.query(SocialAccount).filter(
+                SocialAccount.workspace_id == target_ws.id,
+                SocialAccount.postforme_account_id.isnot(None)
+            ).all()
+        )
+
+        # Step 3: If a local account exists that's not in the external_id-filtered list,
+        # try fetching it by ID to refresh its data
+        pf_account_ids_in_result = {a.get("id") for a in pf_accounts}
+        extra_ids = local_pf_ids - pf_account_ids_in_result
+        if extra_ids:
+            # Fallback: fetch all and filter by known local pf IDs
+            all_pf_res = await postforme_service.get_social_accounts(limit=200)
+            for acc in all_pf_res.get("data", []):
+                if acc.get("id") in extra_ids and acc.get("id") not in pf_account_ids_in_result:
+                    pf_accounts.append(acc)
 
         synced_count = 0
 
@@ -224,11 +263,7 @@ async def postforme_sync_accounts(
             platform_str = acc.get("platform", "instagram").lower()
             username = acc.get("username") or acc.get("name") or "user"
             name = acc.get("name") or username
-
-            # PostForMe SocialAccountDto returns profile_photo_url for the platform avatar
             profile_photo_url = acc.get("profile_photo_url")
-
-            # Extract followers count from PostForMe data/metadata recursively
             followers = extract_followers_count(acc)
 
             try:
@@ -236,6 +271,7 @@ async def postforme_sync_accounts(
             except ValueError:
                 enum_platform = AccountPlatform.INSTAGRAM
 
+            # Match by postforme_account_id first, then by platform+username within THIS workspace only
             existing = db.query(SocialAccount).filter(
                 SocialAccount.workspace_id == target_ws.id,
                 SocialAccount.postforme_account_id == pf_id
@@ -249,7 +285,7 @@ async def postforme_sync_accounts(
                 ).first()
 
             if not existing:
-                # Inherit briefing and watermark_config from sibling account if present
+                # Inherit briefing & watermark from sibling in another workspace if present
                 sibling = db.query(SocialAccount).filter(
                     SocialAccount.platform == enum_platform,
                     SocialAccount.username == username
