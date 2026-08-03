@@ -364,24 +364,30 @@ async def delete_account(
     acc_name = account.username
     postforme_id = account.postforme_account_id
 
-    # Also delete from PostForMe if the account has a PostForMe ID
-    if postforme_id:
+    # Check if any OTHER workspace is still using this social account before deleting on PostForMe API
+    other_workspace_using = db.query(SocialAccount).filter(
+        SocialAccount.id != account_id,
+        (SocialAccount.platform == account.platform) & (SocialAccount.username == account.username)
+    ).first()
+
+    if postforme_id and not other_workspace_using:
         try:
             from backend.services.postforme_service import postforme_service
-            # Use delete (permanent) to remove from PostForMe
+            # Delete from PostForMe ONLY if no other workspace is using it
             await postforme_service.delete_social_account(postforme_id)
-            logger.info(f"Deleted PostForMe account {postforme_id} for @{acc_name}")
+            logger.info(f"Deleted PostForMe account {postforme_id} for @{acc_name} (no other workspace active)")
         except Exception as pf_err:
-            # Log but don't fail — still remove from local DB
             logger.warning(f"PostForMe delete failed for {postforme_id}: {pf_err}")
+    else:
+        logger.info(f"Preserved PostForMe account @{acc_name} because another workspace is still using it.")
 
     db.delete(account)
     db.add(ActivityLog(
         workspace_id=workspace_id,
         user_name=current_user.full_name,
         action="DISCONNECT_ACCOUNT",
-        details=f"Disconnected social account @{acc_name} (PostForMe ID: {postforme_id})",
+        details=f"Disconnected social account @{acc_name} from workspace",
         entity_type="Account"
     ))
     db.commit()
-    return {"status": "success", "message": "Account deleted"}
+    return {"status": "success", "message": "Account disconnected from your workspace"}

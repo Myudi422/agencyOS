@@ -135,9 +135,9 @@
     "semantic_hash": ""
   },
   "backend/routers/dashboard.py": {
-    "mtime": 1785380276.8101053,
-    "ast_hash": "1ee142c4bbb2bb9fd0daa2b368a06b1a",
-    "semantic_hash": "1ee142c4bbb2bb9fd0daa2b368a06b1a"
+    "mtime": 1785759668.1019485,
+    "ast_hash": "9a8cc40f04f2c312c1ac2a4e1ce60cc9",
+    "semantic_hash": ""
   },
   "backend/routers/firebase_auth.py": {
     "mtime": 1785202396.9755092,
