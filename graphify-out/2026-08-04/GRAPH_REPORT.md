@@ -1,16 +1,16 @@
 # Graph Report - agencyOS  (2026-08-04)
 
 ## Corpus Check
-- 133 files · ~758,066 words
+- 133 files · ~758,070 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1338 nodes · 3107 edges · 68 communities (48 shown, 20 thin omitted)
+- 1338 nodes · 3110 edges · 68 communities (48 shown, 20 thin omitted)
 - Extraction: 87% EXTRACTED · 13% INFERRED · 0% AMBIGUOUS · INFERRED: 396 edges (avg confidence: 0.5)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `7c7f730a`
+- Built from commit: `7e481e56`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -43,7 +43,7 @@
 - midtrans_service.py
 - dependencies
 - competitor-spy/page.tsx
-- auth.ts
+- Sidebar.tsx
 - queue/page.tsx
 - YTPlayer
 - Components
@@ -91,7 +91,7 @@
 7. `Workspace` - 37 edges
 8. `AccountPlatform` - 33 edges
 9. `get_user_workspace()` - 32 edges
-10. `Client` - 29 edges
+10. `useAuthStore` - 31 edges
 
 ## Surprising Connections (you probably didn't know these)
 - `FirebaseVerifyRequest` --uses--> `RoleEnum`  [INFERRED]
@@ -147,8 +147,8 @@ Cohesion: 0.10
 Nodes (18): OAuthCallbackHandler(), CalendarImageThumbnail(), CalendarPage(), getProxiedImageUrl(), PLATFORM_ICONS, PLATFORM_LABELS, DashboardImageThumbnail(), DashboardPage() (+10 more)
 
 ### Community 9 - "models.py"
-Cohesion: 0.24
-Nodes (6): get_db(), JobStatus, Reset Subscriptions Script — Clears all user subscriptions in DB. Run: python…, Firebase Auth Router — /auth/firebase Verifies Google Firebase ID Token and…, Dependency: requires authenticated user., require_user()
+Cohesion: 0.20
+Nodes (8): get_db(), JobStatus, Reset Subscriptions Script — Clears all user subscriptions in DB. Run: python…, BaseModel, RescheduleRequest, Firebase Auth Router — /auth/firebase Verifies Google Firebase ID Token and…, Dependency: requires authenticated user., require_user()
 
 ### Community 10 - "api.ts"
 Cohesion: 0.12
@@ -156,15 +156,15 @@ Nodes (23): AccountsPage(), dynamic, PLATFORMS_CONFIG, ActivityPage(), ClientsPa
 
 ### Community 11 - "useAuthStore"
 Cohesion: 0.11
-Nodes (26): LoginPage(), SubscriptionGuard(), TIER_META, GlassToastManager(), GlobalGlassConfirmModal(), PUBLIC_SPLASH_PATHS, SplashScreen(), AppLayout() (+18 more)
+Nodes (23): AdminPage(), TabType, TIER_COLORS, TIER_ICONS, BillingSuccessContent(), dynamic, SubscriptionGuard(), TIER_META (+15 more)
 
 ### Community 12 - "statistics.py"
 Cohesion: 0.07
 Nodes (49): _ensure_utc(), get_calendar_posts(), _in_range(), _parse_and_ensure_utc(), Any, datetime, get, put (+41 more)
 
 ### Community 13 - "UserSubscription"
-Cohesion: 0.14
-Nodes (32): Post, PostStatus, PostTarget, PostType, Subscription aktif milik satu user., UserSubscription, BaseModel, RescheduleRequest (+24 more)
+Cohesion: 0.15
+Nodes (30): Post, PostStatus, PostTarget, PostType, Subscription aktif milik satu user., UserSubscription, create_media_upload_url(), create_post() (+22 more)
 
 ### Community 14 - ".apply_watermark"
 Cohesion: 0.20
@@ -184,15 +184,15 @@ Nodes (54): bulk_action(), delete_account(), get_account_briefing(), get_account
 
 ### Community 19 - "fetchApi"
 Cohesion: 0.09
-Nodes (24): AdminPage(), TabType, TIER_COLORS, TIER_ICONS, BillingSuccessContent(), dynamic, CampaignDetailPage(), DELIVERABLE_STATUS_COLORS (+16 more)
+Nodes (29): CampaignDetailPage(), DELIVERABLE_STATUS_COLORS, PAYMENT_STATUS_BADGES, DEFAULT_PLANS, PricingPage(), TIER_ORDER, TIER_UI_META, Window (+21 more)
 
 ### Community 20 - "InstagrapiService"
 Cohesion: 0.19
 Nodes (12): InstagrapiService, Any, Session, Initializes an instagrapi Client with Automatic Session Refresh & Auto-Login…, Test Instagram login session or credentials with instagrapi., Validate if an Instagram account exists and fetch basic profile preview., Fetch competitor profile information from Instagram., Fetch recent posts for a competitor, calculate engagement rate, top hashtags,… (+4 more)
 
 ### Community 21 - "kol-campaigns/page.tsx"
-Cohesion: 0.11
-Nodes (22): KolCampaignsPage(), formatNumberToRupiahString(), getTerbilangShort(), parseRupiahStringToNumber(), RupiahInput(), RupiahInputProps, CampaignCard(), CampaignCardProps (+14 more)
+Cohesion: 0.21
+Nodes (11): KolCampaignsPage(), CampaignCard(), CampaignCardProps, CampaignItem, STATUS_BADGES, CampaignCreateModal(), CampaignCreateModalProps, AccountItem (+3 more)
 
 ### Community 22 - "Component: Firebase Auth (Backend)"
 Cohesion: 0.06
@@ -218,9 +218,9 @@ Nodes (15): clsx, dependencies, clsx, jspdf, lucide-react, react-dom, react-is, 
 Cohesion: 0.17
 Nodes (12): ActiveTab, AddJobState, Competitor, CompetitorPost, CompetitorProfilePreview, CompetitorSpyPage(), ConnectedIgAccount, CompetitorProgressWidget() (+4 more)
 
-### Community 28 - "auth.ts"
-Cohesion: 0.21
-Nodes (9): jsonLd, metadata, AuthProvider(), Providers(), getIdToken(), onAuthChange(), auth, firebaseConfig (+1 more)
+### Community 28 - "Sidebar.tsx"
+Cohesion: 0.12
+Nodes (18): jsonLd, metadata, LoginPage(), Sidebar(), SidebarProps, TIER_COLORS, TIER_ICONS, AuthProvider() (+10 more)
 
 ### Community 29 - "queue/page.tsx"
 Cohesion: 0.19
@@ -302,7 +302,7 @@ _Questions this graph is uniquely positioned to answer:_
   _High betweenness centrality (0.105) - this node is a cross-community bridge._
 - **Why does `PostForMeService` connect `PostForMeService` to `webhook.py`?**
   _High betweenness centrality (0.022) - this node is a cross-community bridge._
-- **Why does `fetchApi()` connect `fetchApi` to `app/page.tsx`, `statistics/page.tsx`, `useStore`, `api.ts`, `useAuthStore`, `kol-campaigns/page.tsx`, `competitor-spy/page.tsx`, `queue/page.tsx`?**
+- **Why does `fetchApi()` connect `fetchApi` to `app/page.tsx`, `statistics/page.tsx`, `useStore`, `api.ts`, `useAuthStore`, `kol-campaigns/page.tsx`, `competitor-spy/page.tsx`, `Sidebar.tsx`, `queue/page.tsx`?**
   _High betweenness centrality (0.018) - this node is a cross-community bridge._
 - **Are the 45 inferred relationships involving `User` (e.g. with `AccountBriefingSchema` and `BulkActionRequest`) actually correct?**
   _`User` has 45 INFERRED edges - model-reasoned connections that need verification._

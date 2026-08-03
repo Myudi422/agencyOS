@@ -232,36 +232,27 @@ async def postforme_sync_accounts(
     if not target_client:
         target_client = db.query(Client).filter(Client.workspace_id == target_ws.id).first()
     if not target_client:
-        raise HTTPException(status_code=400, detail="Workspace has no client associated")
+        # Create default client for workspace so accounts are always associated seamlessly
+        try:
+            target_client = Client(
+                workspace_id=target_ws.id,
+                name="Default Client",
+                company_name=target_ws.name,
+                email=current_user.email or "client@agencyos.local"
+            )
+            db.add(target_client)
+            db.commit()
+            db.refresh(target_client)
+        except Exception:
+            db.rollback()
+            target_client = None
 
     try:
         from backend.services.postforme_service import postforme_service
 
-        # Step 1: Fetch accounts tagged to this specific workspace via external_id
-        pf_res = await postforme_service.get_social_accounts(external_id=[target_ws.id], limit=100)
+        # Fetch all active accounts from PostForMe project
+        pf_res = await postforme_service.get_social_accounts(limit=200)
         pf_accounts = pf_res.get("data", [])
-
-        # Step 2: Fetch ALL PostForMe accounts in project to handle cross-workspace shared accounts and fallback reconnects
-        all_pf_res = await postforme_service.get_social_accounts(limit=200)
-        all_pf_accounts = all_pf_res.get("data", [])
-
-        pf_account_ids_in_result = {a.get("id") for a in pf_accounts if a.get("id")}
-        
-        # Check all existing usernames/IDs in local DB across any workspace in system
-        known_system_accounts = {
-            (acc.platform.value if hasattr(acc.platform, "value") else str(acc.platform), acc.username.lower())
-            for acc in db.query(SocialAccount).all()
-        }
-        known_system_pf_ids = {
-            acc.postforme_account_id for acc in db.query(SocialAccount).filter(SocialAccount.postforme_account_id.isnot(None)).all()
-        }
-
-        for acc in all_pf_accounts:
-            acc_id = acc.get("id")
-            if not acc_id or acc_id in pf_account_ids_in_result:
-                continue
-            pf_accounts.append(acc)
-            pf_account_ids_in_result.add(acc_id)
 
         synced_count = 0
 
