@@ -134,7 +134,7 @@ async def postforme_auth_url(
         res = await postforme_service.generate_auth_url(
             platform=req.platform,
             platform_data=req.platform_data,
-            external_id=target_ws.id,
+            external_id=None,  # Omit external_id to allow reconnecting existing PostForMe accounts seamlessly
             permissions=req.permissions
         )
         return res
