@@ -79,7 +79,15 @@ export default function AdminPage() {
     setIgTesting(true);
     setIgTestResult(null);
     try {
-      const res: any = await fetchApi("/admin/test-instagram", { method: "POST" });
+      const uEl = document.getElementById("setting-INSTAGRAM_SCRAPER_USERNAME") as HTMLInputElement;
+      const pEl = document.getElementById("setting-INSTAGRAM_SCRAPER_PASSWORD") as HTMLInputElement;
+      const username = uEl?.value || appSettings["INSTAGRAM_SCRAPER_USERNAME"] || "";
+      const password = pEl?.value || appSettings["INSTAGRAM_SCRAPER_PASSWORD"] || "";
+
+      const res: any = await fetchApi("/admin/test-instagram", {
+        method: "POST",
+        body: JSON.stringify({ username, password })
+      });
       setIgTestResult(res);
       if (res.success) {
         flash("ok", res.message || "Koneksi Instagram berhasil!");
@@ -93,7 +101,6 @@ export default function AdminPage() {
       setIgTesting(false);
     }
   };
-
 
   // ── Plans ──────────────────────────────────────────────────────────────────
 
@@ -626,8 +633,8 @@ export default function AdminPage() {
                   <Bot className="w-5 h-5 text-pink-300" />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold font-['Outfit'] text-white">Instagram Competitor Spy (Instagrapi Cookie)</h3>
-                  <p className="text-xs text-pink-200">Cookie / Session Token Instagram Admin untuk mengambil data &amp; postingan profil kompetitor</p>
+                  <h3 className="text-base font-bold font-['Outfit'] text-white">Instagram Competitor Spy Engine</h3>
+                  <p className="text-xs text-pink-200">Auto-Refresh Session & Credentials akun scraper khusus agencyOS</p>
                 </div>
               </div>
               <button
@@ -646,26 +653,81 @@ export default function AdminPage() {
 
             {/* Instruction box */}
             <div className="p-3.5 rounded-2xl bg-white/5 border border-white/10 text-xs text-pink-100 space-y-1">
-              <p className="font-semibold text-pink-200">💡 Cara Mendapatkan Instagram Session Cookie:</p>
+              <p className="font-semibold text-pink-200">💡 Cara Mengaktifkan Auto-Refresh Session (Bebas Input Cookie Manual):</p>
               <ol className="list-decimal list-inside text-[11px] text-pink-300/90 space-y-0.5">
-                <li>Buka <a href="https://www.instagram.com" target="_blank" rel="noreferrer" className="underline text-pink-200">instagram.com</a> dan pastikan sudah login akun admin/toko.</li>
-                <li>Tekan <kbd className="px-1 bg-white/10 rounded">F12</kbd> &rarr; tab <strong>Application / Storage</strong> &rarr; <strong>Cookies</strong>.</li>
-                <li>Cari cookie bernama <code className="bg-pink-950/80 px-1 py-0.5 rounded font-mono text-pink-200">sessionid</code>, lalu salin nilainya (contoh: <code>54321234%3AFakE...</code>).</li>
+                <li>Masukkan <strong>Username</strong> &amp; <strong>Password</strong> akun Instagram scraper (akun sekunder) di bawah.</li>
+                <li>Klik tombol <strong>Simpan</strong> pada masing-masing field.</li>
+                <li>Klik <strong>Test Koneksi Instagram</strong>. Backend akan otomatis melakukan login &amp; me-refresh session cookie secara mandiri!</li>
               </ol>
             </div>
 
-            {/* Input field */}
-            <div className="p-3.5 rounded-2xl bg-white/10 border border-white/10 space-y-2">
+            {/* Input fields for Credentials */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2">
+              <div className="p-3.5 rounded-2xl bg-white/10 border border-white/10 space-y-2">
+                <div>
+                  <label className="text-xs font-semibold text-white block">INSTAGRAM_SCRAPER_USERNAME</label>
+                  <p className="text-[10px] text-pink-300">Username akun Instagram scraper</p>
+                </div>
+                <div className="flex gap-1.5">
+                  <input
+                    type="text"
+                    defaultValue={appSettings["INSTAGRAM_SCRAPER_USERNAME"] || ""}
+                    id="setting-INSTAGRAM_SCRAPER_USERNAME"
+                    placeholder="Username Instagram..."
+                    className="flex-1 px-3 py-1.5 rounded-xl border border-white/20 text-xs bg-slate-900/60 text-white placeholder-pink-300/40 focus:outline-none focus:ring-2 focus:ring-pink-400 font-mono"
+                  />
+                  <button
+                    onClick={() => {
+                      const el = document.getElementById("setting-INSTAGRAM_SCRAPER_USERNAME") as HTMLInputElement;
+                      if (el) saveSetting("INSTAGRAM_SCRAPER_USERNAME", el.value);
+                    }}
+                    disabled={settingsSaving}
+                    className="px-3 py-1.5 rounded-xl bg-pink-600 hover:bg-pink-500 text-white text-xs font-medium transition-all disabled:opacity-60 shrink-0"
+                  >
+                    <Save className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+
+              <div className="p-3.5 rounded-2xl bg-white/10 border border-white/10 space-y-2">
+                <div>
+                  <label className="text-xs font-semibold text-white block">INSTAGRAM_SCRAPER_PASSWORD</label>
+                  <p className="text-[10px] text-pink-300">Password akun Instagram scraper</p>
+                </div>
+                <div className="flex gap-1.5">
+                  <input
+                    type="password"
+                    defaultValue={appSettings["INSTAGRAM_SCRAPER_PASSWORD"] || ""}
+                    id="setting-INSTAGRAM_SCRAPER_PASSWORD"
+                    placeholder="Password Instagram..."
+                    className="flex-1 px-3 py-1.5 rounded-xl border border-white/20 text-xs bg-slate-900/60 text-white placeholder-pink-300/40 focus:outline-none focus:ring-2 focus:ring-pink-400 font-mono"
+                  />
+                  <button
+                    onClick={() => {
+                      const el = document.getElementById("setting-INSTAGRAM_SCRAPER_PASSWORD") as HTMLInputElement;
+                      if (el) saveSetting("INSTAGRAM_SCRAPER_PASSWORD", el.value);
+                    }}
+                    disabled={settingsSaving}
+                    className="px-3 py-1.5 rounded-xl bg-pink-600 hover:bg-pink-500 text-white text-xs font-medium transition-all disabled:opacity-60 shrink-0"
+                  >
+                    <Save className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Optional Manual Session Cookie Override */}
+            <div className="p-3.5 rounded-2xl bg-white/5 border border-white/10 space-y-2">
               <div>
-                <label className="text-xs font-semibold text-white block">INSTAGRAM_SESSION_COOKIE (sessionid)</label>
-                <p className="text-[10px] text-pink-300">Wajib untuk menjalankan fitur Competitor Spy</p>
+                <label className="text-xs font-semibold text-white block">INSTAGRAM_SESSION_COOKIE (Session Dump Auto-Generated)</label>
+                <p className="text-[10px] text-pink-300">Terisi otomatis saat auto-login berhasil. Bisa diisi manual jika perlu.</p>
               </div>
               <div className="flex gap-1.5">
                 <input
                   type="password"
-                  defaultValue={appSettings["INSTAGRAM_SESSION_COOKIE"] || ""}
+                  defaultValue={typeof appSettings["INSTAGRAM_SESSION_COOKIE"] === "object" ? JSON.stringify(appSettings["INSTAGRAM_SESSION_COOKIE"]) : (appSettings["INSTAGRAM_SESSION_COOKIE"] || "")}
                   id="setting-INSTAGRAM_SESSION_COOKIE"
-                  placeholder="Masukkan sessionid Instagram..."
+                  placeholder="Diisi otomatis oleh Auto-Session Engine..."
                   className="flex-1 px-3 py-1.5 rounded-xl border border-white/20 text-xs bg-slate-900/60 text-white placeholder-pink-300/40 focus:outline-none focus:ring-2 focus:ring-pink-400 font-mono"
                 />
                 <button
