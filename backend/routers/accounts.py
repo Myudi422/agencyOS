@@ -106,6 +106,7 @@ def get_accounts(
             "account_group": a.account_group,
             "followers_count": a.followers_count,
             "briefing": a.briefing,
+            "watermark_config": a.watermark_config or {},
             "last_synced_at": a.last_synced_at,
             "connected_at": a.connected_at
         })
@@ -117,6 +118,82 @@ def get_accounts(
         "limit": limit,
         "pages": (total + limit - 1) // limit
     }
+
+
+class WatermarkConfigSchema(BaseModel):
+    default_mode: Optional[str] = "text"  # "image" or "text"
+    text_content: Optional[str] = None
+    text_color: Optional[str] = "#ffffff"
+    image_url: Optional[str] = None
+    position: Optional[str] = "bottom_right"  # top_left, top_center, top_right, center_left, center, center_right, bottom_left, bottom_center, bottom_right
+    opacity: Optional[float] = 0.8
+    scale: Optional[float] = 0.2
+    margin: Optional[int] = 20
+
+
+class WatermarkPreviewRequest(BaseModel):
+    image_base64: str
+    config: WatermarkConfigSchema
+
+
+@router.get("/{account_id}/watermark")
+def get_account_watermark(
+    account_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_user)
+):
+    account = db.query(SocialAccount).filter(SocialAccount.id == account_id).first()
+    if not account:
+        raise HTTPException(status_code=404, detail="Account not found")
+    get_user_workspace(current_user, account.workspace_id, db)
+    return {
+        "account_id": account.id,
+        "username": account.username,
+        "watermark_config": account.watermark_config or {}
+    }
+
+
+@router.put("/{account_id}/watermark")
+def update_account_watermark(
+    account_id: str,
+    payload: WatermarkConfigSchema,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_user)
+):
+    account = db.query(SocialAccount).filter(SocialAccount.id == account_id).first()
+    if not account:
+        raise HTTPException(status_code=404, detail="Account not found")
+    get_user_workspace(current_user, account.workspace_id, db)
+
+    config_data = payload.dict(exclude_unset=True)
+    config_data["updated_at"] = datetime.utcnow().isoformat()
+    account.watermark_config = config_data
+    db.commit()
+
+    return {
+        "account_id": account.id,
+        "status": "success",
+        "watermark_config": account.watermark_config
+    }
+
+
+@router.post("/watermark/preview")
+def preview_watermark(
+    payload: WatermarkPreviewRequest,
+    current_user: User = Depends(require_user)
+):
+    """Returns a base64 data URI of the watermarked image for frontend live preview."""
+    try:
+        from backend.services.watermark_service import watermark_service
+        b64_res = watermark_service.preview_watermark_base64(
+            payload.image_base64.encode("utf-8") if isinstance(payload.image_base64, str) else payload.image_base64,
+            payload.config.dict()
+        )
+        return {"status": "success", "preview_data_uri": b64_res}
+    except Exception as e:
+        logger.error(f"Watermark preview error: {e}")
+        raise HTTPException(status_code=400, detail=f"Watermark preview failed: {str(e)}")
+
 
 @router.get("/{account_id}/briefing")
 def get_account_briefing(

@@ -11,7 +11,7 @@
       "_origin": "ast",
       "id": "api_index",
       "community": 71,
-      "community_name": "main.py",
+      "community_name": "seed.py",
       "norm_label": "index.py"
     },
     {
@@ -32,8 +32,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_config",
-      "community": 9,
-      "community_name": "models.py",
+      "community": 1,
+      "community_name": "webhook.py",
       "norm_label": "config.py"
     },
     {
@@ -43,8 +43,8 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "backend_config_settings",
-      "community": 9,
-      "community_name": "models.py",
+      "community": 1,
+      "community_name": "webhook.py",
       "norm_label": "settings"
     },
     {
@@ -76,8 +76,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_fix_stuck_posts",
-      "community": 9,
-      "community_name": "models.py",
+      "community": 71,
+      "community_name": "seed.py",
       "norm_label": "fix_stuck_posts.py"
     },
     {
@@ -87,8 +87,8 @@
       "source_location": "L29",
       "_origin": "ast",
       "id": "backend_fix_stuck_posts_main",
-      "community": 9,
-      "community_name": "models.py",
+      "community": 71,
+      "community_name": "seed.py",
       "norm_label": "main()"
     },
     {
@@ -98,8 +98,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_fix_stuck_posts_rationale_1",
-      "community": 9,
-      "community_name": "models.py",
+      "community": 71,
+      "community_name": "seed.py",
       "norm_label": "script perbaikan langsung: ambil hasil dari postforme api untuk semua post yang..."
     },
     {
@@ -110,7 +110,7 @@
       "_origin": "ast",
       "id": "backend_main",
       "community": 71,
-      "community_name": "main.py",
+      "community_name": "seed.py",
       "norm_label": "main.py"
     },
     {
@@ -121,7 +121,7 @@
       "_origin": "ast",
       "id": "backend_main_py_get",
       "community": 71,
-      "community_name": "main.py",
+      "community_name": "seed.py",
       "norm_label": "get"
     },
     {
@@ -132,7 +132,7 @@
       "_origin": "ast",
       "id": "backend_main_root",
       "community": 71,
-      "community_name": "main.py",
+      "community_name": "seed.py",
       "norm_label": "root()"
     },
     {
@@ -451,7 +451,7 @@
       "_origin": "ast",
       "id": "backend_models_models_plantier",
       "community": 0,
-      "community_name": "UserSubscription",
+      "community_name": "admin.py",
       "norm_label": "plantier"
     },
     {
@@ -473,7 +473,7 @@
       "_origin": "ast",
       "id": "backend_models_models_subscriptionstatus",
       "community": 0,
-      "community_name": "UserSubscription",
+      "community_name": "admin.py",
       "norm_label": "subscriptionstatus"
     },
     {
@@ -505,8 +505,8 @@
       "source_location": "L47",
       "_origin": "ast",
       "id": "backend_models_models_accountstatus",
-      "community": 70,
-      "community_name": "AccountStatus",
+      "community": 2,
+      "community_name": "User",
       "norm_label": "accountstatus"
     },
     {
@@ -517,7 +517,7 @@
       "_origin": "ast",
       "id": "backend_models_models_posttype",
       "community": 13,
-      "community_name": "posts.py",
+      "community_name": "UserSubscription",
       "norm_label": "posttype"
     },
     {
@@ -528,7 +528,7 @@
       "_origin": "ast",
       "id": "backend_models_models_poststatus",
       "community": 13,
-      "community_name": "posts.py",
+      "community_name": "UserSubscription",
       "norm_label": "poststatus"
     },
     {
@@ -572,7 +572,7 @@
       "_origin": "ast",
       "id": "backend_models_models_waotpverification",
       "community": 0,
-      "community_name": "UserSubscription",
+      "community_name": "admin.py",
       "norm_label": "waotpverification"
     },
     {
@@ -623,7 +623,7 @@
       "label": "Media",
       "file_type": "code",
       "source_file": "backend/models/models.py",
-      "source_location": "L191",
+      "source_location": "L192",
       "_origin": "ast",
       "id": "backend_models_models_media",
       "community": 7,
@@ -634,40 +634,40 @@
       "label": "Post",
       "file_type": "code",
       "source_file": "backend/models/models.py",
-      "source_location": "L212",
+      "source_location": "L213",
       "_origin": "ast",
       "id": "backend_models_models_post",
       "community": 13,
-      "community_name": "posts.py",
+      "community_name": "UserSubscription",
       "norm_label": "post"
     },
     {
       "label": "PostTarget",
       "file_type": "code",
       "source_file": "backend/models/models.py",
-      "source_location": "L240",
+      "source_location": "L241",
       "_origin": "ast",
       "id": "backend_models_models_posttarget",
       "community": 13,
-      "community_name": "posts.py",
+      "community_name": "UserSubscription",
       "norm_label": "posttarget"
     },
     {
       "label": "PublishJob",
       "file_type": "code",
       "source_file": "backend/models/models.py",
-      "source_location": "L256",
+      "source_location": "L257",
       "_origin": "ast",
       "id": "backend_models_models_publishjob",
-      "community": 9,
-      "community_name": "models.py",
+      "community": 71,
+      "community_name": "seed.py",
       "norm_label": "publishjob"
     },
     {
       "label": "PostPublishResult",
       "file_type": "code",
       "source_file": "backend/models/models.py",
-      "source_location": "L273",
+      "source_location": "L274",
       "_origin": "ast",
       "id": "backend_models_models_postpublishresult",
       "community": 56,
@@ -678,7 +678,7 @@
       "label": "ActivityLog",
       "file_type": "code",
       "source_file": "backend/models/models.py",
-      "source_location": "L296",
+      "source_location": "L297",
       "_origin": "ast",
       "id": "backend_models_models_activitylog",
       "community": 2,
@@ -689,32 +689,32 @@
       "label": "Setting",
       "file_type": "code",
       "source_file": "backend/models/models.py",
-      "source_location": "L310",
+      "source_location": "L311",
       "_origin": "ast",
       "id": "backend_models_models_setting",
       "community": 0,
-      "community_name": "UserSubscription",
+      "community_name": "admin.py",
       "norm_label": "setting"
     },
     {
       "label": "SubscriptionPlan",
       "file_type": "code",
       "source_file": "backend/models/models.py",
-      "source_location": "L321",
+      "source_location": "L322",
       "_origin": "ast",
       "id": "backend_models_models_subscriptionplan",
       "community": 0,
-      "community_name": "UserSubscription",
+      "community_name": "admin.py",
       "norm_label": "subscriptionplan"
     },
     {
       "label": "UserSubscription",
       "file_type": "code",
       "source_file": "backend/models/models.py",
-      "source_location": "L342",
+      "source_location": "L343",
       "_origin": "ast",
       "id": "backend_models_models_usersubscription",
-      "community": 0,
+      "community": 13,
       "community_name": "UserSubscription",
       "norm_label": "usersubscription"
     },
@@ -722,7 +722,7 @@
       "label": "CompetitorAccount",
       "file_type": "code",
       "source_file": "backend/models/models.py",
-      "source_location": "L363",
+      "source_location": "L364",
       "_origin": "ast",
       "id": "backend_models_models_competitoraccount",
       "community": 68,
@@ -733,7 +733,7 @@
       "label": "CompetitorPost",
       "file_type": "code",
       "source_file": "backend/models/models.py",
-      "source_location": "L392",
+      "source_location": "L393",
       "_origin": "ast",
       "id": "backend_models_models_competitorpost",
       "community": 68,
@@ -744,7 +744,7 @@
       "label": "KolCampaignStatus",
       "file_type": "code",
       "source_file": "backend/models/models.py",
-      "source_location": "L413",
+      "source_location": "L414",
       "_origin": "ast",
       "id": "backend_models_models_kolcampaignstatus",
       "community": 2,
@@ -755,7 +755,7 @@
       "label": "KolDeliverableType",
       "file_type": "code",
       "source_file": "backend/models/models.py",
-      "source_location": "L420",
+      "source_location": "L421",
       "_origin": "ast",
       "id": "backend_models_models_koldeliverabletype",
       "community": 2,
@@ -766,7 +766,7 @@
       "label": "KolDeliverableStatus",
       "file_type": "code",
       "source_file": "backend/models/models.py",
-      "source_location": "L431",
+      "source_location": "L432",
       "_origin": "ast",
       "id": "backend_models_models_koldeliverablestatus",
       "community": 2,
@@ -777,7 +777,7 @@
       "label": "KolPaymentStatus",
       "file_type": "code",
       "source_file": "backend/models/models.py",
-      "source_location": "L438",
+      "source_location": "L439",
       "_origin": "ast",
       "id": "backend_models_models_kolpaymentstatus",
       "community": 2,
@@ -788,7 +788,7 @@
       "label": "KolProfile",
       "file_type": "code",
       "source_file": "backend/models/models.py",
-      "source_location": "L444",
+      "source_location": "L445",
       "_origin": "ast",
       "id": "backend_models_models_kolprofile",
       "community": 2,
@@ -799,7 +799,7 @@
       "label": "KolCampaign",
       "file_type": "code",
       "source_file": "backend/models/models.py",
-      "source_location": "L473",
+      "source_location": "L474",
       "_origin": "ast",
       "id": "backend_models_models_kolcampaign",
       "community": 2,
@@ -810,7 +810,7 @@
       "label": "KolCampaignKol",
       "file_type": "code",
       "source_file": "backend/models/models.py",
-      "source_location": "L497",
+      "source_location": "L498",
       "_origin": "ast",
       "id": "backend_models_models_kolcampaignkol",
       "community": 2,
@@ -821,7 +821,7 @@
       "label": "KolDeliverable",
       "file_type": "code",
       "source_file": "backend/models/models.py",
-      "source_location": "L515",
+      "source_location": "L516",
       "_origin": "ast",
       "id": "backend_models_models_koldeliverable",
       "community": 2,
@@ -836,16 +836,16 @@
       "_origin": "ast",
       "id": "backend_models_models_rationale_95",
       "community": 0,
-      "community_name": "UserSubscription",
+      "community_name": "admin.py",
       "norm_label": "menyimpan otp whatsapp sementara untuk verifikasi sebelum claim trial."
     },
     {
       "label": "Menyimpan hasil aktual publish dari PostForMe API (/v1/social-post-results).\u2026",
       "file_type": "rationale",
       "source_file": "backend/models/models.py",
-      "source_location": "L274",
+      "source_location": "L275",
       "_origin": "ast",
-      "id": "backend_models_models_rationale_274",
+      "id": "backend_models_models_rationale_275",
       "community": 56,
       "community_name": "QueueService",
       "norm_label": "menyimpan hasil aktual publish dari postforme api (/v1/social-post-results)...."
@@ -854,21 +854,21 @@
       "label": "Paket langganan \u2014 semua plan unlimited akun sosmed, beda di quota post.",
       "file_type": "rationale",
       "source_file": "backend/models/models.py",
-      "source_location": "L322",
+      "source_location": "L323",
       "_origin": "ast",
-      "id": "backend_models_models_rationale_322",
+      "id": "backend_models_models_rationale_323",
       "community": 0,
-      "community_name": "UserSubscription",
+      "community_name": "admin.py",
       "norm_label": "paket langganan \u2014 semua plan unlimited akun sosmed, beda di quota post."
     },
     {
       "label": "Subscription aktif milik satu user.",
       "file_type": "rationale",
       "source_file": "backend/models/models.py",
-      "source_location": "L343",
+      "source_location": "L344",
       "_origin": "ast",
-      "id": "backend_models_models_rationale_343",
-      "community": 0,
+      "id": "backend_models_models_rationale_344",
+      "community": 13,
       "community_name": "UserSubscription",
       "norm_label": "subscription aktif milik satu user."
     },
@@ -945,7 +945,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_routers_accounts",
-      "community": 14,
+      "community": 18,
       "community_name": "get_user_workspace",
       "norm_label": "accounts.py"
     },
@@ -956,8 +956,8 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "backend_routers_accounts_accountbriefingschema",
-      "community": 14,
-      "community_name": "get_user_workspace",
+      "community": 2,
+      "community_name": "User",
       "norm_label": "accountbriefingschema"
     },
     {
@@ -967,8 +967,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_routers_accounts_py_basemodel",
-      "community": 14,
-      "community_name": "get_user_workspace",
+      "community": 2,
+      "community_name": "User",
       "norm_label": "basemodel"
     },
     {
@@ -978,8 +978,8 @@
       "source_location": "L26",
       "_origin": "ast",
       "id": "backend_routers_accounts_bulkactionrequest",
-      "community": 14,
-      "community_name": "get_user_workspace",
+      "community": 2,
+      "community_name": "User",
       "norm_label": "bulkactionrequest"
     },
     {
@@ -989,7 +989,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_routers_accounts_py_get",
-      "community": 14,
+      "community": 18,
       "community_name": "get_user_workspace",
       "norm_label": "get"
     },
@@ -1000,7 +1000,7 @@
       "source_location": "L32",
       "_origin": "ast",
       "id": "backend_routers_accounts_get_accounts",
-      "community": 14,
+      "community": 18,
       "community_name": "get_user_workspace",
       "norm_label": "get_accounts()"
     },
@@ -1011,20 +1011,42 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_routers_accounts_py_session",
-      "community": 14,
+      "community": 18,
       "community_name": "get_user_workspace",
       "norm_label": "session"
     },
     {
-      "label": "get_account_briefing()",
+      "label": "WatermarkConfigSchema",
       "file_type": "code",
       "source_file": "backend/routers/accounts.py",
-      "source_location": "L122",
+      "source_location": "L123",
       "_origin": "ast",
-      "id": "backend_routers_accounts_get_account_briefing",
-      "community": 14,
+      "id": "backend_routers_accounts_watermarkconfigschema",
+      "community": 2,
+      "community_name": "User",
+      "norm_label": "watermarkconfigschema"
+    },
+    {
+      "label": "WatermarkPreviewRequest",
+      "file_type": "code",
+      "source_file": "backend/routers/accounts.py",
+      "source_location": "L134",
+      "_origin": "ast",
+      "id": "backend_routers_accounts_watermarkpreviewrequest",
+      "community": 2,
+      "community_name": "User",
+      "norm_label": "watermarkpreviewrequest"
+    },
+    {
+      "label": "get_account_watermark()",
+      "file_type": "code",
+      "source_file": "backend/routers/accounts.py",
+      "source_location": "L140",
+      "_origin": "ast",
+      "id": "backend_routers_accounts_get_account_watermark",
+      "community": 18,
       "community_name": "get_user_workspace",
-      "norm_label": "get_account_briefing()"
+      "norm_label": "get_account_watermark()"
     },
     {
       "label": "put",
@@ -1033,20 +1055,20 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_routers_accounts_py_put",
-      "community": 14,
+      "community": 18,
       "community_name": "get_user_workspace",
       "norm_label": "put"
     },
     {
-      "label": "update_account_briefing()",
+      "label": "update_account_watermark()",
       "file_type": "code",
       "source_file": "backend/routers/accounts.py",
-      "source_location": "L139",
+      "source_location": "L157",
       "_origin": "ast",
-      "id": "backend_routers_accounts_update_account_briefing",
-      "community": 14,
+      "id": "backend_routers_accounts_update_account_watermark",
+      "community": 18,
       "community_name": "get_user_workspace",
-      "norm_label": "update_account_briefing()"
+      "norm_label": "update_account_watermark()"
     },
     {
       "label": "post",
@@ -1055,18 +1077,51 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_routers_accounts_py_post",
-      "community": 14,
+      "community": 18,
       "community_name": "get_user_workspace",
       "norm_label": "post"
+    },
+    {
+      "label": "preview_watermark()",
+      "file_type": "code",
+      "source_file": "backend/routers/accounts.py",
+      "source_location": "L181",
+      "_origin": "ast",
+      "id": "backend_routers_accounts_preview_watermark",
+      "community": 18,
+      "community_name": "get_user_workspace",
+      "norm_label": "preview_watermark()"
+    },
+    {
+      "label": "get_account_briefing()",
+      "file_type": "code",
+      "source_file": "backend/routers/accounts.py",
+      "source_location": "L199",
+      "_origin": "ast",
+      "id": "backend_routers_accounts_get_account_briefing",
+      "community": 18,
+      "community_name": "get_user_workspace",
+      "norm_label": "get_account_briefing()"
+    },
+    {
+      "label": "update_account_briefing()",
+      "file_type": "code",
+      "source_file": "backend/routers/accounts.py",
+      "source_location": "L216",
+      "_origin": "ast",
+      "id": "backend_routers_accounts_update_account_briefing",
+      "community": 18,
+      "community_name": "get_user_workspace",
+      "norm_label": "update_account_briefing()"
     },
     {
       "label": "toggle_favorite_post()",
       "file_type": "code",
       "source_file": "backend/routers/accounts.py",
-      "source_location": "L162",
+      "source_location": "L239",
       "_origin": "ast",
       "id": "backend_routers_accounts_toggle_favorite_post",
-      "community": 14,
+      "community": 18,
       "community_name": "get_user_workspace",
       "norm_label": "toggle_favorite_post()"
     },
@@ -1074,10 +1129,10 @@
       "label": "toggle_favorite_put()",
       "file_type": "code",
       "source_file": "backend/routers/accounts.py",
-      "source_location": "L176",
+      "source_location": "L253",
       "_origin": "ast",
       "id": "backend_routers_accounts_toggle_favorite_put",
-      "community": 14,
+      "community": 18,
       "community_name": "get_user_workspace",
       "norm_label": "toggle_favorite_put()"
     },
@@ -1085,10 +1140,10 @@
       "label": "bulk_action()",
       "file_type": "code",
       "source_file": "backend/routers/accounts.py",
-      "source_location": "L190",
+      "source_location": "L267",
       "_origin": "ast",
       "id": "backend_routers_accounts_bulk_action",
-      "community": 14,
+      "community": 18,
       "community_name": "get_user_workspace",
       "norm_label": "bulk_action()"
     },
@@ -1099,7 +1154,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_routers_accounts_py_delete",
-      "community": 14,
+      "community": 18,
       "community_name": "get_user_workspace",
       "norm_label": "delete"
     },
@@ -1107,10 +1162,10 @@
       "label": "delete_account()",
       "file_type": "code",
       "source_file": "backend/routers/accounts.py",
-      "source_location": "L231",
+      "source_location": "L308",
       "_origin": "ast",
       "id": "backend_routers_accounts_delete_account",
-      "community": 14,
+      "community": 18,
       "community_name": "get_user_workspace",
       "norm_label": "delete_account()"
     },
@@ -1121,18 +1176,29 @@
       "source_location": "L47",
       "_origin": "ast",
       "id": "backend_routers_accounts_rationale_47",
-      "community": 14,
+      "community": 18,
       "community_name": "get_user_workspace",
       "norm_label": "returns social accounts for the given workspace. validates that workspace..."
+    },
+    {
+      "label": "Returns a base64 data URI of the watermarked image for frontend live preview.",
+      "file_type": "rationale",
+      "source_file": "backend/routers/accounts.py",
+      "source_location": "L185",
+      "_origin": "ast",
+      "id": "backend_routers_accounts_rationale_185",
+      "community": 18,
+      "community_name": "get_user_workspace",
+      "norm_label": "returns a base64 data uri of the watermarked image for frontend live preview."
     },
     {
       "label": "Executes bulk updates across selected account IDs.",
       "file_type": "rationale",
       "source_file": "backend/routers/accounts.py",
-      "source_location": "L195",
+      "source_location": "L272",
       "_origin": "ast",
-      "id": "backend_routers_accounts_rationale_195",
-      "community": 14,
+      "id": "backend_routers_accounts_rationale_272",
+      "community": 18,
       "community_name": "get_user_workspace",
       "norm_label": "executes bulk updates across selected account ids."
     },
@@ -1254,7 +1320,7 @@
       "_origin": "ast",
       "id": "backend_routers_admin",
       "community": 0,
-      "community_name": "UserSubscription",
+      "community_name": "admin.py",
       "norm_label": "admin.py"
     },
     {
@@ -1265,7 +1331,7 @@
       "_origin": "ast",
       "id": "backend_routers_admin_require_admin",
       "community": 0,
-      "community_name": "UserSubscription",
+      "community_name": "admin.py",
       "norm_label": "require_admin()"
     },
     {
@@ -1276,7 +1342,7 @@
       "_origin": "ast",
       "id": "backend_routers_admin_py_session",
       "community": 0,
-      "community_name": "UserSubscription",
+      "community_name": "admin.py",
       "norm_label": "session"
     },
     {
@@ -1287,7 +1353,7 @@
       "_origin": "ast",
       "id": "backend_routers_admin_planupdaterequest",
       "community": 0,
-      "community_name": "UserSubscription",
+      "community_name": "admin.py",
       "norm_label": "planupdaterequest"
     },
     {
@@ -1298,7 +1364,7 @@
       "_origin": "ast",
       "id": "backend_routers_admin_py_basemodel",
       "community": 0,
-      "community_name": "UserSubscription",
+      "community_name": "admin.py",
       "norm_label": "basemodel"
     },
     {
@@ -1309,7 +1375,7 @@
       "_origin": "ast",
       "id": "backend_routers_admin_settingupsertrequest",
       "community": 0,
-      "community_name": "UserSubscription",
+      "community_name": "admin.py",
       "norm_label": "settingupsertrequest"
     },
     {
@@ -1320,7 +1386,7 @@
       "_origin": "ast",
       "id": "backend_routers_admin_subscriptionoverriderequest",
       "community": 0,
-      "community_name": "UserSubscription",
+      "community_name": "admin.py",
       "norm_label": "subscriptionoverriderequest"
     },
     {
@@ -1331,7 +1397,7 @@
       "_origin": "ast",
       "id": "backend_routers_admin_py_get",
       "community": 0,
-      "community_name": "UserSubscription",
+      "community_name": "admin.py",
       "norm_label": "get"
     },
     {
@@ -1342,7 +1408,7 @@
       "_origin": "ast",
       "id": "backend_routers_admin_list_users",
       "community": 0,
-      "community_name": "UserSubscription",
+      "community_name": "admin.py",
       "norm_label": "list_users()"
     },
     {
@@ -1353,7 +1419,7 @@
       "_origin": "ast",
       "id": "backend_routers_admin_py_post",
       "community": 0,
-      "community_name": "UserSubscription",
+      "community_name": "admin.py",
       "norm_label": "post"
     },
     {
@@ -1364,7 +1430,7 @@
       "_origin": "ast",
       "id": "backend_routers_admin_override_user_subscription",
       "community": 0,
-      "community_name": "UserSubscription",
+      "community_name": "admin.py",
       "norm_label": "override_user_subscription()"
     },
     {
@@ -1375,7 +1441,7 @@
       "_origin": "ast",
       "id": "backend_routers_admin_get_plans",
       "community": 0,
-      "community_name": "UserSubscription",
+      "community_name": "admin.py",
       "norm_label": "get_plans()"
     },
     {
@@ -1386,7 +1452,7 @@
       "_origin": "ast",
       "id": "backend_routers_admin_py_put",
       "community": 0,
-      "community_name": "UserSubscription",
+      "community_name": "admin.py",
       "norm_label": "put"
     },
     {
@@ -1397,7 +1463,7 @@
       "_origin": "ast",
       "id": "backend_routers_admin_update_plan",
       "community": 0,
-      "community_name": "UserSubscription",
+      "community_name": "admin.py",
       "norm_label": "update_plan()"
     },
     {
@@ -1408,7 +1474,7 @@
       "_origin": "ast",
       "id": "backend_routers_admin_get_settings",
       "community": 0,
-      "community_name": "UserSubscription",
+      "community_name": "admin.py",
       "norm_label": "get_settings()"
     },
     {
@@ -1419,7 +1485,7 @@
       "_origin": "ast",
       "id": "backend_routers_admin_upsert_setting",
       "community": 0,
-      "community_name": "UserSubscription",
+      "community_name": "admin.py",
       "norm_label": "upsert_setting()"
     },
     {
@@ -1430,7 +1496,7 @@
       "_origin": "ast",
       "id": "backend_routers_admin_py_delete",
       "community": 0,
-      "community_name": "UserSubscription",
+      "community_name": "admin.py",
       "norm_label": "delete"
     },
     {
@@ -1441,7 +1507,7 @@
       "_origin": "ast",
       "id": "backend_routers_admin_delete_setting",
       "community": 0,
-      "community_name": "UserSubscription",
+      "community_name": "admin.py",
       "norm_label": "delete_setting()"
     },
     {
@@ -1452,18 +1518,29 @@
       "_origin": "ast",
       "id": "backend_routers_admin_test_gemini",
       "community": 0,
-      "community_name": "UserSubscription",
+      "community_name": "admin.py",
       "norm_label": "test_gemini()"
+    },
+    {
+      "label": "InstagramTestRequest",
+      "file_type": "code",
+      "source_file": "backend/routers/admin.py",
+      "source_location": "L262",
+      "_origin": "ast",
+      "id": "backend_routers_admin_instagramtestrequest",
+      "community": 0,
+      "community_name": "admin.py",
+      "norm_label": "instagramtestrequest"
     },
     {
       "label": "test_instagram()",
       "file_type": "code",
       "source_file": "backend/routers/admin.py",
-      "source_location": "L263",
+      "source_location": "L269",
       "_origin": "ast",
       "id": "backend_routers_admin_test_instagram",
       "community": 0,
-      "community_name": "UserSubscription",
+      "community_name": "admin.py",
       "norm_label": "test_instagram()"
     },
     {
@@ -1474,7 +1551,7 @@
       "_origin": "ast",
       "id": "backend_routers_admin_rationale_1",
       "community": 0,
-      "community_name": "UserSubscription",
+      "community_name": "admin.py",
       "norm_label": "admin router \u2014 /admin (admin-only endpoints) manage users, subscription plans,..."
     },
     {
@@ -1485,7 +1562,7 @@
       "_origin": "ast",
       "id": "backend_routers_admin_rationale_71",
       "community": 0,
-      "community_name": "UserSubscription",
+      "community_name": "admin.py",
       "norm_label": "list all users with subscription info."
     },
     {
@@ -1496,7 +1573,7 @@
       "_origin": "ast",
       "id": "backend_routers_admin_rationale_102",
       "community": 0,
-      "community_name": "UserSubscription",
+      "community_name": "admin.py",
       "norm_label": "admin: manually set a user's subscription plan."
     },
     {
@@ -1507,7 +1584,7 @@
       "_origin": "ast",
       "id": "backend_routers_admin_rationale_140",
       "community": 0,
-      "community_name": "UserSubscription",
+      "community_name": "admin.py",
       "norm_label": "list all plans (including inactive)."
     },
     {
@@ -1518,7 +1595,7 @@
       "_origin": "ast",
       "id": "backend_routers_admin_rationale_168",
       "community": 0,
-      "community_name": "UserSubscription",
+      "community_name": "admin.py",
       "norm_label": "update a subscription plan's pricing or quota."
     },
     {
@@ -1529,7 +1606,7 @@
       "_origin": "ast",
       "id": "backend_routers_admin_rationale_201",
       "community": 0,
-      "community_name": "UserSubscription",
+      "community_name": "admin.py",
       "norm_label": "get all global app settings (api keys, config)."
     },
     {
@@ -1540,7 +1617,7 @@
       "_origin": "ast",
       "id": "backend_routers_admin_rationale_212",
       "community": 0,
-      "community_name": "UserSubscription",
+      "community_name": "admin.py",
       "norm_label": "upsert a global app setting (api key, config value, etc.)."
     },
     {
@@ -1551,7 +1628,7 @@
       "_origin": "ast",
       "id": "backend_routers_admin_rationale_239",
       "community": 0,
-      "community_name": "UserSubscription",
+      "community_name": "admin.py",
       "norm_label": "delete a global app setting."
     },
     {
@@ -1562,18 +1639,18 @@
       "_origin": "ast",
       "id": "backend_routers_admin_rationale_256",
       "community": 0,
-      "community_name": "UserSubscription",
+      "community_name": "admin.py",
       "norm_label": "test gemini webapi cookie or api key connection."
     },
     {
       "label": "Test stored Instagram session cookie / credentials using instagrapi.",
       "file_type": "rationale",
       "source_file": "backend/routers/admin.py",
-      "source_location": "L267",
+      "source_location": "L274",
       "_origin": "ast",
-      "id": "backend_routers_admin_rationale_267",
+      "id": "backend_routers_admin_rationale_274",
       "community": 0,
-      "community_name": "UserSubscription",
+      "community_name": "admin.py",
       "norm_label": "test stored instagram session cookie / credentials using instagrapi."
     },
     {
@@ -1969,7 +2046,7 @@
       "_origin": "ast",
       "id": "backend_routers_billing",
       "community": 0,
-      "community_name": "UserSubscription",
+      "community_name": "admin.py",
       "norm_label": "billing.py"
     },
     {
@@ -1980,7 +2057,7 @@
       "_origin": "ast",
       "id": "backend_routers_billing_get_frontend_url",
       "community": 0,
-      "community_name": "UserSubscription",
+      "community_name": "admin.py",
       "norm_label": "get_frontend_url()"
     },
     {
@@ -1991,7 +2068,7 @@
       "_origin": "ast",
       "id": "backend_routers_billing_py_request",
       "community": 0,
-      "community_name": "UserSubscription",
+      "community_name": "admin.py",
       "norm_label": "request"
     },
     {
@@ -2002,7 +2079,7 @@
       "_origin": "ast",
       "id": "backend_routers_billing_checkoutrequest",
       "community": 0,
-      "community_name": "UserSubscription",
+      "community_name": "admin.py",
       "norm_label": "checkoutrequest"
     },
     {
@@ -2013,7 +2090,7 @@
       "_origin": "ast",
       "id": "backend_routers_billing_py_basemodel",
       "community": 0,
-      "community_name": "UserSubscription",
+      "community_name": "admin.py",
       "norm_label": "basemodel"
     },
     {
@@ -2024,7 +2101,7 @@
       "_origin": "ast",
       "id": "backend_routers_billing_get_user_from_auth",
       "community": 0,
-      "community_name": "UserSubscription",
+      "community_name": "admin.py",
       "norm_label": "_get_user_from_auth()"
     },
     {
@@ -2035,7 +2112,7 @@
       "_origin": "ast",
       "id": "backend_routers_billing_py_session",
       "community": 0,
-      "community_name": "UserSubscription",
+      "community_name": "admin.py",
       "norm_label": "session"
     },
     {
@@ -2046,7 +2123,7 @@
       "_origin": "ast",
       "id": "backend_routers_billing_py_get",
       "community": 0,
-      "community_name": "UserSubscription",
+      "community_name": "admin.py",
       "norm_label": "get"
     },
     {
@@ -2057,7 +2134,7 @@
       "_origin": "ast",
       "id": "backend_routers_billing_list_plans",
       "community": 0,
-      "community_name": "UserSubscription",
+      "community_name": "admin.py",
       "norm_label": "list_plans()"
     },
     {
@@ -2068,7 +2145,7 @@
       "_origin": "ast",
       "id": "backend_routers_billing_otpsendrequest",
       "community": 0,
-      "community_name": "UserSubscription",
+      "community_name": "admin.py",
       "norm_label": "otpsendrequest"
     },
     {
@@ -2079,7 +2156,7 @@
       "_origin": "ast",
       "id": "backend_routers_billing_otpverifyrequest",
       "community": 0,
-      "community_name": "UserSubscription",
+      "community_name": "admin.py",
       "norm_label": "otpverifyrequest"
     },
     {
@@ -2090,7 +2167,7 @@
       "_origin": "ast",
       "id": "backend_routers_billing_py_post",
       "community": 0,
-      "community_name": "UserSubscription",
+      "community_name": "admin.py",
       "norm_label": "post"
     },
     {
@@ -2101,7 +2178,7 @@
       "_origin": "ast",
       "id": "backend_routers_billing_send_wa_otp",
       "community": 0,
-      "community_name": "UserSubscription",
+      "community_name": "admin.py",
       "norm_label": "send_wa_otp()"
     },
     {
@@ -2112,7 +2189,7 @@
       "_origin": "ast",
       "id": "backend_routers_billing_verify_wa_otp",
       "community": 0,
-      "community_name": "UserSubscription",
+      "community_name": "admin.py",
       "norm_label": "verify_wa_otp()"
     },
     {
@@ -2123,7 +2200,7 @@
       "_origin": "ast",
       "id": "backend_routers_billing_create_checkout",
       "community": 0,
-      "community_name": "UserSubscription",
+      "community_name": "admin.py",
       "norm_label": "create_checkout()"
     },
     {
@@ -2134,7 +2211,7 @@
       "_origin": "ast",
       "id": "backend_routers_billing_synccheckoutrequest",
       "community": 0,
-      "community_name": "UserSubscription",
+      "community_name": "admin.py",
       "norm_label": "synccheckoutrequest"
     },
     {
@@ -2145,7 +2222,7 @@
       "_origin": "ast",
       "id": "backend_routers_billing_sync_checkout",
       "community": 0,
-      "community_name": "UserSubscription",
+      "community_name": "admin.py",
       "norm_label": "sync_checkout()"
     },
     {
@@ -2156,7 +2233,7 @@
       "_origin": "ast",
       "id": "backend_routers_billing_get_subscription",
       "community": 0,
-      "community_name": "UserSubscription",
+      "community_name": "admin.py",
       "norm_label": "get_subscription()"
     },
     {
@@ -2167,7 +2244,7 @@
       "_origin": "ast",
       "id": "backend_routers_billing_midtrans_notification",
       "community": 0,
-      "community_name": "UserSubscription",
+      "community_name": "admin.py",
       "norm_label": "midtrans_notification()"
     },
     {
@@ -2178,7 +2255,7 @@
       "_origin": "ast",
       "id": "backend_routers_billing_activate_user_subscription",
       "community": 0,
-      "community_name": "UserSubscription",
+      "community_name": "admin.py",
       "norm_label": "_activate_user_subscription()"
     },
     {
@@ -2189,7 +2266,7 @@
       "_origin": "ast",
       "id": "backend_routers_billing_rationale_1",
       "community": 0,
-      "community_name": "UserSubscription",
+      "community_name": "admin.py",
       "norm_label": "billing router \u2014 /billing manages midtrans snap payment gateway integration,..."
     },
     {
@@ -2200,7 +2277,7 @@
       "_origin": "ast",
       "id": "backend_routers_billing_rationale_28",
       "community": 0,
-      "community_name": "UserSubscription",
+      "community_name": "admin.py",
       "norm_label": "dynamically determines the frontend base url based on incoming http request..."
     },
     {
@@ -2211,7 +2288,7 @@
       "_origin": "ast",
       "id": "backend_routers_billing_rationale_79",
       "community": 0,
-      "community_name": "UserSubscription",
+      "community_name": "admin.py",
       "norm_label": "returns all active subscription plans with midtrans idr pricing."
     },
     {
@@ -2222,7 +2299,7 @@
       "_origin": "ast",
       "id": "backend_routers_billing_rationale_120",
       "community": 0,
-      "community_name": "UserSubscription",
+      "community_name": "admin.py",
       "norm_label": "kirim otp ke nomor whatsapp user untuk verifikasi sebelum claim trial. rate..."
     },
     {
@@ -2233,7 +2310,7 @@
       "_origin": "ast",
       "id": "backend_routers_billing_rationale_214",
       "community": 0,
-      "community_name": "UserSubscription",
+      "community_name": "admin.py",
       "norm_label": "verifikasi otp whatsapp. setelah sukses: user.phone_number &..."
     },
     {
@@ -2244,7 +2321,7 @@
       "_origin": "ast",
       "id": "backend_routers_billing_rationale_274",
       "community": 0,
-      "community_name": "UserSubscription",
+      "community_name": "admin.py",
       "norm_label": "creates a midtrans snap transaction token & redirect url dynamically pointing..."
     },
     {
@@ -2255,7 +2332,7 @@
       "_origin": "ast",
       "id": "backend_routers_billing_rationale_381",
       "community": 0,
-      "community_name": "UserSubscription",
+      "community_name": "admin.py",
       "norm_label": "manual sync endpoint if notification callback is delayed or in local dev."
     },
     {
@@ -2266,7 +2343,7 @@
       "_origin": "ast",
       "id": "backend_routers_billing_rationale_445",
       "community": 0,
-      "community_name": "UserSubscription",
+      "community_name": "admin.py",
       "norm_label": "returns current user's subscription status."
     },
     {
@@ -2277,7 +2354,7 @@
       "_origin": "ast",
       "id": "backend_routers_billing_rationale_484",
       "community": 0,
-      "community_name": "UserSubscription",
+      "community_name": "admin.py",
       "norm_label": "handles http notification callback from midtrans. set payment notification url..."
     },
     {
@@ -2288,7 +2365,7 @@
       "_origin": "ast",
       "id": "backend_routers_billing_rationale_545",
       "community": 0,
-      "community_name": "UserSubscription",
+      "community_name": "admin.py",
       "norm_label": "helper to activate user subscription after midtrans payment settlement."
     },
     {
@@ -2298,8 +2375,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_routers_calendar",
-      "community": 62,
-      "community_name": "calendar.py",
+      "community": 9,
+      "community_name": "models.py",
       "norm_label": "calendar.py"
     },
     {
@@ -2309,8 +2386,8 @@
       "source_location": "L26",
       "_origin": "ast",
       "id": "backend_routers_calendar_reschedulerequest",
-      "community": 62,
-      "community_name": "calendar.py",
+      "community": 9,
+      "community_name": "models.py",
       "norm_label": "reschedulerequest"
     },
     {
@@ -2320,8 +2397,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_routers_calendar_py_basemodel",
-      "community": 62,
-      "community_name": "calendar.py",
+      "community": 9,
+      "community_name": "models.py",
       "norm_label": "basemodel"
     },
     {
@@ -2331,8 +2408,8 @@
       "source_location": "L30",
       "_origin": "ast",
       "id": "backend_routers_calendar_ensure_utc",
-      "community": 62,
-      "community_name": "calendar.py",
+      "community": 12,
+      "community_name": "statistics.py",
       "norm_label": "_ensure_utc()"
     },
     {
@@ -2342,8 +2419,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_routers_calendar_py_datetime",
-      "community": 62,
-      "community_name": "calendar.py",
+      "community": 12,
+      "community_name": "statistics.py",
       "norm_label": "datetime"
     },
     {
@@ -2353,8 +2430,8 @@
       "source_location": "L39",
       "_origin": "ast",
       "id": "backend_routers_calendar_parse_and_ensure_utc",
-      "community": 62,
-      "community_name": "calendar.py",
+      "community": 12,
+      "community_name": "statistics.py",
       "norm_label": "_parse_and_ensure_utc()"
     },
     {
@@ -2364,8 +2441,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_routers_calendar_py_any",
-      "community": 62,
-      "community_name": "calendar.py",
+      "community": 12,
+      "community_name": "statistics.py",
       "norm_label": "any"
     },
     {
@@ -2375,8 +2452,8 @@
       "source_location": "L48",
       "_origin": "ast",
       "id": "backend_routers_calendar_in_range",
-      "community": 62,
-      "community_name": "calendar.py",
+      "community": 12,
+      "community_name": "statistics.py",
       "norm_label": "_in_range()"
     },
     {
@@ -2386,8 +2463,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_routers_calendar_py_get",
-      "community": 62,
-      "community_name": "calendar.py",
+      "community": 12,
+      "community_name": "statistics.py",
       "norm_label": "get"
     },
     {
@@ -2397,8 +2474,8 @@
       "source_location": "L60",
       "_origin": "ast",
       "id": "backend_routers_calendar_get_calendar_posts",
-      "community": 62,
-      "community_name": "calendar.py",
+      "community": 12,
+      "community_name": "statistics.py",
       "norm_label": "get_calendar_posts()"
     },
     {
@@ -2408,8 +2485,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_routers_calendar_py_session",
-      "community": 62,
-      "community_name": "calendar.py",
+      "community": 12,
+      "community_name": "statistics.py",
       "norm_label": "session"
     },
     {
@@ -2419,8 +2496,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_routers_calendar_py_put",
-      "community": 62,
-      "community_name": "calendar.py",
+      "community": 12,
+      "community_name": "statistics.py",
       "norm_label": "put"
     },
     {
@@ -2430,8 +2507,8 @@
       "source_location": "L291",
       "_origin": "ast",
       "id": "backend_routers_calendar_reschedule_post",
-      "community": 62,
-      "community_name": "calendar.py",
+      "community": 12,
+      "community_name": "statistics.py",
       "norm_label": "reschedule_post()"
     },
     {
@@ -2441,8 +2518,8 @@
       "source_location": "L31",
       "_origin": "ast",
       "id": "backend_routers_calendar_rationale_31",
-      "community": 62,
-      "community_name": "calendar.py",
+      "community": 12,
+      "community_name": "statistics.py",
       "norm_label": "guarantee a datetime is utc-aware, never naive."
     },
     {
@@ -2452,8 +2529,8 @@
       "source_location": "L40",
       "_origin": "ast",
       "id": "backend_routers_calendar_rationale_40",
-      "community": 62,
-      "community_name": "calendar.py",
+      "community": 12,
+      "community_name": "statistics.py",
       "norm_label": "parse iso string or datetime and ensure utc-aware result."
     },
     {
@@ -2463,8 +2540,8 @@
       "source_location": "L49",
       "_origin": "ast",
       "id": "backend_routers_calendar_rationale_49",
-      "community": 62,
-      "community_name": "calendar.py",
+      "community": 12,
+      "community_name": "statistics.py",
       "norm_label": "return true if dt_ev is within [dt_from, dt_to] (inclusive), all utc-aware."
     },
     {
@@ -2474,8 +2551,8 @@
       "source_location": "L70",
       "_origin": "ast",
       "id": "backend_routers_calendar_rationale_70",
-      "community": 62,
-      "community_name": "calendar.py",
+      "community": 12,
+      "community_name": "statistics.py",
       "norm_label": "calendar: postforme-first data source. - fetches scheduled/processing/processed..."
     },
     {
@@ -2485,8 +2562,8 @@
       "source_location": "L297",
       "_origin": "ast",
       "id": "backend_routers_calendar_rationale_297",
-      "community": 62,
-      "community_name": "calendar.py",
+      "community": 12,
+      "community_name": "statistics.py",
       "norm_label": "reschedules a post in db and in postforme api."
     },
     {
@@ -2496,8 +2573,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_routers_clients",
-      "community": 2,
-      "community_name": "User",
+      "community": 9,
+      "community_name": "models.py",
       "norm_label": "clients.py"
     },
     {
@@ -2507,8 +2584,8 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "backend_routers_clients_clientcreate",
-      "community": 2,
-      "community_name": "User",
+      "community": 18,
+      "community_name": "get_user_workspace",
       "norm_label": "clientcreate"
     },
     {
@@ -2518,8 +2595,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_routers_clients_py_basemodel",
-      "community": 2,
-      "community_name": "User",
+      "community": 18,
+      "community_name": "get_user_workspace",
       "norm_label": "basemodel"
     },
     {
@@ -2529,8 +2606,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_routers_clients_py_get",
-      "community": 2,
-      "community_name": "User",
+      "community": 18,
+      "community_name": "get_user_workspace",
       "norm_label": "get"
     },
     {
@@ -2540,8 +2617,8 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "backend_routers_clients_get_clients",
-      "community": 2,
-      "community_name": "User",
+      "community": 18,
+      "community_name": "get_user_workspace",
       "norm_label": "get_clients()"
     },
     {
@@ -2551,8 +2628,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_routers_clients_py_session",
-      "community": 2,
-      "community_name": "User",
+      "community": 18,
+      "community_name": "get_user_workspace",
       "norm_label": "session"
     },
     {
@@ -2562,8 +2639,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_routers_clients_py_post",
-      "community": 2,
-      "community_name": "User",
+      "community": 18,
+      "community_name": "get_user_workspace",
       "norm_label": "post"
     },
     {
@@ -2573,8 +2650,8 @@
       "source_location": "L59",
       "_origin": "ast",
       "id": "backend_routers_clients_create_client",
-      "community": 2,
-      "community_name": "User",
+      "community": 18,
+      "community_name": "get_user_workspace",
       "norm_label": "create_client()"
     },
     {
@@ -2584,8 +2661,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_routers_clients_py_delete",
-      "community": 2,
-      "community_name": "User",
+      "community": 18,
+      "community_name": "get_user_workspace",
       "norm_label": "delete"
     },
     {
@@ -2595,8 +2672,8 @@
       "source_location": "L81",
       "_origin": "ast",
       "id": "backend_routers_clients_delete_client",
-      "community": 2,
-      "community_name": "User",
+      "community": 18,
+      "community_name": "get_user_workspace",
       "norm_label": "delete_client()"
     },
     {
@@ -2606,8 +2683,8 @@
       "source_location": "L25",
       "_origin": "ast",
       "id": "backend_routers_clients_rationale_25",
-      "community": 2,
-      "community_name": "User",
+      "community": 18,
+      "community_name": "get_user_workspace",
       "norm_label": "retrieves all clients under a workspace owned by the current user."
     },
     {
@@ -2617,8 +2694,8 @@
       "source_location": "L64",
       "_origin": "ast",
       "id": "backend_routers_clients_rationale_64",
-      "community": 2,
-      "community_name": "User",
+      "community": 18,
+      "community_name": "get_user_workspace",
       "norm_label": "creates a new client under a workspace owned by the current user."
     },
     {
@@ -2694,8 +2771,8 @@
       "source_location": "L103",
       "_origin": "ast",
       "id": "backend_routers_competitors_validateusernamerequest",
-      "community": 68,
-      "community_name": "competitors.py",
+      "community": 2,
+      "community_name": "User",
       "norm_label": "validateusernamerequest"
     },
     {
@@ -2705,8 +2782,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_routers_competitors_py_basemodel",
-      "community": 68,
-      "community_name": "competitors.py",
+      "community": 2,
+      "community_name": "User",
       "norm_label": "basemodel"
     },
     {
@@ -2716,8 +2793,8 @@
       "source_location": "L106",
       "_origin": "ast",
       "id": "backend_routers_competitors_addcompetitorrequest",
-      "community": 68,
-      "community_name": "competitors.py",
+      "community": 2,
+      "community_name": "User",
       "norm_label": "addcompetitorrequest"
     },
     {
@@ -2727,8 +2804,8 @@
       "source_location": "L110",
       "_origin": "ast",
       "id": "backend_routers_competitors_competitorresponse",
-      "community": 68,
-      "community_name": "competitors.py",
+      "community": 2,
+      "community_name": "User",
       "norm_label": "competitorresponse"
     },
     {
@@ -3156,8 +3233,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_routers_dashboard_py_get",
-      "community": 72,
-      "community_name": "get_dashboard_overview",
+      "community": 12,
+      "community_name": "statistics.py",
       "norm_label": "get"
     },
     {
@@ -3167,8 +3244,8 @@
       "source_location": "L21",
       "_origin": "ast",
       "id": "backend_routers_dashboard_get_dashboard_overview",
-      "community": 72,
-      "community_name": "get_dashboard_overview",
+      "community": 12,
+      "community_name": "statistics.py",
       "norm_label": "get_dashboard_overview()"
     },
     {
@@ -3178,8 +3255,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_routers_dashboard_py_session",
-      "community": 72,
-      "community_name": "get_dashboard_overview",
+      "community": 12,
+      "community_name": "statistics.py",
       "norm_label": "session"
     },
     {
@@ -3189,8 +3266,8 @@
       "source_location": "L26",
       "_origin": "ast",
       "id": "backend_routers_dashboard_rationale_26",
-      "community": 72,
-      "community_name": "get_dashboard_overview",
+      "community": 12,
+      "community_name": "statistics.py",
       "norm_label": "sub-300ms fast executive dashboard endpoint returning real-time metrics, queue..."
     },
     {
@@ -3200,8 +3277,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_routers_firebase_auth",
-      "community": 6,
-      "community_name": "firebase_auth.py",
+      "community": 9,
+      "community_name": "models.py",
       "norm_label": "firebase_auth.py"
     },
     {
@@ -3212,7 +3289,7 @@
       "_origin": "ast",
       "id": "backend_routers_firebase_auth_firebaseverifyrequest",
       "community": 0,
-      "community_name": "UserSubscription",
+      "community_name": "admin.py",
       "norm_label": "firebaseverifyrequest"
     },
     {
@@ -3223,7 +3300,7 @@
       "_origin": "ast",
       "id": "backend_routers_firebase_auth_py_basemodel",
       "community": 0,
-      "community_name": "UserSubscription",
+      "community_name": "admin.py",
       "norm_label": "basemodel"
     },
     {
@@ -3234,7 +3311,7 @@
       "_origin": "ast",
       "id": "backend_routers_firebase_auth_get_current_user_from_token",
       "community": 6,
-      "community_name": "firebase_auth.py",
+      "community_name": "verify_firebase",
       "norm_label": "get_current_user_from_token()"
     },
     {
@@ -3245,7 +3322,7 @@
       "_origin": "ast",
       "id": "backend_routers_firebase_auth_py_session",
       "community": 6,
-      "community_name": "firebase_auth.py",
+      "community_name": "verify_firebase",
       "norm_label": "session"
     },
     {
@@ -3256,7 +3333,7 @@
       "_origin": "ast",
       "id": "backend_routers_firebase_auth_require_admin",
       "community": 6,
-      "community_name": "firebase_auth.py",
+      "community_name": "verify_firebase",
       "norm_label": "require_admin()"
     },
     {
@@ -3266,8 +3343,8 @@
       "source_location": "L53",
       "_origin": "ast",
       "id": "backend_routers_firebase_auth_require_user",
-      "community": 6,
-      "community_name": "firebase_auth.py",
+      "community": 9,
+      "community_name": "models.py",
       "norm_label": "require_user()"
     },
     {
@@ -3277,7 +3354,7 @@
       "source_location": "L64",
       "_origin": "ast",
       "id": "backend_routers_firebase_auth_get_user_workspace",
-      "community": 14,
+      "community": 18,
       "community_name": "get_user_workspace",
       "norm_label": "get_user_workspace()"
     },
@@ -3288,8 +3365,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_routers_firebase_auth_py_post",
-      "community": 0,
-      "community_name": "UserSubscription",
+      "community": 6,
+      "community_name": "verify_firebase",
       "norm_label": "post"
     },
     {
@@ -3299,8 +3376,8 @@
       "source_location": "L100",
       "_origin": "ast",
       "id": "backend_routers_firebase_auth_verify_firebase",
-      "community": 0,
-      "community_name": "UserSubscription",
+      "community": 6,
+      "community_name": "verify_firebase",
       "norm_label": "verify_firebase()"
     },
     {
@@ -3311,7 +3388,7 @@
       "_origin": "ast",
       "id": "backend_routers_firebase_auth_py_get",
       "community": 6,
-      "community_name": "firebase_auth.py",
+      "community_name": "verify_firebase",
       "norm_label": "get"
     },
     {
@@ -3322,7 +3399,7 @@
       "_origin": "ast",
       "id": "backend_routers_firebase_auth_get_me",
       "community": 6,
-      "community_name": "firebase_auth.py",
+      "community_name": "verify_firebase",
       "norm_label": "get_me()"
     },
     {
@@ -3332,8 +3409,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_routers_firebase_auth_rationale_1",
-      "community": 6,
-      "community_name": "firebase_auth.py",
+      "community": 9,
+      "community_name": "models.py",
       "norm_label": "firebase auth router \u2014 /auth/firebase verifies google firebase id token and..."
     },
     {
@@ -3344,7 +3421,7 @@
       "_origin": "ast",
       "id": "backend_routers_firebase_auth_rationale_29",
       "community": 6,
-      "community_name": "firebase_auth.py",
+      "community_name": "verify_firebase",
       "norm_label": "dependency: extracts firebase token from authorization header and returns db..."
     },
     {
@@ -3355,7 +3432,7 @@
       "_origin": "ast",
       "id": "backend_routers_firebase_auth_rationale_46",
       "community": 6,
-      "community_name": "firebase_auth.py",
+      "community_name": "verify_firebase",
       "norm_label": "dependency: requires admin user."
     },
     {
@@ -3365,8 +3442,8 @@
       "source_location": "L57",
       "_origin": "ast",
       "id": "backend_routers_firebase_auth_rationale_57",
-      "community": 6,
-      "community_name": "firebase_auth.py",
+      "community": 9,
+      "community_name": "models.py",
       "norm_label": "dependency: requires authenticated user."
     },
     {
@@ -3376,7 +3453,7 @@
       "source_location": "L69",
       "_origin": "ast",
       "id": "backend_routers_firebase_auth_rationale_69",
-      "community": 14,
+      "community": 18,
       "community_name": "get_user_workspace",
       "norm_label": "validates that `workspace_id` belongs to `user` (via workspacemember). admin..."
     },
@@ -3387,8 +3464,8 @@
       "source_location": "L101",
       "_origin": "ast",
       "id": "backend_routers_firebase_auth_rationale_101",
-      "community": 0,
-      "community_name": "UserSubscription",
+      "community": 6,
+      "community_name": "verify_firebase",
       "norm_label": "verifies firebase id token (from google sign-in). creates or updates agencyos..."
     },
     {
@@ -3399,7 +3476,7 @@
       "_origin": "ast",
       "id": "backend_routers_firebase_auth_rationale_219",
       "community": 6,
-      "community_name": "firebase_auth.py",
+      "community_name": "verify_firebase",
       "norm_label": "returns current authenticated user info from authorization header."
     },
     {
@@ -4246,7 +4323,7 @@
       "_origin": "ast",
       "id": "backend_routers_posts",
       "community": 13,
-      "community_name": "posts.py",
+      "community_name": "UserSubscription",
       "norm_label": "posts.py"
     },
     {
@@ -4257,7 +4334,7 @@
       "_origin": "ast",
       "id": "backend_routers_posts_uploadurlrequest",
       "community": 13,
-      "community_name": "posts.py",
+      "community_name": "UserSubscription",
       "norm_label": "uploadurlrequest"
     },
     {
@@ -4268,7 +4345,7 @@
       "_origin": "ast",
       "id": "backend_routers_posts_py_basemodel",
       "community": 13,
-      "community_name": "posts.py",
+      "community_name": "UserSubscription",
       "norm_label": "basemodel"
     },
     {
@@ -4279,7 +4356,7 @@
       "_origin": "ast",
       "id": "backend_routers_posts_py_post",
       "community": 13,
-      "community_name": "posts.py",
+      "community_name": "UserSubscription",
       "norm_label": "post"
     },
     {
@@ -4290,7 +4367,7 @@
       "_origin": "ast",
       "id": "backend_routers_posts_create_media_upload_url",
       "community": 13,
-      "community_name": "posts.py",
+      "community_name": "UserSubscription",
       "norm_label": "create_media_upload_url()"
     },
     {
@@ -4301,7 +4378,7 @@
       "_origin": "ast",
       "id": "backend_routers_posts_postcreate",
       "community": 13,
-      "community_name": "posts.py",
+      "community_name": "UserSubscription",
       "norm_label": "postcreate"
     },
     {
@@ -4312,7 +4389,7 @@
       "_origin": "ast",
       "id": "backend_routers_posts_postupdate",
       "community": 13,
-      "community_name": "posts.py",
+      "community_name": "UserSubscription",
       "norm_label": "postupdate"
     },
     {
@@ -4323,7 +4400,7 @@
       "_origin": "ast",
       "id": "backend_routers_posts_postpatch",
       "community": 13,
-      "community_name": "posts.py",
+      "community_name": "UserSubscription",
       "norm_label": "postpatch"
     },
     {
@@ -4334,7 +4411,7 @@
       "_origin": "ast",
       "id": "backend_routers_posts_py_get",
       "community": 13,
-      "community_name": "posts.py",
+      "community_name": "UserSubscription",
       "norm_label": "get"
     },
     {
@@ -4345,7 +4422,7 @@
       "_origin": "ast",
       "id": "backend_routers_posts_get_posts",
       "community": 13,
-      "community_name": "posts.py",
+      "community_name": "UserSubscription",
       "norm_label": "get_posts()"
     },
     {
@@ -4356,7 +4433,7 @@
       "_origin": "ast",
       "id": "backend_routers_posts_py_session",
       "community": 13,
-      "community_name": "posts.py",
+      "community_name": "UserSubscription",
       "norm_label": "session"
     },
     {
@@ -4367,7 +4444,7 @@
       "_origin": "ast",
       "id": "backend_routers_posts_create_post",
       "community": 13,
-      "community_name": "posts.py",
+      "community_name": "UserSubscription",
       "norm_label": "create_post()"
     },
     {
@@ -4378,7 +4455,7 @@
       "_origin": "ast",
       "id": "backend_routers_posts_py_backgroundtasks",
       "community": 13,
-      "community_name": "posts.py",
+      "community_name": "UserSubscription",
       "norm_label": "backgroundtasks"
     },
     {
@@ -4389,7 +4466,7 @@
       "_origin": "ast",
       "id": "backend_routers_posts_py_put",
       "community": 13,
-      "community_name": "posts.py",
+      "community_name": "UserSubscription",
       "norm_label": "put"
     },
     {
@@ -4400,7 +4477,7 @@
       "_origin": "ast",
       "id": "backend_routers_posts_update_post",
       "community": 13,
-      "community_name": "posts.py",
+      "community_name": "UserSubscription",
       "norm_label": "update_post()"
     },
     {
@@ -4411,7 +4488,7 @@
       "_origin": "ast",
       "id": "patch",
       "community": 13,
-      "community_name": "posts.py",
+      "community_name": "UserSubscription",
       "norm_label": "patch"
     },
     {
@@ -4422,7 +4499,7 @@
       "_origin": "ast",
       "id": "backend_routers_posts_patch_post",
       "community": 13,
-      "community_name": "posts.py",
+      "community_name": "UserSubscription",
       "norm_label": "patch_post()"
     },
     {
@@ -4433,7 +4510,7 @@
       "_origin": "ast",
       "id": "backend_routers_posts_py_delete",
       "community": 13,
-      "community_name": "posts.py",
+      "community_name": "UserSubscription",
       "norm_label": "delete"
     },
     {
@@ -4444,7 +4521,7 @@
       "_origin": "ast",
       "id": "backend_routers_posts_delete_post",
       "community": 13,
-      "community_name": "posts.py",
+      "community_name": "UserSubscription",
       "norm_label": "delete_post()"
     },
     {
@@ -4455,7 +4532,7 @@
       "_origin": "ast",
       "id": "backend_routers_posts_rationale_21",
       "community": 13,
-      "community_name": "posts.py",
+      "community_name": "UserSubscription",
       "norm_label": "requests a signed upload url from postforme api (/v1/media/create-upload-url)...."
     },
     {
@@ -4466,7 +4543,7 @@
       "_origin": "ast",
       "id": "backend_routers_posts_rationale_67",
       "community": 13,
-      "community_name": "posts.py",
+      "community_name": "UserSubscription",
       "norm_label": "partial update payload from frontend queue manager."
     },
     {
@@ -4477,7 +4554,7 @@
       "_origin": "ast",
       "id": "backend_routers_posts_rationale_100",
       "community": 13,
-      "community_name": "posts.py",
+      "community_name": "UserSubscription",
       "norm_label": "hybrid endpoint: - fetches active posts (scheduled/processing/processed)..."
     },
     {
@@ -4488,7 +4565,7 @@
       "_origin": "ast",
       "id": "backend_routers_posts_rationale_216",
       "community": 13,
-      "community_name": "posts.py",
+      "community_name": "UserSubscription",
       "norm_label": "creates a new post and generates publish jobs for each selected account...."
     },
     {
@@ -4499,7 +4576,7 @@
       "_origin": "ast",
       "id": "backend_routers_posts_rationale_403",
       "community": 13,
-      "community_name": "posts.py",
+      "community_name": "UserSubscription",
       "norm_label": "partial update \u2014 used by frontend queue manager for draft edit & schedule."
     },
     {
@@ -4510,7 +4587,7 @@
       "_origin": "ast",
       "id": "backend_routers_posts_rationale_441",
       "community": 13,
-      "community_name": "posts.py",
+      "community_name": "UserSubscription",
       "norm_label": "delete post from local db and from postforme (if postforme_post_id exists)."
     },
     {
@@ -4532,7 +4609,7 @@
       "_origin": "ast",
       "id": "backend_routers_queue_py_get",
       "community": 18,
-      "community_name": "Session",
+      "community_name": "get_user_workspace",
       "norm_label": "get"
     },
     {
@@ -4543,7 +4620,7 @@
       "_origin": "ast",
       "id": "backend_routers_queue_get_queue_status",
       "community": 18,
-      "community_name": "Session",
+      "community_name": "get_user_workspace",
       "norm_label": "get_queue_status()"
     },
     {
@@ -4554,7 +4631,7 @@
       "_origin": "ast",
       "id": "backend_routers_queue_py_session",
       "community": 18,
-      "community_name": "Session",
+      "community_name": "get_user_workspace",
       "norm_label": "session"
     },
     {
@@ -4565,7 +4642,7 @@
       "_origin": "ast",
       "id": "backend_routers_queue_get_publish_history",
       "community": 18,
-      "community_name": "Session",
+      "community_name": "get_user_workspace",
       "norm_label": "get_publish_history()"
     },
     {
@@ -4576,7 +4653,7 @@
       "_origin": "ast",
       "id": "backend_routers_queue_py_post",
       "community": 18,
-      "community_name": "Session",
+      "community_name": "get_user_workspace",
       "norm_label": "post"
     },
     {
@@ -4587,7 +4664,7 @@
       "_origin": "ast",
       "id": "backend_routers_queue_sync_post_results",
       "community": 18,
-      "community_name": "Session",
+      "community_name": "get_user_workspace",
       "norm_label": "sync_post_results()"
     },
     {
@@ -4598,7 +4675,7 @@
       "_origin": "ast",
       "id": "backend_routers_queue_py_backgroundtasks",
       "community": 18,
-      "community_name": "Session",
+      "community_name": "get_user_workspace",
       "norm_label": "backgroundtasks"
     },
     {
@@ -4609,7 +4686,7 @@
       "_origin": "ast",
       "id": "backend_routers_queue_retry_job",
       "community": 18,
-      "community_name": "Session",
+      "community_name": "get_user_workspace",
       "norm_label": "retry_job()"
     },
     {
@@ -4620,7 +4697,7 @@
       "_origin": "ast",
       "id": "backend_routers_queue_py_delete",
       "community": 18,
-      "community_name": "Session",
+      "community_name": "get_user_workspace",
       "norm_label": "delete"
     },
     {
@@ -4631,7 +4708,7 @@
       "_origin": "ast",
       "id": "backend_routers_queue_delete_queue_job",
       "community": 18,
-      "community_name": "Session",
+      "community_name": "get_user_workspace",
       "norm_label": "delete_queue_job()"
     },
     {
@@ -4642,7 +4719,7 @@
       "_origin": "ast",
       "id": "backend_routers_queue_get_postforme_posts",
       "community": 18,
-      "community_name": "Session",
+      "community_name": "get_user_workspace",
       "norm_label": "get_postforme_posts()"
     },
     {
@@ -4653,7 +4730,7 @@
       "_origin": "ast",
       "id": "backend_routers_queue_get_postforme_results",
       "community": 18,
-      "community_name": "Session",
+      "community_name": "get_user_workspace",
       "norm_label": "get_postforme_results()"
     },
     {
@@ -4664,7 +4741,7 @@
       "_origin": "ast",
       "id": "backend_routers_queue_fallback_local_results",
       "community": 18,
-      "community_name": "Session",
+      "community_name": "get_user_workspace",
       "norm_label": "_fallback_local_results()"
     },
     {
@@ -4675,7 +4752,7 @@
       "_origin": "ast",
       "id": "backend_routers_queue_cancel_postforme_post",
       "community": 18,
-      "community_name": "Session",
+      "community_name": "get_user_workspace",
       "norm_label": "cancel_postforme_post()"
     },
     {
@@ -4686,7 +4763,7 @@
       "_origin": "ast",
       "id": "backend_routers_queue_rationale_26",
       "community": 18,
-      "community_name": "Session",
+      "community_name": "get_user_workspace",
       "norm_label": "returns queue metrics and job logs for a workspace."
     },
     {
@@ -4697,7 +4774,7 @@
       "_origin": "ast",
       "id": "backend_routers_queue_rationale_89",
       "community": 18,
-      "community_name": "Session",
+      "community_name": "get_user_workspace",
       "norm_label": "riwayat hasil publikasi per workspace/user dari postforme. menampilkan status..."
     },
     {
@@ -4708,7 +4785,7 @@
       "_origin": "ast",
       "id": "backend_routers_queue_rationale_226",
       "community": 18,
-      "community_name": "Session",
+      "community_name": "get_user_workspace",
       "norm_label": "sinkronisasi manual: ambil hasil publish dari postforme untuk semua post yang..."
     },
     {
@@ -4719,7 +4796,7 @@
       "_origin": "ast",
       "id": "backend_routers_queue_rationale_245",
       "community": 18,
-      "community_name": "Session",
+      "community_name": "get_user_workspace",
       "norm_label": "manually triggers immediate retry for a failed or retrying queue job."
     },
     {
@@ -4730,7 +4807,7 @@
       "_origin": "ast",
       "id": "backend_routers_queue_rationale_260",
       "community": 18,
-      "community_name": "Session",
+      "community_name": "get_user_workspace",
       "norm_label": "deletes/cancels a specific queue job."
     },
     {
@@ -4741,7 +4818,7 @@
       "_origin": "ast",
       "id": "backend_routers_queue_rationale_282",
       "community": 18,
-      "community_name": "Session",
+      "community_name": "get_user_workspace",
       "norm_label": "proxy: fetch posts from postforme api for this workspace's connected accounts...."
     },
     {
@@ -4752,7 +4829,7 @@
       "_origin": "ast",
       "id": "backend_routers_queue_rationale_402",
       "community": 18,
-      "community_name": "Session",
+      "community_name": "get_user_workspace",
       "norm_label": "proxy: fetch post results (per-account publish outcomes) from postforme api...."
     },
     {
@@ -4763,7 +4840,7 @@
       "_origin": "ast",
       "id": "backend_routers_queue_rationale_461",
       "community": 18,
-      "community_name": "Session",
+      "community_name": "get_user_workspace",
       "norm_label": "fallback: return local postpublishresult records when postforme api is..."
     },
     {
@@ -4774,7 +4851,7 @@
       "_origin": "ast",
       "id": "backend_routers_queue_rationale_503",
       "community": 18,
-      "community_name": "Session",
+      "community_name": "get_user_workspace",
       "norm_label": "cancel/delete a scheduled post from postforme api and update local db status."
     },
     {
@@ -4949,8 +5026,8 @@
       "source_location": "L473",
       "_origin": "ast",
       "id": "backend_routers_statistics_chatitem",
-      "community": 70,
-      "community_name": "AccountStatus",
+      "community": 12,
+      "community_name": "statistics.py",
       "norm_label": "chatitem"
     },
     {
@@ -4960,8 +5037,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_routers_statistics_py_basemodel",
-      "community": 70,
-      "community_name": "AccountStatus",
+      "community": 12,
+      "community_name": "statistics.py",
       "norm_label": "basemodel"
     },
     {
@@ -4971,8 +5048,8 @@
       "source_location": "L477",
       "_origin": "ast",
       "id": "backend_routers_statistics_aisummaryrequest",
-      "community": 70,
-      "community_name": "AccountStatus",
+      "community": 12,
+      "community_name": "statistics.py",
       "norm_label": "aisummaryrequest"
     },
     {
@@ -4982,8 +5059,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_routers_statistics_py_post",
-      "community": 70,
-      "community_name": "AccountStatus",
+      "community": 12,
+      "community_name": "statistics.py",
       "norm_label": "post"
     },
     {
@@ -5004,8 +5081,8 @@
       "source_location": "L535",
       "_origin": "ast",
       "id": "backend_routers_statistics_aibrainstormrequest",
-      "community": 70,
-      "community_name": "AccountStatus",
+      "community": 12,
+      "community_name": "statistics.py",
       "norm_label": "aibrainstormrequest"
     },
     {
@@ -5015,8 +5092,8 @@
       "source_location": "L545",
       "_origin": "ast",
       "id": "backend_routers_statistics_generate_ai_brainstorm",
-      "community": 70,
-      "community_name": "AccountStatus",
+      "community": 12,
+      "community_name": "statistics.py",
       "norm_label": "generate_ai_brainstorm()"
     },
     {
@@ -5114,8 +5191,8 @@
       "source_location": "L550",
       "_origin": "ast",
       "id": "backend_routers_statistics_rationale_550",
-      "community": 70,
-      "community_name": "AccountStatus",
+      "community": 12,
+      "community_name": "statistics.py",
       "norm_label": "generate structured content brief & post composer payload based on account..."
     },
     {
@@ -5125,8 +5202,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_routers_webhook",
-      "community": 9,
-      "community_name": "models.py",
+      "community": 1,
+      "community_name": "webhook.py",
       "norm_label": "webhook.py"
     },
     {
@@ -5137,7 +5214,7 @@
       "_origin": "ast",
       "id": "backend_routers_webhook_verify_webhook_secret",
       "community": 1,
-      "community_name": "postforme_webhook",
+      "community_name": "webhook.py",
       "norm_label": "_verify_webhook_secret()"
     },
     {
@@ -5148,7 +5225,7 @@
       "_origin": "ast",
       "id": "backend_routers_webhook_process_post_result_event",
       "community": 1,
-      "community_name": "postforme_webhook",
+      "community_name": "webhook.py",
       "norm_label": "_process_post_result_event()"
     },
     {
@@ -5159,7 +5236,7 @@
       "_origin": "ast",
       "id": "backend_routers_webhook_py_post",
       "community": 1,
-      "community_name": "postforme_webhook",
+      "community_name": "webhook.py",
       "norm_label": "post"
     },
     {
@@ -5170,7 +5247,7 @@
       "_origin": "ast",
       "id": "backend_routers_webhook_postforme_webhook",
       "community": 1,
-      "community_name": "postforme_webhook",
+      "community_name": "webhook.py",
       "norm_label": "postforme_webhook()"
     },
     {
@@ -5181,7 +5258,7 @@
       "_origin": "ast",
       "id": "backend_routers_webhook_py_request",
       "community": 1,
-      "community_name": "postforme_webhook",
+      "community_name": "webhook.py",
       "norm_label": "request"
     },
     {
@@ -5192,7 +5269,7 @@
       "_origin": "ast",
       "id": "backend_routers_webhook_py_backgroundtasks",
       "community": 1,
-      "community_name": "postforme_webhook",
+      "community_name": "webhook.py",
       "norm_label": "backgroundtasks"
     },
     {
@@ -5203,7 +5280,7 @@
       "_origin": "ast",
       "id": "backend_routers_webhook_setup_postforme_webhook",
       "community": 1,
-      "community_name": "postforme_webhook",
+      "community_name": "webhook.py",
       "norm_label": "setup_postforme_webhook()"
     },
     {
@@ -5214,7 +5291,7 @@
       "_origin": "ast",
       "id": "backend_routers_webhook_py_get",
       "community": 1,
-      "community_name": "postforme_webhook",
+      "community_name": "webhook.py",
       "norm_label": "get"
     },
     {
@@ -5225,7 +5302,7 @@
       "_origin": "ast",
       "id": "backend_routers_webhook_list_postforme_webhooks",
       "community": 1,
-      "community_name": "postforme_webhook",
+      "community_name": "webhook.py",
       "norm_label": "list_postforme_webhooks()"
     },
     {
@@ -5235,8 +5312,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_routers_webhook_rationale_1",
-      "community": 9,
-      "community_name": "models.py",
+      "community": 1,
+      "community_name": "webhook.py",
       "norm_label": "webhook handler untuk menerima event dari postforme api. postforme mengirim..."
     },
     {
@@ -5247,7 +5324,7 @@
       "_origin": "ast",
       "id": "backend_routers_webhook_rationale_28",
       "community": 1,
-      "community_name": "postforme_webhook",
+      "community_name": "webhook.py",
       "norm_label": "verifikasi bahwa request berasal dari postforme menggunakan secret di header...."
     },
     {
@@ -5258,7 +5335,7 @@
       "_origin": "ast",
       "id": "backend_routers_webhook_rationale_41",
       "community": 1,
-      "community_name": "postforme_webhook",
+      "community_name": "webhook.py",
       "norm_label": "background task: proses event social.post.result.created. update status..."
     },
     {
@@ -5269,7 +5346,7 @@
       "_origin": "ast",
       "id": "backend_routers_webhook_rationale_191",
       "community": 1,
-      "community_name": "postforme_webhook",
+      "community_name": "webhook.py",
       "norm_label": "menerima event dari postforme api. postforme mengirim post request dengan: -..."
     },
     {
@@ -5280,7 +5357,7 @@
       "_origin": "ast",
       "id": "backend_routers_webhook_rationale_227",
       "community": 1,
-      "community_name": "postforme_webhook",
+      "community_name": "webhook.py",
       "norm_label": "setup / daftarkan webhook ke postforme secara otomatis. panggil endpoint ini..."
     },
     {
@@ -5291,7 +5368,7 @@
       "_origin": "ast",
       "id": "backend_routers_webhook_rationale_252",
       "community": 1,
-      "community_name": "postforme_webhook",
+      "community_name": "webhook.py",
       "norm_label": "tampilkan semua webhook yang terdaftar di postforme."
     },
     {
@@ -5444,8 +5521,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_seed",
-      "community": 13,
-      "community_name": "posts.py",
+      "community": 71,
+      "community_name": "seed.py",
       "norm_label": "seed.py"
     },
     {
@@ -5455,8 +5532,8 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "backend_seed_reset_and_seed_database",
-      "community": 13,
-      "community_name": "posts.py",
+      "community": 71,
+      "community_name": "seed.py",
       "norm_label": "reset_and_seed_database()"
     },
     {
@@ -5467,7 +5544,7 @@
       "_origin": "ast",
       "id": "backend_seed_plans",
       "community": 0,
-      "community_name": "UserSubscription",
+      "community_name": "admin.py",
       "norm_label": "seed_plans.py"
     },
     {
@@ -5478,7 +5555,7 @@
       "_origin": "ast",
       "id": "backend_seed_plans_seed_plans",
       "community": 0,
-      "community_name": "UserSubscription",
+      "community_name": "admin.py",
       "norm_label": "seed_plans()"
     },
     {
@@ -5489,7 +5566,7 @@
       "_origin": "ast",
       "id": "backend_seed_plans_rationale_1",
       "community": 0,
-      "community_name": "UserSubscription",
+      "community_name": "admin.py",
       "norm_label": "seed script \u2014 creates 4 subscription plans in db with midtrans idr pricing. all..."
     },
     {
@@ -5499,8 +5576,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_services_firebase_service",
-      "community": 0,
-      "community_name": "UserSubscription",
+      "community": 1,
+      "community_name": "webhook.py",
       "norm_label": "firebase_service.py"
     },
     {
@@ -5511,7 +5588,7 @@
       "_origin": "ast",
       "id": "backend_services_firebase_service_verify_firebase_token",
       "community": 0,
-      "community_name": "UserSubscription",
+      "community_name": "admin.py",
       "norm_label": "verify_firebase_token()"
     },
     {
@@ -5522,7 +5599,7 @@
       "_origin": "ast",
       "id": "backend_services_firebase_service_py_any",
       "community": 0,
-      "community_name": "UserSubscription",
+      "community_name": "admin.py",
       "norm_label": "any"
     },
     {
@@ -5532,8 +5609,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_services_firebase_service_rationale_1",
-      "community": 0,
-      "community_name": "UserSubscription",
+      "community": 1,
+      "community_name": "webhook.py",
       "norm_label": "firebase id token verification service uses google's public keys to verify..."
     },
     {
@@ -5544,7 +5621,7 @@
       "_origin": "ast",
       "id": "backend_services_firebase_service_rationale_19",
       "community": 0,
-      "community_name": "UserSubscription",
+      "community_name": "admin.py",
       "norm_label": "verifies a firebase id token by calling google identity toolkit api. returns..."
     },
     {
@@ -5851,8 +5928,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_services_instagrapi_service",
-      "community": 20,
-      "community_name": "InstagrapiService",
+      "community": 2,
+      "community_name": "User",
       "norm_label": "instagrapi_service.py"
     },
     {
@@ -5969,7 +6046,7 @@
       "label": ".validate_username()",
       "file_type": "code",
       "source_file": "backend/services/instagrapi_service.py",
-      "source_location": "L195",
+      "source_location": "L201",
       "_origin": "ast",
       "id": "backend_services_instagrapi_service_instagrapiservice_validate_username",
       "community": 20,
@@ -5980,7 +6057,7 @@
       "label": ".fetch_competitor_profile()",
       "file_type": "code",
       "source_file": "backend/services/instagrapi_service.py",
-      "source_location": "L212",
+      "source_location": "L218",
       "_origin": "ast",
       "id": "backend_services_instagrapi_service_instagrapiservice_fetch_competitor_profile",
       "community": 20,
@@ -5991,7 +6068,7 @@
       "label": ".fetch_competitor_posts()",
       "file_type": "code",
       "source_file": "backend/services/instagrapi_service.py",
-      "source_location": "L238",
+      "source_location": "L244",
       "_origin": "ast",
       "id": "backend_services_instagrapi_service_instagrapiservice_fetch_competitor_posts",
       "community": 20,
@@ -6005,8 +6082,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_services_instagrapi_service_rationale_1",
-      "community": 20,
-      "community_name": "InstagrapiService",
+      "community": 2,
+      "community_name": "User",
       "norm_label": "instagrapi service \u2014 instagram private api integration for competitor spy uses..."
     },
     {
@@ -6065,23 +6142,23 @@
       "norm_label": "initializes an instagrapi client with automatic session refresh & auto-login..."
     },
     {
-      "label": "Test Instagram login session with instagrapi.",
+      "label": "Test Instagram login session or credentials with instagrapi.",
       "file_type": "rationale",
       "source_file": "backend/services/instagrapi_service.py",
-      "source_location": "L177",
+      "source_location": "L179",
       "_origin": "ast",
-      "id": "backend_services_instagrapi_service_rationale_177",
+      "id": "backend_services_instagrapi_service_rationale_179",
       "community": 20,
       "community_name": "InstagrapiService",
-      "norm_label": "test instagram login session with instagrapi."
+      "norm_label": "test instagram login session or credentials with instagrapi."
     },
     {
       "label": "Validate if an Instagram account exists and fetch basic profile preview.",
       "file_type": "rationale",
       "source_file": "backend/services/instagrapi_service.py",
-      "source_location": "L196",
+      "source_location": "L202",
       "_origin": "ast",
-      "id": "backend_services_instagrapi_service_rationale_196",
+      "id": "backend_services_instagrapi_service_rationale_202",
       "community": 20,
       "community_name": "InstagrapiService",
       "norm_label": "validate if an instagram account exists and fetch basic profile preview."
@@ -6090,9 +6167,9 @@
       "label": "Fetch competitor profile information from Instagram.",
       "file_type": "rationale",
       "source_file": "backend/services/instagrapi_service.py",
-      "source_location": "L213",
+      "source_location": "L219",
       "_origin": "ast",
-      "id": "backend_services_instagrapi_service_rationale_213",
+      "id": "backend_services_instagrapi_service_rationale_219",
       "community": 20,
       "community_name": "InstagrapiService",
       "norm_label": "fetch competitor profile information from instagram."
@@ -6101,9 +6178,9 @@
       "label": "Fetch recent posts for a competitor, calculate engagement rate, top hashtags,\u2026",
       "file_type": "rationale",
       "source_file": "backend/services/instagrapi_service.py",
-      "source_location": "L239",
+      "source_location": "L245",
       "_origin": "ast",
-      "id": "backend_services_instagrapi_service_rationale_239",
+      "id": "backend_services_instagrapi_service_rationale_245",
       "community": 20,
       "community_name": "InstagrapiService",
       "norm_label": "fetch recent posts for a competitor, calculate engagement rate, top hashtags,..."
@@ -6445,8 +6522,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_services_postforme_service",
-      "community": 9,
-      "community_name": "models.py",
+      "community": 1,
+      "community_name": "webhook.py",
       "norm_label": "postforme_service.py"
     },
     {
@@ -6929,8 +7006,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_services_queue_service",
-      "community": 9,
-      "community_name": "models.py",
+      "community": 13,
+      "community_name": "UserSubscription",
       "norm_label": "queue_service.py"
     },
     {
@@ -7561,6 +7638,160 @@
       "norm_label": "permanently deletes multiple file objects and all their versions/delete markers..."
     },
     {
+      "label": "watermark_service.py",
+      "file_type": "code",
+      "source_file": "backend/services/watermark_service.py",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "backend_services_watermark_service",
+      "community": 14,
+      "community_name": ".apply_watermark",
+      "norm_label": "watermark_service.py"
+    },
+    {
+      "label": "WatermarkService",
+      "file_type": "code",
+      "source_file": "backend/services/watermark_service.py",
+      "source_location": "L24",
+      "_origin": "ast",
+      "id": "backend_services_watermark_service_watermarkservice",
+      "community": 14,
+      "community_name": ".apply_watermark",
+      "norm_label": "watermarkservice"
+    },
+    {
+      "label": ".__init__()",
+      "file_type": "code",
+      "source_file": "backend/services/watermark_service.py",
+      "source_location": "L25",
+      "_origin": "ast",
+      "id": "backend_services_watermark_service_watermarkservice_init",
+      "community": 14,
+      "community_name": ".apply_watermark",
+      "norm_label": ".__init__()"
+    },
+    {
+      "label": "._calculate_coordinates()",
+      "file_type": "code",
+      "source_file": "backend/services/watermark_service.py",
+      "source_location": "L28",
+      "_origin": "ast",
+      "id": "backend_services_watermark_service_watermarkservice_calculate_coordinates",
+      "community": 14,
+      "community_name": ".apply_watermark",
+      "norm_label": "._calculate_coordinates()"
+    },
+    {
+      "label": "._fetch_remote_image()",
+      "file_type": "code",
+      "source_file": "backend/services/watermark_service.py",
+      "source_location": "L63",
+      "_origin": "ast",
+      "id": "backend_services_watermark_service_watermarkservice_fetch_remote_image",
+      "community": 14,
+      "community_name": ".apply_watermark",
+      "norm_label": "._fetch_remote_image()"
+    },
+    {
+      "label": "Image",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "_origin": "ast",
+      "id": "image",
+      "community": 14,
+      "community_name": ".apply_watermark",
+      "norm_label": "image"
+    },
+    {
+      "label": ".apply_watermark()",
+      "file_type": "code",
+      "source_file": "backend/services/watermark_service.py",
+      "source_location": "L74",
+      "_origin": "ast",
+      "id": "backend_services_watermark_service_watermarkservice_apply_watermark",
+      "community": 14,
+      "community_name": ".apply_watermark",
+      "norm_label": ".apply_watermark()"
+    },
+    {
+      "label": "Any",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "_origin": "ast",
+      "id": "backend_services_watermark_service_py_any",
+      "community": 14,
+      "community_name": ".apply_watermark",
+      "norm_label": "any"
+    },
+    {
+      "label": ".preview_watermark_base64()",
+      "file_type": "code",
+      "source_file": "backend/services/watermark_service.py",
+      "source_location": "L195",
+      "_origin": "ast",
+      "id": "backend_services_watermark_service_watermarkservice_preview_watermark_base64",
+      "community": 14,
+      "community_name": ".apply_watermark",
+      "norm_label": ".preview_watermark_base64()"
+    },
+    {
+      "label": "Watermark Service \u2014 High Performance Image Watermarking Engine for agencyOS\u2026",
+      "file_type": "rationale",
+      "source_file": "backend/services/watermark_service.py",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "backend_services_watermark_service_rationale_1",
+      "community": 14,
+      "community_name": ".apply_watermark",
+      "norm_label": "watermark service \u2014 high performance image watermarking engine for agencyos..."
+    },
+    {
+      "label": "Calculates top-left (X, Y) coordinate for watermark placement based on 9-point\u2026",
+      "file_type": "rationale",
+      "source_file": "backend/services/watermark_service.py",
+      "source_location": "L35",
+      "_origin": "ast",
+      "id": "backend_services_watermark_service_rationale_35",
+      "community": 14,
+      "community_name": ".apply_watermark",
+      "norm_label": "calculates top-left (x, y) coordinate for watermark placement based on 9-point..."
+    },
+    {
+      "label": "Download remote logo image via httpx.",
+      "file_type": "rationale",
+      "source_file": "backend/services/watermark_service.py",
+      "source_location": "L64",
+      "_origin": "ast",
+      "id": "backend_services_watermark_service_rationale_64",
+      "community": 14,
+      "community_name": ".apply_watermark",
+      "norm_label": "download remote logo image via httpx."
+    },
+    {
+      "label": "Applies a watermark (Text or Image Logo) onto the base image. Config schema: {\u2026",
+      "file_type": "rationale",
+      "source_file": "backend/services/watermark_service.py",
+      "source_location": "L79",
+      "_origin": "ast",
+      "id": "backend_services_watermark_service_rationale_79",
+      "community": 14,
+      "community_name": ".apply_watermark",
+      "norm_label": "applies a watermark (text or image logo) onto the base image. config schema: {..."
+    },
+    {
+      "label": "Returns base64 data URI string of watermarked image for frontend live preview.",
+      "file_type": "rationale",
+      "source_file": "backend/services/watermark_service.py",
+      "source_location": "L200",
+      "_origin": "ast",
+      "id": "backend_services_watermark_service_rationale_200",
+      "community": 14,
+      "community_name": ".apply_watermark",
+      "norm_label": "returns base64 data uri string of watermarked image for frontend live preview."
+    },
+    {
       "label": "next-env.d.ts",
       "file_type": "code",
       "source_file": "frontend/next-env.d.ts",
@@ -7743,8 +7974,8 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "frontend_package_dependencies_clsx",
-      "community": 26,
-      "community_name": "dependencies",
+      "community": 17,
+      "community_name": "clsx",
       "norm_label": "clsx"
     },
     {
@@ -7754,8 +7985,8 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "clsx",
-      "community": 26,
-      "community_name": "dependencies",
+      "community": 17,
+      "community_name": "clsx",
       "norm_label": "clsx"
     },
     {
@@ -7787,8 +8018,8 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "frontend_package_dependencies_firebase",
-      "community": 51,
-      "community_name": "firebase",
+      "community": 26,
+      "community_name": "dependencies",
       "norm_label": "firebase"
     },
     {
@@ -7798,8 +8029,8 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "firebase",
-      "community": 51,
-      "community_name": "firebase",
+      "community": 26,
+      "community_name": "dependencies",
       "norm_label": "firebase"
     },
     {
@@ -8272,7 +8503,7 @@
       "_origin": "ast",
       "id": "frontend_src_app_accounts_page",
       "community": 10,
-      "community_name": "useStore",
+      "community_name": "api.ts",
       "norm_label": "accounts/page.tsx"
     },
     {
@@ -8283,29 +8514,29 @@
       "_origin": "ast",
       "id": "frontend_src_app_accounts_page_dynamic",
       "community": 10,
-      "community_name": "useStore",
+      "community_name": "api.ts",
       "norm_label": "dynamic"
     },
     {
       "label": "PLATFORMS_CONFIG",
       "file_type": "code",
       "source_file": "frontend/src/app/accounts/page.tsx",
-      "source_location": "L17",
+      "source_location": "L18",
       "_origin": "ast",
       "id": "frontend_src_app_accounts_page_platforms_config",
       "community": 10,
-      "community_name": "useStore",
+      "community_name": "api.ts",
       "norm_label": "platforms_config"
     },
     {
       "label": "AccountsPage()",
       "file_type": "code",
       "source_file": "frontend/src/app/accounts/page.tsx",
-      "source_location": "L30",
+      "source_location": "L31",
       "_origin": "ast",
       "id": "frontend_src_app_accounts_page_accountspage",
       "community": 10,
-      "community_name": "useStore",
+      "community_name": "api.ts",
       "norm_label": "accountspage()"
     },
     {
@@ -8316,7 +8547,7 @@
       "_origin": "ast",
       "id": "frontend_src_app_activity_page",
       "community": 10,
-      "community_name": "useStore",
+      "community_name": "api.ts",
       "norm_label": "activity/page.tsx"
     },
     {
@@ -8327,7 +8558,7 @@
       "_origin": "ast",
       "id": "frontend_src_app_activity_page_activitypage",
       "community": 10,
-      "community_name": "useStore",
+      "community_name": "api.ts",
       "norm_label": "activitypage()"
     },
     {
@@ -8392,8 +8623,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "frontend_src_app_auth_callback_page",
-      "community": 19,
-      "community_name": "fetchApi",
+      "community": 8,
+      "community_name": "useStore",
       "norm_label": "callback/page.tsx"
     },
     {
@@ -8403,8 +8634,8 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "frontend_src_app_auth_callback_page_oauthcallbackhandler",
-      "community": 19,
-      "community_name": "fetchApi",
+      "community": 8,
+      "community_name": "useStore",
       "norm_label": "oauthcallbackhandler()"
     },
     {
@@ -8414,8 +8645,8 @@
       "source_location": "L134",
       "_origin": "ast",
       "id": "frontend_src_app_auth_callback_page_callbackpage",
-      "community": 19,
-      "community_name": "fetchApi",
+      "community": 8,
+      "community_name": "useStore",
       "norm_label": "callbackpage()"
     },
     {
@@ -8470,7 +8701,7 @@
       "_origin": "ast",
       "id": "frontend_src_app_calendar_page",
       "community": 8,
-      "community_name": "calendar/page.tsx",
+      "community_name": "useStore",
       "norm_label": "calendar/page.tsx"
     },
     {
@@ -8481,7 +8712,7 @@
       "_origin": "ast",
       "id": "frontend_src_app_calendar_page_platform_icons",
       "community": 8,
-      "community_name": "calendar/page.tsx",
+      "community_name": "useStore",
       "norm_label": "platform_icons"
     },
     {
@@ -8492,7 +8723,7 @@
       "_origin": "ast",
       "id": "frontend_src_app_calendar_page_platform_labels",
       "community": 8,
-      "community_name": "calendar/page.tsx",
+      "community_name": "useStore",
       "norm_label": "platform_labels"
     },
     {
@@ -8503,7 +8734,7 @@
       "_origin": "ast",
       "id": "frontend_src_app_calendar_page_getproxiedimageurl",
       "community": 8,
-      "community_name": "calendar/page.tsx",
+      "community_name": "useStore",
       "norm_label": "getproxiedimageurl()"
     },
     {
@@ -8514,7 +8745,7 @@
       "_origin": "ast",
       "id": "frontend_src_app_calendar_page_calendarimagethumbnail",
       "community": 8,
-      "community_name": "calendar/page.tsx",
+      "community_name": "useStore",
       "norm_label": "calendarimagethumbnail()"
     },
     {
@@ -8525,7 +8756,7 @@
       "_origin": "ast",
       "id": "frontend_src_app_calendar_page_calendarpage",
       "community": 8,
-      "community_name": "calendar/page.tsx",
+      "community_name": "useStore",
       "norm_label": "calendarpage()"
     },
     {
@@ -8536,7 +8767,7 @@
       "_origin": "ast",
       "id": "frontend_src_app_clients_page",
       "community": 10,
-      "community_name": "useStore",
+      "community_name": "api.ts",
       "norm_label": "clients/page.tsx"
     },
     {
@@ -8547,7 +8778,7 @@
       "_origin": "ast",
       "id": "frontend_src_app_clients_page_clientspage",
       "community": 10,
-      "community_name": "useStore",
+      "community_name": "api.ts",
       "norm_label": "clientspage()"
     },
     {
@@ -8645,8 +8876,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "frontend_src_app_dashboard_page",
-      "community": 19,
-      "community_name": "fetchApi",
+      "community": 8,
+      "community_name": "useStore",
       "norm_label": "dashboard/page.tsx"
     },
     {
@@ -8656,8 +8887,8 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "frontend_src_app_dashboard_page_customcharttooltip",
-      "community": 19,
-      "community_name": "fetchApi",
+      "community": 8,
+      "community_name": "useStore",
       "norm_label": "customcharttooltip()"
     },
     {
@@ -8667,8 +8898,8 @@
       "source_location": "L31",
       "_origin": "ast",
       "id": "frontend_src_app_dashboard_page_getproxiedimageurl",
-      "community": 19,
-      "community_name": "fetchApi",
+      "community": 8,
+      "community_name": "useStore",
       "norm_label": "getproxiedimageurl()"
     },
     {
@@ -8678,8 +8909,8 @@
       "source_location": "L38",
       "_origin": "ast",
       "id": "frontend_src_app_dashboard_page_dashboardimagethumbnail",
-      "community": 19,
-      "community_name": "fetchApi",
+      "community": 8,
+      "community_name": "useStore",
       "norm_label": "dashboardimagethumbnail()"
     },
     {
@@ -8689,8 +8920,8 @@
       "source_location": "L64",
       "_origin": "ast",
       "id": "frontend_src_app_dashboard_page_dashboardpage",
-      "community": 19,
-      "community_name": "fetchApi",
+      "community": 8,
+      "community_name": "useStore",
       "norm_label": "dashboardpage()"
     },
     {
@@ -8700,8 +8931,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "frontend_src_app_kol_campaigns_campaignid_page",
-      "community": 17,
-      "community_name": "[campaignId]/page.tsx",
+      "community": 19,
+      "community_name": "fetchApi",
       "norm_label": "[campaignid]/page.tsx"
     },
     {
@@ -8711,8 +8942,8 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "frontend_src_app_kol_campaigns_campaignid_page_deliverable_status_colors",
-      "community": 17,
-      "community_name": "[campaignId]/page.tsx",
+      "community": 19,
+      "community_name": "fetchApi",
       "norm_label": "deliverable_status_colors"
     },
     {
@@ -8722,8 +8953,8 @@
       "source_location": "L25",
       "_origin": "ast",
       "id": "frontend_src_app_kol_campaigns_campaignid_page_payment_status_badges",
-      "community": 17,
-      "community_name": "[campaignId]/page.tsx",
+      "community": 19,
+      "community_name": "fetchApi",
       "norm_label": "payment_status_badges"
     },
     {
@@ -8733,8 +8964,8 @@
       "source_location": "L31",
       "_origin": "ast",
       "id": "frontend_src_app_kol_campaigns_campaignid_page_campaigndetailpage",
-      "community": 17,
-      "community_name": "[campaignId]/page.tsx",
+      "community": 19,
+      "community_name": "fetchApi",
       "norm_label": "campaigndetailpage()"
     },
     {
@@ -8877,7 +9108,7 @@
       "_origin": "ast",
       "id": "frontend_src_app_media_page",
       "community": 10,
-      "community_name": "useStore",
+      "community_name": "api.ts",
       "norm_label": "media/page.tsx"
     },
     {
@@ -8888,7 +9119,7 @@
       "_origin": "ast",
       "id": "frontend_src_app_media_page_mediapage",
       "community": 10,
-      "community_name": "useStore",
+      "community_name": "api.ts",
       "norm_label": "mediapage()"
     },
     {
@@ -8899,7 +9130,7 @@
       "_origin": "ast",
       "id": "frontend_src_app_onboarding_page",
       "community": 10,
-      "community_name": "useStore",
+      "community_name": "api.ts",
       "norm_label": "onboarding/page.tsx"
     },
     {
@@ -8909,7 +9140,7 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "frontend_src_app_onboarding_page_onboardingpage",
-      "community": 10,
+      "community": 8,
       "community_name": "useStore",
       "norm_label": "onboardingpage()"
     },
@@ -9691,7 +9922,7 @@
       "_origin": "ast",
       "id": "frontend_src_components_accounts_accountbriefingmodal",
       "community": 10,
-      "community_name": "useStore",
+      "community_name": "api.ts",
       "norm_label": "accountbriefingmodal.tsx"
     },
     {
@@ -9702,7 +9933,7 @@
       "_origin": "ast",
       "id": "frontend_src_components_accounts_accountbriefingmodal_accountbriefingmodalprops",
       "community": 10,
-      "community_name": "useStore",
+      "community_name": "api.ts",
       "norm_label": "accountbriefingmodalprops"
     },
     {
@@ -9713,7 +9944,7 @@
       "_origin": "ast",
       "id": "frontend_src_components_accounts_accountbriefingmodal_default_pillars",
       "community": 10,
-      "community_name": "useStore",
+      "community_name": "api.ts",
       "norm_label": "default_pillars"
     },
     {
@@ -9724,8 +9955,52 @@
       "_origin": "ast",
       "id": "frontend_src_components_accounts_accountbriefingmodal_accountbriefingmodal",
       "community": 10,
-      "community_name": "useStore",
+      "community_name": "api.ts",
       "norm_label": "accountbriefingmodal()"
+    },
+    {
+      "label": "AccountWatermarkModal.tsx",
+      "file_type": "code",
+      "source_file": "frontend/src/components/accounts/AccountWatermarkModal.tsx",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "frontend_src_components_accounts_accountwatermarkmodal",
+      "community": 10,
+      "community_name": "api.ts",
+      "norm_label": "accountwatermarkmodal.tsx"
+    },
+    {
+      "label": "AccountWatermarkModalProps",
+      "file_type": "code",
+      "source_file": "frontend/src/components/accounts/AccountWatermarkModal.tsx",
+      "source_location": "L8",
+      "_origin": "ast",
+      "id": "frontend_src_components_accounts_accountwatermarkmodal_accountwatermarkmodalprops",
+      "community": 10,
+      "community_name": "api.ts",
+      "norm_label": "accountwatermarkmodalprops"
+    },
+    {
+      "label": "POSITIONS",
+      "file_type": "code",
+      "source_file": "frontend/src/components/accounts/AccountWatermarkModal.tsx",
+      "source_location": "L14",
+      "_origin": "ast",
+      "id": "frontend_src_components_accounts_accountwatermarkmodal_positions",
+      "community": 10,
+      "community_name": "api.ts",
+      "norm_label": "positions"
+    },
+    {
+      "label": "AccountWatermarkModal()",
+      "file_type": "code",
+      "source_file": "frontend/src/components/accounts/AccountWatermarkModal.tsx",
+      "source_location": "L26",
+      "_origin": "ast",
+      "id": "frontend_src_components_accounts_accountwatermarkmodal_accountwatermarkmodal",
+      "community": 10,
+      "community_name": "api.ts",
+      "norm_label": "accountwatermarkmodal()"
     },
     {
       "label": "SubscriptionGuard.tsx",
@@ -9834,7 +10109,7 @@
       "_origin": "ast",
       "id": "frontend_src_components_common_glassconfirmmodal",
       "community": 10,
-      "community_name": "useStore",
+      "community_name": "api.ts",
       "norm_label": "glassconfirmmodal.tsx"
     },
     {
@@ -9845,7 +10120,7 @@
       "_origin": "ast",
       "id": "frontend_src_components_common_glassconfirmmodal_glassconfirmmodalprops",
       "community": 10,
-      "community_name": "useStore",
+      "community_name": "api.ts",
       "norm_label": "glassconfirmmodalprops"
     },
     {
@@ -9856,7 +10131,7 @@
       "_origin": "ast",
       "id": "frontend_src_components_common_glassconfirmmodal_glassconfirmmodal",
       "community": 10,
-      "community_name": "useStore",
+      "community_name": "api.ts",
       "norm_label": "glassconfirmmodal()"
     },
     {
@@ -9888,8 +10163,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "frontend_src_components_common_globalglassconfirmmodal",
-      "community": 63,
-      "community_name": "useConfirmStore.ts",
+      "community": 11,
+      "community_name": "useAuthStore",
       "norm_label": "globalglassconfirmmodal.tsx"
     },
     {
@@ -9899,8 +10174,8 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "frontend_src_components_common_globalglassconfirmmodal_globalglassconfirmmodal",
-      "community": 63,
-      "community_name": "useConfirmStore.ts",
+      "community": 11,
+      "community_name": "useAuthStore",
       "norm_label": "globalglassconfirmmodal()"
     },
     {
@@ -9910,8 +10185,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "frontend_src_components_common_rupiahinput",
-      "community": 17,
-      "community_name": "[campaignId]/page.tsx",
+      "community": 21,
+      "community_name": "kol-campaigns/page.tsx",
       "norm_label": "rupiahinput.tsx"
     },
     {
@@ -9921,8 +10196,8 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "frontend_src_components_common_rupiahinput_rupiahinputprops",
-      "community": 17,
-      "community_name": "[campaignId]/page.tsx",
+      "community": 21,
+      "community_name": "kol-campaigns/page.tsx",
       "norm_label": "rupiahinputprops"
     },
     {
@@ -9932,8 +10207,8 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "frontend_src_components_common_rupiahinput_formatnumbertorupiahstring",
-      "community": 17,
-      "community_name": "[campaignId]/page.tsx",
+      "community": 21,
+      "community_name": "kol-campaigns/page.tsx",
       "norm_label": "formatnumbertorupiahstring()"
     },
     {
@@ -9943,8 +10218,8 @@
       "source_location": "L21",
       "_origin": "ast",
       "id": "frontend_src_components_common_rupiahinput_parserupiahstringtonumber",
-      "community": 17,
-      "community_name": "[campaignId]/page.tsx",
+      "community": 21,
+      "community_name": "kol-campaigns/page.tsx",
       "norm_label": "parserupiahstringtonumber()"
     },
     {
@@ -9954,8 +10229,8 @@
       "source_location": "L28",
       "_origin": "ast",
       "id": "frontend_src_components_common_rupiahinput_getterbilangshort",
-      "community": 17,
-      "community_name": "[campaignId]/page.tsx",
+      "community": 21,
+      "community_name": "kol-campaigns/page.tsx",
       "norm_label": "getterbilangshort()"
     },
     {
@@ -9965,8 +10240,8 @@
       "source_location": "L45",
       "_origin": "ast",
       "id": "frontend_src_components_common_rupiahinput_rupiahinput",
-      "community": 17,
-      "community_name": "[campaignId]/page.tsx",
+      "community": 21,
+      "community_name": "kol-campaigns/page.tsx",
       "norm_label": "rupiahinput()"
     },
     {
@@ -10185,7 +10460,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "frontend_src_components_common_uploadprogresswidget",
-      "community": 10,
+      "community": 8,
       "community_name": "useStore",
       "norm_label": "uploadprogresswidget.tsx"
     },
@@ -10196,7 +10471,7 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "frontend_src_components_common_uploadprogresswidget_uploadprogresswidget",
-      "community": 10,
+      "community": 8,
       "community_name": "useStore",
       "norm_label": "uploadprogresswidget()"
     },
@@ -10295,8 +10570,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "frontend_src_components_kol_campaignroicard",
-      "community": 17,
-      "community_name": "[campaignId]/page.tsx",
+      "community": 19,
+      "community_name": "fetchApi",
       "norm_label": "campaignroicard.tsx"
     },
     {
@@ -10306,8 +10581,8 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "frontend_src_components_kol_campaignroicard_roisummaryprops",
-      "community": 17,
-      "community_name": "[campaignId]/page.tsx",
+      "community": 19,
+      "community_name": "fetchApi",
       "norm_label": "roisummaryprops"
     },
     {
@@ -10317,8 +10592,8 @@
       "source_location": "L29",
       "_origin": "ast",
       "id": "frontend_src_components_kol_campaignroicard_campaignroicard",
-      "community": 17,
-      "community_name": "[campaignId]/page.tsx",
+      "community": 19,
+      "community_name": "fetchApi",
       "norm_label": "campaignroicard()"
     },
     {
@@ -10328,8 +10603,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "frontend_src_components_kol_deliverableaddmodal",
-      "community": 17,
-      "community_name": "[campaignId]/page.tsx",
+      "community": 19,
+      "community_name": "fetchApi",
       "norm_label": "deliverableaddmodal.tsx"
     },
     {
@@ -10339,8 +10614,8 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "frontend_src_components_kol_deliverableaddmodal_deliverableaddmodalprops",
-      "community": 17,
-      "community_name": "[campaignId]/page.tsx",
+      "community": 19,
+      "community_name": "fetchApi",
       "norm_label": "deliverableaddmodalprops"
     },
     {
@@ -10350,8 +10625,8 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "frontend_src_components_kol_deliverableaddmodal_deliverableaddmodal",
-      "community": 17,
-      "community_name": "[campaignId]/page.tsx",
+      "community": 19,
+      "community_name": "fetchApi",
       "norm_label": "deliverableaddmodal()"
     },
     {
@@ -10416,8 +10691,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "frontend_src_components_kol_koladdeditmodal",
-      "community": 17,
-      "community_name": "[campaignId]/page.tsx",
+      "community": 21,
+      "community_name": "kol-campaigns/page.tsx",
       "norm_label": "koladdeditmodal.tsx"
     },
     {
@@ -10427,8 +10702,8 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "frontend_src_components_kol_koladdeditmodal_koladdeditmodalprops",
-      "community": 17,
-      "community_name": "[campaignId]/page.tsx",
+      "community": 21,
+      "community_name": "kol-campaigns/page.tsx",
       "norm_label": "koladdeditmodalprops"
     },
     {
@@ -10438,8 +10713,8 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "frontend_src_components_kol_koladdeditmodal_koladdeditmodal",
-      "community": 19,
-      "community_name": "fetchApi",
+      "community": 21,
+      "community_name": "kol-campaigns/page.tsx",
       "norm_label": "koladdeditmodal()"
     },
     {
@@ -10449,8 +10724,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "frontend_src_components_kol_koladdtocampaignmodal",
-      "community": 17,
-      "community_name": "[campaignId]/page.tsx",
+      "community": 19,
+      "community_name": "fetchApi",
       "norm_label": "koladdtocampaignmodal.tsx"
     },
     {
@@ -10460,8 +10735,8 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "frontend_src_components_kol_koladdtocampaignmodal_koladdtocampaignmodalprops",
-      "community": 17,
-      "community_name": "[campaignId]/page.tsx",
+      "community": 19,
+      "community_name": "fetchApi",
       "norm_label": "koladdtocampaignmodalprops"
     },
     {
@@ -10471,8 +10746,8 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "frontend_src_components_kol_koladdtocampaignmodal_koladdtocampaignmodal",
-      "community": 17,
-      "community_name": "[campaignId]/page.tsx",
+      "community": 19,
+      "community_name": "fetchApi",
       "norm_label": "koladdtocampaignmodal()"
     },
     {
@@ -10482,8 +10757,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "frontend_src_components_kol_koldatabasedrawer",
-      "community": 19,
-      "community_name": "fetchApi",
+      "community": 21,
+      "community_name": "kol-campaigns/page.tsx",
       "norm_label": "koldatabasedrawer.tsx"
     },
     {
@@ -10493,8 +10768,8 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "frontend_src_components_kol_koldatabasedrawer_kolprofileitem",
-      "community": 19,
-      "community_name": "fetchApi",
+      "community": 21,
+      "community_name": "kol-campaigns/page.tsx",
       "norm_label": "kolprofileitem"
     },
     {
@@ -10504,8 +10779,8 @@
       "source_location": "L29",
       "_origin": "ast",
       "id": "frontend_src_components_kol_koldatabasedrawer_koldatabasedrawerprops",
-      "community": 19,
-      "community_name": "fetchApi",
+      "community": 21,
+      "community_name": "kol-campaigns/page.tsx",
       "norm_label": "koldatabasedrawerprops"
     },
     {
@@ -10515,8 +10790,8 @@
       "source_location": "L34",
       "_origin": "ast",
       "id": "frontend_src_components_kol_koldatabasedrawer_tier_badges",
-      "community": 19,
-      "community_name": "fetchApi",
+      "community": 21,
+      "community_name": "kol-campaigns/page.tsx",
       "norm_label": "tier_badges"
     },
     {
@@ -10526,8 +10801,8 @@
       "source_location": "L41",
       "_origin": "ast",
       "id": "frontend_src_components_kol_koldatabasedrawer_koldatabasedrawer",
-      "community": 19,
-      "community_name": "fetchApi",
+      "community": 21,
+      "community_name": "kol-campaigns/page.tsx",
       "norm_label": "koldatabasedrawer()"
     },
     {
@@ -10659,7 +10934,7 @@
       "_origin": "ast",
       "id": "frontend_src_components_media_movetofoldermodal",
       "community": 10,
-      "community_name": "useStore",
+      "community_name": "api.ts",
       "norm_label": "movetofoldermodal.tsx"
     },
     {
@@ -10670,7 +10945,7 @@
       "_origin": "ast",
       "id": "frontend_src_components_media_movetofoldermodal_movetofoldermodalprops",
       "community": 10,
-      "community_name": "useStore",
+      "community_name": "api.ts",
       "norm_label": "movetofoldermodalprops"
     },
     {
@@ -10681,7 +10956,7 @@
       "_origin": "ast",
       "id": "frontend_src_components_media_movetofoldermodal_movetofoldermodal",
       "community": 10,
-      "community_name": "useStore",
+      "community_name": "api.ts",
       "norm_label": "movetofoldermodal()"
     },
     {
@@ -10691,7 +10966,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "frontend_src_components_posts_postcomposermodal",
-      "community": 10,
+      "community": 8,
       "community_name": "useStore",
       "norm_label": "postcomposermodal.tsx"
     },
@@ -10702,7 +10977,7 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "frontend_src_components_posts_postcomposermodal_platform_badges",
-      "community": 10,
+      "community": 8,
       "community_name": "useStore",
       "norm_label": "platform_badges"
     },
@@ -10713,7 +10988,7 @@
       "source_location": "L31",
       "_origin": "ast",
       "id": "frontend_src_components_posts_postcomposermodal_accountplatformicon",
-      "community": 10,
+      "community": 8,
       "community_name": "useStore",
       "norm_label": "accountplatformicon()"
     },
@@ -10724,7 +10999,7 @@
       "source_location": "L63",
       "_origin": "ast",
       "id": "frontend_src_components_posts_postcomposermodal_fieldtooltip",
-      "community": 10,
+      "community": 8,
       "community_name": "useStore",
       "norm_label": "fieldtooltip()"
     },
@@ -10735,7 +11010,7 @@
       "source_location": "L73",
       "_origin": "ast",
       "id": "frontend_src_components_posts_postcomposermodal_postcomposermodal",
-      "community": 10,
+      "community": 8,
       "community_name": "useStore",
       "norm_label": "postcomposermodal()"
     },
@@ -10812,8 +11087,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "frontend_src_lib_api",
-      "community": 19,
-      "community_name": "fetchApi",
+      "community": 10,
+      "community_name": "api.ts",
       "norm_label": "api.ts"
     },
     {
@@ -10933,7 +11208,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "frontend_src_lib_uploadmanager",
-      "community": 10,
+      "community": 8,
       "community_name": "useStore",
       "norm_label": "uploadmanager.ts"
     },
@@ -10945,7 +11220,7 @@
       "_origin": "ast",
       "id": "frontend_src_lib_uploadmanager_uploadfilesinbackground",
       "community": 10,
-      "community_name": "useStore",
+      "community_name": "api.ts",
       "norm_label": "uploadfilesinbackground()"
     },
     {
@@ -11131,8 +11406,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "frontend_src_store_useconfirmstore",
-      "community": 63,
-      "community_name": "useConfirmStore.ts",
+      "community": 10,
+      "community_name": "api.ts",
       "norm_label": "useconfirmstore.ts"
     },
     {
@@ -11142,8 +11417,8 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "frontend_src_store_useconfirmstore_confirmoptions",
-      "community": 63,
-      "community_name": "useConfirmStore.ts",
+      "community": 10,
+      "community_name": "api.ts",
       "norm_label": "confirmoptions"
     },
     {
@@ -11153,8 +11428,8 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "frontend_src_store_useconfirmstore_confirmstate",
-      "community": 63,
-      "community_name": "useConfirmStore.ts",
+      "community": 10,
+      "community_name": "api.ts",
       "norm_label": "confirmstate"
     },
     {
@@ -11164,8 +11439,8 @@
       "source_location": "L21",
       "_origin": "ast",
       "id": "frontend_src_store_useconfirmstore_useconfirmstore",
-      "community": 63,
-      "community_name": "useConfirmStore.ts",
+      "community": 11,
+      "community_name": "useAuthStore",
       "norm_label": "useconfirmstore"
     },
     {
@@ -11176,7 +11451,7 @@
       "_origin": "ast",
       "id": "frontend_src_store_useconfirmstore_confirmmodal",
       "community": 10,
-      "community_name": "useStore",
+      "community_name": "api.ts",
       "norm_label": "confirmmodal()"
     },
     {
@@ -11219,7 +11494,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "frontend_src_store_usestore",
-      "community": 10,
+      "community": 8,
       "community_name": "useStore",
       "norm_label": "usestore.ts"
     },
@@ -11230,7 +11505,7 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "frontend_src_store_usestore_workspace",
-      "community": 10,
+      "community": 8,
       "community_name": "useStore",
       "norm_label": "workspace"
     },
@@ -11241,7 +11516,7 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "frontend_src_store_usestore_client",
-      "community": 10,
+      "community": 8,
       "community_name": "useStore",
       "norm_label": "client"
     },
@@ -11252,7 +11527,7 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "frontend_src_store_usestore_uploadtask",
-      "community": 10,
+      "community": 8,
       "community_name": "useStore",
       "norm_label": "uploadtask"
     },
@@ -11263,7 +11538,7 @@
       "source_location": "L27",
       "_origin": "ast",
       "id": "frontend_src_store_usestore_storestate",
-      "community": 10,
+      "community": 8,
       "community_name": "useStore",
       "norm_label": "storestate"
     },
@@ -11274,7 +11549,7 @@
       "source_location": "L55",
       "_origin": "ast",
       "id": "frontend_src_store_usestore_usestore",
-      "community": 10,
+      "community": 8,
       "community_name": "useStore",
       "norm_label": "usestore"
     },
@@ -11286,7 +11561,7 @@
       "_origin": "ast",
       "id": "frontend_src_store_usetoaststore",
       "community": 10,
-      "community_name": "useStore",
+      "community_name": "api.ts",
       "norm_label": "usetoaststore.ts"
     },
     {
@@ -11297,7 +11572,7 @@
       "_origin": "ast",
       "id": "frontend_src_store_usetoaststore_toastitem",
       "community": 10,
-      "community_name": "useStore",
+      "community_name": "api.ts",
       "norm_label": "toastitem"
     },
     {
@@ -11308,7 +11583,7 @@
       "_origin": "ast",
       "id": "frontend_src_store_usetoaststore_toaststate",
       "community": 10,
-      "community_name": "useStore",
+      "community_name": "api.ts",
       "norm_label": "toaststate"
     },
     {
@@ -11330,7 +11605,7 @@
       "_origin": "ast",
       "id": "frontend_src_store_usetoaststore_toast",
       "community": 10,
-      "community_name": "useStore",
+      "community_name": "api.ts",
       "norm_label": "toast"
     },
     {
@@ -15640,7 +15915,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "backend/models/models.py",
-      "source_location": "L296",
+      "source_location": "L297",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_models_models",
@@ -15662,7 +15937,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "backend/models/models.py",
-      "source_location": "L363",
+      "source_location": "L364",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_models_models",
@@ -15673,7 +15948,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "backend/models/models.py",
-      "source_location": "L392",
+      "source_location": "L393",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_models_models",
@@ -15706,7 +15981,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "backend/models/models.py",
-      "source_location": "L473",
+      "source_location": "L474",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_models_models",
@@ -15717,7 +15992,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "backend/models/models.py",
-      "source_location": "L497",
+      "source_location": "L498",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_models_models",
@@ -15728,7 +16003,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "backend/models/models.py",
-      "source_location": "L413",
+      "source_location": "L414",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_models_models",
@@ -15739,7 +16014,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "backend/models/models.py",
-      "source_location": "L515",
+      "source_location": "L516",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_models_models",
@@ -15750,7 +16025,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "backend/models/models.py",
-      "source_location": "L431",
+      "source_location": "L432",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_models_models",
@@ -15761,7 +16036,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "backend/models/models.py",
-      "source_location": "L420",
+      "source_location": "L421",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_models_models",
@@ -15772,7 +16047,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "backend/models/models.py",
-      "source_location": "L438",
+      "source_location": "L439",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_models_models",
@@ -15783,7 +16058,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "backend/models/models.py",
-      "source_location": "L444",
+      "source_location": "L445",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_models_models",
@@ -15794,7 +16069,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "backend/models/models.py",
-      "source_location": "L191",
+      "source_location": "L192",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_models_models",
@@ -15816,7 +16091,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "backend/models/models.py",
-      "source_location": "L212",
+      "source_location": "L213",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_models_models",
@@ -15827,7 +16102,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "backend/models/models.py",
-      "source_location": "L273",
+      "source_location": "L274",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_models_models",
@@ -15849,7 +16124,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "backend/models/models.py",
-      "source_location": "L240",
+      "source_location": "L241",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_models_models",
@@ -15871,7 +16146,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "backend/models/models.py",
-      "source_location": "L256",
+      "source_location": "L257",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_models_models",
@@ -15893,7 +16168,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "backend/models/models.py",
-      "source_location": "L310",
+      "source_location": "L311",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_models_models",
@@ -15915,7 +16190,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "backend/models/models.py",
-      "source_location": "L321",
+      "source_location": "L322",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_models_models",
@@ -15948,7 +16223,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "backend/models/models.py",
-      "source_location": "L342",
+      "source_location": "L343",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_models_models",
@@ -16306,6 +16581,17 @@
       "source_location": "L13",
       "weight": 0.8,
       "_origin": "ast",
+      "source": "backend_routers_admin_instagramtestrequest",
+      "target": "backend_models_models_plantier",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/routers/admin.py",
+      "source_location": "L13",
+      "weight": 0.8,
+      "_origin": "ast",
       "source": "backend_routers_admin_planupdaterequest",
       "target": "backend_models_models_plantier",
       "confidence_score": 0.5
@@ -16460,7 +16746,7 @@
       "relation": "inherits",
       "confidence": "EXTRACTED",
       "source_file": "backend/models/models.py",
-      "source_location": "L413",
+      "source_location": "L414",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_models_models_kolcampaignstatus",
@@ -16471,7 +16757,7 @@
       "relation": "inherits",
       "confidence": "EXTRACTED",
       "source_file": "backend/models/models.py",
-      "source_location": "L431",
+      "source_location": "L432",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_models_models_koldeliverablestatus",
@@ -16482,7 +16768,7 @@
       "relation": "inherits",
       "confidence": "EXTRACTED",
       "source_file": "backend/models/models.py",
-      "source_location": "L420",
+      "source_location": "L421",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_models_models_koldeliverabletype",
@@ -16493,7 +16779,7 @@
       "relation": "inherits",
       "confidence": "EXTRACTED",
       "source_file": "backend/models/models.py",
-      "source_location": "L438",
+      "source_location": "L439",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_models_models_kolpaymentstatus",
@@ -16555,6 +16841,17 @@
       "source": "backend_routers_admin",
       "target": "backend_models_models_subscriptionstatus",
       "confidence_score": 1.0
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/routers/admin.py",
+      "source_location": "L13",
+      "weight": 0.8,
+      "_origin": "ast",
+      "source": "backend_routers_admin_instagramtestrequest",
+      "target": "backend_models_models_subscriptionstatus",
+      "confidence_score": 0.5
     },
     {
       "relation": "uses",
@@ -16814,6 +17111,28 @@
       "_origin": "ast",
       "source": "backend_routers_accounts_get_accounts",
       "target": "backend_models_models_accountplatform"
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/routers/accounts.py",
+      "source_location": "L11",
+      "weight": 0.8,
+      "_origin": "ast",
+      "source": "backend_routers_accounts_watermarkconfigschema",
+      "target": "backend_models_models_accountplatform",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/routers/accounts.py",
+      "source_location": "L11",
+      "weight": 0.8,
+      "_origin": "ast",
+      "source": "backend_routers_accounts_watermarkpreviewrequest",
+      "target": "backend_models_models_accountplatform",
+      "confidence_score": 0.5
     },
     {
       "relation": "imports",
@@ -17140,6 +17459,28 @@
       "_origin": "ast",
       "source": "backend_routers_accounts_get_accounts",
       "target": "backend_models_models_accountstatus"
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/routers/accounts.py",
+      "source_location": "L11",
+      "weight": 0.8,
+      "_origin": "ast",
+      "source": "backend_routers_accounts_watermarkconfigschema",
+      "target": "backend_models_models_accountstatus",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/routers/accounts.py",
+      "source_location": "L11",
+      "weight": 0.8,
+      "_origin": "ast",
+      "source": "backend_routers_accounts_watermarkpreviewrequest",
+      "target": "backend_models_models_accountstatus",
+      "confidence_score": 0.5
     },
     {
       "relation": "imports",
@@ -17699,7 +18040,7 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "backend/routers/accounts.py",
-      "source_location": "L190",
+      "source_location": "L267",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_routers_accounts_bulk_action",
@@ -17722,7 +18063,7 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "backend/routers/accounts.py",
-      "source_location": "L231",
+      "source_location": "L308",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_routers_accounts_delete_account",
@@ -17734,10 +18075,22 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "backend/routers/accounts.py",
-      "source_location": "L122",
+      "source_location": "L199",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_routers_accounts_get_account_briefing",
+      "target": "backend_models_models_user",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/routers/accounts.py",
+      "source_location": "L140",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "backend_routers_accounts_get_account_watermark",
       "target": "backend_models_models_user",
       "confidence_score": 1.0
     },
@@ -17758,7 +18111,19 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "backend/routers/accounts.py",
-      "source_location": "L162",
+      "source_location": "L181",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "backend_routers_accounts_preview_watermark",
+      "target": "backend_models_models_user",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/routers/accounts.py",
+      "source_location": "L239",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_routers_accounts_toggle_favorite_post",
@@ -17770,7 +18135,7 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "backend/routers/accounts.py",
-      "source_location": "L176",
+      "source_location": "L253",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_routers_accounts_toggle_favorite_put",
@@ -17782,12 +18147,46 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "backend/routers/accounts.py",
-      "source_location": "L139",
+      "source_location": "L216",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_routers_accounts_update_account_briefing",
       "target": "backend_models_models_user",
       "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/routers/accounts.py",
+      "source_location": "L157",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "backend_routers_accounts_update_account_watermark",
+      "target": "backend_models_models_user",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/routers/accounts.py",
+      "source_location": "L11",
+      "weight": 0.8,
+      "_origin": "ast",
+      "source": "backend_routers_accounts_watermarkconfigschema",
+      "target": "backend_models_models_user",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/routers/accounts.py",
+      "source_location": "L11",
+      "weight": 0.8,
+      "_origin": "ast",
+      "source": "backend_routers_accounts_watermarkpreviewrequest",
+      "target": "backend_models_models_user",
+      "confidence_score": 0.5
     },
     {
       "relation": "imports",
@@ -17836,6 +18235,17 @@
       "source": "backend_routers_admin_get_settings",
       "target": "backend_models_models_user",
       "confidence_score": 1.0
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/routers/admin.py",
+      "source_location": "L13",
+      "weight": 0.8,
+      "_origin": "ast",
+      "source": "backend_routers_admin_instagramtestrequest",
+      "target": "backend_models_models_user",
+      "confidence_score": 0.5
     },
     {
       "relation": "references",
@@ -17923,7 +18333,7 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "backend/routers/admin.py",
-      "source_location": "L263",
+      "source_location": "L269",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_routers_admin_test_instagram",
@@ -19289,7 +19699,7 @@
       "relation": "inherits",
       "confidence": "EXTRACTED",
       "source_file": "backend/models/models.py",
-      "source_location": "L296",
+      "source_location": "L297",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_models_models_activitylog",
@@ -19311,7 +19721,7 @@
       "relation": "inherits",
       "confidence": "EXTRACTED",
       "source_file": "backend/models/models.py",
-      "source_location": "L363",
+      "source_location": "L364",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_models_models_competitoraccount",
@@ -19322,7 +19732,7 @@
       "relation": "inherits",
       "confidence": "EXTRACTED",
       "source_file": "backend/models/models.py",
-      "source_location": "L392",
+      "source_location": "L393",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_models_models_competitorpost",
@@ -19333,7 +19743,7 @@
       "relation": "inherits",
       "confidence": "EXTRACTED",
       "source_file": "backend/models/models.py",
-      "source_location": "L473",
+      "source_location": "L474",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_models_models_kolcampaign",
@@ -19344,7 +19754,7 @@
       "relation": "inherits",
       "confidence": "EXTRACTED",
       "source_file": "backend/models/models.py",
-      "source_location": "L497",
+      "source_location": "L498",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_models_models_kolcampaignkol",
@@ -19355,7 +19765,7 @@
       "relation": "inherits",
       "confidence": "EXTRACTED",
       "source_file": "backend/models/models.py",
-      "source_location": "L515",
+      "source_location": "L516",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_models_models_koldeliverable",
@@ -19366,7 +19776,7 @@
       "relation": "inherits",
       "confidence": "EXTRACTED",
       "source_file": "backend/models/models.py",
-      "source_location": "L444",
+      "source_location": "L445",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_models_models_kolprofile",
@@ -19377,7 +19787,7 @@
       "relation": "inherits",
       "confidence": "EXTRACTED",
       "source_file": "backend/models/models.py",
-      "source_location": "L191",
+      "source_location": "L192",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_models_models_media",
@@ -19388,7 +19798,7 @@
       "relation": "inherits",
       "confidence": "EXTRACTED",
       "source_file": "backend/models/models.py",
-      "source_location": "L212",
+      "source_location": "L213",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_models_models_post",
@@ -19399,7 +19809,7 @@
       "relation": "inherits",
       "confidence": "EXTRACTED",
       "source_file": "backend/models/models.py",
-      "source_location": "L273",
+      "source_location": "L274",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_models_models_postpublishresult",
@@ -19410,7 +19820,7 @@
       "relation": "inherits",
       "confidence": "EXTRACTED",
       "source_file": "backend/models/models.py",
-      "source_location": "L240",
+      "source_location": "L241",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_models_models_posttarget",
@@ -19421,7 +19831,7 @@
       "relation": "inherits",
       "confidence": "EXTRACTED",
       "source_file": "backend/models/models.py",
-      "source_location": "L256",
+      "source_location": "L257",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_models_models_publishjob",
@@ -19432,7 +19842,7 @@
       "relation": "inherits",
       "confidence": "EXTRACTED",
       "source_file": "backend/models/models.py",
-      "source_location": "L310",
+      "source_location": "L311",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_models_models_setting",
@@ -19454,7 +19864,7 @@
       "relation": "inherits",
       "confidence": "EXTRACTED",
       "source_file": "backend/models/models.py",
-      "source_location": "L321",
+      "source_location": "L322",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_models_models_subscriptionplan",
@@ -19465,7 +19875,7 @@
       "relation": "inherits",
       "confidence": "EXTRACTED",
       "source_file": "backend/models/models.py",
-      "source_location": "L342",
+      "source_location": "L343",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_models_models_usersubscription",
@@ -20424,6 +20834,28 @@
       "confidence_score": 0.5
     },
     {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/routers/accounts.py",
+      "source_location": "L11",
+      "weight": 0.8,
+      "_origin": "ast",
+      "source": "backend_routers_accounts_watermarkconfigschema",
+      "target": "backend_models_models_client",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/routers/accounts.py",
+      "source_location": "L11",
+      "weight": 0.8,
+      "_origin": "ast",
+      "source": "backend_routers_accounts_watermarkpreviewrequest",
+      "target": "backend_models_models_client",
+      "confidence_score": 0.5
+    },
+    {
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
@@ -20709,6 +21141,28 @@
       "weight": 0.8,
       "_origin": "ast",
       "source": "backend_routers_accounts_bulkactionrequest",
+      "target": "backend_models_models_socialaccount",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/routers/accounts.py",
+      "source_location": "L11",
+      "weight": 0.8,
+      "_origin": "ast",
+      "source": "backend_routers_accounts_watermarkconfigschema",
+      "target": "backend_models_models_socialaccount",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/routers/accounts.py",
+      "source_location": "L11",
+      "weight": 0.8,
+      "_origin": "ast",
+      "source": "backend_routers_accounts_watermarkpreviewrequest",
       "target": "backend_models_models_socialaccount",
       "confidence_score": 0.5
     },
@@ -21810,10 +22264,10 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "backend/models/models.py",
-      "source_location": "L274",
+      "source_location": "L275",
       "weight": 1.0,
       "_origin": "ast",
-      "source": "backend_models_models_rationale_274",
+      "source": "backend_models_models_rationale_275",
       "target": "backend_models_models_postpublishresult",
       "confidence_score": 1.0
     },
@@ -21952,11 +22406,33 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "backend/routers/accounts.py",
-      "source_location": "L259",
+      "source_location": "L336",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_routers_accounts_delete_account",
       "target": "backend_models_models_activitylog"
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/routers/accounts.py",
+      "source_location": "L11",
+      "weight": 0.8,
+      "_origin": "ast",
+      "source": "backend_routers_accounts_watermarkconfigschema",
+      "target": "backend_models_models_activitylog",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/routers/accounts.py",
+      "source_location": "L11",
+      "weight": 0.8,
+      "_origin": "ast",
+      "source": "backend_routers_accounts_watermarkpreviewrequest",
+      "target": "backend_models_models_activitylog",
+      "confidence_score": 0.5
     },
     {
       "relation": "imports",
@@ -22561,6 +23037,17 @@
       "source_location": "L13",
       "weight": 0.8,
       "_origin": "ast",
+      "source": "backend_routers_admin_instagramtestrequest",
+      "target": "backend_models_models_setting",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/routers/admin.py",
+      "source_location": "L13",
+      "weight": 0.8,
+      "_origin": "ast",
       "source": "backend_routers_admin_planupdaterequest",
       "target": "backend_models_models_setting",
       "confidence_score": 0.5
@@ -22673,10 +23160,10 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "backend/models/models.py",
-      "source_location": "L322",
+      "source_location": "L323",
       "weight": 1.0,
       "_origin": "ast",
-      "source": "backend_models_models_rationale_322",
+      "source": "backend_models_models_rationale_323",
       "target": "backend_models_models_subscriptionplan",
       "confidence_score": 1.0
     },
@@ -22691,6 +23178,17 @@
       "source": "backend_routers_admin",
       "target": "backend_models_models_subscriptionplan",
       "confidence_score": 1.0
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/routers/admin.py",
+      "source_location": "L13",
+      "weight": 0.8,
+      "_origin": "ast",
+      "source": "backend_routers_admin_instagramtestrequest",
+      "target": "backend_models_models_subscriptionplan",
+      "confidence_score": 0.5
     },
     {
       "relation": "uses",
@@ -22832,10 +23330,10 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "backend/models/models.py",
-      "source_location": "L343",
+      "source_location": "L344",
       "weight": 1.0,
       "_origin": "ast",
-      "source": "backend_models_models_rationale_343",
+      "source": "backend_models_models_rationale_344",
       "target": "backend_models_models_usersubscription",
       "confidence_score": 1.0
     },
@@ -22862,6 +23360,17 @@
       "source": "backend_routers_admin",
       "target": "backend_models_models_usersubscription",
       "confidence_score": 1.0
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/routers/admin.py",
+      "source_location": "L13",
+      "weight": 0.8,
+      "_origin": "ast",
+      "source": "backend_routers_admin_instagramtestrequest",
+      "target": "backend_models_models_usersubscription",
+      "confidence_score": 0.5
     },
     {
       "relation": "calls",
@@ -24507,7 +25016,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "backend/routers/accounts.py",
-      "source_location": "L190",
+      "source_location": "L267",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_routers_accounts",
@@ -24529,7 +25038,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "backend/routers/accounts.py",
-      "source_location": "L231",
+      "source_location": "L308",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_routers_accounts",
@@ -24540,11 +25049,22 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "backend/routers/accounts.py",
-      "source_location": "L122",
+      "source_location": "L199",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_routers_accounts",
       "target": "backend_routers_accounts_get_account_briefing",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/routers/accounts.py",
+      "source_location": "L140",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "backend_routers_accounts",
+      "target": "backend_routers_accounts_get_account_watermark",
       "confidence_score": 1.0
     },
     {
@@ -24562,7 +25082,18 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "backend/routers/accounts.py",
-      "source_location": "L162",
+      "source_location": "L181",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "backend_routers_accounts",
+      "target": "backend_routers_accounts_preview_watermark",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/routers/accounts.py",
+      "source_location": "L239",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_routers_accounts",
@@ -24573,7 +25104,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "backend/routers/accounts.py",
-      "source_location": "L176",
+      "source_location": "L253",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_routers_accounts",
@@ -24584,11 +25115,44 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "backend/routers/accounts.py",
-      "source_location": "L139",
+      "source_location": "L216",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_routers_accounts",
       "target": "backend_routers_accounts_update_account_briefing",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/routers/accounts.py",
+      "source_location": "L157",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "backend_routers_accounts",
+      "target": "backend_routers_accounts_update_account_watermark",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/routers/accounts.py",
+      "source_location": "L123",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "backend_routers_accounts",
+      "target": "backend_routers_accounts_watermarkconfigschema",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/routers/accounts.py",
+      "source_location": "L134",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "backend_routers_accounts",
+      "target": "backend_routers_accounts_watermarkpreviewrequest",
       "confidence_score": 1.0
     },
     {
@@ -24643,7 +25207,7 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "backend/routers/accounts.py",
-      "source_location": "L139",
+      "source_location": "L216",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_routers_accounts_update_account_briefing",
@@ -24662,11 +25226,33 @@
       "confidence_score": 1.0
     },
     {
+      "relation": "inherits",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/routers/accounts.py",
+      "source_location": "L123",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "backend_routers_accounts_watermarkconfigschema",
+      "target": "backend_routers_accounts_py_basemodel",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "inherits",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/routers/accounts.py",
+      "source_location": "L134",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "backend_routers_accounts_watermarkpreviewrequest",
+      "target": "backend_routers_accounts_py_basemodel",
+      "confidence_score": 1.0
+    },
+    {
       "relation": "references",
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "backend/routers/accounts.py",
-      "source_location": "L190",
+      "source_location": "L267",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_routers_accounts_bulk_action",
@@ -24677,11 +25263,23 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "backend/routers/accounts.py",
-      "source_location": "L121",
+      "source_location": "L198",
       "weight": 1.0,
       "context": "decorator",
       "_origin": "ast",
       "source": "backend_routers_accounts_get_account_briefing",
+      "target": "backend_routers_accounts_py_get",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/routers/accounts.py",
+      "source_location": "L139",
+      "weight": 1.0,
+      "context": "decorator",
+      "_origin": "ast",
+      "source": "backend_routers_accounts_get_account_watermark",
       "target": "backend_routers_accounts_py_get",
       "confidence_score": 1.0
     },
@@ -24737,7 +25335,7 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "backend/routers/accounts.py",
-      "source_location": "L190",
+      "source_location": "L267",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_routers_accounts_bulk_action",
@@ -24749,7 +25347,7 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "backend/routers/accounts.py",
-      "source_location": "L231",
+      "source_location": "L308",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_routers_accounts_delete_account",
@@ -24761,7 +25359,7 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "backend/routers/accounts.py",
-      "source_location": "L122",
+      "source_location": "L199",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_routers_accounts_get_account_briefing",
@@ -24773,7 +25371,19 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "backend/routers/accounts.py",
-      "source_location": "L162",
+      "source_location": "L140",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "backend_routers_accounts_get_account_watermark",
+      "target": "backend_routers_accounts_py_session",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/routers/accounts.py",
+      "source_location": "L239",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_routers_accounts_toggle_favorite_post",
@@ -24785,7 +25395,7 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "backend/routers/accounts.py",
-      "source_location": "L176",
+      "source_location": "L253",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_routers_accounts_toggle_favorite_put",
@@ -24797,7 +25407,7 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "backend/routers/accounts.py",
-      "source_location": "L139",
+      "source_location": "L216",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_routers_accounts_update_account_briefing",
@@ -24805,39 +25415,39 @@
       "confidence_score": 1.0
     },
     {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "backend/routers/accounts.py",
-      "source_location": "L130",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "backend_routers_accounts_get_account_briefing",
-      "target": "backend_routers_firebase_auth_get_user_workspace"
-    },
-    {
       "relation": "references",
+      "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "backend/routers/accounts.py",
-      "source_location": "L175",
+      "source_location": "L157",
       "weight": 1.0,
-      "context": "decorator",
       "_origin": "ast",
-      "source": "backend_routers_accounts_toggle_favorite_put",
-      "target": "backend_routers_accounts_py_put",
+      "source": "backend_routers_accounts_update_account_watermark",
+      "target": "backend_routers_accounts_py_session",
       "confidence_score": 1.0
     },
     {
       "relation": "references",
+      "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "backend/routers/accounts.py",
-      "source_location": "L138",
+      "source_location": "L157",
       "weight": 1.0,
-      "context": "decorator",
       "_origin": "ast",
-      "source": "backend_routers_accounts_update_account_briefing",
-      "target": "backend_routers_accounts_py_put",
+      "source": "backend_routers_accounts_update_account_watermark",
+      "target": "backend_routers_accounts_watermarkconfigschema",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/routers/accounts.py",
+      "source_location": "L181",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "backend_routers_accounts_preview_watermark",
+      "target": "backend_routers_accounts_watermarkpreviewrequest",
       "confidence_score": 1.0
     },
     {
@@ -24849,14 +25459,62 @@
       "source_location": "L148",
       "weight": 1.0,
       "_origin": "ast",
-      "source": "backend_routers_accounts_update_account_briefing",
+      "source": "backend_routers_accounts_get_account_watermark",
       "target": "backend_routers_firebase_auth_get_user_workspace"
     },
     {
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "backend/routers/accounts.py",
-      "source_location": "L189",
+      "source_location": "L252",
+      "weight": 1.0,
+      "context": "decorator",
+      "_origin": "ast",
+      "source": "backend_routers_accounts_toggle_favorite_put",
+      "target": "backend_routers_accounts_py_put",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/routers/accounts.py",
+      "source_location": "L215",
+      "weight": 1.0,
+      "context": "decorator",
+      "_origin": "ast",
+      "source": "backend_routers_accounts_update_account_briefing",
+      "target": "backend_routers_accounts_py_put",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/routers/accounts.py",
+      "source_location": "L156",
+      "weight": 1.0,
+      "context": "decorator",
+      "_origin": "ast",
+      "source": "backend_routers_accounts_update_account_watermark",
+      "target": "backend_routers_accounts_py_put",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "backend/routers/accounts.py",
+      "source_location": "L166",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "backend_routers_accounts_update_account_watermark",
+      "target": "backend_routers_firebase_auth_get_user_workspace"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/routers/accounts.py",
+      "source_location": "L266",
       "weight": 1.0,
       "context": "decorator",
       "_origin": "ast",
@@ -24868,7 +25526,19 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "backend/routers/accounts.py",
-      "source_location": "L161",
+      "source_location": "L180",
+      "weight": 1.0,
+      "context": "decorator",
+      "_origin": "ast",
+      "source": "backend_routers_accounts_preview_watermark",
+      "target": "backend_routers_accounts_py_post",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/routers/accounts.py",
+      "source_location": "L238",
       "weight": 1.0,
       "context": "decorator",
       "_origin": "ast",
@@ -24877,12 +25547,47 @@
       "confidence_score": 1.0
     },
     {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/routers/accounts.py",
+      "source_location": "L185",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "backend_routers_accounts_rationale_185",
+      "target": "backend_routers_accounts_preview_watermark",
+      "confidence_score": 1.0
+    },
+    {
       "relation": "calls",
       "context": "call",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "backend/routers/accounts.py",
-      "source_location": "L170",
+      "source_location": "L207",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "backend_routers_accounts_get_account_briefing",
+      "target": "backend_routers_firebase_auth_get_user_workspace"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "backend/routers/accounts.py",
+      "source_location": "L225",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "backend_routers_accounts_update_account_briefing",
+      "target": "backend_routers_firebase_auth_get_user_workspace"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "backend/routers/accounts.py",
+      "source_location": "L247",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_routers_accounts_toggle_favorite_post",
@@ -24894,7 +25599,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "backend/routers/accounts.py",
-      "source_location": "L184",
+      "source_location": "L261",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_routers_accounts_toggle_favorite_put",
@@ -24905,7 +25610,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "backend/routers/accounts.py",
-      "source_location": "L221",
+      "source_location": "L298",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_routers_accounts_bulk_action",
@@ -24918,7 +25623,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "backend/routers/accounts.py",
-      "source_location": "L202",
+      "source_location": "L279",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_routers_accounts_bulk_action",
@@ -24928,10 +25633,10 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "backend/routers/accounts.py",
-      "source_location": "L195",
+      "source_location": "L272",
       "weight": 1.0,
       "_origin": "ast",
-      "source": "backend_routers_accounts_rationale_195",
+      "source": "backend_routers_accounts_rationale_272",
       "target": "backend_routers_accounts_bulk_action",
       "confidence_score": 1.0
     },
@@ -24940,7 +25645,7 @@
       "context": "decorator",
       "confidence": "EXTRACTED",
       "source_file": "backend/routers/accounts.py",
-      "source_location": "L230",
+      "source_location": "L307",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_routers_accounts_delete_account",
@@ -24953,7 +25658,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "backend/routers/accounts.py",
-      "source_location": "L241",
+      "source_location": "L318",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_routers_accounts_delete_account",
@@ -25134,6 +25839,17 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "backend/routers/admin.py",
+      "source_location": "L262",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "backend_routers_admin",
+      "target": "backend_routers_admin_instagramtestrequest",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/routers/admin.py",
       "source_location": "L65",
       "weight": 1.0,
       "_origin": "ast",
@@ -25211,7 +25927,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "backend/routers/admin.py",
-      "source_location": "L263",
+      "source_location": "L269",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_routers_admin",
@@ -25364,7 +26080,7 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "backend/routers/admin.py",
-      "source_location": "L263",
+      "source_location": "L269",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_routers_admin_test_instagram",
@@ -25416,6 +26132,17 @@
       "_origin": "ast",
       "source": "backend_routers_admin_update_plan",
       "target": "backend_routers_admin_planupdaterequest",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "inherits",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/routers/admin.py",
+      "source_location": "L262",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "backend_routers_admin_instagramtestrequest",
+      "target": "backend_routers_admin_py_basemodel",
       "confidence_score": 1.0
     },
     {
@@ -25539,7 +26266,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "backend/routers/admin.py",
-      "source_location": "L262",
+      "source_location": "L268",
       "weight": 1.0,
       "context": "decorator",
       "_origin": "ast",
@@ -25661,13 +26388,25 @@
       "confidence_score": 1.0
     },
     {
+      "relation": "references",
+      "context": "generic_arg",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/routers/admin.py",
+      "source_location": "L269",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "backend_routers_admin_test_instagram",
+      "target": "backend_routers_admin_instagramtestrequest",
+      "confidence_score": 1.0
+    },
+    {
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "backend/routers/admin.py",
-      "source_location": "L267",
+      "source_location": "L274",
       "weight": 1.0,
       "_origin": "ast",
-      "source": "backend_routers_admin_rationale_267",
+      "source": "backend_routers_admin_rationale_274",
       "target": "backend_routers_admin_test_instagram",
       "confidence_score": 1.0
     },
@@ -35314,7 +36053,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "backend/services/instagrapi_service.py",
-      "source_location": "L238",
+      "source_location": "L244",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_services_instagrapi_service_instagrapiservice",
@@ -35325,7 +36064,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "backend/services/instagrapi_service.py",
-      "source_location": "L212",
+      "source_location": "L218",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_services_instagrapi_service_instagrapiservice",
@@ -35413,7 +36152,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "backend/services/instagrapi_service.py",
-      "source_location": "L195",
+      "source_location": "L201",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_services_instagrapi_service_instagrapiservice",
@@ -35472,7 +36211,7 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "backend/services/instagrapi_service.py",
-      "source_location": "L238",
+      "source_location": "L244",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_services_instagrapi_service_instagrapiservice_fetch_competitor_posts",
@@ -35484,7 +36223,7 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "backend/services/instagrapi_service.py",
-      "source_location": "L212",
+      "source_location": "L218",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_services_instagrapi_service_instagrapiservice_fetch_competitor_profile",
@@ -35556,7 +36295,7 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "backend/services/instagrapi_service.py",
-      "source_location": "L195",
+      "source_location": "L201",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_services_instagrapi_service_instagrapiservice_validate_username",
@@ -35568,7 +36307,7 @@
       "context": "generic_arg",
       "confidence": "EXTRACTED",
       "source_file": "backend/services/instagrapi_service.py",
-      "source_location": "L238",
+      "source_location": "L244",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_services_instagrapi_service_instagrapiservice_fetch_competitor_posts",
@@ -35580,7 +36319,7 @@
       "context": "generic_arg",
       "confidence": "EXTRACTED",
       "source_file": "backend/services/instagrapi_service.py",
-      "source_location": "L212",
+      "source_location": "L218",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_services_instagrapi_service_instagrapiservice_fetch_competitor_profile",
@@ -35628,7 +36367,7 @@
       "context": "generic_arg",
       "confidence": "EXTRACTED",
       "source_file": "backend/services/instagrapi_service.py",
-      "source_location": "L195",
+      "source_location": "L201",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_services_instagrapi_service_instagrapiservice_validate_username",
@@ -35694,6 +36433,18 @@
       "confidence_score": 1.0
     },
     {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/services/instagrapi_service.py",
+      "source_location": "L182",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "backend_services_instagrapi_service_instagrapiservice_test_connection",
+      "target": "backend_services_instagrapi_service_instagrapiservice_login_with_credentials",
+      "confidence_score": 1.0
+    },
+    {
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "backend/services/instagrapi_service.py",
@@ -35709,7 +36460,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "backend/services/instagrapi_service.py",
-      "source_location": "L243",
+      "source_location": "L249",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_services_instagrapi_service_instagrapiservice_fetch_competitor_posts",
@@ -35721,7 +36472,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "backend/services/instagrapi_service.py",
-      "source_location": "L215",
+      "source_location": "L221",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_services_instagrapi_service_instagrapiservice_fetch_competitor_profile",
@@ -35733,7 +36484,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "backend/services/instagrapi_service.py",
-      "source_location": "L179",
+      "source_location": "L184",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_services_instagrapi_service_instagrapiservice_test_connection",
@@ -35755,10 +36506,10 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "backend/services/instagrapi_service.py",
-      "source_location": "L177",
+      "source_location": "L179",
       "weight": 1.0,
       "_origin": "ast",
-      "source": "backend_services_instagrapi_service_rationale_177",
+      "source": "backend_services_instagrapi_service_rationale_179",
       "target": "backend_services_instagrapi_service_instagrapiservice_test_connection",
       "confidence_score": 1.0
     },
@@ -35767,7 +36518,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "backend/services/instagrapi_service.py",
-      "source_location": "L198",
+      "source_location": "L204",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_services_instagrapi_service_instagrapiservice_validate_username",
@@ -35778,10 +36529,10 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "backend/services/instagrapi_service.py",
-      "source_location": "L196",
+      "source_location": "L202",
       "weight": 1.0,
       "_origin": "ast",
-      "source": "backend_services_instagrapi_service_rationale_196",
+      "source": "backend_services_instagrapi_service_rationale_202",
       "target": "backend_services_instagrapi_service_instagrapiservice_validate_username",
       "confidence_score": 1.0
     },
@@ -35789,10 +36540,10 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "backend/services/instagrapi_service.py",
-      "source_location": "L213",
+      "source_location": "L219",
       "weight": 1.0,
       "_origin": "ast",
-      "source": "backend_services_instagrapi_service_rationale_213",
+      "source": "backend_services_instagrapi_service_rationale_219",
       "target": "backend_services_instagrapi_service_instagrapiservice_fetch_competitor_profile",
       "confidence_score": 1.0
     },
@@ -35800,10 +36551,10 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "backend/services/instagrapi_service.py",
-      "source_location": "L239",
+      "source_location": "L245",
       "weight": 1.0,
       "_origin": "ast",
-      "source": "backend_services_instagrapi_service_rationale_239",
+      "source": "backend_services_instagrapi_service_rationale_245",
       "target": "backend_services_instagrapi_service_instagrapiservice_fetch_competitor_posts",
       "confidence_score": 1.0
     },
@@ -38115,6 +38866,211 @@
       "confidence_score": 1.0
     },
     {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/services/watermark_service.py",
+      "source_location": "L24",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "backend_services_watermark_service",
+      "target": "backend_services_watermark_service_watermarkservice",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/services/watermark_service.py",
+      "source_location": "L1",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "backend_services_watermark_service_rationale_1",
+      "target": "backend_services_watermark_service",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/services/watermark_service.py",
+      "source_location": "L74",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "backend_services_watermark_service_watermarkservice",
+      "target": "backend_services_watermark_service_watermarkservice_apply_watermark",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/services/watermark_service.py",
+      "source_location": "L28",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "backend_services_watermark_service_watermarkservice",
+      "target": "backend_services_watermark_service_watermarkservice_calculate_coordinates",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/services/watermark_service.py",
+      "source_location": "L63",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "backend_services_watermark_service_watermarkservice",
+      "target": "backend_services_watermark_service_watermarkservice_fetch_remote_image",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/services/watermark_service.py",
+      "source_location": "L25",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "backend_services_watermark_service_watermarkservice",
+      "target": "backend_services_watermark_service_watermarkservice_init",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/services/watermark_service.py",
+      "source_location": "L195",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "backend_services_watermark_service_watermarkservice",
+      "target": "backend_services_watermark_service_watermarkservice_preview_watermark_base64",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/services/watermark_service.py",
+      "source_location": "L35",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "backend_services_watermark_service_rationale_35",
+      "target": "backend_services_watermark_service_watermarkservice_calculate_coordinates",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/services/watermark_service.py",
+      "source_location": "L143",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "backend_services_watermark_service_watermarkservice_apply_watermark",
+      "target": "backend_services_watermark_service_watermarkservice_calculate_coordinates",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/services/watermark_service.py",
+      "source_location": "L64",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "backend_services_watermark_service_rationale_64",
+      "target": "backend_services_watermark_service_watermarkservice_fetch_remote_image",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/services/watermark_service.py",
+      "source_location": "L127",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "backend_services_watermark_service_watermarkservice_apply_watermark",
+      "target": "backend_services_watermark_service_watermarkservice_fetch_remote_image",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "generic_arg",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/services/watermark_service.py",
+      "source_location": "L63",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "backend_services_watermark_service_watermarkservice_fetch_remote_image",
+      "target": "image",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "return_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/services/watermark_service.py",
+      "source_location": "L74",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "backend_services_watermark_service_watermarkservice_apply_watermark",
+      "target": "image",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/services/watermark_service.py",
+      "source_location": "L79",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "backend_services_watermark_service_rationale_79",
+      "target": "backend_services_watermark_service_watermarkservice_apply_watermark",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "generic_arg",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/services/watermark_service.py",
+      "source_location": "L74",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "backend_services_watermark_service_watermarkservice_apply_watermark",
+      "target": "backend_services_watermark_service_py_any",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/services/watermark_service.py",
+      "source_location": "L201",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "backend_services_watermark_service_watermarkservice_preview_watermark_base64",
+      "target": "backend_services_watermark_service_watermarkservice_apply_watermark",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "generic_arg",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/services/watermark_service.py",
+      "source_location": "L195",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "backend_services_watermark_service_watermarkservice_preview_watermark_base64",
+      "target": "backend_services_watermark_service_py_any",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/services/watermark_service.py",
+      "source_location": "L200",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "backend_services_watermark_service_rationale_200",
+      "target": "backend_services_watermark_service_watermarkservice_preview_watermark_base64",
+      "confidence_score": 1.0
+    },
+    {
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "frontend/next-env.d.ts",
@@ -38800,7 +39756,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/src/app/accounts/page.tsx",
-      "source_location": "L30",
+      "source_location": "L31",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_src_app_accounts_page",
@@ -38822,7 +39778,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/src/app/accounts/page.tsx",
-      "source_location": "L17",
+      "source_location": "L18",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_src_app_accounts_page",
@@ -38851,6 +39807,30 @@
       "_origin": "ast",
       "source": "frontend_src_app_accounts_page",
       "target": "frontend_src_components_accounts_accountbriefingmodal_accountbriefingmodal",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/src/app/accounts/page.tsx",
+      "source_location": "L16",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "frontend_src_app_accounts_page",
+      "target": "frontend_src_components_accounts_accountwatermarkmodal",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/src/app/accounts/page.tsx",
+      "source_location": "L16",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "frontend_src_app_accounts_page",
+      "target": "frontend_src_components_accounts_accountwatermarkmodal_accountwatermarkmodal",
       "confidence_score": 1.0
     },
     {
@@ -38979,7 +39959,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "frontend/src/app/accounts/page.tsx",
-      "source_location": "L398",
+      "source_location": "L401",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_src_app_accounts_page_accountspage",
@@ -38991,7 +39971,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "frontend/src/app/accounts/page.tsx",
-      "source_location": "L70",
+      "source_location": "L73",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_src_app_accounts_page_accountspage",
@@ -39003,7 +39983,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "frontend/src/app/accounts/page.tsx",
-      "source_location": "L138",
+      "source_location": "L141",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_src_app_accounts_page_accountspage",
@@ -39015,7 +39995,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "frontend/src/app/accounts/page.tsx",
-      "source_location": "L31",
+      "source_location": "L32",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_src_app_accounts_page_accountspage",
@@ -39262,7 +40242,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "frontend/src/app/admin/page.tsx",
-      "source_location": "L82",
+      "source_location": "L87",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_src_app_admin_page_adminpage",
@@ -42685,6 +43665,99 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
+      "source_file": "frontend/src/components/accounts/AccountWatermarkModal.tsx",
+      "source_location": "L26",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "frontend_src_components_accounts_accountwatermarkmodal",
+      "target": "frontend_src_components_accounts_accountwatermarkmodal_accountwatermarkmodal",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/src/components/accounts/AccountWatermarkModal.tsx",
+      "source_location": "L8",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "frontend_src_components_accounts_accountwatermarkmodal",
+      "target": "frontend_src_components_accounts_accountwatermarkmodal_accountwatermarkmodalprops",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/src/components/accounts/AccountWatermarkModal.tsx",
+      "source_location": "L14",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "frontend_src_components_accounts_accountwatermarkmodal",
+      "target": "frontend_src_components_accounts_accountwatermarkmodal_positions",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/src/components/accounts/AccountWatermarkModal.tsx",
+      "source_location": "L5",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "frontend_src_components_accounts_accountwatermarkmodal",
+      "target": "frontend_src_lib_api",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/src/components/accounts/AccountWatermarkModal.tsx",
+      "source_location": "L5",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "frontend_src_components_accounts_accountwatermarkmodal",
+      "target": "frontend_src_lib_api_fetchapi",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/src/components/accounts/AccountWatermarkModal.tsx",
+      "source_location": "L6",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "frontend_src_components_accounts_accountwatermarkmodal",
+      "target": "frontend_src_store_usetoaststore",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/src/components/accounts/AccountWatermarkModal.tsx",
+      "source_location": "L6",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "frontend_src_components_accounts_accountwatermarkmodal",
+      "target": "frontend_src_store_usetoaststore_toast",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "frontend/src/components/accounts/AccountWatermarkModal.tsx",
+      "source_location": "L76",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "frontend_src_components_accounts_accountwatermarkmodal_accountwatermarkmodal",
+      "target": "frontend_src_lib_api_fetchapi"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
       "source_file": "frontend/src/components/billing/SubscriptionGuard.tsx",
       "source_location": "L20",
       "weight": 1.0,
@@ -45069,7 +46142,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "frontend/src/components/posts/PostComposerModal.tsx",
-      "source_location": "L271",
+      "source_location": "L273",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_src_components_posts_postcomposermodal_postcomposermodal",
@@ -49395,5 +50468,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "bba6e1ddc79c3f45fb422f580d87a81e3cad7104"
+  "built_at_commit": "9151f51de5912aff3ad24af585f71c0189e19150"
 }

@@ -86,8 +86,10 @@ export default function PostComposerModal() {
   const [newMediaInput, setNewMediaInput] = useState("");
   const [showUrlInput, setShowUrlInput] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
-  const [scheduledAt, setScheduledAt] = useState("");
   const [actionType, setActionType] = useState<"publish_now" | "schedule" | "save_draft">("publish_now");
+
+  // Watermark Toggle State (Default OFF)
+  const [applyWatermark, setApplyWatermark] = useState<boolean>(false);
 
   // AI Content Brief State (Saved in draft for future re-editing)
   const [aiBriefText, setAiBriefText] = useState("");
@@ -1177,6 +1179,39 @@ export default function PostComposerModal() {
               </div>
             </div>
 
+            {/* Watermark Preset Overlay Toggle (Image Only) */}
+            <div className="p-4 rounded-2xl bg-pink-50/50 border border-pink-200/80 space-y-2 transition-all">
+              <div className="flex items-center justify-between">
+                <label className="flex items-center gap-2 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={applyWatermark}
+                    onChange={(e) => setApplyWatermark(e.target.checked)}
+                    className="w-4 h-4 rounded text-pink-600 focus:ring-pink-500 cursor-pointer"
+                  />
+                  <div className="flex items-center gap-1.5 text-xs font-extrabold text-pink-900 font-['Outfit']">
+                    <Sparkles className="w-4 h-4 text-pink-600" />
+                    <span>Apply Watermark (Automated Preset)</span>
+                  </div>
+                </label>
+
+                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                  applyWatermark ? "bg-pink-600 text-white shadow-2xs" : "bg-slate-200 text-slate-600"
+                }`}>
+                  {applyWatermark ? "ON" : "OFF"}
+                </span>
+              </div>
+
+              <div className="flex items-center justify-between text-[11px] text-pink-700/90 pt-1">
+                <span>💡 Watermark saat ini mendukung format <strong>Gambar (JPG, PNG, WebP, Carousel)</strong>.</span>
+                {selectedAccountIds.length > 0 && (
+                  <span className="text-[10px] font-bold font-mono text-purple-700">
+                    Menggunakan preset dari {selectedAccountIds.length} akun terhubung
+                  </span>
+                )}
+              </div>
+            </div>
+
             {/* 6. Video / Reels Cover Thumbnail Setup */}
             {(postType === "video" || mediaUrls.some(u => isVideoMedia({ url: u }))) && (
               <div className="p-4 rounded-2xl bg-purple-50/60 border border-purple-200 space-y-3 animate-fadeIn">
@@ -2162,11 +2197,18 @@ export default function PostComposerModal() {
                       }
 
                       return (
-                        <img
-                          src={currentUrl}
-                          alt={`Preview slide ${previewSlideIndex + 1}`}
-                          className="w-full h-full object-cover"
-                        />
+                        <div className="relative w-full h-full">
+                          <img
+                            src={currentUrl}
+                            alt={`Preview slide ${previewSlideIndex + 1}`}
+                            className="w-full h-full object-cover"
+                          />
+                          {applyWatermark && (
+                            <div className="absolute bottom-3 right-3 px-2 py-1 rounded bg-black/60 backdrop-blur-xs text-white text-[10px] font-mono font-bold border border-white/20 shadow-md">
+                              ✨ Watermark Overlay Applied
+                            </div>
+                          )}
+                        </div>
                       );
                     })()}
 

@@ -178,6 +178,7 @@ class SocialAccount(Base):
     account_group = Column(String(100), nullable=True)
     followers_count = Column(Integer, default=0)
     briefing = Column(JSON, nullable=True)
+    watermark_config = Column(JSON, nullable=True, default=dict)
     last_synced_at = Column(DateTime, default=datetime.utcnow)
     connected_at = Column(DateTime, default=datetime.utcnow)
     created_at = Column(DateTime, default=datetime.utcnow)

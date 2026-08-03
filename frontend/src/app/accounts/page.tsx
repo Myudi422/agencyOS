@@ -4,7 +4,7 @@ export const dynamic = 'force-dynamic';
 
 import React, { useState, useEffect } from "react";
 import { 
-  Users2, Search, Star, RefreshCw, Trash2, FileText,
+  Users2, Search, Star, RefreshCw, Trash2, FileText, Sparkles,
   Instagram, Facebook, Twitter, Youtube, Share2, MessageSquare, Plus, CheckSquare, Square, X, ExternalLink, ShieldCheck, CheckCircle2, AlertTriangle, Layers, Grid, List as ListIcon
 } from "lucide-react";
 import { useStore } from "@/store/useStore";
@@ -13,6 +13,7 @@ import { confirmModal } from "@/store/useConfirmStore";
 import { fetchApi } from "@/lib/api";
 import GlassConfirmModal from "@/components/common/GlassConfirmModal";
 import AccountBriefingModal from "@/components/accounts/AccountBriefingModal";
+import AccountWatermarkModal from "@/components/accounts/AccountWatermarkModal";
 
 const PLATFORMS_CONFIG = [
   { id: "instagram", name: "Instagram", category: "Meta", icon: Instagram, color: "from-amber-500 via-pink-500 to-purple-600", textColor: "text-pink-600", bgBadge: "bg-pink-100 text-pink-700 border-pink-200" },
@@ -45,6 +46,8 @@ export default function AccountsPage() {
 
   // Briefing Modal State ("Akun itu apa")
   const [briefingAccount, setBriefingAccount] = useState<any | null>(null);
+  // Watermark Modal State
+  const [watermarkAccount, setWatermarkAccount] = useState<any | null>(null);
 
   // Connect Modal State
   const [isConnectModalOpen, setIsConnectModalOpen] = useState(false);
@@ -477,6 +480,15 @@ export default function AccountsPage() {
                     })()}
 
                     <button
+                      onClick={() => setWatermarkAccount(acc)}
+                      title="Atur Watermark Default (Image/Text)"
+                      className="px-2 py-1 rounded-xl text-[10px] font-bold bg-pink-50 text-pink-700 border border-pink-200 hover:bg-pink-100 transition-colors flex items-center gap-1"
+                    >
+                      <Sparkles className="w-3 h-3 text-pink-600" />
+                      <span>Watermark</span>
+                    </button>
+
+                    <button
                       onClick={() => handleReconnectAccount(acc)}
                       title="Reconnect Channel"
                       className="px-2 py-1 rounded-xl text-[10px] font-bold bg-slate-50 text-slate-600 border border-slate-200 hover:bg-slate-100 transition-colors flex items-center gap-1"
@@ -553,6 +565,14 @@ export default function AccountsPage() {
                           <span>Briefing</span>
                         </button>
 
+                        <button
+                          onClick={() => setWatermarkAccount(acc)}
+                          className="px-2 py-1 rounded-xl text-[10px] font-bold bg-pink-50 text-pink-700 border border-pink-200 hover:bg-pink-100 transition-colors flex items-center gap-1"
+                        >
+                          <Sparkles className="w-3 h-3 text-pink-600" />
+                          <span>Watermark</span>
+                        </button>
+
                       <button
                         onClick={() => handleReconnectAccount(acc)}
                         className="px-2.5 py-1 rounded-xl text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100 transition-colors flex items-center gap-1"
@@ -583,6 +603,15 @@ export default function AccountsPage() {
         <AccountBriefingModal
           account={briefingAccount}
           onClose={() => setBriefingAccount(null)}
+          onSaved={loadAccounts}
+        />
+      )}
+
+      {/* Account Watermark Modal */}
+      {watermarkAccount && (
+        <AccountWatermarkModal
+          account={watermarkAccount}
+          onClose={() => setWatermarkAccount(null)}
           onSaved={loadAccounts}
         />
       )}
