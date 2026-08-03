@@ -132,7 +132,7 @@ async def postforme_auth_url(
         target_ws, _ = _get_user_target_workspace(db, current_user, req.workspace_id, req.client_id)
 
         try:
-            # Send external_id so PostForMe tags this account to this workspace
+            # First attempt: tag account to this workspace via external_id
             res = await postforme_service.generate_auth_url(
                 platform=req.platform,
                 platform_data=req.platform_data,
@@ -141,18 +141,26 @@ async def postforme_auth_url(
             )
         except Exception as pf_err:
             err_str = str(pf_err).lower()
-            # If the account was previously connected under a different workspace/external_id,
-            # PostForMe rejects the tag — fall back to no external_id so user can still connect
-            if "external id already exists" in err_str or "external_id" in err_str:
-                logger.warning(f"PostForMe external_id conflict for workspace {target_ws.id}, retrying without external_id: {pf_err}")
+            # PostForMe returns "External Id already exists" when the OAuth account
+            # was previously connected under a DIFFERENT external_id.
+            # Fall back to connecting without external_id tagging.
+            if (
+                "external id already exists" in err_str
+                or "external_id already exists" in err_str
+                or "externalid" in err_str.replace("_", "").replace(" ", "")
+                or "no valid accounts found" in err_str
+                or ("external" in err_str and "exist" in err_str)
+            ):
+                logger.warning(
+                    f"PostForMe external_id conflict for workspace {target_ws.id} "
+                    f"({req.platform}). Retrying without external_id. Error: {pf_err}"
+                )
                 res = await postforme_service.generate_auth_url(
                     platform=req.platform,
                     platform_data=req.platform_data,
                     external_id=None,
                     permissions=req.permissions
                 )
-                # Tag the response so sync knows to match by username instead
-                res["_fallback_workspace_id"] = target_ws.id
             else:
                 raise
         return res

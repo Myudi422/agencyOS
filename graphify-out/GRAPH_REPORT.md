@@ -1,7 +1,7 @@
 # Graph Report - agencyOS  (2026-08-03)
 
 ## Corpus Check
-- 133 files · ~757,826 words
+- 133 files · ~757,932 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
@@ -10,7 +10,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `2637a801`
+- Built from commit: `77a1f6f8`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -70,7 +70,7 @@
 - next.config.js
 - next-env.d.ts
 - html2canvas
-- next
+- clsx
 - QueueService
 - tailwind-merge
 - zustand
@@ -212,7 +212,7 @@ Nodes (14): create_snap_transaction(), get_core_api_client(), get_snap_client(),
 
 ### Community 26 - "dependencies"
 Cohesion: 0.13
-Nodes (15): clsx, dependencies, clsx, jspdf, lucide-react, react-dom, react-is, recharts (+7 more)
+Nodes (15): dependencies, jspdf, lucide-react, next, react-dom, react-is, recharts, @tanstack/react-query (+7 more)
 
 ### Community 27 - "competitor-spy/page.tsx"
 Cohesion: 0.17

@@ -96,7 +96,8 @@ class PostForMeService:
             res = await client.post(url, json=payload, headers=self._get_headers())
             if res.status_code not in (200, 201):
                 logger.error(f"PostForMe auth-url error {res.status_code}: {res.text}")
-            res.raise_for_status()
+                # Raise with body text so caller can inspect error detail
+                raise Exception(f"PostForMe API error {res.status_code}: {res.text}")
             return res.json()
 
     async def get_social_accounts(
