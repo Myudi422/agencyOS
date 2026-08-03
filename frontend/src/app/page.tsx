@@ -1,6 +1,4 @@
-"use client";
-
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { 
   Calendar, Users, Newspaper, Search, Heart, Star, Sparkles, 
@@ -9,6 +7,7 @@ import {
   Sliders, Award, MessageCircle, User, Store, Briefcase, Clock, CheckCircle, Target
 } from "lucide-react";
 import { useAuthStore } from "@/store/authStore";
+import { fetchApi } from "@/lib/api";
 
 // SVG Laurel Wreath Component (Airbnb Style Rating Ornaments)
 function LaurelWreathLeft({ className = "text-purple-400 w-8 h-12" }: { className?: string }) {
@@ -167,47 +166,21 @@ const TARGET_AUDIENCE = [
   }
 ];
 
-const PRICING_PLANS = [
+const DEFAULT_PRICING_PLANS = [
   {
-    tier: "trial",
-    badge: "Gratis 3 Hari",
-    badgeBg: "bg-gradient-to-r from-emerald-500 to-teal-600 text-white",
-    name: "Starter Trial",
-    price: "Rp 0",
-    period: "3 hari",
-    posts: "6 posts",
-    postsDetail: "2 post/hari",
-    color: "from-slate-500 to-slate-700",
-    iconBg: "bg-slate-100 text-slate-600",
-    border: "border-slate-200",
-    features: [
-      "6 posts total (2 post/hari)",
-      "Unlimited akun sosmed",
-      "Multi-client management",
-      "Semua 10+ platform",
-      "AI Assistant support analisa, brainstorm & brief",
-      "KOL Manager & Deliverable Tracker",
-      "Competitor Spy & Executive PDF Report",
-      "Wajib verifikasi WhatsApp",
-    ],
-    buttonText: "Mulai Trial",
-    buttonStyle: "bg-emerald-600 text-white hover:bg-emerald-700 shadow-md shadow-emerald-500/20",
-    popular: false
-  },
-  {
-    tier: "creator",
-    badge: null,
-    badgeBg: "",
-    name: "Creator",
-    price: "Rp 49.000",
+    tier: "studio",
+    badge: "Terbaik",
+    badgeBg: "bg-gradient-to-r from-amber-500 to-orange-500 text-white",
+    name: "Studio",
+    price: "Rp 749.000",
     period: "/bulan",
-    posts: "50 posts",
-    postsDetail: "~1.6 post/hari",
-    color: "from-blue-500 to-indigo-600",
-    iconBg: "bg-blue-100 text-blue-600",
-    border: "border-blue-200",
+    posts: "1.000 posts",
+    postsDetail: "~33 post/hari",
+    color: "from-amber-500 to-orange-600",
+    iconBg: "bg-amber-100 text-amber-600",
+    border: "border-amber-200",
     features: [
-      "50 posts/bulan",
+      "1.000 posts/bulan",
       "Unlimited akun sosmed",
       "Multi-client management",
       "Semua 10+ platform",
@@ -215,7 +188,7 @@ const PRICING_PLANS = [
       "KOL Manager & Deliverable Tracker",
       "Competitor Spy & Executive PDF Report",
     ],
-    buttonText: "Pilih Creator",
+    buttonText: "Pilih Studio",
     buttonStyle: "bg-slate-100 text-slate-800 hover:bg-slate-200 border border-slate-300",
     popular: false
   },
@@ -245,19 +218,19 @@ const PRICING_PLANS = [
     popular: true
   },
   {
-    tier: "studio",
-    badge: "Terbaik",
-    badgeBg: "bg-gradient-to-r from-amber-500 to-orange-500 text-white",
-    name: "Studio",
-    price: "Rp 749.000",
+    tier: "creator",
+    badge: null,
+    badgeBg: "",
+    name: "Creator",
+    price: "Rp 49.000",
     period: "/bulan",
-    posts: "1.000 posts",
-    postsDetail: "~33 post/hari",
-    color: "from-amber-500 to-orange-600",
-    iconBg: "bg-amber-100 text-amber-600",
-    border: "border-amber-200",
+    posts: "50 posts",
+    postsDetail: "~1.6 post/hari",
+    color: "from-blue-500 to-indigo-600",
+    iconBg: "bg-blue-100 text-blue-600",
+    border: "border-blue-200",
     features: [
-      "1.000 posts/bulan",
+      "50 posts/bulan",
       "Unlimited akun sosmed",
       "Multi-client management",
       "Semua 10+ platform",
@@ -265,8 +238,34 @@ const PRICING_PLANS = [
       "KOL Manager & Deliverable Tracker",
       "Competitor Spy & Executive PDF Report",
     ],
-    buttonText: "Pilih Studio",
+    buttonText: "Pilih Creator",
     buttonStyle: "bg-slate-100 text-slate-800 hover:bg-slate-200 border border-slate-300",
+    popular: false
+  },
+  {
+    tier: "trial",
+    badge: "Gratis 3 Hari",
+    badgeBg: "bg-gradient-to-r from-emerald-500 to-teal-600 text-white",
+    name: "Starter Trial",
+    price: "Rp 0",
+    period: "3 hari",
+    posts: "6 posts",
+    postsDetail: "2 post/hari",
+    color: "from-slate-500 to-slate-700",
+    iconBg: "bg-slate-100 text-slate-600",
+    border: "border-slate-200",
+    features: [
+      "6 posts total (2 post/hari)",
+      "Unlimited akun sosmed",
+      "Multi-client management",
+      "Semua 10+ platform",
+      "AI Assistant support analisa, brainstorm & brief",
+      "KOL Manager & Deliverable Tracker",
+      "Competitor Spy & Executive PDF Report",
+      "Wajib verifikasi WhatsApp",
+    ],
+    buttonText: "Mulai Trial",
+    buttonStyle: "bg-emerald-600 text-white hover:bg-emerald-700 shadow-md shadow-emerald-500/20",
     popular: false
   }
 ];
@@ -299,6 +298,48 @@ export default function LandingHomePage() {
   const [activeCategory, setActiveCategory] = useState("ALL SOLUTIONS");
   const [favorites, setFavorites] = useState<Record<string, boolean>>({});
   const [openFaq, setOpenFaq] = useState<number | null>(0);
+  const [pricingPlans, setPricingPlans] = useState<any[]>(DEFAULT_PRICING_PLANS);
+
+  // Fetch live pricing from API on landing page
+  useEffect(() => {
+    fetchApi("/billing/plans")
+      .then((data: any) => {
+        if (Array.isArray(data) && data.length > 0) {
+          const mapped = data.map((p) => {
+            const defaultPlan = DEFAULT_PRICING_PLANS.find(dp => dp.tier === p.tier);
+            const priceStr = p.price_idr ? `Rp ${Number(p.price_idr).toLocaleString("id-ID")}` : "Rp 0";
+            const periodStr = p.tier === "trial" ? `${p.duration_days} hari` : "/bulan";
+            const postsStr = `${Number(p.post_quota).toLocaleString("id-ID")} posts`;
+            const dailyApprox = (p.post_quota / (p.duration_days || 30)).toFixed(1);
+            const postsDetail = p.tier === "trial" ? `2 post/hari` : `~${dailyApprox} post/hari`;
+
+            return {
+              tier: p.tier,
+              badge: defaultPlan?.badge || null,
+              badgeBg: defaultPlan?.badgeBg || "",
+              name: p.name,
+              price: priceStr,
+              period: periodStr,
+              posts: postsStr,
+              postsDetail: postsDetail,
+              color: defaultPlan?.color || "from-purple-500 to-violet-600",
+              iconBg: defaultPlan?.iconBg || "bg-purple-100 text-purple-600",
+              border: defaultPlan?.border || "border-purple-300",
+              features: p.features && p.features.length > 0 ? p.features : (defaultPlan?.features || []),
+              buttonText: defaultPlan?.buttonText || `Pilih ${p.name}`,
+              buttonStyle: defaultPlan?.buttonStyle || "bg-slate-100 text-slate-800 hover:bg-slate-200 border border-slate-300",
+              popular: defaultPlan?.popular || false,
+            };
+          });
+
+          // Sort from most expensive to cheapest (Studio -> Agency -> Creator -> Trial)
+          const tierOrder: Record<string, number> = { studio: 4, agency: 3, creator: 2, trial: 1 };
+          mapped.sort((a, b) => (tierOrder[b.tier] || 0) - (tierOrder[a.tier] || 0));
+          setPricingPlans(mapped);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const filteredFeatures = activeCategory === "ALL SOLUTIONS" 
     ? FEATURES 
@@ -761,7 +802,7 @@ export default function LandingHomePage() {
 
           {/* Pricing Grid matching https://shiera.web.id/pricing */}
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 items-stretch">
-            {PRICING_PLANS.map((plan) => (
+            {pricingPlans.map((plan) => (
               <div 
                 key={plan.tier}
                 className={`relative flex flex-col rounded-3xl border-2 bg-white shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 ${
@@ -801,7 +842,7 @@ export default function LandingHomePage() {
                     </div>
 
                     <ul className="space-y-2">
-                      {plan.features.map((f, i) => (
+                      {plan.features.map((f: string, i: number) => (
                         <li key={i} className="flex items-start gap-2 text-xs text-slate-600">
                           <Check className="w-3.5 h-3.5 text-emerald-500 shrink-0 mt-0.5" />
                           <span>{f}</span>
