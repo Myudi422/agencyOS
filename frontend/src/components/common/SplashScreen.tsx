@@ -12,26 +12,11 @@ export default function SplashScreen() {
   const { isLoading: isAuthLoading } = useAuthStore();
   const { isVisible: isStoreVisible, message: storeMessage } = useSplashStore();
   
-  const [initialLpLoading, setInitialLpLoading] = useState(true);
-
-  // Initial load splash screen (1.4 seconds) for LP & Login
-  useEffect(() => {
-    const isPublic = pathname === "/" || PUBLIC_SPLASH_PATHS.some((p) => pathname.startsWith(p));
-    if (isPublic) {
-      setInitialLpLoading(true);
-      const timer = setTimeout(() => {
-        setInitialLpLoading(false);
-      }, 1400);
-      return () => clearTimeout(timer);
-    } else {
-      setInitialLpLoading(false);
-    }
-  }, []);
-
+  // SplashScreen only shows when explicitly triggered by store (e.g. login/logout) or during auth loading on protected pages.
+  // Public pages (landing page `/`, `/pricing`, `/login`) display instantly without a loading screen delay.
   const isPublicPage = pathname === "/" || PUBLIC_SPLASH_PATHS.some((p) => pathname.startsWith(p));
   
-  // Show splash ONLY on LP/Login open, explicit store trigger (Login/Logout), or auth sync on public page
-  const active = (initialLpLoading && isPublicPage) || isStoreVisible || (isAuthLoading && isPublicPage);
+  const active = isStoreVisible || (!isPublicPage && isAuthLoading);
   
   const displayMessage = 
     isStoreVisible ? storeMessage :

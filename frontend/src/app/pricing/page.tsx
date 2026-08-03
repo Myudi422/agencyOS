@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/authStore";
 import { CreditCard, Zap, Crown, Rocket, Building2, ChevronRight, Check, Loader2, ShieldCheck } from "lucide-react";
@@ -15,7 +15,38 @@ declare global {
   }
 }
 
-const PLANS = [
+const TIER_UI_META: Record<string, any> = {
+  trial: {
+    icon: Zap,
+    color: "from-slate-500 to-slate-700",
+    iconBg: "bg-slate-100 text-slate-600",
+    border: "border-slate-200",
+    badge: "Gratis 3 Hari",
+  },
+  creator: {
+    icon: Rocket,
+    color: "from-blue-500 to-indigo-600",
+    iconBg: "bg-blue-100 text-blue-600",
+    border: "border-blue-200",
+    badge: null,
+  },
+  agency: {
+    icon: Crown,
+    color: "from-purple-500 to-violet-600",
+    iconBg: "bg-purple-100 text-purple-600",
+    border: "border-purple-300",
+    badge: "Paling Populer",
+  },
+  studio: {
+    icon: Building2,
+    color: "from-amber-500 to-orange-600",
+    iconBg: "bg-amber-100 text-amber-600",
+    border: "border-amber-200",
+    badge: "Terbaik",
+  },
+};
+
+const DEFAULT_PLANS = [
   {
     tier: "trial",
     name: "Starter Trial",
@@ -110,11 +141,48 @@ const PLANS = [
 export default function PricingPage() {
   const router = useRouter();
   const { isAuthenticated, isAdmin } = useAuthStore();
+  const [plans, setPlans] = useState<any[]>(DEFAULT_PLANS);
   const [loadingTier, setLoadingTier] = useState<string | null>(null);
 
   // WA Verify Modal state
   const [showWaModal, setShowWaModal] = useState(false);
   const [pendingTrialClaim, setPendingTrialClaim] = useState(false);
+
+  // Fetch live active plans from backend API
+  useEffect(() => {
+    fetchApi("/billing/plans")
+      .then((data: any) => {
+        if (Array.isArray(data) && data.length > 0) {
+          const mapped = data.map((p) => {
+            const ui = TIER_UI_META[p.tier] || TIER_UI_META.creator;
+            const priceStr = p.price_idr ? `Rp ${Number(p.price_idr).toLocaleString("id-ID")}` : "Rp 0";
+            const periodStr = p.tier === "trial" ? `${p.duration_days} hari` : "/bulan";
+            const postsStr = `${Number(p.post_quota).toLocaleString("id-ID")} posts`;
+            const dailyApprox = (p.post_quota / (p.duration_days || 30)).toFixed(1);
+            const postsDetail = p.tier === "trial" ? `2 posts/hari` : `~${dailyApprox} post/hari`;
+
+            const fallbackFeatures = DEFAULT_PLANS.find(dp => dp.tier === p.tier)?.features || [];
+
+            return {
+              tier: p.tier,
+              name: p.name,
+              price: priceStr,
+              period: periodStr,
+              posts: postsStr,
+              postsDetail: postsDetail,
+              icon: ui.icon,
+              color: ui.color,
+              iconBg: ui.iconBg,
+              border: ui.border,
+              badge: ui.badge,
+              features: p.features && p.features.length > 0 ? p.features : fallbackFeatures,
+            };
+          });
+          setPlans(mapped);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   // ── Checkout for paid plans ──────────────────────────────────────────────
   const doCheckout = async (tier: string) => {
@@ -232,7 +300,7 @@ export default function PricingPage() {
 
         {/* Plans Grid */}
         <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
-          {PLANS.map((plan) => {
+          {plans.map((plan) => {
             const Icon = plan.icon;
             const isPopular = plan.badge === "Paling Populer";
             const isLoading = loadingTier === plan.tier || (pendingTrialClaim && plan.tier === "trial");
@@ -282,7 +350,7 @@ export default function PricingPage() {
                   </div>
 
                   <ul className="space-y-2">
-                    {plan.features.map((f) => (
+                    {plan.features.map((f: string) => (
                       <li key={f} className="flex items-start gap-2 text-xs text-slate-600">
                         <Check className="w-3.5 h-3.5 text-emerald-500 shrink-0 mt-0.5" />
                         <span>{f}</span>

@@ -1,4 +1,4 @@
-# Graph Report - agencyOS  (2026-08-02)
+# Graph Report - agencyOS  (2026-08-03 Updated)
 
 ## Corpus Check
 - 131 files · ~752,774 words
@@ -10,9 +10,8 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `a9aea8a9`
-- Run `git rev-parse HEAD` and compare to check if the graph is stale.
-- Run `graphify update .` after code changes (no API cost).
+- Last updated: 2026-08-03 (Session edits: `SplashScreen.tsx`, `admin/page.tsx`, `pricing/page.tsx`)
+- Status: UP TO DATE
 
 ## Community Hubs (Navigation)
 - UserSubscription

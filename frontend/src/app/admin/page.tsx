@@ -121,16 +121,6 @@ export default function AdminPage() {
     }
   };
 
-  const createStripePrice = async (planTier: string) => {
-    try {
-      await fetchApi(`/admin/plans/${planTier}/create-stripe-price`, { method: "POST" });
-      flash("ok", `Stripe price created for ${planTier}!`);
-      loadPlans();
-    } catch (e: any) {
-      flash("err", "Failed to create Stripe price. Check STRIPE_SECRET_KEY.");
-    }
-  };
-
   // ── Users ──────────────────────────────────────────────────────────────────
 
   const loadUsers = async () => {
@@ -265,93 +255,215 @@ export default function AdminPage() {
       {/* ── PLANS TAB ── */}
       {activeTab === "plans" && (
         <div className="space-y-4">
-          <p className="text-xs text-slate-500 bg-purple-50 border border-purple-100 p-3 rounded-xl">
-            💡 Semua paket memiliki <strong>Unlimited Social Accounts</strong>. Perbedaan hanya di kuota post.
-            Setelah edit, kamu juga perlu setup Stripe Price ID untuk payment.
+          <p className="text-xs text-slate-600 bg-purple-50 border border-purple-100 p-3.5 rounded-2xl flex items-center gap-2">
+            <span>💡</span>
+            <span>
+              Atur harga paket (IDR/USD), kuota post per periode, durasi hari, serta fitur-fitur paket di bawah. Pembayaran otomatis terintegrasi dengan <strong>Midtrans Payment Gateway</strong>.
+            </span>
           </p>
+
           {plans.map((plan) => {
             const Icon = TIER_ICONS[plan.tier] || Zap;
             const isEditing = editingPlan === plan.id;
             const edits = planEdits[plan.id] || {};
 
+            // Format features list into newline string for textarea editing
+            const featuresText = Array.isArray(edits.features) 
+              ? edits.features.join("\n") 
+              : (plan.features || []).join("\n");
+
             return (
-              <div key={plan.id} className="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-4">
+              <div key={plan.id} className="p-5 rounded-3xl bg-white border border-slate-200 shadow-xs space-y-4 transition-all">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className={`w-9 h-9 rounded-xl ${TIER_COLORS[plan.tier]} flex items-center justify-center`}>
-                      <Icon className="w-4 h-4" />
+                    <div className={`w-10 h-10 rounded-2xl ${TIER_COLORS[plan.tier]} flex items-center justify-center font-bold`}>
+                      <Icon className="w-5 h-5" />
                     </div>
                     <div>
-                      <p className="font-bold text-slate-900 text-sm">{plan.name}</p>
-                      <p className="text-xs text-slate-400 capitalize">{plan.tier} · ${plan.price_usd} · {plan.post_quota} posts · {plan.duration_days} days</p>
+                      <div className="flex items-center gap-2">
+                        <p className="font-extrabold text-slate-900 text-base font-['Outfit']">{plan.name}</p>
+                        <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${
+                          plan.is_active !== false ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-500"
+                        }`}>
+                          {plan.is_active !== false ? "Aktif" : "Non-Aktif"}
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-500">
+                        Tier: <span className="font-semibold uppercase">{plan.tier}</span> · Rp {Number(plan.price_idr || 0).toLocaleString("id-ID")} · {plan.post_quota} Posts · {plan.duration_days} Hari
+                      </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
                     {!isEditing && (
                       <button
-                        onClick={() => { setEditingPlan(plan.id); setPlanEdits((p: any) => ({ ...p, [plan.id]: { ...plan } })); }}
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium transition-all"
+                        onClick={() => { 
+                          setEditingPlan(plan.id); 
+                          setPlanEdits((p: any) => ({ ...p, [plan.id]: { ...plan } })); 
+                        }}
+                        className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition-all"
                       >
-                        <Edit2 className="w-3 h-3" /> Edit
+                        <Edit2 className="w-3.5 h-3.5" /> Edit Pricing
                       </button>
                     )}
                     {isEditing && (
                       <>
-                        <button onClick={() => setEditingPlan(null)} className="px-3 py-1.5 rounded-xl bg-slate-100 text-slate-600 text-xs font-medium">Cancel</button>
+                        <button 
+                          onClick={() => setEditingPlan(null)} 
+                          className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-semibold"
+                        >
+                          Batal
+                        </button>
                         <button
                           onClick={() => savePlan(plan.id)}
                           disabled={planSaving}
-                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-purple-600 text-white text-xs font-medium hover:bg-purple-700 transition-all disabled:opacity-60"
+                          className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-purple-600 text-white text-xs font-semibold hover:bg-purple-700 transition-all disabled:opacity-60 shadow-md shadow-purple-500/20"
                         >
-                          <Save className="w-3 h-3" /> Save
+                          <Save className="w-3.5 h-3.5" /> Simpan
                         </button>
                       </>
                     )}
                   </div>
                 </div>
 
-                {isEditing && (
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 pt-2 border-t border-slate-100">
-                    {[
-                      { label: "Name", field: "name", type: "text" },
-                      { label: "Price (USD)", field: "price_usd", type: "number" },
-                      { label: "Post Quota", field: "post_quota", type: "number" },
-                      { label: "Duration (days)", field: "duration_days", type: "number" },
-                      { label: "Stripe Price ID", field: "stripe_price_id", type: "text" },
-                    ].map(({ label, field, type }) => (
-                      <div key={field} className="col-span-1">
-                        <label className="block text-[10px] text-slate-500 font-medium mb-1">{label}</label>
+                {/* Extended Edit Panel */}
+                {isEditing ? (
+                  <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-4 pt-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-700 mb-1">Nama Paket</label>
                         <input
-                          type={type}
-                          value={edits[field] ?? ""}
+                          type="text"
+                          value={edits.name ?? ""}
                           onChange={(e) => setPlanEdits((p: any) => ({
                             ...p,
-                            [plan.id]: { ...p[plan.id], [field]: type === "number" ? Number(e.target.value) : e.target.value }
+                            [plan.id]: { ...p[plan.id], name: e.target.value }
                           }))}
                           className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-purple-400 bg-white"
                         />
                       </div>
-                    ))}
+
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-700 mb-1">Harga (IDR / Rupiah)</label>
+                        <input
+                          type="number"
+                          value={edits.price_idr ?? ""}
+                          onChange={(e) => setPlanEdits((p: any) => ({
+                            ...p,
+                            [plan.id]: { ...p[plan.id], price_idr: Number(e.target.value) }
+                          }))}
+                          placeholder="e.g. 49000"
+                          className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-purple-400 bg-white font-mono"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-700 mb-1">Harga (USD)</label>
+                        <input
+                          type="number"
+                          step="0.01"
+                          value={edits.price_usd ?? ""}
+                          onChange={(e) => setPlanEdits((p: any) => ({
+                            ...p,
+                            [plan.id]: { ...p[plan.id], price_usd: Number(e.target.value) }
+                          }))}
+                          placeholder="e.g. 3.00"
+                          className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-purple-400 bg-white font-mono"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-700 mb-1">Kuota Post Per Periode</label>
+                        <input
+                          type="number"
+                          value={edits.post_quota ?? ""}
+                          onChange={(e) => setPlanEdits((p: any) => ({
+                            ...p,
+                            [plan.id]: { ...p[plan.id], post_quota: Number(e.target.value) }
+                          }))}
+                          placeholder="e.g. 50"
+                          className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-purple-400 bg-white font-mono"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-700 mb-1">Durasi Paket (Hari)</label>
+                        <input
+                          type="number"
+                          value={edits.duration_days ?? ""}
+                          onChange={(e) => setPlanEdits((p: any) => ({
+                            ...p,
+                            [plan.id]: { ...p[plan.id], duration_days: Number(e.target.value) }
+                          }))}
+                          placeholder="30"
+                          className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-purple-400 bg-white font-mono"
+                        />
+                      </div>
+
+                      <div className="sm:col-span-2">
+                        <label className="block text-[11px] font-bold text-slate-700 mb-1">Deskripsi Singkat</label>
+                        <input
+                          type="text"
+                          value={edits.description ?? ""}
+                          onChange={(e) => setPlanEdits((p: any) => ({
+                            ...p,
+                            [plan.id]: { ...p[plan.id], description: e.target.value }
+                          }))}
+                          placeholder="Deskripsi singkat paket..."
+                          className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-purple-400 bg-white"
+                        />
+                      </div>
+
+                      <div className="flex items-center pt-5">
+                        <label className="relative flex items-center gap-2 cursor-pointer select-none">
+                          <input
+                            type="checkbox"
+                            checked={edits.is_active !== false}
+                            onChange={(e) => setPlanEdits((p: any) => ({
+                              ...p,
+                              [plan.id]: { ...p[plan.id], is_active: e.target.checked }
+                            }))}
+                            className="w-4 h-4 rounded text-purple-600 focus:ring-purple-500"
+                          />
+                          <span className="text-xs font-bold text-slate-700">Aktifkan Paket Ini</span>
+                        </label>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                        Daftar Fitur (Satu fitur per baris)
+                      </label>
+                      <textarea
+                        rows={5}
+                        value={featuresText}
+                        onChange={(e) => {
+                          const lines = e.target.value.split("\n");
+                          setPlanEdits((p: any) => ({
+                            ...p,
+                            [plan.id]: { ...p[plan.id], features: lines }
+                          }));
+                        }}
+                        placeholder="Unlimited akun sosmed&#10;50 posts/bulan&#10;KOL Manager"
+                        className="w-full p-3 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-purple-400 bg-white font-sans leading-relaxed"
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  /* Read-Only Features Preview */
+                  <div className="pt-2 border-t border-slate-100">
+                    <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2">Features Included:</p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                      {(plan.features || []).map((feat: string, idx: number) => (
+                        <div key={idx} className="flex items-center gap-2 text-xs text-slate-600">
+                          <CheckCircle className="w-3.5 h-3.5 text-purple-600 shrink-0" />
+                          <span>{feat}</span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
-
-                {/* Stripe Price ID status */}
-                <div className="flex items-center justify-between pt-2 border-t border-slate-100">
-                  <div className="flex items-center gap-2">
-                    <span className={`w-2 h-2 rounded-full ${plan.stripe_price_id ? "bg-emerald-500" : "bg-amber-400"}`} />
-                    <span className="text-xs text-slate-500">
-                      {plan.stripe_price_id ? `Stripe: ${plan.stripe_price_id}` : "Stripe Price ID belum dikonfigurasi"}
-                    </span>
-                  </div>
-                  {!plan.stripe_price_id && (
-                    <button
-                      onClick={() => createStripePrice(plan.tier)}
-                      className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 text-[11px] font-medium hover:bg-emerald-100 transition-all"
-                    >
-                      <Plus className="w-3 h-3" /> Auto-Create Stripe Price
-                    </button>
-                  )}
-                </div>
               </div>
             );
           })}
@@ -597,9 +709,9 @@ export default function AdminPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {[
               { key: "POSTFORME_API_KEY", label: "PostForMe API Key", hint: "Dari dashboard postforme.dev" },
-              { key: "STRIPE_SECRET_KEY", label: "Stripe Secret Key", hint: "sk_test_... (sandbox)" },
-              { key: "STRIPE_PUBLISHABLE_KEY", label: "Stripe Publishable Key", hint: "pk_test_... (sandbox)" },
-              { key: "STRIPE_WEBHOOK_SECRET", label: "Stripe Webhook Secret", hint: "whsec_..." },
+              { key: "MIDTRANS_SERVER_KEY", label: "Midtrans Server Key", hint: "SB-Mid-server-... (sandbox/production)" },
+              { key: "MIDTRANS_CLIENT_KEY", label: "Midtrans Client Key", hint: "SB-Mid-client-..." },
+              { key: "FONNTE_API_TOKEN", label: "Fonnte WhatsApp Token", hint: "Token dari fonnte.com untuk OTP WhatsApp" },
             ].map((s) => (
               <div key={s.key} className="p-4 rounded-2xl bg-white border border-slate-200 space-y-2">
                 <div>
