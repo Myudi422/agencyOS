@@ -33,11 +33,99 @@ class InstagrapiService:
             return None
         return row.value
 
+    def _save_stored_session(self, db: Session, session_dict: dict) -> None:
+        """Save or update dumped instagrapi session settings dict to DB."""
+        try:
+            row = db.query(Setting).filter(
+                Setting.workspace_id == GLOBAL_WS_ID,
+                Setting.key == "INSTAGRAM_SESSION_COOKIE"
+            ).first()
+
+            if row:
+                row.value = session_dict
+            else:
+                row = Setting(
+                    workspace_id=GLOBAL_WS_ID,
+                    key="INSTAGRAM_SESSION_COOKIE",
+                    value=session_dict
+                )
+                db.add(row)
+            db.commit()
+            logger.info("Instagram session settings successfully saved & refreshed in DB.")
+        except Exception as e:
+            db.rollback()
+            logger.error(f"Failed to save refreshed session settings to DB: {e}")
+
+    def _load_stored_credentials(self, db: Session) -> Optional[Dict[str, str]]:
+        """Fetch saved Instagram scraper account credentials from settings table."""
+        user_row = db.query(Setting).filter(
+            Setting.workspace_id == GLOBAL_WS_ID,
+            Setting.key.in_(["INSTAGRAM_SCRAPER_USERNAME", "INSTAGRAM_USERNAME"])
+        ).first()
+
+        pass_row = db.query(Setting).filter(
+            Setting.workspace_id == GLOBAL_WS_ID,
+            Setting.key.in_(["INSTAGRAM_SCRAPER_PASSWORD", "INSTAGRAM_PASSWORD"])
+        ).first()
+
+        if user_row and user_row.value and pass_row and pass_row.value:
+            return {
+                "username": str(user_row.value).strip(),
+                "password": str(pass_row.value).strip()
+            }
+        return None
+
+    def login_with_credentials(
+        self, db: Session, username: Optional[str] = None, password: Optional[str] = None
+    ) -> Any:
+        """
+        Perform login via username & password using instagrapi Client,
+        and automatically persist the generated session settings dump to DB.
+        """
+        try:
+            from instagrapi import Client
+        except ImportError:
+            raise RuntimeError("instagrapi library is not installed.")
+
+        creds = None
+        if username and password:
+            creds = {"username": username, "password": password}
+        else:
+            creds = self._load_stored_credentials(db)
+
+        if not creds:
+            raise ValueError("Credential Instagram Scraper (Username & Password) belum dikonfigurasi di Admin Settings.")
+
+        cl = Client()
+        cl.delay_range = [1, 3]
+
+        logger.info(f"Mencoba auto-login Instagram untuk @{creds['username']}...")
+        cl.login(creds["username"], creds["password"])
+
+        # Auto-dump settings and save to DB
+        settings_dump = cl.get_settings()
+        self._save_stored_session(db, settings_dump)
+
+        # Save credentials if provided explicitly
+        if username and password:
+            u_row = db.query(Setting).filter(Setting.workspace_id == GLOBAL_WS_ID, Setting.key == "INSTAGRAM_SCRAPER_USERNAME").first()
+            if u_row:
+                u_row.value = username
+            else:
+                db.add(Setting(workspace_id=GLOBAL_WS_ID, key="INSTAGRAM_SCRAPER_USERNAME", value=username))
+
+            p_row = db.query(Setting).filter(Setting.workspace_id == GLOBAL_WS_ID, Setting.key == "INSTAGRAM_SCRAPER_PASSWORD").first()
+            if p_row:
+                p_row.value = password
+            else:
+                db.add(Setting(workspace_id=GLOBAL_WS_ID, key="INSTAGRAM_SCRAPER_PASSWORD", value=password))
+            db.commit()
+
+        return cl
+
     def get_client(self, db: Optional[Session] = None, override_session: Optional[Any] = None, allow_anonymous: bool = True) -> Any:
         """
-        Initializes an instagrapi Client.
-        If a session cookie is configured, attempts login.
-        If no session cookie is available and allow_anonymous=True, returns a guest Client for public scraping.
+        Initializes an instagrapi Client with Automatic Session Refresh & Auto-Login Fallback.
         """
         try:
             from instagrapi import Client
@@ -48,38 +136,42 @@ class InstagrapiService:
         cl.delay_range = [1, 3]
 
         session_data = override_session or (self._load_stored_session(db) if db else None)
-        if not session_data:
-            if allow_anonymous:
-                logger.info("Instagram session cookie tidak ditemukan. Menggunakan guest/public Client (unauthenticated).")
-                return cl
-            raise ValueError("Belum ada Instagram Session Cookie yang dikonfigurasi di Admin Settings.")
 
-        try:
-            if isinstance(session_data, dict):
-                if "sessionid" in session_data:
-                    cl.login_by_sessionid(session_data["sessionid"])
-                else:
-                    cl.set_settings(session_data)
-            elif isinstance(session_data, str):
-                session_str = session_data.strip()
-                if session_str.startswith("{") and session_str.endswith("}"):
-                    try:
-                        parsed = json.loads(session_str)
-                        if isinstance(parsed, dict) and "sessionid" in parsed:
-                            cl.login_by_sessionid(parsed["sessionid"])
-                        elif isinstance(parsed, dict):
-                            cl.set_settings(parsed)
-                    except Exception:
+        if session_data:
+            try:
+                if isinstance(session_data, dict):
+                    if "sessionid" in session_data:
+                        cl.login_by_sessionid(session_data["sessionid"])
+                    else:
+                        cl.set_settings(session_data)
+                elif isinstance(session_data, str):
+                    session_str = session_data.strip()
+                    if session_str.startswith("{") and session_str.endswith("}"):
+                        try:
+                            parsed = json.loads(session_str)
+                            if isinstance(parsed, dict) and "sessionid" in parsed:
+                                cl.login_by_sessionid(parsed["sessionid"])
+                            elif isinstance(parsed, dict):
+                                cl.set_settings(parsed)
+                        except Exception:
+                            cl.login_by_sessionid(session_str)
+                    else:
                         cl.login_by_sessionid(session_str)
-                else:
-                    cl.login_by_sessionid(session_str)
-        except Exception as e:
-            if allow_anonymous:
-                logger.warning(f"Gagal login session Instagram: {e}. Falling back to guest/public Client.")
-                return Client()
-            raise e
+                return cl
+            except Exception as e_sess:
+                logger.warning(f"Stored Instagram session expired/invalid ({e_sess}). Attempting auto-login refresh...")
 
-        return cl
+        # If session is absent or expired, attempt Auto-Login using stored credentials
+        if db:
+            try:
+                return self.login_with_credentials(db)
+            except Exception as e_login:
+                logger.warning(f"Auto-login Instagram credentials failed: {e_login}")
+
+        if allow_anonymous:
+            return cl
+
+        raise ValueError("Belum ada Instagram Session Cookie atau Credential Scraper yang dikonfigurasi di Admin Settings.")
 
     def test_connection(self, db: Session, test_session: Optional[str] = None) -> Dict[str, Any]:
         """Test Instagram login session with instagrapi."""

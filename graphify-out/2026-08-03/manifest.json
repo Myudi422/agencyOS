@@ -130,8 +130,8 @@
     "semantic_hash": ""
   },
   "backend/routers/competitors.py": {
-    "mtime": 1785748988.8598454,
-    "ast_hash": "2bb94ff07583e86788f4c5f628abe17c",
+    "mtime": 1785749155.5348818,
+    "ast_hash": "20457001b6df103d51b3f422ef6ca3dd",
     "semantic_hash": ""
   },
   "backend/routers/dashboard.py": {
