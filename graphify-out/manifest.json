@@ -350,8 +350,8 @@
     "semantic_hash": "bb8a479cc6d47f6d90ae256e823a21b1"
   },
   "frontend/src/app/page.tsx": {
-    "mtime": 1785723316.5487194,
-    "ast_hash": "5367c53bff1c6b59407966386eb960b9",
+    "mtime": 1785723668.7948596,
+    "ast_hash": "4b418ea7c9e8914b41ebad0eb950cc37",
     "semantic_hash": ""
   },
   "frontend/src/app/pricing/page.tsx": {
