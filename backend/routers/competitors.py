@@ -22,6 +22,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 import logging
 import time
 import uuid
+import random
 
 from backend.database import get_db, SessionLocal
 from backend.models.models import (
@@ -43,6 +44,24 @@ router = APIRouter(prefix="/competitors", tags=["Competitor Spy"])
 _CACHE_TTL = 180              # 3 minutes for list/benchmark/daily-feed
 _SYNC_COOLDOWN = 180         # 3 minutes cooldown between sync-all runs
 _ACCOUNT_SYNC_COOLDOWN = 180 # 3 minutes cooldown for individual competitor sync
+
+
+def _get_cached_competitor_profile(db: Session, username: str, max_age_hours: int = 6) -> Optional[CompetitorAccount]:
+    """Check if any workspace already has fresh synced profile data for this competitor (< max_age_hours)."""
+    cutoff = datetime.utcnow() - timedelta(hours=max_age_hours)
+    clean_user = username.strip().lstrip("@").lower()
+    return db.query(CompetitorAccount).filter(
+        CompetitorAccount.username == clean_user,
+        CompetitorAccount.last_synced_at >= cutoff
+    ).order_by(CompetitorAccount.last_synced_at.desc()).first()
+
+
+def _get_primary_competitor_account(db: Session, username: str) -> Optional[CompetitorAccount]:
+    """Get the canonical primary CompetitorAccount record for a given username (Single Source of Truth for posts)."""
+    clean_user = username.strip().lstrip("@").lower()
+    return db.query(CompetitorAccount).filter(
+        CompetitorAccount.username == clean_user
+    ).order_by(CompetitorAccount.created_at.asc()).first()
 
 
 # ─── Auth Dependency ──────────────────────────────────────────────────────────
@@ -153,6 +172,26 @@ def validate_competitor_username(
     if not clean_username:
         raise HTTPException(status_code=400, detail="Username Instagram tidak boleh kosong.")
     
+    # 1. Check Global DB Cache first (< 6 hours old) to save Instagram requests
+    cached = _get_cached_competitor_profile(db, clean_username)
+    if cached:
+        return {
+            "valid": True,
+            "profile": {
+                "username": cached.username,
+                "instagram_pk": cached.instagram_pk,
+                "full_name": cached.full_name or cached.username,
+                "profile_pic_url": cached.profile_pic_url,
+                "biography": cached.biography,
+                "followers_count": cached.followers_count,
+                "following_count": cached.following_count,
+                "media_count": cached.media_count,
+                "is_verified": cached.is_verified,
+                "category_name": cached.category_name,
+            },
+            "message": f"Akun @{cached.username} ditemukan (Global Cache)."
+        }
+
     res = instagrapi_service.validate_username(db, clean_username)
     if not res["valid"]:
         raise HTTPException(status_code=400, detail=res["message"])
@@ -231,29 +270,50 @@ def _run_add_competitor_bg(job_id: str, competitor_id: str, username: str, works
     try:
         account = db.query(CompetitorAccount).filter(CompetitorAccount.id == competitor_id).first()
         if account:
-            posts_data = instagrapi_service.fetch_competitor_posts(db, username, amount=20)
-            account.avg_likes = posts_data["avg_likes"]
-            account.avg_comments = posts_data["avg_comments"]
-            account.engagement_rate = posts_data["engagement_rate"]
-            account.top_hashtags = posts_data["top_hashtags"]
+            # Check if another workspace already has recent cached profile data for this competitor
+            cached_source = db.query(CompetitorAccount).filter(
+                CompetitorAccount.username == username,
+                CompetitorAccount.id != competitor_id,
+                CompetitorAccount.last_synced_at >= datetime.utcnow() - timedelta(hours=6)
+            ).order_by(CompetitorAccount.last_synced_at.desc()).first()
 
-            for p in posts_data["posts"]:
-                c_post = CompetitorPost(
-                    competitor_id=account.id,
-                    instagram_media_id=p["instagram_media_id"],
-                    code=p["code"],
-                    post_type=p["post_type"],
-                    caption=p["caption"],
-                    thumbnail_url=p["thumbnail_url"],
-                    media_urls=p["media_urls"],
-                    like_count=p["like_count"],
-                    comment_count=p["comment_count"],
-                    engagement_rate=p["engagement_rate"],
-                    is_top_performer=p["is_top_performer"],
-                    posted_at=datetime.fromisoformat(p["posted_at"].rstrip("Z")) if p.get("posted_at") else datetime.utcnow()
-                )
-                db.add(c_post)
-            db.commit()
+            if cached_source:
+                logger.info(f"Reusing existing master posts for @{username} without duplicating rows in DB")
+                account.avg_likes = cached_source.avg_likes
+                account.avg_comments = cached_source.avg_comments
+                account.engagement_rate = cached_source.engagement_rate
+                account.top_hashtags = cached_source.top_hashtags
+                db.commit()
+            else:
+                posts_data = instagrapi_service.fetch_competitor_posts(db, username, amount=20)
+                account.avg_likes = posts_data["avg_likes"]
+                account.avg_comments = posts_data["avg_comments"]
+                account.engagement_rate = posts_data["engagement_rate"]
+                account.top_hashtags = posts_data["top_hashtags"]
+
+                primary_acc = _get_primary_competitor_account(db, username) or account
+                target_comp_id = primary_acc.id
+
+                # Replace master posts for primary account
+                db.query(CompetitorPost).filter(CompetitorPost.competitor_id == target_comp_id).delete()
+
+                for p in posts_data["posts"]:
+                    c_post = CompetitorPost(
+                        competitor_id=target_comp_id,
+                        instagram_media_id=p["instagram_media_id"],
+                        code=p["code"],
+                        post_type=p["post_type"],
+                        caption=p["caption"],
+                        thumbnail_url=p["thumbnail_url"],
+                        media_urls=p["media_urls"],
+                        like_count=p["like_count"],
+                        comment_count=p["comment_count"],
+                        engagement_rate=p["engagement_rate"],
+                        is_top_performer=p["is_top_performer"],
+                        posted_at=datetime.fromisoformat(p["posted_at"].rstrip("Z")) if p.get("posted_at") else datetime.utcnow()
+                    )
+                    db.add(c_post)
+                db.commit()
 
         # Invalidate caches
         cache_delete_prefix(f"competitors:list:{workspace_id}")
@@ -313,12 +373,27 @@ def add_competitor(
     if existing:
         raise HTTPException(status_code=400, detail=f"Kompetitor @{clean_username} sudah ada dalam daftar pantau akun @{social_account.username}.")
 
-    # Fetch profile via instagrapi
-    try:
-        profile_data = instagrapi_service.fetch_competitor_profile(db, clean_username)
-    except Exception as e:
-        logger.error(f"Failed to fetch profile for @{clean_username}: {e}")
-        raise HTTPException(status_code=400, detail=f"Gagal mengambil profil Instagram @{clean_username}: {str(e)}")
+    # Fetch profile via Global DB Cache or instagrapi
+    cached = _get_cached_competitor_profile(db, clean_username)
+    if cached:
+        profile_data = {
+            "username": cached.username,
+            "full_name": cached.full_name,
+            "instagram_pk": cached.instagram_pk,
+            "profile_pic_url": cached.profile_pic_url,
+            "biography": cached.biography,
+            "followers_count": cached.followers_count,
+            "following_count": cached.following_count,
+            "media_count": cached.media_count,
+            "is_verified": cached.is_verified,
+            "category_name": cached.category_name,
+        }
+    else:
+        try:
+            profile_data = instagrapi_service.fetch_competitor_profile(db, clean_username)
+        except Exception as e:
+            logger.error(f"Failed to fetch profile for @{clean_username}: {e}")
+            raise HTTPException(status_code=400, detail=f"Gagal mengambil profil Instagram @{clean_username}: {str(e)}")
 
     account = CompetitorAccount(
         workspace_id=workspace.id,
@@ -428,19 +503,18 @@ def sync_competitor(
 
     # Re-fetch posts
     try:
+        profile_data = instagrapi_service.fetch_competitor_profile(db, account.username)
         posts_data = instagrapi_service.fetch_competitor_posts(db, account.username, amount=25)
-        account.avg_likes = posts_data["avg_likes"]
-        account.avg_comments = posts_data["avg_comments"]
-        account.engagement_rate = posts_data["engagement_rate"]
-        account.top_hashtags = posts_data["top_hashtags"]
-        account.last_synced_at = datetime.utcnow()
 
-        # Delete existing saved posts to avoid duplicates
-        db.query(CompetitorPost).filter(CompetitorPost.competitor_id == account.id).delete()
+        primary_acc = _get_primary_competitor_account(db, account.username) or account
+        target_comp_id = primary_acc.id
+
+        # Delete existing saved posts for primary account
+        db.query(CompetitorPost).filter(CompetitorPost.competitor_id == target_comp_id).delete()
 
         for p in posts_data["posts"]:
             c_post = CompetitorPost(
-                competitor_id=account.id,
+                competitor_id=target_comp_id,
                 instagram_media_id=p["instagram_media_id"],
                 code=p["code"],
                 post_type=p["post_type"],
@@ -454,6 +528,23 @@ def sync_competitor(
                 posted_at=datetime.fromisoformat(p["posted_at"]) if p["posted_at"] else datetime.utcnow()
             )
             db.add(c_post)
+
+        # Update stats across all competitor accounts for this username
+        all_accounts = db.query(CompetitorAccount).filter(CompetitorAccount.username == account.username).all()
+        for acc in all_accounts:
+            acc.full_name = profile_data["full_name"]
+            acc.profile_pic_url = profile_data["profile_pic_url"]
+            acc.biography = profile_data["biography"]
+            acc.followers_count = profile_data["followers_count"]
+            acc.following_count = profile_data["following_count"]
+            acc.media_count = profile_data["media_count"]
+            acc.is_verified = profile_data["is_verified"]
+            acc.category_name = profile_data["category_name"]
+            acc.avg_likes = posts_data["avg_likes"]
+            acc.avg_comments = posts_data["avg_comments"]
+            acc.engagement_rate = posts_data["engagement_rate"]
+            acc.top_hashtags = posts_data["top_hashtags"]
+            acc.last_synced_at = datetime.utcnow()
 
         db.commit()
     except Exception as e:
@@ -537,7 +628,11 @@ def get_competitor_posts(
     if not account:
         raise HTTPException(status_code=404, detail="Kompetitor tidak ditemukan.")
 
-    query = db.query(CompetitorPost).filter(CompetitorPost.competitor_id == account.id)
+    # Use master primary competitor account to fetch shared single-source posts
+    primary_acc = _get_primary_competitor_account(db, account.username)
+    target_comp_id = primary_acc.id if primary_acc else account.id
+
+    query = db.query(CompetitorPost).filter(CompetitorPost.competitor_id == target_comp_id)
     if top_only:
         query = query.filter(CompetitorPost.is_top_performer == True)
 
@@ -547,7 +642,7 @@ def get_competitor_posts(
     for p in posts:
         result.append({
             "id": p.id,
-            "competitor_id": p.competitor_id,
+            "competitor_id": account.id,
             "instagram_media_id": p.instagram_media_id,
             "code": p.code,
             "post_type": p.post_type,
@@ -603,20 +698,19 @@ def get_benchmark_matrix(
     if not competitors:
         return {"matrix": [], "avg_industry_er": 0.0, "total_competitors": 0}
 
-    competitor_ids = [c.id for c in competitors]
-    top_posts_rows = db.query(
-        CompetitorPost.competitor_id, func.count(CompetitorPost.id)
-    ).filter(
-        CompetitorPost.competitor_id.in_(competitor_ids),
-        CompetitorPost.is_top_performer == True
-    ).group_by(CompetitorPost.competitor_id).all()
-    top_posts_map = {r[0]: r[1] for r in top_posts_rows}
-
     matrix = []
     total_er = 0.0
 
     for c in competitors:
         total_er += c.engagement_rate
+        primary_acc = _get_primary_competitor_account(db, c.username)
+        target_id = primary_acc.id if primary_acc else c.id
+
+        top_posts_count = db.query(func.count(CompetitorPost.id)).filter(
+            CompetitorPost.competitor_id == target_id,
+            CompetitorPost.is_top_performer == True
+        ).scalar() or 0
+
         matrix.append({
             "id": c.id,
             "username": c.username,
@@ -628,7 +722,7 @@ def get_benchmark_matrix(
             "avg_likes": c.avg_likes,
             "avg_comments": c.avg_comments,
             "engagement_rate": c.engagement_rate,
-            "top_posts_count": top_posts_map.get(c.id, 0),
+            "top_posts_count": top_posts_count,
             "top_hashtags": c.top_hashtags[:5] if c.top_hashtags else []
         })
 
@@ -661,14 +755,22 @@ def get_daily_feed(
 
     cutoff_date = datetime.utcnow() - timedelta(days=days)
 
+    comp_query = db.query(CompetitorAccount).filter(CompetitorAccount.workspace_id == workspace.id)
+    if social_account_id:
+        comp_query = comp_query.filter(CompetitorAccount.social_account_id == social_account_id)
+
+    workspace_comps = comp_query.all()
+    if not workspace_comps:
+        return {"days": days, "is_fallback": False, "total_posts": 0, "active_brands_count": 0, "top_viral_post": None, "posts": []}
+
+    username_map = {c.username: c for c in workspace_comps}
+    tracked_usernames = list(username_map.keys())
+
     posts_query = db.query(CompetitorPost, CompetitorAccount).join(
         CompetitorAccount, CompetitorPost.competitor_id == CompetitorAccount.id
     ).filter(
-        CompetitorAccount.workspace_id == workspace.id
+        CompetitorAccount.username.in_(tracked_usernames)
     )
-
-    if social_account_id:
-        posts_query = posts_query.filter(CompetitorAccount.social_account_id == social_account_id)
 
     recent_posts = posts_query.filter(
         CompetitorPost.posted_at >= cutoff_date
@@ -684,15 +786,16 @@ def get_daily_feed(
     top_viral_post = None
     max_er = -1.0
 
-    for post, account in recent_posts:
-        active_brands.add(account.username)
+    for post, account_rel in recent_posts:
+        display_acc = username_map.get(account_rel.username, account_rel)
+        active_brands.add(display_acc.username)
         post_data = {
             "id": post.id,
-            "competitor_id": account.id,
-            "username": account.username,
-            "full_name": account.full_name,
-            "profile_pic_url": account.profile_pic_url,
-            "is_verified": account.is_verified,
+            "competitor_id": display_acc.id,
+            "username": display_acc.username,
+            "full_name": display_acc.full_name,
+            "profile_pic_url": display_acc.profile_pic_url,
+            "is_verified": display_acc.is_verified,
             "instagram_media_id": post.instagram_media_id,
             "code": post.code,
             "post_type": post.post_type,
@@ -724,32 +827,51 @@ def get_daily_feed(
 
 
 def _sync_one_brand(account_id: str, account_username: str, workspace_id: str) -> dict:
-    """Worker function: syncs one brand in its own DB session."""
+    """Worker function: syncs one brand in its own DB session with global DB cache reuse & staggered delay."""
     db = SessionLocal()
     try:
         account = db.query(CompetitorAccount).filter(CompetitorAccount.id == account_id).first()
         if not account:
             return {"username": account_username, "ok": False, "error": "Account not found"}
 
+        # 1. Check if another workspace's competitor account was synced in last 6 hours
+        cached_source = db.query(CompetitorAccount).filter(
+            CompetitorAccount.username == account_username,
+            CompetitorAccount.id != account_id,
+            CompetitorAccount.last_synced_at >= datetime.utcnow() - timedelta(hours=6)
+        ).order_by(CompetitorAccount.last_synced_at.desc()).first()
+
+        if cached_source:
+            logger.info(f"[sync-all worker] Reusing cached stats for @{account_username} without duplicating post rows")
+            account.followers_count = cached_source.followers_count
+            account.following_count = cached_source.following_count
+            account.media_count = cached_source.media_count
+            account.is_verified = cached_source.is_verified
+            account.full_name = cached_source.full_name
+            account.profile_pic_url = cached_source.profile_pic_url
+            account.avg_likes = cached_source.avg_likes
+            account.avg_comments = cached_source.avg_comments
+            account.engagement_rate = cached_source.engagement_rate
+            account.top_hashtags = cached_source.top_hashtags
+            account.last_synced_at = datetime.utcnow()
+            db.commit()
+            return {"username": account_username, "ok": True, "cached": True}
+
+        # 2. Otherwise add random delay (2-5s) to space out requests across workers
+        time.sleep(random.uniform(2.0, 5.0))
+
         profile_data = instagrapi_service.fetch_competitor_profile(db, account_username)
-        account.followers_count = profile_data["followers_count"]
-        account.following_count = profile_data["following_count"]
-        account.media_count = profile_data["media_count"]
-        account.is_verified = profile_data["is_verified"]
-        account.full_name = profile_data["full_name"]
-        account.profile_pic_url = profile_data["profile_pic_url"]
-
         posts_data = instagrapi_service.fetch_competitor_posts(db, account_username, amount=20)
-        account.avg_likes = posts_data["avg_likes"]
-        account.avg_comments = posts_data["avg_comments"]
-        account.engagement_rate = posts_data["engagement_rate"]
-        account.top_hashtags = posts_data["top_hashtags"]
-        account.last_synced_at = datetime.utcnow()
 
-        db.query(CompetitorPost).filter(CompetitorPost.competitor_id == account.id).delete()
+        primary_acc = _get_primary_competitor_account(db, account_username) or account
+        target_comp_id = primary_acc.id
+
+        # Replace master posts for primary account
+        db.query(CompetitorPost).filter(CompetitorPost.competitor_id == target_comp_id).delete()
+
         for p in posts_data["posts"]:
             db.add(CompetitorPost(
-                competitor_id=account.id,
+                competitor_id=target_comp_id,
                 instagram_media_id=p["instagram_media_id"],
                 code=p["code"],
                 post_type=p["post_type"],
@@ -762,6 +884,22 @@ def _sync_one_brand(account_id: str, account_username: str, workspace_id: str) -
                 is_top_performer=p["is_top_performer"],
                 posted_at=datetime.fromisoformat(p["posted_at"].rstrip("Z")) if p.get("posted_at") else datetime.utcnow()
             ))
+
+        # Update stats across all competitor accounts for this username
+        all_accounts = db.query(CompetitorAccount).filter(CompetitorAccount.username == account_username).all()
+        for acc in all_accounts:
+            acc.followers_count = profile_data["followers_count"]
+            acc.following_count = profile_data["following_count"]
+            acc.media_count = profile_data["media_count"]
+            acc.is_verified = profile_data["is_verified"]
+            acc.full_name = profile_data["full_name"]
+            acc.profile_pic_url = profile_data["profile_pic_url"]
+            acc.avg_likes = posts_data["avg_likes"]
+            acc.avg_comments = posts_data["avg_comments"]
+            acc.engagement_rate = posts_data["engagement_rate"]
+            acc.top_hashtags = posts_data["top_hashtags"]
+            acc.last_synced_at = datetime.utcnow()
+
         db.commit()
         return {"username": account_username, "ok": True}
     except Exception as e:

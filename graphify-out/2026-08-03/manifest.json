@@ -130,8 +130,8 @@
     "semantic_hash": ""
   },
   "backend/routers/competitors.py": {
-    "mtime": 1785467056.531457,
-    "ast_hash": "809b0e6647758a1c5371dcf2eb37b227",
+    "mtime": 1785748988.8598454,
+    "ast_hash": "2bb94ff07583e86788f4c5f628abe17c",
     "semantic_hash": ""
   },
   "backend/routers/dashboard.py": {
@@ -205,9 +205,9 @@
     "semantic_hash": ""
   },
   "backend/services/instagrapi_service.py": {
-    "mtime": 1785466648.673492,
-    "ast_hash": "94efdf3662ba4774fd2232072ce29552",
-    "semantic_hash": "94efdf3662ba4774fd2232072ce29552"
+    "mtime": 1785748956.1276753,
+    "ast_hash": "bda37dc1f56b0f9e8de2eade5886e175",
+    "semantic_hash": ""
   },
   "backend/services/meta_adapter.py": {
     "mtime": 1785138940.469502,
@@ -350,13 +350,13 @@
     "semantic_hash": "bb8a479cc6d47f6d90ae256e823a21b1"
   },
   "frontend/src/app/page.tsx": {
-    "mtime": 1785724409.3311987,
-    "ast_hash": "31ad7c6d8a656925a02ba10bb1efaba9",
+    "mtime": 1785724481.7200327,
+    "ast_hash": "6104260414e903d1a98352c3dce0484d",
     "semantic_hash": ""
   },
   "frontend/src/app/pricing/page.tsx": {
-    "mtime": 1785724399.9998043,
-    "ast_hash": "3e32404d715a54a899d2079d70280e31",
+    "mtime": 1785724473.5235155,
+    "ast_hash": "c3c0501ed55e03c56aa393fe985b258d",
     "semantic_hash": ""
   },
   "frontend/src/app/queue/page.tsx": {

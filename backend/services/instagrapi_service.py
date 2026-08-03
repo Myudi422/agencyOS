@@ -33,10 +33,11 @@ class InstagrapiService:
             return None
         return row.value
 
-    def get_client(self, db: Session, override_session: Optional[Any] = None) -> Any:
+    def get_client(self, db: Optional[Session] = None, override_session: Optional[Any] = None, allow_anonymous: bool = True) -> Any:
         """
-        Initializes an instagrapi Client with session settings.
-        Supports sessionid string, cookie dict, or full exported JSON settings.
+        Initializes an instagrapi Client.
+        If a session cookie is configured, attempts login.
+        If no session cookie is available and allow_anonymous=True, returns a guest Client for public scraping.
         """
         try:
             from instagrapi import Client
@@ -44,34 +45,39 @@ class InstagrapiService:
             raise RuntimeError("instagrapi library is not installed.")
 
         cl = Client()
-        # Set realistic device settings & timeouts
         cl.delay_range = [1, 3]
 
-        session_data = override_session or self._load_stored_session(db)
+        session_data = override_session or (self._load_stored_session(db) if db else None)
         if not session_data:
+            if allow_anonymous:
+                logger.info("Instagram session cookie tidak ditemukan. Menggunakan guest/public Client (unauthenticated).")
+                return cl
             raise ValueError("Belum ada Instagram Session Cookie yang dikonfigurasi di Admin Settings.")
 
-        if isinstance(session_data, dict):
-            # Full settings json or cookie dict
-            if "sessionid" in session_data:
-                cl.login_by_sessionid(session_data["sessionid"])
-            else:
-                cl.set_settings(session_data)
-        elif isinstance(session_data, str):
-            session_str = session_data.strip()
-            # If JSON string
-            if session_str.startswith("{") and session_str.endswith("}"):
-                try:
-                    parsed = json.loads(session_str)
-                    if isinstance(parsed, dict) and "sessionid" in parsed:
-                        cl.login_by_sessionid(parsed["sessionid"])
-                    elif isinstance(parsed, dict):
-                        cl.set_settings(parsed)
-                except Exception:
+        try:
+            if isinstance(session_data, dict):
+                if "sessionid" in session_data:
+                    cl.login_by_sessionid(session_data["sessionid"])
+                else:
+                    cl.set_settings(session_data)
+            elif isinstance(session_data, str):
+                session_str = session_data.strip()
+                if session_str.startswith("{") and session_str.endswith("}"):
+                    try:
+                        parsed = json.loads(session_str)
+                        if isinstance(parsed, dict) and "sessionid" in parsed:
+                            cl.login_by_sessionid(parsed["sessionid"])
+                        elif isinstance(parsed, dict):
+                            cl.set_settings(parsed)
+                    except Exception:
+                        cl.login_by_sessionid(session_str)
+                else:
                     cl.login_by_sessionid(session_str)
-            else:
-                # Plain sessionid string (e.g. 54321234%3AFakE...)
-                cl.login_by_sessionid(session_str)
+        except Exception as e:
+            if allow_anonymous:
+                logger.warning(f"Gagal login session Instagram: {e}. Falling back to guest/public Client.")
+                return Client()
+            raise e
 
         return cl
 
@@ -114,20 +120,25 @@ class InstagrapiService:
     def fetch_competitor_profile(self, db: Session, username: str) -> Dict[str, Any]:
         """Fetch competitor profile information from Instagram."""
         clean_user = username.strip().lstrip("@").lower()
-        cl = self.get_client(db)
+        cl = self.get_client(db, allow_anonymous=True)
 
-        user_info = cl.user_info_by_username(clean_user)
-        user_dict = user_info.dict() if hasattr(user_info, "dict") else user_info.__dict__
+        user_info = None
+        # Try v1 first, fall back to standard user_info_by_username
+        try:
+            user_info = cl.user_info_by_username_v1(clean_user)
+        except Exception as e_v1:
+            logger.debug(f"v1 profile fetch failed for @{clean_user}: {e_v1}, trying standard endpoint...")
+            user_info = cl.user_info_by_username(clean_user)
 
         return {
             "username": clean_user,
             "instagram_pk": str(getattr(user_info, "pk", "")),
-            "full_name": getattr(user_info, "full_name", clean_user),
+            "full_name": getattr(user_info, "full_name", clean_user) or clean_user,
             "profile_pic_url": str(getattr(user_info, "profile_pic_url", "")),
             "biography": getattr(user_info, "biography", ""),
-            "followers_count": getattr(user_info, "follower_count", 0),
-            "following_count": getattr(user_info, "following_count", 0),
-            "media_count": getattr(user_info, "media_count", 0),
+            "followers_count": getattr(user_info, "follower_count", 0) or 0,
+            "following_count": getattr(user_info, "following_count", 0) or 0,
+            "media_count": getattr(user_info, "media_count", 0) or 0,
             "is_verified": getattr(user_info, "is_verified", False),
             "category_name": getattr(user_info, "category_name", ""),
         }
@@ -137,19 +148,37 @@ class InstagrapiService:
         Fetch recent posts for a competitor, calculate engagement rate, top hashtags,
         and mark top-performing posts.
         """
-        cl = self.get_client(db)
+        cl = self.get_client(db, allow_anonymous=True)
         
         # Resolve PK if username given
-        if not user_id_or_username.isdigit():
-            user_info = cl.user_info_by_username(user_id_or_username.strip().lstrip("@"))
-            pk = user_info.pk
-            followers_count = user_info.follower_count or 1
+        followers_count = 1
+        if not str(user_id_or_username).isdigit():
+            clean_name = str(user_id_or_username).strip().lstrip("@")
+            try:
+                user_info = cl.user_info_by_username_v1(clean_name)
+            except Exception:
+                user_info = cl.user_info_by_username(clean_name)
+            pk = getattr(user_info, "pk", None)
+            followers_count = getattr(user_info, "follower_count", 1) or 1
         else:
             pk = int(user_id_or_username)
-            user_info = cl.user_info(pk)
-            followers_count = getattr(user_info, "follower_count", 1) or 1
+            try:
+                user_info = cl.user_info(pk)
+                followers_count = getattr(user_info, "follower_count", 1) or 1
+            except Exception:
+                followers_count = 1
 
-        medias = cl.user_medias(pk, amount=amount)
+        if not pk:
+            raise ValueError(f"Tidak dapat menemukan ID Instagram untuk @{user_id_or_username}")
+
+        try:
+            medias = cl.user_medias(pk, amount=amount)
+        except Exception as e_m:
+            logger.warning(f"user_medias failed for {user_id_or_username}: {e_m}, trying v1 media fetch...")
+            try:
+                medias = cl.user_medias_v1(pk, amount=amount)
+            except Exception:
+                medias = []
         
         parsed_posts = []
         total_likes = 0
