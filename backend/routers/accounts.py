@@ -101,7 +101,25 @@ def get_accounts(
     }
 
     items = []
+    needs_commit = False
     for a in accounts:
+        briefing = a.briefing
+
+        # Live sibling inheritance: if this account has no briefing,
+        # check if any other workspace's record for same social account has one.
+        if not briefing:
+            sibling = db.query(SocialAccount).filter(
+                SocialAccount.id != a.id,
+                SocialAccount.platform == a.platform,
+                SocialAccount.username == a.username,
+                SocialAccount.briefing.isnot(None)
+            ).first()
+            if sibling and sibling.briefing:
+                briefing = sibling.briefing
+                # Persist so next call doesn't need to re-query
+                a.briefing = briefing
+                needs_commit = True
+
         items.append({
             "id": a.id,
             "workspace_id": a.workspace_id,
@@ -116,11 +134,17 @@ def get_accounts(
             "is_favorite": a.is_favorite,
             "account_group": a.account_group,
             "followers_count": a.followers_count,
-            "briefing": a.briefing,
+            "briefing": briefing,
             "watermark_config": a.watermark_config or {},
             "last_synced_at": a.last_synced_at,
             "connected_at": a.connected_at
         })
+
+    if needs_commit:
+        try:
+            db.commit()
+        except Exception:
+            db.rollback()
 
     return {
         "items": items,
