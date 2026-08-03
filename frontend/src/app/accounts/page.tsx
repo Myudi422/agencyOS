@@ -228,6 +228,9 @@ export default function AccountsPage() {
 
         const targetUrl = res.url || res.auth_url;
         if (targetUrl) {
+          if (activeWorkspace?.id) {
+            localStorage.setItem("agencyos_active_ws_id", activeWorkspace.id);
+          }
           window.location.href = targetUrl;
         } else {
           setModalError("Gagal mendapatkan URL otentikasi. Silakan coba lagi.");

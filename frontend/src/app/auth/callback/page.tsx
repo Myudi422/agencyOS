@@ -4,12 +4,14 @@ import React, { useEffect, useState, useRef, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { CheckCircle2, AlertTriangle, RefreshCw } from "lucide-react";
 import { useStore } from "@/store/useStore";
+import { useAuthStore } from "@/store/authStore";
 import { fetchApi } from "@/lib/api";
 
 function OAuthCallbackHandler() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { activeWorkspace, clients } = useStore();
+  const { workspaceId: authWorkspaceId } = useAuthStore();
 
   const [status, setStatus] = useState<"processing" | "success" | "error">("processing");
   const [message, setMessage] = useState("Menghubungkan akun media sosial kamu...");
@@ -22,6 +24,10 @@ function OAuthCallbackHandler() {
     const accountId = searchParams.get("account_id") || searchParams.get("social_account_id");
     const platform = searchParams.get("platform");
     const callbackStatus = searchParams.get("status");
+
+    // Resolve active workspace ID with robust fallbacks
+    const storedWsId = typeof window !== "undefined" ? localStorage.getItem("agencyos_active_ws_id") : null;
+    const targetWsId = activeWorkspace?.id || authWorkspaceId || storedWsId;
 
     // PostForMe returns "External Id already exists for account spc_...|No valid accounts found" in the error query param.
     // We check full error string to handle spaces, underscores, and message variants cleanly.
@@ -59,7 +65,7 @@ function OAuthCallbackHandler() {
         if (code && !isPostForMeCallback) {
           setMessage("Memproses Meta OAuth code...");
           let callbackUrl = `/auth/meta/callback?code=${encodeURIComponent(code)}`;
-          if (activeWorkspace?.id) callbackUrl += `&workspace_id=${activeWorkspace.id}`;
+          if (targetWsId) callbackUrl += `&workspace_id=${targetWsId}`;
           if (clients[0]?.id) callbackUrl += `&client_id=${clients[0].id}`;
 
           await fetchApi<any>(callbackUrl, { method: "POST" });
@@ -70,7 +76,7 @@ function OAuthCallbackHandler() {
         await fetchApi<any>("/auth/postforme/sync-accounts", {
           method: "POST",
           body: JSON.stringify({
-            workspace_id: activeWorkspace?.id,
+            workspace_id: targetWsId,
             client_id: clients[0]?.id
           })
         });

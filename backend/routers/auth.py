@@ -260,15 +260,8 @@ async def postforme_sync_accounts(
             acc_id = acc.get("id")
             if not acc_id or acc_id in pf_account_ids_in_result:
                 continue
-            
-            p_str = acc.get("platform", "instagram").lower()
-            u_str = (acc.get("username") or acc.get("name") or "").lower()
-            ext_id = acc.get("external_id")
-
-            # Include if tagged to target_ws, or if already known in DB system, or if active in PostForMe
-            if ext_id == target_ws.id or acc_id in known_system_pf_ids or (p_str, u_str) in known_system_accounts:
-                pf_accounts.append(acc)
-                pf_account_ids_in_result.add(acc_id)
+            pf_accounts.append(acc)
+            pf_account_ids_in_result.add(acc_id)
 
         synced_count = 0
 
@@ -278,7 +271,8 @@ async def postforme_sync_accounts(
                 continue
 
             platform_str = acc.get("platform", "instagram").lower()
-            username = acc.get("username") or acc.get("name") or "user"
+            raw_username = acc.get("username") or acc.get("name") or "user"
+            username = str(raw_username).strip().lstrip("@")
             name = acc.get("name") or username
             profile_photo_url = acc.get("profile_photo_url")
             followers = extract_followers_count(acc)

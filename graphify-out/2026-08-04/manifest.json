@@ -110,8 +110,8 @@
     "semantic_hash": ""
   },
   "backend/routers/auth.py": {
-    "mtime": 1785764680.5472424,
-    "ast_hash": "e35ef81f65dc44c5a12af417441d1777",
+    "mtime": 1785799688.2193527,
+    "ast_hash": "9e42badb8671632314c01cde0f9be277",
     "semantic_hash": ""
   },
   "backend/routers/billing.py": {
@@ -280,8 +280,8 @@
     "semantic_hash": ""
   },
   "frontend/src/app/auth/callback/page.tsx": {
-    "mtime": 1785799422.2767422,
-    "ast_hash": "142673c25a1b939308bba6e0cf70f2a2",
+    "mtime": 1785799681.8608768,
+    "ast_hash": "b434db01c2aedd3c1dc31f68138e82e4",
     "semantic_hash": ""
   },
   "frontend/src/app/billing/success/page.tsx": {
