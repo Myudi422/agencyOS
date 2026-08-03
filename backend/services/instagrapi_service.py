@@ -173,17 +173,23 @@ class InstagrapiService:
 
         raise ValueError("Belum ada Instagram Session Cookie atau Credential Scraper yang dikonfigurasi di Admin Settings.")
 
-    def test_connection(self, db: Session, test_session: Optional[str] = None) -> Dict[str, Any]:
-        """Test Instagram login session with instagrapi."""
+    def test_connection(
+        self, db: Session, test_session: Optional[str] = None, username: Optional[str] = None, password: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """Test Instagram login session or credentials with instagrapi."""
         try:
-            cl = self.get_client(db, override_session=test_session)
+            if username and password:
+                cl = self.login_with_credentials(db, username=username, password=password)
+            else:
+                cl = self.get_client(db, override_session=test_session, allow_anonymous=False)
             account_info = cl.account_info()
+            logged_username = getattr(account_info, "username", "Unknown")
             return {
                 "success": True,
-                "username": getattr(account_info, "username", "Unknown"),
+                "username": logged_username,
                 "full_name": getattr(account_info, "full_name", ""),
                 "pk": getattr(account_info, "pk", ""),
-                "message": f"Koneksi Instagram Berhasil! Logged in as @{getattr(account_info, 'username', '')}"
+                "message": f"Koneksi Instagram Berhasil! Logged in as @{logged_username}"
             }
         except Exception as e:
             logger.error(f"Instagram test connection error: {e}")
