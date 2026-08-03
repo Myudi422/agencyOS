@@ -67,6 +67,7 @@ export default function DashboardPage() {
   const [data, setData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isMounted, setIsMounted] = useState(false);
+  const [lastFetchedAt, setLastFetchedAt] = useState<number>(0);
 
   useEffect(() => {
     setIsMounted(true);
@@ -76,12 +77,13 @@ export default function DashboardPage() {
   // use the workspaceId persisted in authStore
   const resolvedWorkspaceId = activeWorkspace?.id || authWorkspaceId;
 
-  const loadDashboard = () => {
-    console.log("[Dashboard Debug]", {
-      activeWorkspaceId: activeWorkspace?.id,
-      authWorkspaceId,
-      resolvedWorkspaceId,
-    });
+  const loadDashboard = (force = false) => {
+    const now = Date.now();
+    if (!force && now - lastFetchedAt < 15000 && data) {
+      console.log("[Dashboard] Skipping redundant fetch (deduplicated < 15s)");
+      return;
+    }
+
     if (!resolvedWorkspaceId) {
       console.warn("[Dashboard] No workspace ID found, skipping API call");
       setIsLoading(false);
@@ -92,6 +94,7 @@ export default function DashboardPage() {
       .then((res) => {
         console.log("[Dashboard API] Response:", res?.metrics);
         setData(res);
+        setLastFetchedAt(now);
         setIsLoading(false);
       })
       .catch((err) => {
@@ -177,7 +180,7 @@ export default function DashboardPage() {
 
         <div className="flex items-center gap-3 z-10 shrink-0">
           <button
-            onClick={loadDashboard}
+            onClick={() => loadDashboard(true)}
             disabled={isLoading}
             className="p-3 rounded-2xl bg-white hover:bg-purple-50/80 border border-slate-200/90 text-slate-700 shadow-xs transition-all disabled:opacity-60"
             title="Refresh Metrics"

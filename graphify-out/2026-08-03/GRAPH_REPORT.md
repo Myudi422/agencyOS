@@ -1,7 +1,7 @@
 # Graph Report - agencyOS  (2026-08-03)
 
 ## Corpus Check
-- 133 files · ~757,451 words
+- 133 files · ~757,566 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
@@ -66,6 +66,7 @@
 - [token]/page.tsx
 - migrate_publish_results.py
 - date-fns
+- clsx
 - next.config.js
 - next-env.d.ts
 - html2canvas
@@ -78,7 +79,6 @@
 - migrate_kol.py
 - migrate_wa_otp.py
 - competitors.py
-- react
 - seed.py
 
 ## God Nodes (most connected - your core abstractions)
@@ -212,7 +212,7 @@ Nodes (14): create_snap_transaction(), get_core_api_client(), get_snap_client(),
 
 ### Community 26 - "dependencies"
 Cohesion: 0.13
-Nodes (15): clsx, dependencies, clsx, jspdf, lucide-react, react-dom, react-is, recharts (+7 more)
+Nodes (15): dependencies, jspdf, lucide-react, react, react-dom, react-is, recharts, @tanstack/react-query (+7 more)
 
 ### Community 27 - "competitor-spy/page.tsx"
 Cohesion: 0.17

@@ -2,6 +2,7 @@ import asyncio
 from fastapi import APIRouter, Depends, Query, Header
 # pyrefly: ignore [missing-import]
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 from datetime import datetime, time
 from backend.database import get_db
 from backend.models.models import (
@@ -105,31 +106,50 @@ async def get_dashboard_overview(
             "targets_count": len(p.targets) if p.targets else 0
         })
 
-    # 7. 7-Day Performance Trend Chart Data
+    # 7. 7-Day Performance Trend Chart Data (Optimized Single Aggregated Query)
     from datetime import timedelta
-    daily_trend = []
-    for i in range(6, -1, -1):
-        day = datetime.utcnow().date() - timedelta(days=i)
-        d_start = datetime.combine(day, time.min)
-        d_end = datetime.combine(day, time.max)
+    seven_days_ago = datetime.utcnow() - timedelta(days=7)
 
-        pub_count = db.query(PostTarget).join(Post, PostTarget.post_id == Post.id).filter(
+    # Query published counts grouped by date
+    pub_rows = (
+        db.query(
+            func.date(PostTarget.created_at).label("day"),
+            func.count(PostTarget.id).label("cnt")
+        )
+        .join(Post, PostTarget.post_id == Post.id)
+        .filter(
             Post.workspace_id == workspace_id,
             PostTarget.status == PostStatus.PUBLISHED,
-            PostTarget.created_at >= d_start,
-            PostTarget.created_at <= d_end
-        ).count()
+            PostTarget.created_at >= seven_days_ago
+        )
+        .group_by(func.date(PostTarget.created_at))
+        .all()
+    )
+    pub_map = {str(r.day): r.cnt for r in pub_rows}
 
-        sched_count = db.query(Post).filter(
+    # Query scheduled counts grouped by date
+    sched_rows = (
+        db.query(
+            func.date(Post.scheduled_at).label("day"),
+            func.count(Post.id).label("cnt")
+        )
+        .filter(
             Post.workspace_id == workspace_id,
-            Post.scheduled_at >= d_start,
-            Post.scheduled_at <= d_end
-        ).count()
+            Post.scheduled_at >= seven_days_ago
+        )
+        .group_by(func.date(Post.scheduled_at))
+        .all()
+    )
+    sched_map = {str(r.day): r.cnt for r in sched_rows}
 
+    daily_trend = []
+    for i in range(6, -1, -1):
+        day_date = (datetime.utcnow() - timedelta(days=i)).date()
+        d_str = str(day_date)
         daily_trend.append({
-            "date": day.strftime("%d %b"),
-            "published": pub_count,
-            "scheduled": sched_count
+            "date": day_date.strftime("%d %b"),
+            "published": pub_map.get(d_str, 0),
+            "scheduled": sched_map.get(d_str, 0)
         })
 
     # 8. Platform Channel Breakdown Data
