@@ -17,13 +17,17 @@ PLANS = [
     {
         "tier": PlanTier.TRIAL,
         "name": "Starter Trial",
-        "description": "Coba gratis 3 hari. Kuota 6 posting.",
+        "description": "Coba gratis 3 hari. Kuota 30 posting.",
         "price_usd": 0.00,
         "price_idr": 0,
         "duration_days": 3,
-        "post_quota": 6,  # 2 posts/day × 3 days
+        "post_quota": 30,
         "features": [
-            "✅ 2 posts/hari",
+            "30 posts total",
+            "Gratis tanpa biaya (Rp 0)",
+            "Unlimited akun sosmed",
+            "Semua platform didukung",
+            "Berlaku 3 hari",
         ],
     },
     {

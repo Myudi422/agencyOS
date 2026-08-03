@@ -176,13 +176,17 @@ const DEFAULT_PRICING_PLANS = [
     name: "Starter Trial",
     price: "Rp 0",
     period: "3 hari",
-    posts: "6 posts",
-    postsDetail: "2 post/hari",
+    posts: "30 posts",
+    postsDetail: "",
     color: "from-slate-500 to-slate-700",
     iconBg: "bg-slate-100 text-slate-600",
     border: "border-slate-200",
     features: [
-      "2 posts/hari",
+      "30 posts total",
+      "Gratis tanpa biaya (Rp 0)",
+      "Unlimited akun sosmed",
+      "Semua platform didukung",
+      "Berlaku 3 hari",
     ],
     buttonText: "Mulai Trial",
     buttonStyle: "bg-emerald-600 text-white hover:bg-emerald-700 shadow-md shadow-emerald-500/20",
@@ -196,7 +200,7 @@ const DEFAULT_PRICING_PLANS = [
     price: "Rp 49.000",
     period: "/bulan",
     posts: "50 posts",
-    postsDetail: "~1.6 post/hari",
+    postsDetail: "",
     color: "from-blue-500 to-indigo-600",
     iconBg: "bg-blue-100 text-blue-600",
     border: "border-blue-200",
@@ -221,7 +225,7 @@ const DEFAULT_PRICING_PLANS = [
     price: "Rp 299.000",
     period: "/bulan",
     posts: "300 posts",
-    postsDetail: "~10 post/hari",
+    postsDetail: "",
     color: "from-purple-500 to-violet-600",
     iconBg: "bg-purple-100 text-purple-600",
     border: "border-purple-300 shadow-purple-100/80",
@@ -246,7 +250,7 @@ const DEFAULT_PRICING_PLANS = [
     price: "Rp 749.000",
     period: "/bulan",
     posts: "1.000 posts",
-    postsDetail: "~33 post/hari",
+    postsDetail: "",
     color: "from-amber-500 to-orange-600",
     iconBg: "bg-amber-100 text-amber-600",
     border: "border-amber-200",
@@ -305,8 +309,7 @@ export default function LandingHomePage() {
             const priceStr = p.price_idr ? `Rp ${Number(p.price_idr).toLocaleString("id-ID")}` : "Rp 0";
             const periodStr = p.tier === "trial" ? `${p.duration_days} hari` : "/bulan";
             const postsStr = `${Number(p.post_quota).toLocaleString("id-ID")} posts`;
-            const dailyApprox = (p.post_quota / (p.duration_days || 30)).toFixed(1);
-            const postsDetail = p.tier === "trial" ? `2 post/hari` : `~${dailyApprox} post/hari`;
+            const postsDetail = "";
 
             return {
               tier: p.tier,
@@ -821,7 +824,7 @@ export default function LandingHomePage() {
                       </div>
                       <div>
                         <h3 className="font-bold text-slate-900 text-base font-['Outfit']">{plan.name}</h3>
-                        <p className="text-xs text-slate-400">{plan.postsDetail}</p>
+                        {plan.postsDetail && <p className="text-xs text-slate-400">{plan.postsDetail}</p>}
                       </div>
                     </div>
 

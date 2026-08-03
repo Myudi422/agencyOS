@@ -185,8 +185,8 @@
     "semantic_hash": ""
   },
   "backend/seed_plans.py": {
-    "mtime": 1785202396.9775875,
-    "ast_hash": "e42b125adb87dd724a9796df041f6f50",
+    "mtime": 1785724414.968288,
+    "ast_hash": "cd56162c9a3692a12ee73899e2b302b0",
     "semantic_hash": ""
   },
   "backend/services/firebase_service.py": {
@@ -350,13 +350,13 @@
     "semantic_hash": "bb8a479cc6d47f6d90ae256e823a21b1"
   },
   "frontend/src/app/page.tsx": {
-    "mtime": 1785724159.3358307,
-    "ast_hash": "d171881988a02f36690f82980caecc31",
+    "mtime": 1785724409.3311987,
+    "ast_hash": "31ad7c6d8a656925a02ba10bb1efaba9",
     "semantic_hash": ""
   },
   "frontend/src/app/pricing/page.tsx": {
-    "mtime": 1785724150.875843,
-    "ast_hash": "c4777a4e0f0efbf5ba3f4817110558c4",
+    "mtime": 1785724399.9998043,
+    "ast_hash": "3e32404d715a54a899d2079d70280e31",
     "semantic_hash": ""
   },
   "frontend/src/app/queue/page.tsx": {

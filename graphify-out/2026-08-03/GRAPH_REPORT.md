@@ -1,16 +1,16 @@
 # Graph Report - agencyOS  (2026-08-03)
 
 ## Corpus Check
-- 131 files · ~753,627 words
+- 131 files · ~753,580 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1303 nodes · 3005 edges · 68 communities (51 shown, 17 thin omitted)
+- 1303 nodes · 3005 edges · 67 communities (49 shown, 18 thin omitted)
 - Extraction: 87% EXTRACTED · 13% INFERRED · 0% AMBIGUOUS · INFERRED: 378 edges (avg confidence: 0.5)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `4e1ba4b6`
+- Built from commit: `004e50a8`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -23,18 +23,18 @@
 - PostForMeService
 - SocialAccount
 - media.py
-- calendar/page.tsx
+- GlassToastManager.tsx
 - models.py
-- useStore
+- api.ts
 - useAuthStore
 - statistics.py
 - posts.py
 - User
 - GeminiService
 - compilerOptions
-- [campaignId]/page.tsx
-- QueueService
 - fetchApi
+- QueueService
+- useStore
 - InstagrapiService
 - kol-campaigns/page.tsx
 - Component: Firebase Auth (Backend)
@@ -64,7 +64,7 @@
 - rules/graphify.md
 - workflows/graphify.md
 - [token]/page.tsx
-- useConfirmStore.ts
+- clsx
 - date-fns
 - firebase
 - next.config.js
@@ -75,7 +75,6 @@
 - tailwind-merge
 - zustand
 - reschedule_post
-- clsx
 - migrate_competitor_accounts.py
 - migrate_db.py
 - migrate_kol.py
@@ -108,7 +107,7 @@
 ## Import Cycles
 - None detected.
 
-## Communities (68 total, 17 thin omitted)
+## Communities (67 total, 18 thin omitted)
 
 ### Community 0 - "UserSubscription"
 Cohesion: 0.05
@@ -142,21 +141,17 @@ Nodes (37): AccountStatus, RoleEnum, SocialAccount, BlueskyConnectRequest, Chall
 Cohesion: 0.08
 Nodes (33): Media, bulk_delete_media(), bulk_move_media(), BulkDeleteRequest, BulkMoveRequest, delete_folder(), delete_media(), get_media_items() (+25 more)
 
-### Community 8 - "calendar/page.tsx"
-Cohesion: 0.40
-Nodes (5): CalendarImageThumbnail(), CalendarPage(), getProxiedImageUrl(), PLATFORM_ICONS, PLATFORM_LABELS
-
 ### Community 9 - "models.py"
 Cohesion: 0.15
 Nodes (13): Settings, get_db(), Script perbaikan langsung: Ambil hasil dari PostForMe API untuk semua post yang…, JobStatus, PostPublishResult, PublishJob, Menyimpan hasil aktual publish dari PostForMe API (/v1/social-post-results).…, Reset Subscriptions Script — Clears all user subscriptions in DB. Run: python… (+5 more)
 
-### Community 10 - "useStore"
-Cohesion: 0.10
-Nodes (27): AccountsPage(), dynamic, PLATFORMS_CONFIG, ActivityPage(), ClientsPage(), MediaPage(), OnboardingPage(), AccountBriefingModal() (+19 more)
+### Community 10 - "api.ts"
+Cohesion: 0.12
+Nodes (22): AccountsPage(), dynamic, PLATFORMS_CONFIG, ActivityPage(), ClientsPage(), MediaPage(), AccountBriefingModal(), AccountBriefingModalProps (+14 more)
 
 ### Community 11 - "useAuthStore"
-Cohesion: 0.13
-Nodes (24): LoginPage(), SubscriptionGuard(), TIER_META, GlassToastManager(), PUBLIC_SPLASH_PATHS, SplashScreen(), AppLayout(), PUBLIC_PATHS (+16 more)
+Cohesion: 0.10
+Nodes (28): AdminPage(), TabType, TIER_COLORS, TIER_ICONS, BillingSuccessContent(), dynamic, LoginPage(), SubscriptionGuard() (+20 more)
 
 ### Community 12 - "statistics.py"
 Cohesion: 0.09
@@ -178,25 +173,25 @@ Nodes (19): generate_otp(), normalize_phone(), Fonnte WhatsApp OTP Service Mengi
 Cohesion: 0.07
 Nodes (26): compilerOptions, allowJs, esModuleInterop, incremental, isolatedModules, jsx, lib, module (+18 more)
 
-### Community 17 - "[campaignId]/page.tsx"
+### Community 17 - "fetchApi"
 Cohesion: 0.13
-Nodes (15): CampaignDetailPage(), DELIVERABLE_STATUS_COLORS, PAYMENT_STATUS_BADGES, formatNumberToRupiahString(), getTerbilangShort(), parseRupiahStringToNumber(), RupiahInput(), RupiahInputProps (+7 more)
+Nodes (18): CampaignDetailPage(), DELIVERABLE_STATUS_COLORS, PAYMENT_STATUS_BADGES, DEFAULT_PLANS, PricingPage(), TIER_ORDER, TIER_UI_META, Window (+10 more)
 
 ### Community 18 - "QueueService"
 Cohesion: 0.06
 Nodes (32): Migration Script: Add briefing column to social_accounts table, Migration Script: Add ai_brief column to posts table, Migration: Tambah tabel post_publish_results dan kolom baru ke posts. Jalankan:…, delete_queue_job(), _fallback_local_results(), get_postforme_results(), get_publish_history(), get_queue_status() (+24 more)
 
-### Community 19 - "fetchApi"
-Cohesion: 0.09
-Nodes (24): AdminPage(), TabType, TIER_COLORS, TIER_ICONS, OAuthCallbackHandler(), BillingSuccessContent(), dynamic, DashboardImageThumbnail() (+16 more)
+### Community 19 - "useStore"
+Cohesion: 0.10
+Nodes (18): OAuthCallbackHandler(), CalendarImageThumbnail(), CalendarPage(), getProxiedImageUrl(), PLATFORM_ICONS, PLATFORM_LABELS, DashboardImageThumbnail(), DashboardPage() (+10 more)
 
 ### Community 20 - "InstagrapiService"
 Cohesion: 0.21
 Nodes (10): InstagrapiService, Any, Session, Instagrapi Service — Instagram Private API Integration for Competitor Spy Uses…, Fetch competitor profile information from Instagram., Fetch recent posts for a competitor, calculate engagement rate, top hashtags,…, Fetch saved Instagram session from global settings table., Initializes an instagrapi Client with session settings. Supports sessionid… (+2 more)
 
 ### Community 21 - "kol-campaigns/page.tsx"
-Cohesion: 0.21
-Nodes (11): KolCampaignsPage(), CampaignCard(), CampaignCardProps, CampaignItem, STATUS_BADGES, CampaignCreateModal(), CampaignCreateModalProps, AccountItem (+3 more)
+Cohesion: 0.11
+Nodes (22): KolCampaignsPage(), formatNumberToRupiahString(), getTerbilangShort(), parseRupiahStringToNumber(), RupiahInput(), RupiahInputProps, CampaignCard(), CampaignCardProps (+14 more)
 
 ### Community 22 - "Component: Firebase Auth (Backend)"
 Cohesion: 0.06
@@ -219,7 +214,7 @@ Cohesion: 0.13
 Nodes (15): dependencies, jspdf, lucide-react, react, react-dom, react-is, recharts, @tanstack/react-query (+7 more)
 
 ### Community 27 - "competitor-spy/page.tsx"
-Cohesion: 0.17
+Cohesion: 0.16
 Nodes (12): ActiveTab, AddJobState, Competitor, CompetitorPost, CompetitorProfilePreview, CompetitorSpyPage(), ConnectedIgAccount, CompetitorProgressWidget() (+4 more)
 
 ### Community 28 - "auth.ts"
@@ -290,10 +285,6 @@ Nodes (12): 🚀 1. Overview & Arsitektur Sistem, 🛠️ 2. Komponen Teknis Ter
 Cohesion: 0.20
 Nodes (9): 1. Run Backend (FastAPI), 2. Run Frontend (Next.js 15), AgencyOS - Enterprise Digital Agency Social Management Platform, Backend, Default Configured Credentials, Frontend, Getting Started, Key Features MVP 1.0 (+1 more)
 
-### Community 49 - "useConfirmStore.ts"
-Cohesion: 0.47
-Nodes (4): GlobalGlassConfirmModal(), ConfirmOptions, ConfirmState, useConfirmStore
-
 ### Community 56 - "Client"
 Cohesion: 0.18
 Nodes (18): Client, ClientCreate, create_client(), BaseModel, post, Creates a new client under a workspace owned by the current user., create_workspace(), get_workspaces() (+10 more)
@@ -305,7 +296,7 @@ Nodes (5): BaseModel, put, Reschedules a post in DB AND in PostForMe API., resch
 ## Knowledge Gaps
 - **289 isolated node(s):** `Settings`, `nextConfig`, `name`, `version`, `private` (+284 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **17 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **18 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
@@ -314,7 +305,7 @@ _Questions this graph is uniquely positioned to answer:_
   _High betweenness centrality (0.110) - this node is a cross-community bridge._
 - **Why does `PostForMeService` connect `PostForMeService` to `models.py`?**
   _High betweenness centrality (0.027) - this node is a cross-community bridge._
-- **Why does `fetchApi()` connect `fetchApi` to `app/page.tsx`, `statistics/page.tsx`, `calendar/page.tsx`, `useStore`, `useAuthStore`, `[campaignId]/page.tsx`, `kol-campaigns/page.tsx`, `competitor-spy/page.tsx`, `queue/page.tsx`?**
+- **Why does `fetchApi()` connect `fetchApi` to `app/page.tsx`, `statistics/page.tsx`, `api.ts`, `useAuthStore`, `useStore`, `kol-campaigns/page.tsx`, `competitor-spy/page.tsx`, `queue/page.tsx`?**
   _High betweenness centrality (0.019) - this node is a cross-community bridge._
 - **Are the 42 inferred relationships involving `User` (e.g. with `AccountBriefingSchema` and `BulkActionRequest`) actually correct?**
   _`User` has 42 INFERRED edges - model-reasoned connections that need verification._

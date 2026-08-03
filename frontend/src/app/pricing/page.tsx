@@ -59,15 +59,19 @@ const DEFAULT_PLANS = [
     name: "Starter Trial",
     price: "Rp 0",
     period: "3 hari",
-    posts: "6 posts",
-    postsDetail: "2 posts/hari",
+    posts: "30 posts",
+    postsDetail: "",
     icon: Zap,
     color: "from-slate-500 to-slate-700",
     iconBg: "bg-slate-100 text-slate-600",
     border: "border-slate-200",
     badge: "Gratis 3 Hari",
     features: [
-      "2 posts/hari",
+      "30 posts total",
+      "Gratis tanpa biaya (Rp 0)",
+      "Unlimited akun sosmed",
+      "Semua platform didukung",
+      "Berlaku 3 hari",
     ],
   },
   {
@@ -76,7 +80,7 @@ const DEFAULT_PLANS = [
     price: "Rp 49.000",
     period: "/bulan",
     posts: "50 posts",
-    postsDetail: "~1.6 post/hari",
+    postsDetail: "",
     icon: Rocket,
     color: "from-blue-500 to-indigo-600",
     iconBg: "bg-blue-100 text-blue-600",
@@ -98,7 +102,7 @@ const DEFAULT_PLANS = [
     price: "Rp 299.000",
     period: "/bulan",
     posts: "300 posts",
-    postsDetail: "~10 post/hari",
+    postsDetail: "",
     icon: Crown,
     color: "from-purple-500 to-violet-600",
     iconBg: "bg-purple-100 text-purple-600",
@@ -120,7 +124,7 @@ const DEFAULT_PLANS = [
     price: "Rp 749.000",
     period: "/bulan",
     posts: "1.000 posts",
-    postsDetail: "~33 post/hari",
+    postsDetail: "",
     icon: Building2,
     color: "from-amber-500 to-orange-600",
     iconBg: "bg-amber-100 text-amber-600",
@@ -158,8 +162,7 @@ export default function PricingPage() {
             const priceStr = p.price_idr ? `Rp ${Number(p.price_idr).toLocaleString("id-ID")}` : "Rp 0";
             const periodStr = p.tier === "trial" ? `${p.duration_days} hari` : "/bulan";
             const postsStr = `${Number(p.post_quota).toLocaleString("id-ID")} posts`;
-            const dailyApprox = (p.post_quota / (p.duration_days || 30)).toFixed(1);
-            const postsDetail = p.tier === "trial" ? `2 posts/hari` : `~${dailyApprox} post/hari`;
+            const postsDetail = "";
 
             const fallbackFeatures = DEFAULT_PLANS.find(dp => dp.tier === p.tier)?.features || [];
 
@@ -337,7 +340,7 @@ export default function PricingPage() {
                     </div>
                     <div>
                       <h3 className="font-bold text-slate-900 text-base font-['Outfit']">{plan.name}</h3>
-                      <p className="text-xs text-slate-400">{plan.postsDetail}</p>
+                      {plan.postsDetail && <p className="text-xs text-slate-400">{plan.postsDetail}</p>}
                     </div>
                   </div>
 
