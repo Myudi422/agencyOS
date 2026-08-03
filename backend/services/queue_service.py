@@ -101,6 +101,8 @@ class QueueService:
                                 resp = client.get(u)
                                 if resp.status_code == 200:
                                     wm_img = watermark_service.apply_watermark(resp.content, wm_config)
+                                    if wm_img.mode != "RGB":
+                                        wm_img = wm_img.convert("RGB")
                                     buf = io.BytesIO()
                                     wm_img.save(buf, format="JPEG", quality=92)
                                     buf.seek(0)

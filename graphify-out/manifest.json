@@ -225,8 +225,8 @@
     "semantic_hash": "303f02bdb9b4d0907ca8efe87c4cba8d"
   },
   "backend/services/queue_service.py": {
-    "mtime": 1785759245.188276,
-    "ast_hash": "44a7601c6df3be8f20c9f4131316078c",
+    "mtime": 1785760653.1559625,
+    "ast_hash": "d89ea1cbc09ceba1568b9402ed5b8046",
     "semantic_hash": ""
   },
   "backend/services/redis_service.py": {
@@ -770,8 +770,8 @@
     "semantic_hash": ""
   },
   "backend/services/watermark_service.py": {
-    "mtime": 1785752629.7514217,
-    "ast_hash": "145dc3d5e0fd413154b02e53314701d0",
+    "mtime": 1785760647.5836663,
+    "ast_hash": "e5ec7000cdc9a230f97d4e7f7d21fb81",
     "semantic_hash": ""
   },
   "frontend/src/components/accounts/AccountWatermarkModal.tsx": {

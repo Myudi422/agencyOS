@@ -95,8 +95,8 @@
     "semantic_hash": ""
   },
   "backend/routers/accounts.py": {
-    "mtime": 1785759499.6549766,
-    "ast_hash": "926d591d0bd664911c389ab65ef4738a",
+    "mtime": 1785760010.738961,
+    "ast_hash": "94d43a3056382fb4337e6829daf5c0f3",
     "semantic_hash": ""
   },
   "backend/routers/activity.py": {
@@ -305,9 +305,9 @@
     "semantic_hash": ""
   },
   "frontend/src/app/dashboard/page.tsx": {
-    "mtime": 1785378633.2340353,
-    "ast_hash": "52ea8c49c81213a5bc66e967b970b5b2",
-    "semantic_hash": "52ea8c49c81213a5bc66e967b970b5b2"
+    "mtime": 1785759765.1804566,
+    "ast_hash": "f7724cd779f358b28a23f55387b80a26",
+    "semantic_hash": ""
   },
   "frontend/src/app/kol-campaigns/[campaignId]/page.tsx": {
     "mtime": 1785721907.7950146,

@@ -22406,7 +22406,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "backend/routers/accounts.py",
-      "source_location": "L379",
+      "source_location": "L385",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_routers_accounts_delete_account",
@@ -41108,7 +41108,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "frontend/src/app/dashboard/page.tsx",
-      "source_location": "L91",
+      "source_location": "L93",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_src_app_dashboard_page_dashboardpage",
@@ -50468,5 +50468,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "00241efd49be429a7b6507b9888e2ac2f52d4af1"
+  "built_at_commit": "21bfaca375435e257aa7d780d426015fa9d0954a"
 }

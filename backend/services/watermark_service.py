@@ -187,10 +187,13 @@ class WatermarkService:
         # Composite overlay onto base image
         composed = Image.alpha_composite(base_rgba, overlay)
 
-        # Convert back to original format (RGB for JPEG, RGBA for PNG)
-        if original_format.upper() in ["JPG", "JPEG"]:
-            return composed.convert("RGB")
-        return composed
+        # Convert RGBA to RGB safely (flatten transparency to white background to prevent JPEG RGBA error)
+        if composed.mode == "RGBA":
+            background = Image.new("RGB", composed.size, (255, 255, 255))
+            background.paste(composed, mask=composed.split()[3])
+            return background
+
+        return composed.convert("RGB")
 
     def preview_watermark_base64(
         self,
@@ -199,6 +202,8 @@ class WatermarkService:
     ) -> str:
         """Returns base64 data URI string of watermarked image for frontend live preview."""
         out_img = self.apply_watermark(image_bytes, config)
+        if out_img.mode != "RGB":
+            out_img = out_img.convert("RGB")
         buf = io.BytesIO()
         out_img.save(buf, format="JPEG", quality=85)
         buf.seek(0)
