@@ -78,6 +78,8 @@ def _get_user_from_auth(authorization: Optional[str], db: Session) -> Optional[U
 def list_plans(db: Session = Depends(get_db)):
     """Returns all active subscription plans with Midtrans IDR pricing."""
     plans = db.query(SubscriptionPlan).filter(SubscriptionPlan.is_active == True).all()
+    tier_order = {"trial": 1, "creator": 2, "agency": 3, "studio": 4}
+    plans_sorted = sorted(plans, key=lambda p: tier_order.get(p.tier.value if hasattr(p.tier, "value") else str(p.tier), 99))
     return [
         {
             "id": p.id,
@@ -90,7 +92,7 @@ def list_plans(db: Session = Depends(get_db)):
             "post_quota": p.post_quota,
             "features": p.features or [],
         }
-        for p in plans
+        for p in plans_sorted
     ]
 
 

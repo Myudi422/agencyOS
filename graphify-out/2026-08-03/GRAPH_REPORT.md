@@ -1,16 +1,16 @@
 # Graph Report - agencyOS  (2026-08-03)
 
 ## Corpus Check
-- 131 files · ~753,494 words
+- 131 files · ~753,627 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1303 nodes · 3005 edges · 69 communities (52 shown, 17 thin omitted)
+- 1303 nodes · 3005 edges · 68 communities (51 shown, 17 thin omitted)
 - Extraction: 87% EXTRACTED · 13% INFERRED · 0% AMBIGUOUS · INFERRED: 378 edges (avg confidence: 0.5)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `fd394e40`
+- Built from commit: `4e1ba4b6`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -21,7 +21,7 @@
 - yt_clipper_agent.py
 - statistics/page.tsx
 - PostForMeService
-- User
+- SocialAccount
 - media.py
 - calendar/page.tsx
 - models.py
@@ -29,7 +29,7 @@
 - useAuthStore
 - statistics.py
 - posts.py
-- get_user_workspace
+- User
 - GeminiService
 - compilerOptions
 - [campaignId]/page.tsx
@@ -71,16 +71,15 @@
 - next-env.d.ts
 - html2canvas
 - next
-- get_clients
+- Client
 - tailwind-merge
 - zustand
 - reschedule_post
-- get_dashboard_overview
+- clsx
 - migrate_competitor_accounts.py
 - migrate_db.py
 - migrate_kol.py
 - migrate_wa_otp.py
-- clsx
 
 ## God Nodes (most connected - your core abstractions)
 1. `User` - 141 edges
@@ -109,7 +108,7 @@
 ## Import Cycles
 - None detected.
 
-## Communities (69 total, 17 thin omitted)
+## Communities (68 total, 17 thin omitted)
 
 ### Community 0 - "UserSubscription"
 Cohesion: 0.05
@@ -135,9 +134,9 @@ Nodes (39): AccountMetrics, AccountSummary, CHART_COLORS, CustomTooltip(), Daily
 Cohesion: 0.09
 Nodes (22): PostForMeService, Any, Get connected social accounts from PostForMe. Endpoint: GET /v1/social-accounts, Manually register or update a social account in PostForMe. Endpoint: POST…, Disconnect a social account in PostForMe. Endpoint: POST /v1/social-…, Delete a social account in PostForMe. Endpoint: DELETE /v1/social-accounts/{id}, Create a post across multi-platform social accounts in PostForMe. Endpoint:…, Delete a post from PostForMe. Endpoint: DELETE /v1/social-posts/{id} (+14 more)
 
-### Community 6 - "User"
-Cohesion: 0.10
-Nodes (55): Client, RoleEnum, SocialAccount, User, BlueskyConnectRequest, ChallengeResolveRequest, CookieLoginRequest, CredentialLoginRequest (+47 more)
+### Community 6 - "SocialAccount"
+Cohesion: 0.13
+Nodes (37): AccountStatus, RoleEnum, SocialAccount, BlueskyConnectRequest, ChallengeResolveRequest, CookieLoginRequest, CredentialLoginRequest, extract_followers_count() (+29 more)
 
 ### Community 7 - "media.py"
 Cohesion: 0.08
@@ -167,9 +166,9 @@ Nodes (42): _ensure_utc(), get_calendar_posts(), _in_range(), _parse_and_ensure_
 Cohesion: 0.13
 Nodes (31): get, root(), Post, PostStatus, PostTarget, PostType, create_media_upload_url(), create_post() (+23 more)
 
-### Community 14 - "get_user_workspace"
-Cohesion: 0.16
-Nodes (24): AccountStatus, AccountBriefingSchema, bulk_action(), BulkActionRequest, delete_account(), get_account_briefing(), get_accounts(), BaseModel (+16 more)
+### Community 14 - "User"
+Cohesion: 0.12
+Nodes (34): User, AccountBriefingSchema, bulk_action(), BulkActionRequest, delete_account(), get_account_briefing(), get_accounts(), BaseModel (+26 more)
 
 ### Community 15 - "GeminiService"
 Cohesion: 0.12
@@ -295,17 +294,13 @@ Nodes (9): 1. Run Backend (FastAPI), 2. Run Frontend (Next.js 15), AgencyOS - En
 Cohesion: 0.47
 Nodes (4): GlobalGlassConfirmModal(), ConfirmOptions, ConfirmState, useConfirmStore
 
-### Community 56 - "get_clients"
-Cohesion: 0.33
-Nodes (6): delete_client(), get_clients(), delete, get, Session, Retrieves all clients under a workspace owned by the current user.
+### Community 56 - "Client"
+Cohesion: 0.18
+Nodes (18): Client, ClientCreate, create_client(), BaseModel, post, Creates a new client under a workspace owned by the current user., create_workspace(), get_workspaces() (+10 more)
 
 ### Community 62 - "reschedule_post"
 Cohesion: 0.40
 Nodes (5): BaseModel, put, Reschedules a post in DB AND in PostForMe API., reschedule_post(), RescheduleRequest
-
-### Community 63 - "get_dashboard_overview"
-Cohesion: 0.50
-Nodes (4): get_dashboard_overview(), get, Session, Sub-300ms fast executive dashboard endpoint returning real-time metrics, queue…
 
 ## Knowledge Gaps
 - **289 isolated node(s):** `Settings`, `nextConfig`, `name`, `version`, `private` (+284 more)
@@ -315,7 +310,7 @@ Nodes (4): get_dashboard_overview(), get, Session, Sub-300ms fast executive dash
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `User` connect `User` to `UserSubscription`, `competitors.py`, `kol.py`, `require_user`, `models.py`, `statistics.py`, `posts.py`, `get_user_workspace`, `QueueService`, `get_clients`, `reschedule_post`, `get_dashboard_overview`?**
+- **Why does `User` connect `User` to `UserSubscription`, `competitors.py`, `kol.py`, `SocialAccount`, `require_user`, `models.py`, `statistics.py`, `posts.py`, `QueueService`, `Client`, `reschedule_post`?**
   _High betweenness centrality (0.110) - this node is a cross-community bridge._
 - **Why does `PostForMeService` connect `PostForMeService` to `models.py`?**
   _High betweenness centrality (0.027) - this node is a cross-community bridge._

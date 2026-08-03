@@ -170,19 +170,38 @@ const TARGET_AUDIENCE = [
 
 const DEFAULT_PRICING_PLANS = [
   {
-    tier: "studio",
-    badge: "Terbaik",
-    badgeBg: "bg-gradient-to-r from-amber-500 to-orange-500 text-white",
-    name: "Studio",
-    price: "Rp 749.000",
-    period: "/bulan",
-    posts: "1.000 posts",
-    postsDetail: "~33 post/hari",
-    color: "from-amber-500 to-orange-600",
-    iconBg: "bg-amber-100 text-amber-600",
-    border: "border-amber-200",
+    tier: "trial",
+    badge: "Gratis 3 Hari",
+    badgeBg: "bg-gradient-to-r from-emerald-500 to-teal-600 text-white",
+    name: "Starter Trial",
+    price: "Rp 0",
+    period: "3 hari",
+    posts: "6 posts",
+    postsDetail: "2 post/hari",
+    color: "from-slate-500 to-slate-700",
+    iconBg: "bg-slate-100 text-slate-600",
+    border: "border-slate-200",
     features: [
-      "1.000 posts/bulan",
+      "2 posts/hari",
+    ],
+    buttonText: "Mulai Trial",
+    buttonStyle: "bg-emerald-600 text-white hover:bg-emerald-700 shadow-md shadow-emerald-500/20",
+    popular: false
+  },
+  {
+    tier: "creator",
+    badge: null,
+    badgeBg: "",
+    name: "Creator",
+    price: "Rp 49.000",
+    period: "/bulan",
+    posts: "50 posts",
+    postsDetail: "~1.6 post/hari",
+    color: "from-blue-500 to-indigo-600",
+    iconBg: "bg-blue-100 text-blue-600",
+    border: "border-blue-200",
+    features: [
+      "50 posts/bulan",
       "Unlimited akun sosmed",
       "Multi-client management",
       "Semua 10+ platform",
@@ -190,7 +209,7 @@ const DEFAULT_PRICING_PLANS = [
       "KOL Manager & Deliverable Tracker",
       "Competitor Spy & Executive PDF Report",
     ],
-    buttonText: "Pilih Studio",
+    buttonText: "Pilih Creator",
     buttonStyle: "bg-slate-100 text-slate-800 hover:bg-slate-200 border border-slate-300",
     popular: false
   },
@@ -220,19 +239,19 @@ const DEFAULT_PRICING_PLANS = [
     popular: true
   },
   {
-    tier: "creator",
-    badge: null,
-    badgeBg: "",
-    name: "Creator",
-    price: "Rp 49.000",
+    tier: "studio",
+    badge: "Terbaik",
+    badgeBg: "bg-gradient-to-r from-amber-500 to-orange-500 text-white",
+    name: "Studio",
+    price: "Rp 749.000",
     period: "/bulan",
-    posts: "50 posts",
-    postsDetail: "~1.6 post/hari",
-    color: "from-blue-500 to-indigo-600",
-    iconBg: "bg-blue-100 text-blue-600",
-    border: "border-blue-200",
+    posts: "1.000 posts",
+    postsDetail: "~33 post/hari",
+    color: "from-amber-500 to-orange-600",
+    iconBg: "bg-amber-100 text-amber-600",
+    border: "border-amber-200",
     features: [
-      "50 posts/bulan",
+      "1.000 posts/bulan",
       "Unlimited akun sosmed",
       "Multi-client management",
       "Semua 10+ platform",
@@ -240,34 +259,8 @@ const DEFAULT_PRICING_PLANS = [
       "KOL Manager & Deliverable Tracker",
       "Competitor Spy & Executive PDF Report",
     ],
-    buttonText: "Pilih Creator",
+    buttonText: "Pilih Studio",
     buttonStyle: "bg-slate-100 text-slate-800 hover:bg-slate-200 border border-slate-300",
-    popular: false
-  },
-  {
-    tier: "trial",
-    badge: "Gratis 3 Hari",
-    badgeBg: "bg-gradient-to-r from-emerald-500 to-teal-600 text-white",
-    name: "Starter Trial",
-    price: "Rp 0",
-    period: "3 hari",
-    posts: "6 posts",
-    postsDetail: "2 post/hari",
-    color: "from-slate-500 to-slate-700",
-    iconBg: "bg-slate-100 text-slate-600",
-    border: "border-slate-200",
-    features: [
-      "6 posts total (2 post/hari)",
-      "Unlimited akun sosmed",
-      "Multi-client management",
-      "Semua 10+ platform",
-      "AI Assistant support analisa, brainstorm & brief",
-      "KOL Manager & Deliverable Tracker",
-      "Competitor Spy & Executive PDF Report",
-      "Wajib verifikasi WhatsApp",
-    ],
-    buttonText: "Mulai Trial",
-    buttonStyle: "bg-emerald-600 text-white hover:bg-emerald-700 shadow-md shadow-emerald-500/20",
     popular: false
   }
 ];
@@ -334,9 +327,9 @@ export default function LandingHomePage() {
             };
           });
 
-          // Sort from most expensive to cheapest (Studio -> Agency -> Creator -> Trial)
-          const tierOrder: Record<string, number> = { studio: 4, agency: 3, creator: 2, trial: 1 };
-          mapped.sort((a, b) => (tierOrder[b.tier] || 0) - (tierOrder[a.tier] || 0));
+          // Sort from cheapest to most expensive (Trial -> Creator -> Agency -> Studio)
+          const tierOrder: Record<string, number> = { trial: 1, creator: 2, agency: 3, studio: 4 };
+          mapped.sort((a, b) => (tierOrder[a.tier] || 0) - (tierOrder[b.tier] || 0));
           setPricingPlans(mapped);
         }
       })

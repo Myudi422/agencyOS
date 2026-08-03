@@ -139,6 +139,8 @@ def override_user_subscription(
 def get_plans(admin: User = Depends(require_admin), db: Session = Depends(get_db)):
     """List all plans (including inactive)."""
     plans = db.query(SubscriptionPlan).all()
+    tier_order = {"trial": 1, "creator": 2, "agency": 3, "studio": 4}
+    plans_sorted = sorted(plans, key=lambda p: tier_order.get(p.tier.value if hasattr(p.tier, "value") else str(p.tier), 99))
     return [
         {
             "id": p.id,
@@ -152,7 +154,7 @@ def get_plans(admin: User = Depends(require_admin), db: Session = Depends(get_db
             "is_active": p.is_active,
             "features": p.features or [],
         }
-        for p in plans
+        for p in plans_sorted
     ]
 
 

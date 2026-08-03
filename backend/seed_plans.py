@@ -23,11 +23,7 @@ PLANS = [
         "duration_days": 3,
         "post_quota": 6,  # 2 posts/day × 3 days
         "features": [
-            "✅ 6 posts total (2 post/hari)",
-            "✅ Gratis tanpa biaya (Rp 0)",
-            "✅ Unlimited akun sosmed",
-            "✅ Semua platform didukung",
-            "⏱️ Berlaku 3 hari",
+            "✅ 2 posts/hari",
         ],
     },
     {

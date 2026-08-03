@@ -47,27 +47,43 @@ const TIER_UI_META: Record<string, any> = {
 };
 
 const TIER_ORDER: Record<string, number> = {
-  studio: 4,
-  agency: 3,
-  creator: 2,
   trial: 1,
+  creator: 2,
+  agency: 3,
+  studio: 4,
 };
 
 const DEFAULT_PLANS = [
   {
-    tier: "studio",
-    name: "Studio",
-    price: "Rp 749.000",
-    period: "/bulan",
-    posts: "1.000 posts",
-    postsDetail: "~33 post/hari",
-    icon: Building2,
-    color: "from-amber-500 to-orange-600",
-    iconBg: "bg-amber-100 text-amber-600",
-    border: "border-amber-200",
-    badge: "Terbaik",
+    tier: "trial",
+    name: "Starter Trial",
+    price: "Rp 0",
+    period: "3 hari",
+    posts: "6 posts",
+    postsDetail: "2 posts/hari",
+    icon: Zap,
+    color: "from-slate-500 to-slate-700",
+    iconBg: "bg-slate-100 text-slate-600",
+    border: "border-slate-200",
+    badge: "Gratis 3 Hari",
     features: [
-      "1.000 posts/bulan",
+      "2 posts/hari",
+    ],
+  },
+  {
+    tier: "creator",
+    name: "Creator",
+    price: "Rp 49.000",
+    period: "/bulan",
+    posts: "50 posts",
+    postsDetail: "~1.6 post/hari",
+    icon: Rocket,
+    color: "from-blue-500 to-indigo-600",
+    iconBg: "bg-blue-100 text-blue-600",
+    border: "border-blue-200",
+    badge: null,
+    features: [
+      "50 posts/bulan",
       "Unlimited akun sosmed",
       "Multi-client management",
       "Semua 10+ platform",
@@ -99,48 +115,25 @@ const DEFAULT_PLANS = [
     ],
   },
   {
-    tier: "creator",
-    name: "Creator",
-    price: "Rp 49.000",
+    tier: "studio",
+    name: "Studio",
+    price: "Rp 749.000",
     period: "/bulan",
-    posts: "50 posts",
-    postsDetail: "~1.6 post/hari",
-    icon: Rocket,
-    color: "from-blue-500 to-indigo-600",
-    iconBg: "bg-blue-100 text-blue-600",
-    border: "border-blue-200",
-    badge: null,
+    posts: "1.000 posts",
+    postsDetail: "~33 post/hari",
+    icon: Building2,
+    color: "from-amber-500 to-orange-600",
+    iconBg: "bg-amber-100 text-amber-600",
+    border: "border-amber-200",
+    badge: "Terbaik",
     features: [
-      "50 posts/bulan",
+      "1.000 posts/bulan",
       "Unlimited akun sosmed",
       "Multi-client management",
       "Semua 10+ platform",
       "AI Assistant support analisa, brainstorm & brief",
       "KOL Manager & Deliverable Tracker",
       "Competitor Spy & Executive PDF Report",
-    ],
-  },
-  {
-    tier: "trial",
-    name: "Starter Trial",
-    price: "Rp 0",
-    period: "3 hari",
-    posts: "6 posts",
-    postsDetail: "2 posts/hari",
-    icon: Zap,
-    color: "from-slate-500 to-slate-700",
-    iconBg: "bg-slate-100 text-slate-600",
-    border: "border-slate-200",
-    badge: "Gratis 3 Hari",
-    features: [
-      "6 posts total (2 post/hari)",
-      "Unlimited akun sosmed",
-      "Multi-client management",
-      "Semua 10+ platform",
-      "AI Assistant support analisa, brainstorm & brief",
-      "KOL Manager & Deliverable Tracker",
-      "Competitor Spy & Executive PDF Report",
-      "Wajib verifikasi WhatsApp",
     ],
   },
 ];
@@ -186,8 +179,8 @@ export default function PricingPage() {
               features: p.features && p.features.length > 0 ? p.features : fallbackFeatures,
             };
           });
-          // Sort from most expensive to cheapest (Studio -> Agency -> Creator -> Trial)
-          mapped.sort((a, b) => (TIER_ORDER[b.tier] || 0) - (TIER_ORDER[a.tier] || 0));
+          // Sort from cheapest to most expensive (Trial -> Creator -> Agency -> Studio)
+          mapped.sort((a, b) => (TIER_ORDER[a.tier] || 0) - (TIER_ORDER[b.tier] || 0));
           setPlans(mapped);
         }
       })
