@@ -23,13 +23,14 @@ function OAuthCallbackHandler() {
     const platform = searchParams.get("platform");
     const callbackStatus = searchParams.get("status");
 
-    // PostForMe sometimes returns "External Id already exists" when the same social account
-    // is being reconnected by a different workspace. This is NOT a fatal error —
-    // the account is still accessible in PostForMe. We just need to sync it.
+    // PostForMe returns "External Id already exists for account spc_...|No valid accounts found" in the error query param.
+    // We check full error string to handle spaces, underscores, and message variants cleanly.
+    const fullErrorStr = `${error || ""} ${errorDescription || ""}`.toLowerCase();
     const isExternalIdConflict = (
-      errorDescription?.toLowerCase().includes("external id already exists") ||
-      errorDescription?.toLowerCase().includes("external_id") ||
-      error?.toLowerCase().includes("external_id")
+      fullErrorStr.includes("external id") ||
+      fullErrorStr.includes("external_id") ||
+      fullErrorStr.includes("already exists") ||
+      fullErrorStr.includes("no valid accounts found")
     );
 
     if (error && !isExternalIdConflict) {

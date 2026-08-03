@@ -241,25 +241,34 @@ async def postforme_sync_accounts(
         pf_res = await postforme_service.get_social_accounts(external_id=[target_ws.id], limit=100)
         pf_accounts = pf_res.get("data", [])
 
-        # Step 2: Also fetch accounts already linked in local DB for this workspace (for re-sync)
-        local_pf_ids = set(
-            row.postforme_account_id
-            for row in db.query(SocialAccount).filter(
-                SocialAccount.workspace_id == target_ws.id,
-                SocialAccount.postforme_account_id.isnot(None)
-            ).all()
-        )
+        # Step 2: Fetch ALL PostForMe accounts in project to handle cross-workspace shared accounts and fallback reconnects
+        all_pf_res = await postforme_service.get_social_accounts(limit=200)
+        all_pf_accounts = all_pf_res.get("data", [])
 
-        # Step 3: If a local account exists that's not in the external_id-filtered list,
-        # try fetching it by ID to refresh its data
-        pf_account_ids_in_result = {a.get("id") for a in pf_accounts}
-        extra_ids = local_pf_ids - pf_account_ids_in_result
-        if extra_ids:
-            # Fallback: fetch all and filter by known local pf IDs
-            all_pf_res = await postforme_service.get_social_accounts(limit=200)
-            for acc in all_pf_res.get("data", []):
-                if acc.get("id") in extra_ids and acc.get("id") not in pf_account_ids_in_result:
-                    pf_accounts.append(acc)
+        pf_account_ids_in_result = {a.get("id") for a in pf_accounts if a.get("id")}
+        
+        # Check all existing usernames/IDs in local DB across any workspace in system
+        known_system_accounts = {
+            (acc.platform.value if hasattr(acc.platform, "value") else str(acc.platform), acc.username.lower())
+            for acc in db.query(SocialAccount).all()
+        }
+        known_system_pf_ids = {
+            acc.postforme_account_id for acc in db.query(SocialAccount).filter(SocialAccount.postforme_account_id.isnot(None)).all()
+        }
+
+        for acc in all_pf_accounts:
+            acc_id = acc.get("id")
+            if not acc_id or acc_id in pf_account_ids_in_result:
+                continue
+            
+            p_str = acc.get("platform", "instagram").lower()
+            u_str = (acc.get("username") or acc.get("name") or "").lower()
+            ext_id = acc.get("external_id")
+
+            # Include if tagged to target_ws, or if already known in DB system, or if active in PostForMe
+            if ext_id == target_ws.id or acc_id in known_system_pf_ids or (p_str, u_str) in known_system_accounts:
+                pf_accounts.append(acc)
+                pf_account_ids_in_result.add(acc_id)
 
         synced_count = 0
 
