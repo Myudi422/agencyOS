@@ -1,7 +1,7 @@
 # Graph Report - agencyOS  (2026-08-03)
 
 ## Corpus Check
-- 133 files · ~757,032 words
+- 133 files · ~757,233 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
@@ -10,7 +10,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `9151f51d`
+- Built from commit: `a6aab48d`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -32,7 +32,7 @@
 - .apply_watermark
 - GeminiService
 - compilerOptions
-- clsx
+- firebase
 - get_user_workspace
 - fetchApi
 - InstagrapiService
@@ -212,7 +212,7 @@ Nodes (14): create_snap_transaction(), get_core_api_client(), get_snap_client(),
 
 ### Community 26 - "dependencies"
 Cohesion: 0.13
-Nodes (15): firebase, dependencies, firebase, jspdf, lucide-react, react-dom, react-is, recharts (+7 more)
+Nodes (15): clsx, dependencies, clsx, jspdf, lucide-react, react-dom, react-is, recharts (+7 more)
 
 ### Community 27 - "competitor-spy/page.tsx"
 Cohesion: 0.17
