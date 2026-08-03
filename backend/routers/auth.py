@@ -210,36 +210,17 @@ async def postforme_sync_accounts(
 
     try:
         from backend.services.postforme_service import postforme_service
-        # Strictly fetch accounts for this specific workspace_id
-        pf_res = await postforme_service.get_social_accounts(external_id=[target_ws.id], limit=100)
+        # Fetch all active accounts from PostForMe project
+        pf_res = await postforme_service.get_social_accounts(limit=100)
         pf_accounts = pf_res.get("data", [])
-
-        # Collect valid PostForMe account IDs that belong to this workspace
-        valid_pf_ids = set()
-        for acc in pf_accounts:
-            acc_ext_id = acc.get("external_id")
-            if acc_ext_id == target_ws.id and acc.get("id"):
-                valid_pf_ids.add(acc.get("id"))
-
-        # Auto-cleanup orphaned/unowned accounts in local DB for this workspace
-        local_accounts = db.query(SocialAccount).filter(SocialAccount.workspace_id == target_ws.id).all()
-        removed_count = 0
-        for local_acc in local_accounts:
-            if local_acc.postforme_account_id and local_acc.postforme_account_id not in valid_pf_ids:
-                logger.info(f"Auto-cleaning unowned/orphaned account @{local_acc.username} (pf_id: {local_acc.postforme_account_id})")
-                db.delete(local_acc)
-                removed_count += 1
 
         synced_count = 0
 
         for acc in pf_accounts:
-            acc_ext_id = acc.get("external_id")
-            # Strict multi-tenancy check: external_id MUST equal target_ws.id
-            if acc_ext_id != target_ws.id:
-                logger.info(f"Skipping account {acc.get('id')} with mismatched external_id: {acc_ext_id} (expected {target_ws.id})")
+            pf_id = acc.get("id")
+            if not pf_id:
                 continue
 
-            pf_id = acc.get("id")
             platform_str = acc.get("platform", "instagram").lower()
             username = acc.get("username") or acc.get("name") or "user"
             name = acc.get("name") or username
@@ -250,7 +231,6 @@ async def postforme_sync_accounts(
             # Extract followers count from PostForMe data/metadata recursively
             followers = extract_followers_count(acc)
 
-            # Check if existing record
             try:
                 enum_platform = AccountPlatform(platform_str)
             except ValueError:
@@ -269,6 +249,12 @@ async def postforme_sync_accounts(
                 ).first()
 
             if not existing:
+                # Inherit briefing and watermark_config from sibling account if present
+                sibling = db.query(SocialAccount).filter(
+                    SocialAccount.platform == enum_platform,
+                    SocialAccount.username == username
+                ).first()
+
                 existing = SocialAccount(
                     workspace_id=target_ws.id,
                     client_id=target_client.id,
@@ -280,7 +266,9 @@ async def postforme_sync_accounts(
                     avatar_url=profile_photo_url or "",
                     access_token_encrypted="postforme_managed",
                     status=AccountStatus.CONNECTED,
-                    followers_count=followers
+                    followers_count=followers,
+                    briefing=sibling.briefing if sibling else None,
+                    watermark_config=sibling.watermark_config if sibling else None
                 )
                 db.add(existing)
             else:
@@ -295,11 +283,11 @@ async def postforme_sync_accounts(
             synced_count += 1
 
         db.commit()
-        return {"status": "success", "synced_count": synced_count, "removed_count": removed_count, "total_pf_accounts": len(pf_accounts)}
+        return {"status": "success", "synced_count": synced_count, "total_pf_accounts": len(pf_accounts)}
     except Exception as e:
         logger.error(f"PostForMe sync error: {e}")
         db.rollback()
-        raise HTTPException(status_code=500, detail=f"Failed to sync accounts from PostForMe: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to sync accounts: {str(e)}")
 
 @router.post("/postforme/connect-bluesky")
 async def postforme_connect_bluesky(
