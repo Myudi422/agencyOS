@@ -46,6 +46,7 @@ class PostCreate(BaseModel):
     scheduled_at: Optional[str] = None # ISO format string
     action: Optional[str] = "publish_now" # publish_now, schedule, save_draft
     publish_now: Optional[bool] = None
+    apply_watermark: Optional[bool] = False
 
 class PostUpdate(BaseModel):
     caption: Optional[str] = None
@@ -62,6 +63,7 @@ class PostUpdate(BaseModel):
     target_account_ids: Optional[List[str]] = None
     action: Optional[str] = None
     publish_now: Optional[bool] = None
+    apply_watermark: Optional[bool] = None
 
 class PostPatch(BaseModel):
     """Partial update payload from frontend queue manager."""
@@ -269,6 +271,10 @@ async def create_post(
     # Brief is only kept for draft or scheduled posts; clear if publishing now
     final_brief = None if action_type == "publish_now" else data.ai_brief
 
+    platform_configs = data.platform_configurations or {}
+    if data.apply_watermark is not None:
+        platform_configs["apply_watermark"] = data.apply_watermark
+
     post = Post(
         workspace_id=data.workspace_id,
         client_id=data.client_id,
@@ -280,7 +286,7 @@ async def create_post(
         location=data.location,
         alt_text=data.alt_text,
         media_urls=data.media_urls,
-        platform_configurations=data.platform_configurations,
+        platform_configurations=platform_configs,
         scheduled_at=sched_dt,
         status=initial_status,
         created_by=current_user.full_name,
@@ -349,6 +355,10 @@ async def update_post(
         post.media_urls = data.media_urls
     if data.platform_configurations is not None:
         post.platform_configurations = data.platform_configurations
+    if data.apply_watermark is not None:
+        configs = dict(post.platform_configurations or {})
+        configs["apply_watermark"] = data.apply_watermark
+        post.platform_configurations = configs
     if data.scheduled_at is not None:
         try:
             post.scheduled_at = datetime.fromisoformat(data.scheduled_at.replace("Z", "+00:00"))

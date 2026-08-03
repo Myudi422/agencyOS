@@ -74,10 +74,67 @@ class QueueService:
 
             target_account_id = account.postforme_account_id or account.platform_account_id or account.id
 
+            # Check if watermark should be applied
+            apply_wm = bool((post.platform_configurations or {}).get("apply_watermark"))
+            wm_config = account.watermark_config or {
+                "default_mode": "text",
+                "text_content": f"@{account.username}",
+                "text_color": "#ffffff",
+                "position": "bottom_right",
+                "opacity": 0.8,
+                "scale": 0.2
+            }
+
+            effective_media_urls = []
+            if apply_wm and post.media_urls:
+                from backend.services.watermark_service import watermark_service
+                import httpx
+                import io
+
+                for u in post.media_urls:
+                    clean_u = u.split("?")[0].split("#")[0].lower()
+                    # Apply watermark only on image formats (JPG, PNG, WebP)
+                    if clean_u.endswith((".jpg", ".jpeg", ".png", ".webp")) or not clean_u.endswith((".mp4", ".mov", ".webm", ".avi", ".mkv", ".flv")):
+                        try:
+                            logger.info(f"Applying watermark for account @{account.username} on image {u}...")
+                            with httpx.Client(timeout=15.0, follow_redirects=True) as client:
+                                resp = client.get(u)
+                                if resp.status_code == 200:
+                                    wm_img = watermark_service.apply_watermark(resp.content, wm_config)
+                                    buf = io.BytesIO()
+                                    wm_img.save(buf, format="JPEG", quality=92)
+                                    buf.seek(0)
+                                    
+                                    # Upload watermarked image to PostForMe storage
+                                    up_res = await postforme_service.create_upload_url("image/jpeg")
+                                    if up_res.get("upload_url") and up_res.get("media_url"):
+                                        async with httpx.AsyncClient(timeout=30.0) as async_client:
+                                            put_res = await async_client.put(
+                                                up_res["upload_url"],
+                                                headers={"Content-Type": "image/jpeg"},
+                                                content=buf.getvalue()
+                                            )
+                                            if put_res.status_code in (200, 201, 204):
+                                                effective_media_urls.append(up_res["media_url"])
+                                                logger.info(f"✅ Watermarked image uploaded to PostForMe CDN: {up_res['media_url']}")
+                                            else:
+                                                effective_media_urls.append(u)
+                                    else:
+                                        effective_media_urls.append(u)
+                                else:
+                                    effective_media_urls.append(u)
+                        except Exception as wm_err:
+                            logger.error(f"Failed to apply watermark on image {u}: {wm_err}")
+                            effective_media_urls.append(u)
+                    else:
+                        effective_media_urls.append(u)
+            else:
+                effective_media_urls = post.media_urls or []
+
             # Format SocialPostMediaDto (URL, thumbnail_url, thumbnail_timestamp_ms)
             media_list = []
             media_thumbs = (post.platform_configurations or {}).get("media_thumbnails") or {}
-            for idx, u in enumerate(post.media_urls or []):
+            for idx, u in enumerate(effective_media_urls):
                 item: Dict[str, Any] = {"url": u}
                 thumb_info = media_thumbs.get(str(idx)) or media_thumbs.get("0")
                 if thumb_info:
@@ -93,7 +150,7 @@ class QueueService:
             # Strip internal-only keys from platform_configurations before sending to PostForMe API
             raw_configs = post.platform_configurations or {}
             pf_platform_configs: Dict[str, Any] = {}
-            INTERNAL_ONLY_KEYS = {"media_thumbnails"}
+            INTERNAL_ONLY_KEYS = {"media_thumbnails", "apply_watermark"}
             for platform_key, platform_val in raw_configs.items():
                 if platform_key in INTERNAL_ONLY_KEYS:
                     continue

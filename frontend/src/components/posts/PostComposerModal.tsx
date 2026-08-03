@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { 
   X, Image as ImageIcon, Video, Layers, 
   Send, Clock, Save, CheckCircle2, Sparkles, Folder, Check, Calendar,
@@ -71,6 +72,7 @@ const FieldTooltip = ({ text }: { text: string }) => (
 );
 
 export default function PostComposerModal() {
+  const router = useRouter();
   const { isComposerOpen, closeComposer, activeWorkspace, composerPreselectedAccounts, composerInitialPost, composerInitialBrief } = useStore();
 
   // Mobile View Switcher (Editor vs Preview)
@@ -351,8 +353,17 @@ export default function PostComposerModal() {
       toast.success("Brief & Teks dari Shiera AI berhasil dimasukkan ke Composer!");
     } else if (isComposerOpen && !composerInitialPost && !composerInitialBrief) {
       setEditingPostId(null);
+      setCaption("");
+      setHashtags("#Shiera #SocialMedia #Marketing");
       setAiBriefText("");
       setShowBriefPanel(false);
+      setMediaUrls([]);
+      setNewMediaInput("");
+      setShowUrlInput(false);
+      setScheduledAt("");
+      setActionType("publish_now");
+      setApplyWatermark(false);
+      setReelsThumbnailUrl("");
     }
   }, [isComposerOpen, composerInitialPost, composerInitialBrief]);
 
@@ -645,7 +656,8 @@ export default function PostComposerModal() {
       },
       linkedin: {
         reshare_post_id: linkedinResharePostId.trim() || null
-      }
+      },
+      apply_watermark: applyWatermark
     };
 
     const payload = {
@@ -660,6 +672,7 @@ export default function PostComposerModal() {
       scheduled_at: actionType === "schedule" && scheduledAt ? scheduledAtToUtcIso(scheduledAt) : null,
       action: actionType,
       publish_now: actionType === "publish_now",
+      apply_watermark: applyWatermark,
       platform_configurations: platformConfigs
     };
 
@@ -688,6 +701,7 @@ export default function PostComposerModal() {
       );
       setIsSubmitting(false);
       closeComposer();
+      router.push("/queue");
     } catch (err: any) {
       console.error("Post submit error:", err);
       toast.error(`Gagal membuat post: ${err.message || err}`);

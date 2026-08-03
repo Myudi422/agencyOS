@@ -178,12 +178,22 @@ def update_account_watermark(
 
     config_data = payload.dict(exclude_unset=True)
     config_data["updated_at"] = datetime.utcnow().isoformat()
-    account.watermark_config = config_data
+
+    # Sync watermark config to ALL matching social account instances across workspaces (Single Source of Truth)
+    matching_accounts = db.query(SocialAccount).filter(
+        SocialAccount.platform == account.platform,
+        SocialAccount.username == account.username
+    ).all()
+
+    for acc in matching_accounts:
+        acc.watermark_config = config_data
+
     db.commit()
 
     return {
         "account_id": account.id,
         "status": "success",
+        "synced_count": len(matching_accounts),
         "watermark_config": account.watermark_config
     }
 
@@ -216,11 +226,23 @@ def get_account_briefing(
     if not account:
         raise HTTPException(status_code=404, detail="Account not found")
     get_user_workspace(current_user, account.workspace_id, db)
+
+    # Inherit briefing from sibling account if empty
+    briefing = account.briefing
+    if not briefing:
+        sibling = db.query(SocialAccount).filter(
+            SocialAccount.platform == account.platform,
+            SocialAccount.username == account.username,
+            SocialAccount.briefing.isnot(None)
+        ).first()
+        if sibling:
+            briefing = sibling.briefing
+
     return {
         "account_id": account.id,
         "username": account.username,
         "platform": account.platform.value,
-        "briefing": account.briefing or {}
+        "briefing": briefing or {}
     }
 
 @router.put("/{account_id}/briefing")
@@ -237,12 +259,22 @@ def update_account_briefing(
 
     briefing_data = payload.dict(exclude_unset=True)
     briefing_data["updated_at"] = datetime.utcnow().isoformat()
-    account.briefing = briefing_data
+
+    # Sync briefing to ALL matching social account instances across workspaces (Single Source of Truth)
+    matching_accounts = db.query(SocialAccount).filter(
+        SocialAccount.platform == account.platform,
+        SocialAccount.username == account.username
+    ).all()
+
+    for acc in matching_accounts:
+        acc.briefing = briefing_data
+
     db.commit()
 
     return {
         "account_id": account.id,
         "status": "success",
+        "synced_count": len(matching_accounts),
         "briefing": account.briefing
     }
 

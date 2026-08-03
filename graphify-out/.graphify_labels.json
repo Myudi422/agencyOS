@@ -50,6 +50,7 @@
   "48": "[token]/page.tsx",
   "49": "migrate_publish_results.py",
   "50": "date-fns",
+  "51": "clsx",
   "52": "next.config.js",
   "53": "next-env.d.ts",
   "54": "html2canvas",
@@ -65,6 +66,5 @@
   "66": "migrate_kol.py",
   "67": "migrate_wa_otp.py",
   "68": "competitors.py",
-  "69": "react",
   "71": "seed.py"
 }
