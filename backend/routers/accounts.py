@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Header
 # pyrefly: ignore [missing-import]
 from sqlalchemy.orm import Session
 # pyrefly: ignore [missing-import]
-from sqlalchemy import or_, desc, asc
+from sqlalchemy import or_, desc, asc, text
 from pydantic import BaseModel
 from typing import List, Optional
 from datetime import datetime
@@ -81,9 +81,20 @@ def get_accounts(
     else:
         query = query.order_by(asc(sort_col))
 
-    total = query.count()
-    offset = (page - 1) * limit
-    accounts = query.offset(offset).limit(limit).all()
+    try:
+        total = query.count()
+        offset = (page - 1) * limit
+        accounts = query.offset(offset).limit(limit).all()
+    except Exception as e:
+        if "watermark_config" in str(e):
+            db.rollback()
+            db.execute(text("ALTER TABLE social_accounts ADD COLUMN IF NOT EXISTS watermark_config JSON DEFAULT '{}';"))
+            db.commit()
+            total = query.count()
+            offset = (page - 1) * limit
+            accounts = query.offset(offset).limit(limit).all()
+        else:
+            raise e
 
     clients_dict = {
         c.id: c.name for c in db.query(Client).filter(Client.workspace_id == workspace_id).all()

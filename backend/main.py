@@ -46,11 +46,16 @@ except ModuleNotFoundError:
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("AgencyOS-Main")
 
-# Create Database tables safely (non-blocking for serverless/cold-start)
+from sqlalchemy import text
+
+# Create Database tables & apply self-healing schema migrations
 try:
     Base.metadata.create_all(bind=engine)
+    with engine.connect() as conn:
+        conn.execute(text("ALTER TABLE social_accounts ADD COLUMN IF NOT EXISTS watermark_config JSON DEFAULT '{}';"))
+        conn.commit()
 except Exception as e:
-    logger.warning(f"Base.metadata.create_all skipped/warning: {e}")
+    logger.warning(f"Base.metadata.create_all or auto-migration skipped/warning: {e}")
 
 app = FastAPI(
     title=settings.APP_NAME,
