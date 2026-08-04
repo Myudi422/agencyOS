@@ -412,27 +412,30 @@ export default function AccountsPage() {
                 }`}
               >
                 <div className="flex items-start justify-between gap-2">
-                  <div className="flex items-center gap-3">
-                    {acc.avatar_url ? (
-                      <img
-                        src={acc.avatar_url}
-                        alt={acc.name}
-                        onError={(e) => {
-                          const img = e.target as HTMLImageElement;
-                          img.style.display = 'none';
-                          const fallback = img.nextElementSibling as HTMLElement;
-                          if (fallback) fallback.style.display = 'flex';
-                        }}
-                        className="w-11 h-11 rounded-2xl object-cover border border-slate-200 shadow-xs"
-                      />
-                    ) : null}
-                    <div
-                      className={`w-11 h-11 rounded-2xl items-center justify-center border border-slate-200 shadow-xs bg-gradient-to-br ${platMeta.color} text-white ${acc.avatar_url ? 'hidden' : 'flex'}`}
-                      style={{ display: acc.avatar_url ? 'none' : 'flex' }}
-                    >
-                      <platMeta.icon className="w-5 h-5" />
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="relative shrink-0">
+                      {acc.avatar_url ? (
+                        <img
+                          src={acc.avatar_url}
+                          alt={acc.name}
+                          onError={(e) => {
+                            const img = e.target as HTMLImageElement;
+                            img.style.display = 'none';
+                            const fallback = img.nextElementSibling as HTMLElement;
+                            if (fallback) fallback.style.display = 'flex';
+                          }}
+                          className="w-11 h-11 rounded-2xl object-cover border border-slate-200 shadow-xs"
+                        />
+                      ) : null}
+                      <div
+                        className={`w-11 h-11 rounded-2xl items-center justify-center border border-slate-200 shadow-xs bg-gradient-to-br ${platMeta.color} text-white ${acc.avatar_url ? 'hidden' : 'flex'}`}
+                        style={{ display: acc.avatar_url ? 'none' : 'flex' }}
+                      >
+                        <platMeta.icon className="w-5 h-5" />
+                      </div>
+                      <span className="absolute -bottom-1 -right-1 flex h-3.5 w-3.5 items-center justify-center rounded-full border-2 border-white bg-emerald-500 shadow-sm" title="Connected" />
                     </div>
-                    <div>
+                    <div className="min-w-0">
                       <h3 className="text-xs font-bold text-slate-900 truncate max-w-[110px] sm:max-w-[140px]">{acc.name || acc.username}</h3>
                       <p className="text-[11px] text-slate-500 font-medium">@{acc.username}</p>
                       <span className={`inline-block text-[10px] px-2 py-0.5 rounded-md font-bold mt-1 ${platMeta.bgBadge}`}>
@@ -453,14 +456,6 @@ export default function AccountsPage() {
                 </div>
 
                 <div className="flex flex-col gap-3 pt-3 border-t border-slate-100 text-xs">
-                  {/* Status Indicator: Green Dot Icon Only */}
-                  <div className="flex items-center gap-1 shrink-0" title="Akun Terkoneksi (Connected)">
-                    <span className="relative flex h-2.5 w-2.5">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                      <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500" />
-                    </span>
-                  </div>
-                  
                   {/* Action Buttons */}
                   <div className="flex flex-wrap items-center justify-end gap-1 shrink-0">
                     {(() => {
