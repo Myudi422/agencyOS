@@ -253,9 +253,9 @@ export default function AccountsPage() {
   };
 
   return (
-    <div className="space-y-6 pb-12">
+    <div className="space-y-4 sm:space-y-6 pb-12 min-w-0">
       {/* Header Banner - White Clean Glassmorphism */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 sm:p-8 rounded-3xl glass-panel relative overflow-hidden shadow-sm">
+      <div className="flex flex-col gap-4 p-4 sm:p-6 lg:p-8 rounded-3xl glass-panel relative overflow-hidden shadow-sm">
         <div className="space-y-1.5 z-10">
           <div className="flex items-center gap-2">
             <span className="px-3 py-1 rounded-full bg-purple-100 text-purple-700 text-[11px] font-bold tracking-wide uppercase border border-purple-200">
@@ -271,19 +271,19 @@ export default function AccountsPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-3 z-10 shrink-0">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 z-10 shrink-0 w-full sm:w-auto">
           <button
             onClick={handleSyncAccounts}
             disabled={isSyncing}
             title="Sync ulang data dari PostForMe (foto profil & followers)"
-            className="py-2.5 px-4 rounded-2xl bg-white border border-slate-200 text-slate-600 font-semibold text-xs flex items-center gap-2 hover:bg-slate-50 hover:border-slate-300 transition-all disabled:opacity-60"
+            className="w-full sm:w-auto justify-center py-2.5 px-4 rounded-2xl bg-white border border-slate-200 text-slate-600 font-semibold text-xs flex items-center gap-2 hover:bg-slate-50 hover:border-slate-300 transition-all disabled:opacity-60"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
             <span>{isSyncing ? 'Syncing...' : 'Sync'}</span>
           </button>
           <button
             onClick={() => setIsConnectModalOpen(true)}
-            className="py-3 px-5 rounded-2xl gradient-brand text-white font-semibold text-xs sm:text-sm flex items-center gap-2 shadow-md shadow-purple-500/25 hover:shadow-lg hover:shadow-purple-500/35 hover:scale-[1.02] active:scale-[0.98] transition-all"
+            className="w-full sm:w-auto justify-center py-3 px-5 rounded-2xl gradient-brand text-white font-semibold text-xs sm:text-sm flex items-center gap-2 shadow-md shadow-purple-500/25 hover:shadow-lg hover:shadow-purple-500/35 hover:scale-[1.02] active:scale-[0.98] transition-all"
           >
             <Plus className="w-4 h-4" />
             <span>Connect Channel</span>
@@ -292,8 +292,8 @@ export default function AccountsPage() {
       </div>
 
       {/* Filter & Controls Bar */}
-      <div className="p-4 rounded-2xl glass-card space-y-3">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+      <div className="p-3 sm:p-4 rounded-2xl glass-card space-y-3 min-w-0">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           
           {/* Search Box */}
           <div className="relative flex-1">
@@ -308,7 +308,7 @@ export default function AccountsPage() {
           </div>
 
           {/* Controls: Sort, Favorites & View Toggle */}
-          <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 flex-wrap">
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
@@ -322,7 +322,7 @@ export default function AccountsPage() {
 
             <button
               onClick={() => setFavoritesOnly(prev => !prev)}
-              className={`px-3 py-2 rounded-xl border text-xs font-semibold flex items-center gap-1.5 transition-all ${
+              className={`w-full sm:w-auto justify-center px-3 py-2 rounded-xl border text-xs font-semibold flex items-center gap-1.5 transition-all ${
                 favoritesOnly
                   ? "bg-amber-100 text-amber-800 border-amber-300 shadow-xs"
                   : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50"
@@ -333,7 +333,7 @@ export default function AccountsPage() {
             </button>
 
             {/* View Mode Toggle */}
-            <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200">
+            <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200 self-start sm:self-auto">
               <button
                 onClick={() => setViewMode("grid")}
                 className={`p-1.5 rounded-lg transition-all ${viewMode === "grid" ? "bg-purple-600 text-white shadow-xs" : "text-slate-500 hover:text-slate-800"}`}
@@ -351,7 +351,7 @@ export default function AccountsPage() {
         </div>
 
         {/* Platform Pills Horizontal Scroll */}
-        <div className="flex items-center gap-2 overflow-x-auto pt-1 pb-1 no-scrollbar border-t border-slate-100">
+        <div className="flex flex-wrap items-center gap-2 overflow-x-auto pt-1 pb-1 no-scrollbar border-t border-slate-100">
           <button
             onClick={() => setPlatformFilter("all")}
             className={`px-3 py-1.5 rounded-xl text-xs font-semibold shrink-0 transition-all ${
@@ -399,7 +399,7 @@ export default function AccountsPage() {
           </button>
         </div>
       ) : viewMode === "grid" ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-3 sm:gap-4">
           {accounts.map((acc) => {
             const platMeta = PLATFORMS_CONFIG.find(p => p.id === acc.platform) || PLATFORMS_CONFIG[0];
             const isSelected = selectedIds.includes(acc.id);
@@ -407,11 +407,11 @@ export default function AccountsPage() {
             return (
               <div
                 key={acc.id}
-                className={`p-5 rounded-2xl glass-card relative space-y-4 transition-all ${
+                className={`p-4 sm:p-5 rounded-2xl glass-card relative space-y-4 transition-all min-w-0 ${
                   isSelected ? "border-purple-400 bg-purple-50/40" : ""
                 }`}
               >
-                <div className="flex items-start justify-between">
+                <div className="flex items-start justify-between gap-2">
                   <div className="flex items-center gap-3">
                     {acc.avatar_url ? (
                       <img
@@ -433,7 +433,7 @@ export default function AccountsPage() {
                       <platMeta.icon className="w-5 h-5" />
                     </div>
                     <div>
-                      <h3 className="text-xs font-bold text-slate-900 truncate max-w-[120px]">{acc.name || acc.username}</h3>
+                      <h3 className="text-xs font-bold text-slate-900 truncate max-w-[110px] sm:max-w-[140px]">{acc.name || acc.username}</h3>
                       <p className="text-[11px] text-slate-500 font-medium">@{acc.username}</p>
                       <span className={`inline-block text-[10px] px-2 py-0.5 rounded-md font-bold mt-1 ${platMeta.bgBadge}`}>
                         {platMeta.name}
@@ -452,7 +452,7 @@ export default function AccountsPage() {
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between pt-3 border-t border-slate-100 text-xs">
+                <div className="flex flex-col gap-3 pt-3 border-t border-slate-100 text-xs">
                   {/* Status Indicator: Green Dot Icon Only */}
                   <div className="flex items-center gap-1 shrink-0" title="Akun Terkoneksi (Connected)">
                     <span className="relative flex h-2.5 w-2.5">
@@ -462,7 +462,7 @@ export default function AccountsPage() {
                   </div>
                   
                   {/* Action Buttons */}
-                  <div className="flex items-center gap-1 shrink-0">
+                  <div className="flex flex-wrap items-center justify-end gap-1 shrink-0">
                     {(() => {
                       const isBriefed = acc.briefing && Object.keys(acc.briefing).some(k => k !== 'updated_at' && Boolean(acc.briefing[k]));
                       return (
@@ -515,8 +515,8 @@ export default function AccountsPage() {
         </div>
       ) : (
         /* List View */
-        <div className="p-4 rounded-2xl glass-card overflow-x-auto">
-          <table className="w-full text-left text-xs text-slate-700">
+        <div className="p-2 sm:p-4 rounded-2xl glass-card overflow-x-auto min-w-0">
+          <table className="min-w-[620px] w-full text-left text-xs text-slate-700">
             <thead>
               <tr className="border-b border-slate-200 text-slate-400 uppercase text-[10px] font-bold">
                 <th className="py-3 px-4">Channel</th>
