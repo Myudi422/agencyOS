@@ -1,7 +1,7 @@
 # Graph Report - agencyOS  (2026-08-04)
 
 ## Corpus Check
-- 133 files · ~758,003 words
+- 133 files · ~758,157 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
@@ -10,7 +10,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `a1f6a2f7`
+- Built from commit: `9f5a9e53`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -147,8 +147,8 @@ Cohesion: 0.10
 Nodes (18): OAuthCallbackHandler(), CalendarImageThumbnail(), CalendarPage(), getProxiedImageUrl(), PLATFORM_ICONS, PLATFORM_LABELS, DashboardImageThumbnail(), DashboardPage() (+10 more)
 
 ### Community 9 - "models.py"
-Cohesion: 0.20
-Nodes (8): get_db(), JobStatus, Reset Subscriptions Script — Clears all user subscriptions in DB. Run: python…, BaseModel, RescheduleRequest, Firebase Auth Router — /auth/firebase Verifies Google Firebase ID Token and…, Dependency: requires authenticated user., require_user()
+Cohesion: 0.24
+Nodes (6): get_db(), JobStatus, Reset Subscriptions Script — Clears all user subscriptions in DB. Run: python…, Firebase Auth Router — /auth/firebase Verifies Google Firebase ID Token and…, Dependency: requires authenticated user., require_user()
 
 ### Community 10 - "api.ts"
 Cohesion: 0.12
@@ -163,8 +163,8 @@ Cohesion: 0.07
 Nodes (49): _ensure_utc(), get_calendar_posts(), _in_range(), _parse_and_ensure_utc(), Any, datetime, get, put (+41 more)
 
 ### Community 13 - "UserSubscription"
-Cohesion: 0.15
-Nodes (30): Post, PostStatus, PostTarget, PostType, Subscription aktif milik satu user., UserSubscription, create_media_upload_url(), create_post() (+22 more)
+Cohesion: 0.14
+Nodes (32): Post, PostStatus, PostTarget, PostType, Subscription aktif milik satu user., UserSubscription, BaseModel, RescheduleRequest (+24 more)
 
 ### Community 14 - ".apply_watermark"
 Cohesion: 0.20

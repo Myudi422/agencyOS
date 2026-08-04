@@ -254,6 +254,9 @@ async def postforme_sync_accounts(
         pf_res = await postforme_service.get_social_accounts(limit=50)
         pf_accounts = pf_res.get("data", [])
 
+        target_account_id = payload.get("social_account_id")
+        target_platform = payload.get("platform")
+
         synced_count = 0
 
         for acc in pf_accounts:
@@ -261,6 +264,7 @@ async def postforme_sync_accounts(
             if not pf_id:
                 continue
 
+            ext_id = acc.get("external_id")
             platform_str = acc.get("platform", "instagram").lower()
             raw_username = acc.get("username") or acc.get("name") or "user"
             username = str(raw_username).strip().lstrip("@")
@@ -272,6 +276,36 @@ async def postforme_sync_accounts(
                 enum_platform = AccountPlatform(platform_str)
             except ValueError:
                 enum_platform = AccountPlatform.INSTAGRAM
+
+            # Check workspace ownership & authorization conditions:
+            # 1. Directly tagged to target_ws via external_id
+            is_direct_owner = (ext_id == target_ws.id)
+
+            # 2. Already linked in local DB for target_ws
+            already_in_ws = db.query(SocialAccount).filter(
+                SocialAccount.workspace_id == target_ws.id,
+                (SocialAccount.postforme_account_id == pf_id) | (
+                    (SocialAccount.platform == enum_platform) & (SocialAccount.username == username)
+                )
+            ).first() is not None
+
+            # 3. Explicitly targeted during OAuth callback session (reconnecting/connecting shared account)
+            is_oauth_target = False
+            if target_account_id and pf_id == target_account_id:
+                is_oauth_target = True
+            elif target_platform and platform_str == target_platform.lower():
+                sibling_exists = db.query(SocialAccount).filter(
+                    SocialAccount.platform == enum_platform,
+                    SocialAccount.username == username
+                ).first()
+                if sibling_exists or not ext_id:
+                    is_oauth_target = True
+
+            # STRICT MULTI-TENANCY FILTER:
+            # Only sync if owned by workspace, already in workspace, or explicitly targeted during OAuth callback!
+            if not (is_direct_owner or already_in_ws or is_oauth_target):
+                logger.info(f"Skipping foreign account {pf_id} (@{username}) for workspace {target_ws.id}")
+                continue
 
             # Match by postforme_account_id first, then by platform+username within THIS workspace only
             existing = db.query(SocialAccount).filter(

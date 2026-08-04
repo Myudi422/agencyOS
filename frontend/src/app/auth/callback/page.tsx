@@ -77,7 +77,9 @@ function OAuthCallbackHandler() {
           method: "POST",
           body: JSON.stringify({
             workspace_id: targetWsId,
-            client_id: clients[0]?.id
+            client_id: clients[0]?.id,
+            social_account_id: accountId,
+            platform: platform
           })
         });
 
