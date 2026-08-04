@@ -2,6 +2,7 @@
 
 import React, { useEffect } from "react";
 import { onAuthChange, getIdToken } from "@/lib/auth";
+import { fetchApi } from "@/lib/api";
 import { useAuthStore } from "@/store/authStore";
 import { useStore } from "@/store/useStore";
 
@@ -37,32 +38,28 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
         setIdToken(token);
 
         // Verify token with backend → get AgencyOS user + subscription + workspace
-        const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-        const res = await fetch(`${API_BASE}/auth/firebase/verify`, {
+        const data = await fetchApi<any>("/auth/firebase/verify", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ id_token: token }),
         });
 
-        if (res.ok) {
-          const data = await res.json();
-          setUser(data.user);
-          setSubscription(data.subscription);
-          setNeedsOnboarding(data.needs_onboarding === true);
+        setUser(data.user);
+        setSubscription(data.subscription);
+        setNeedsOnboarding(data.needs_onboarding === true);
 
-          // Store and activate the user's workspace
-          if (data.workspace) {
-            setWorkspaceId(data.workspace.id);
-            setNeedsOnboarding(false);
-            const ws = {
-              id: data.workspace.id,
-              name: data.workspace.name,
-              slug: data.workspace.slug,
-              timezone: data.workspace.timezone || "Asia/Jakarta",
-            };
-            setWorkspaces([ws]);
-            setActiveWorkspace(ws);
-          }
+        // Store and activate the user's workspace
+        if (data.workspace) {
+          setWorkspaceId(data.workspace.id);
+          setNeedsOnboarding(false);
+          const ws = {
+            id: data.workspace.id,
+            name: data.workspace.name,
+            slug: data.workspace.slug,
+            timezone: data.workspace.timezone || "Asia/Jakarta",
+          };
+          setWorkspaces([ws]);
+          setActiveWorkspace(ws);
         }
       } catch (err) {
         console.error("Auth sync error:", err);

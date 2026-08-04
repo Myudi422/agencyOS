@@ -8,6 +8,7 @@ from backend.database import get_db
 from backend.models.models import Post, PostTarget, SocialAccount, PostType, PostStatus, ActivityLog, UserSubscription
 from backend.services.queue_service import queue_service
 from backend.services.postforme_service import postforme_service
+from backend.security import sanitize_payload, sanitize_text
 
 logger = logging.getLogger("PostsRouter")
 
@@ -23,7 +24,10 @@ async def create_media_upload_url(data: UploadUrlRequest):
     Returns { media_url, upload_url }.
     """
     try:
-        res = await postforme_service.create_upload_url(content_type=data.content_type)
+        content_type = sanitize_text(data.content_type, max_length=120, allow_newlines=False) or "image/jpeg"
+        if "/" not in content_type:
+            raise HTTPException(status_code=400, detail="content_type is invalid")
+        res = await postforme_service.create_upload_url(content_type=content_type)
         return res
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -88,6 +92,35 @@ STATUS_DB_TO_ALIAS: Dict[str, str] = {
     "failed": "failed",
     "cancelled": "cancelled",
 }
+
+
+def _sanitize_post_payload(data: PostCreate | PostUpdate) -> Dict[str, Any]:
+    payload = data.dict(exclude_unset=True)
+    sanitized = sanitize_payload(payload, max_length=4000)
+
+    for field in ("caption", "hashtags", "ai_brief", "first_comment", "location", "alt_text"):
+        if field in sanitized and sanitized[field] is not None:
+            sanitized[field] = sanitize_text(sanitized[field], max_length=2200, allow_newlines=True)
+
+    if "workspace_id" in sanitized:
+        sanitized["workspace_id"] = sanitize_text(sanitized["workspace_id"], max_length=120)
+    if "client_id" in sanitized and sanitized["client_id"] is not None:
+        sanitized["client_id"] = sanitize_text(sanitized["client_id"], max_length=120)
+    if "post_type" in sanitized:
+        sanitized["post_type"] = sanitize_text(sanitized["post_type"], max_length=24)
+    if "action" in sanitized and sanitized["action"] is not None:
+        sanitized["action"] = sanitize_text(sanitized["action"], max_length=24)
+    if "media_urls" in sanitized and isinstance(sanitized["media_urls"], list):
+        sanitized["media_urls"] = [sanitize_text(url, max_length=2048) for url in sanitized["media_urls"][:20]]
+    if "account_ids" in sanitized and isinstance(sanitized["account_ids"], list):
+        sanitized["account_ids"] = [sanitize_text(acc_id, max_length=120) for acc_id in sanitized["account_ids"][:50]]
+    if "target_account_ids" in sanitized and isinstance(sanitized["target_account_ids"], list):
+        sanitized["target_account_ids"] = [sanitize_text(acc_id, max_length=120) for acc_id in sanitized["target_account_ids"][:50]]
+    if "platform_configurations" in sanitized and isinstance(sanitized["platform_configurations"], dict):
+        sanitized["platform_configurations"] = sanitize_payload(sanitized["platform_configurations"], max_length=2000)
+
+    return sanitized
+
 
 @router.get("/")
 async def get_posts(
@@ -220,8 +253,9 @@ async def create_post(
     Supports Publish Now, Schedule, and Save Draft actions via PostForMe API.
     Enforces subscription plans and posts quota.
     """
-    selected_account_ids = data.account_ids or data.target_account_ids or []
-    action_type = data.action or ("publish_now" if data.publish_now else ("schedule" if data.scheduled_at else "save_draft"))
+    payload = _sanitize_post_payload(data)
+    selected_account_ids = payload.get("account_ids") or payload.get("target_account_ids") or []
+    action_type = payload.get("action") or ("publish_now" if payload.get("publish_now") else ("schedule" if payload.get("scheduled_at") else "save_draft"))
 
     if not selected_account_ids and action_type != "save_draft":
         raise HTTPException(status_code=400, detail="At least one target social account must be selected.")
@@ -254,9 +288,10 @@ async def create_post(
 
     # Parse scheduled_at if provided
     sched_dt = None
-    if data.scheduled_at:
+    scheduled_at = payload.get("scheduled_at")
+    if scheduled_at:
         try:
-            sched_dt = datetime.fromisoformat(data.scheduled_at.replace("Z", "+00:00"))
+            sched_dt = datetime.fromisoformat(str(scheduled_at).replace("Z", "+00:00"))
         except Exception:
             sched_dt = datetime.utcnow()
 
@@ -269,23 +304,24 @@ async def create_post(
         initial_status = PostStatus.PUBLISHING
 
     # Brief is only kept for draft or scheduled posts; clear if publishing now
-    final_brief = None if action_type == "publish_now" else data.ai_brief
+    final_brief = None if action_type == "publish_now" else payload.get("ai_brief")
 
-    platform_configs = data.platform_configurations or {}
-    if data.apply_watermark is not None:
-        platform_configs["apply_watermark"] = data.apply_watermark
+    platform_configs = payload.get("platform_configurations") or {}
+    apply_watermark = payload.get("apply_watermark")
+    if apply_watermark is not None:
+        platform_configs["apply_watermark"] = apply_watermark
 
     post = Post(
-        workspace_id=data.workspace_id,
-        client_id=data.client_id,
-        post_type=PostType(data.post_type) if data.post_type in [p.value for p in PostType] else PostType.IMAGE,
-        caption=data.caption,
-        hashtags=data.hashtags,
+        workspace_id=payload.get("workspace_id"),
+        client_id=payload.get("client_id"),
+        post_type=PostType(payload.get("post_type")) if payload.get("post_type") in [p.value for p in PostType] else PostType.IMAGE,
+        caption=payload.get("caption"),
+        hashtags=payload.get("hashtags"),
         ai_brief=final_brief,
-        first_comment=data.first_comment,
-        location=data.location,
-        alt_text=data.alt_text,
-        media_urls=data.media_urls,
+        first_comment=payload.get("first_comment"),
+        location=payload.get("location"),
+        alt_text=payload.get("alt_text"),
+        media_urls=payload.get("media_urls") or [],
         platform_configurations=platform_configs,
         scheduled_at=sched_dt,
         status=initial_status,
@@ -306,9 +342,9 @@ async def create_post(
 
     # Activity Log
     db.add(ActivityLog(
-        workspace_id=data.workspace_id,
+        workspace_id=payload.get("workspace_id"),
         action=f"CREATE_POST_{action_type.upper()}",
-        details=f"Created post ({data.post_type}) targeting {len(selected_account_ids)} accounts.",
+        details=f"Created post ({payload.get('post_type')}) targeting {len(selected_account_ids)} accounts.",
         entity_type="Post",
         entity_id=post.id
     ))
@@ -334,34 +370,35 @@ async def update_post(
     if not post:
         raise HTTPException(status_code=404, detail="Post not found")
 
-    selected_account_ids = data.account_ids or data.target_account_ids
-    action_type = data.action or ("publish_now" if data.publish_now else ("schedule" if data.scheduled_at else None))
+    payload = _sanitize_post_payload(data)
+    selected_account_ids = payload.get("account_ids") or payload.get("target_account_ids")
+    action_type = payload.get("action") or ("publish_now" if payload.get("publish_now") else ("schedule" if payload.get("scheduled_at") else None))
 
-    if data.caption is not None:
-        post.caption = data.caption
-    if data.hashtags is not None:
-        post.hashtags = data.hashtags
+    if payload.get("caption") is not None:
+        post.caption = payload.get("caption")
+    if payload.get("hashtags") is not None:
+        post.hashtags = payload.get("hashtags")
     if action_type == "publish_now":
         post.ai_brief = None
-    elif data.ai_brief is not None:
-        post.ai_brief = data.ai_brief
-    if data.first_comment is not None:
-        post.first_comment = data.first_comment
-    if data.location is not None:
-        post.location = data.location
-    if data.alt_text is not None:
-        post.alt_text = data.alt_text
-    if data.media_urls is not None:
-        post.media_urls = data.media_urls
-    if data.platform_configurations is not None:
-        post.platform_configurations = data.platform_configurations
-    if data.apply_watermark is not None:
+    elif payload.get("ai_brief") is not None:
+        post.ai_brief = payload.get("ai_brief")
+    if payload.get("first_comment") is not None:
+        post.first_comment = payload.get("first_comment")
+    if payload.get("location") is not None:
+        post.location = payload.get("location")
+    if payload.get("alt_text") is not None:
+        post.alt_text = payload.get("alt_text")
+    if payload.get("media_urls") is not None:
+        post.media_urls = payload.get("media_urls")
+    if payload.get("platform_configurations") is not None:
+        post.platform_configurations = payload.get("platform_configurations")
+    if payload.get("apply_watermark") is not None:
         configs = dict(post.platform_configurations or {})
-        configs["apply_watermark"] = data.apply_watermark
+        configs["apply_watermark"] = payload.get("apply_watermark")
         post.platform_configurations = configs
-    if data.scheduled_at is not None:
+    if payload.get("scheduled_at") is not None:
         try:
-            post.scheduled_at = datetime.fromisoformat(data.scheduled_at.replace("Z", "+00:00"))
+            post.scheduled_at = datetime.fromisoformat(str(payload.get("scheduled_at")).replace("Z", "+00:00"))
         except Exception:
             post.scheduled_at = datetime.utcnow()
 
@@ -383,8 +420,8 @@ async def update_post(
         post.status = PostStatus.SCHEDULED
     elif action_type == "publish_now":
         post.status = PostStatus.PUBLISHING
-    elif data.status is not None:
-        db_status = STATUS_ALIAS_TO_DB.get(data.status.lower(), data.status.lower())
+    elif payload.get("status") is not None:
+        db_status = STATUS_ALIAS_TO_DB.get(str(payload.get("status")).lower(), str(payload.get("status")).lower())
         try:
             post.status = PostStatus(db_status)
         except ValueError:
@@ -417,18 +454,18 @@ def patch_post(post_id: str, data: PostPatch, db: Session = Depends(get_db)):
 
     # Accept caption from flat field or from content.text
     if data.caption is not None:
-        post.caption = data.caption
+        post.caption = sanitize_text(data.caption, max_length=2200, allow_newlines=True)
     elif data.content is not None and "text" in data.content:
-        post.caption = data.content["text"]
+        post.caption = sanitize_text(str(data.content["text"]), max_length=2200, allow_newlines=True)
 
     if data.ai_brief is not None:
-        post.ai_brief = data.ai_brief
+        post.ai_brief = sanitize_text(data.ai_brief, max_length=2200, allow_newlines=True)
 
     if data.scheduled_at is not None:
-        post.scheduled_at = datetime.fromisoformat(data.scheduled_at.replace("Z", "+00:00"))
+        post.scheduled_at = datetime.fromisoformat(str(data.scheduled_at).replace("Z", "+00:00"))
 
     if data.status is not None:
-        db_status = STATUS_ALIAS_TO_DB.get(data.status.lower(), data.status.lower())
+        db_status = STATUS_ALIAS_TO_DB.get(str(data.status).lower(), str(data.status).lower())
         try:
             post.status = PostStatus(db_status)
         except ValueError:

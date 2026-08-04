@@ -22,10 +22,12 @@ if "backend" not in sys.modules:
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import logging
+import os
 
 try:
     from backend.config import settings
     from backend.database import engine, Base
+    from backend.security import SecurityMiddleware
     from backend.routers import (
         auth, workspaces, clients, accounts, media, posts, calendar, queue, activity, dashboard,
         firebase_auth, billing, admin, webhook, statistics, competitors, kol
@@ -35,6 +37,7 @@ try:
 except ModuleNotFoundError:
     from config import settings
     from database import engine, Base
+    from security import SecurityMiddleware
     from routers import (
         auth, workspaces, clients, accounts, media, posts, calendar, queue, activity, dashboard,
         firebase_auth, billing, admin, webhook, statistics, competitors, kol
@@ -64,12 +67,30 @@ app = FastAPI(
     root_path="/api/backend"
 )
 
-# Enable CORS for Next.js Frontend
+def _build_allowed_origins() -> list[str]:
+    configured = os.getenv("CORS_ALLOWED_ORIGINS", "")
+    origins = [origin.strip() for origin in configured.split(",") if origin.strip()]
+    if settings.FRONTEND_URL:
+        origins.append(settings.FRONTEND_URL)
+    origins.extend([
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "https://shiera.web.id",
+    ])
+    return list(dict.fromkeys(origins))
+
+allowed_origins = _build_allowed_origins()
+
+app.add_middleware(
+    SecurityMiddleware,
+    allowed_origins=allowed_origins,
+)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], # Allow all origins for dev/production flexibility
+    allow_origins=allowed_origins,
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allow_headers=["*"],
 )
 

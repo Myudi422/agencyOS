@@ -65,6 +65,33 @@ export default function AccountsPage() {
     }
   };
 
+  const isSafeRedirectUrl = (candidate: string) => {
+    try {
+      const url = new URL(candidate, window.location.origin);
+      const allowedHosts = [
+        "api.postforme.dev",
+        "www.facebook.com",
+        "www.instagram.com",
+        "accounts.google.com",
+        "www.linkedin.com",
+        "www.tiktok.com",
+        "tiktok.com",
+        "www.youtube.com",
+        "www.pinterest.com",
+        "bsky.app",
+        "twitter.com",
+        "x.com",
+        "threads.net",
+        "www.threads.net",
+      ];
+      return (url.protocol === "https:" || url.protocol === "http:") && (
+        url.origin === window.location.origin || allowedHosts.includes(url.hostname)
+      );
+    } catch {
+      return false;
+    }
+  };
+
   const loadAccounts = () => {
     if (!activeWorkspace?.id) return;
     setIsLoading(true);
@@ -208,7 +235,7 @@ export default function AccountsPage() {
           return;
         }
 
-        const res = await fetchApi<any>("/auth/bluesky/connect", {
+        const res = await fetchApi<any>("/auth/postforme/connect-bluesky", {
           method: "POST",
           body: JSON.stringify({
             workspace_id: activeWorkspace?.id || "ws-default",
@@ -235,7 +262,7 @@ export default function AccountsPage() {
         });
 
         const targetUrl = res.url || res.auth_url;
-        if (targetUrl) {
+        if (targetUrl && typeof targetUrl === "string" && isSafeRedirectUrl(targetUrl)) {
           if (activeWorkspace?.id) {
             localStorage.setItem("agencyos_active_ws_id", activeWorkspace.id);
           }

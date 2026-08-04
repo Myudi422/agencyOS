@@ -13,6 +13,7 @@ from backend.services.meta_adapter import meta_adapter
 from backend.services.instagrapi_service import instagrapi_service
 from backend.config import settings
 from backend.routers.firebase_auth import require_user, get_user_workspace, get_current_user_from_token
+from backend.security import normalize_identifier, sanitize_payload, sanitize_text
 
 logger = logging.getLogger("AuthRouter")
 
@@ -129,15 +130,30 @@ async def postforme_auth_url(
     """
     try:
         from backend.services.postforme_service import postforme_service
-        target_ws, _ = _get_user_target_workspace(db, current_user, req.workspace_id, req.client_id)
+
+        platform = sanitize_text(req.platform, max_length=64, allow_newlines=False).lower()
+        if not platform:
+            raise HTTPException(status_code=400, detail="platform is required")
+        allowed_platforms = {"facebook", "instagram", "x", "tiktok", "tiktok_business", "youtube", "pinterest", "linkedin", "bluesky", "threads"}
+        if platform not in allowed_platforms:
+            raise HTTPException(status_code=400, detail="Unsupported platform")
+
+        workspace_id = sanitize_text(req.workspace_id, max_length=120) if req.workspace_id else None
+        client_id = sanitize_text(req.client_id, max_length=120) if req.client_id else None
+        platform_data = sanitize_payload(req.platform_data, max_length=2000) if req.platform_data else None
+        permissions = None
+        if req.permissions:
+            permissions = [sanitize_text(p, max_length=32, allow_newlines=False) for p in req.permissions if sanitize_text(p, max_length=32, allow_newlines=False)]
+
+        target_ws, _ = _get_user_target_workspace(db, current_user, workspace_id, client_id)
 
         try:
             # First attempt: tag account to this workspace via external_id
             res = await postforme_service.generate_auth_url(
-                platform=req.platform,
-                platform_data=req.platform_data,
+                platform=platform,
+                platform_data=platform_data,
                 external_id=target_ws.id,
-                permissions=req.permissions
+                permissions=permissions
             )
         except Exception as pf_err:
             err_str = str(pf_err).lower()
@@ -156,10 +172,10 @@ async def postforme_auth_url(
                     f"({req.platform}). Retrying without external_id. Error: {pf_err}"
                 )
                 res = await postforme_service.generate_auth_url(
-                    platform=req.platform,
-                    platform_data=req.platform_data,
+                    platform=platform,
+                    platform_data=platform_data,
                     external_id=None,
-                    permissions=req.permissions
+                    permissions=permissions
                 )
             else:
                 raise
@@ -220,8 +236,9 @@ async def postforme_sync_accounts(
     Fetch all social accounts from PostForMe API and sync them into local SocialAccount database records.
     Updates workspace_id, client_id, profile_photo_url, followers_count, and connection status.
     """
-    workspace_id = payload.get("workspace_id")
-    client_id = payload.get("client_id")
+    sanitized_payload = sanitize_payload(payload, max_length=2000)
+    workspace_id = sanitized_payload.get("workspace_id")
+    client_id = sanitized_payload.get("client_id")
     if not workspace_id:
         raise HTTPException(status_code=400, detail="workspace_id is required")
 
@@ -254,8 +271,8 @@ async def postforme_sync_accounts(
         pf_res = await postforme_service.get_social_accounts(limit=50)
         pf_accounts = pf_res.get("data", [])
 
-        target_account_id = payload.get("social_account_id")
-        target_platform = payload.get("platform")
+        target_account_id = sanitized_payload.get("social_account_id")
+        target_platform = sanitized_payload.get("platform")
 
         synced_count = 0
 
@@ -294,7 +311,7 @@ async def postforme_sync_accounts(
             elif ext_id == target_ws.id:
                 is_oauth_target = True
             elif target_platform and platform_str == target_platform.lower():
-                target_username = payload.get("username")
+                target_username = sanitized_payload.get("username")
                 if target_username and username.lower() == str(target_username).strip().lstrip("@").lower():
                     is_oauth_target = True
 
@@ -367,16 +384,26 @@ async def postforme_connect_bluesky(
     """Connects Bluesky account using handle & app_password in PostForMe."""
     try:
         from backend.services.postforme_service import postforme_service
-        handle_clean = req.handle.strip().lower().replace("@", "")
 
-        target_ws, target_client = _get_user_target_workspace(db, current_user, req.workspace_id, req.client_id)
+        handle_clean = normalize_identifier(req.handle, max_length=64) or ""
+        if len(handle_clean) < 2:
+            raise HTTPException(status_code=400, detail="Bluesky handle is invalid")
+
+        app_password = sanitize_text(req.app_password, max_length=256, allow_newlines=False) or ""
+        if len(app_password) < 8:
+            raise HTTPException(status_code=400, detail="App password is too short")
+
+        workspace_id = sanitize_text(req.workspace_id, max_length=120) if req.workspace_id else None
+        client_id = sanitize_text(req.client_id, max_length=120) if req.client_id else None
+
+        target_ws, target_client = _get_user_target_workspace(db, current_user, workspace_id, client_id)
 
         acc_res = await postforme_service.create_social_account({
             "platform": "bluesky",
             "username": handle_clean,
             "platform_data": {
                 "handle": handle_clean,
-                "app_password": req.app_password
+                "app_password": app_password
             }
         })
 
@@ -455,10 +482,17 @@ async def instagram_cookie_login(
     Preserves device fingerprint (uuids, device_settings) if account already exists.
     """
     try:
+        username = normalize_identifier(req.username, max_length=64) or ""
+        workspace_id = sanitize_text(req.workspace_id, max_length=120) if req.workspace_id else None
+        client_id = sanitize_text(req.client_id, max_length=120) if req.client_id else None
+        session_id = sanitize_text(req.sessionid, max_length=2048, allow_newlines=False) or ""
+        if len(session_id) < 8:
+            raise HTTPException(status_code=400, detail="sessionid is invalid")
+
         # Check if existing account exists in DB to preserve device fingerprint
         existing_settings = None
-        if req.username:
-            clean_uname = req.username.strip().lower().replace("@", "")
+        if username:
+            clean_uname = username
             acc = db.query(SocialAccount).filter(
                 SocialAccount.platform == AccountPlatform.INSTAGRAM_BUSINESS,
                 SocialAccount.username == clean_uname
@@ -471,22 +505,22 @@ async def instagram_cookie_login(
                     logger.warning(f"Could not decrypt existing token: {dec_err}")
 
         info = await instagrapi_service.connect_with_sessionid(
-            req.sessionid,
-            req.username,
+            session_id,
+            username,
             existing_settings=existing_settings
         )
         
-        if req.username:
-            expected_user = req.username.strip().lower().replace("@", "")
-            actual_user = info["username"].lower()
+        if username:
+            expected_user = username
+            actual_user = str(info["username"]).lower()
             if expected_user != actual_user:
                 raise HTTPException(
                     status_code=400,
-                    detail=f"Sessionid cookie yang Anda masukkan milik akun @{info['username']}, bukan @{req.username}! "
-                           f"Buka Incognito Window di browser ➡️ login ke @{req.username} ➡️ salin sessionid untuk akun ini."
+                    detail=f"Sessionid cookie yang Anda masukkan milik akun @{info['username']}, bukan @{username}! "
+                           f"Buka Incognito Window di browser ➡️ login ke @{username} ➡️ salin sessionid untuk akun ini."
                 )
 
-        target_ws, target_client = _get_user_target_workspace(db, current_user, req.workspace_id, req.client_id)
+        target_ws, target_client = _get_user_target_workspace(db, current_user, workspace_id, client_id)
 
         # Store session settings as JSON encrypted token
         session_json = json.dumps(info["session_settings"])
@@ -554,8 +588,15 @@ async def instagram_credential_login(
     If Instagram requires email/SMS challenge, returns a structured challenge_required response.
     """
     try:
-        info = await instagrapi_service.connect_with_credentials(req.username, req.password)
-        return _save_instagram_account(db, info, req.workspace_id, req.client_id, method="Credentials", current_user=current_user)
+        username = normalize_identifier(req.username, max_length=64) or ""
+        password = sanitize_text(req.password, max_length=512, allow_newlines=False) or ""
+        workspace_id = sanitize_text(req.workspace_id, max_length=120) if req.workspace_id else None
+        client_id = sanitize_text(req.client_id, max_length=120) if req.client_id else None
+        if not username or len(password) < 4:
+            raise HTTPException(status_code=400, detail="username and password are required")
+
+        info = await instagrapi_service.connect_with_credentials(username, password)
+        return _save_instagram_account(db, info, workspace_id, client_id, method="Credentials", current_user=current_user)
 
     except Exception as e:
         err_str = str(e)
@@ -583,8 +624,15 @@ async def instagram_challenge_resolve(
     Must be called after /instagram/credential-login returns challenge_required.
     """
     try:
-        info = await instagrapi_service.resolve_challenge(req.username, req.code)
-        return _save_instagram_account(db, info, req.workspace_id, req.client_id, method="Credentials (Challenge)", current_user=current_user)
+        username = normalize_identifier(req.username, max_length=64) or ""
+        code = sanitize_text(req.code, max_length=12, allow_newlines=False) or ""
+        workspace_id = sanitize_text(req.workspace_id, max_length=120) if req.workspace_id else None
+        client_id = sanitize_text(req.client_id, max_length=120) if req.client_id else None
+        if not username or len(code) < 4:
+            raise HTTPException(status_code=400, detail="username and code are required")
+
+        info = await instagrapi_service.resolve_challenge(username, code)
+        return _save_instagram_account(db, info, workspace_id, client_id, method="Credentials (Challenge)", current_user=current_user)
     except Exception as e:
         db.rollback()
         logger.error(f"Instagram Challenge Resolve Error: {e}", exc_info=True)
@@ -662,10 +710,16 @@ async def meta_callback(
 ):
     """Processes Meta / Instagram OAuth callback code, exchanges token, and saves accounts."""
     try:
+        sanitized_code = sanitize_text(code, max_length=512, allow_newlines=False) or ""
+        if not sanitized_code:
+            raise HTTPException(status_code=400, detail="Authorization code is required")
+        workspace_id = sanitize_text(workspace_id, max_length=120) if workspace_id else None
+        client_id = sanitize_text(client_id, max_length=120) if client_id else None
+
         target_ws, target_client = _get_user_target_workspace(db, current_user, workspace_id, client_id)
 
         # Execute Meta Token Exchange
-        token_data = await meta_adapter.exchange_code_for_token(code)
+        token_data = await meta_adapter.exchange_code_for_token(sanitized_code)
         access_token = token_data.get("access_token")
         if not access_token:
             raise Exception("Meta OAuth failed: access_token not returned.")
