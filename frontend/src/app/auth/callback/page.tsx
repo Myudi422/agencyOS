@@ -19,9 +19,11 @@ function OAuthCallbackHandler() {
 
   useEffect(() => {
     const code = searchParams.get("code");
+    const rawAccountId = searchParams.get("account_id") || searchParams.get("social_account_id") || searchParams.get("id");
     const error = searchParams.get("error");
     const errorDescription = searchParams.get("error_description");
-    const accountId = searchParams.get("account_id") || searchParams.get("social_account_id");
+    const spcMatch = (error || errorDescription || "").match(/spc_[A-Za-z0-9]+/);
+    const accountId = rawAccountId || (spcMatch ? spcMatch[0] : null);
     const platform = searchParams.get("platform");
     const callbackStatus = searchParams.get("status");
 

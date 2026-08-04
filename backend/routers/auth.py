@@ -288,15 +288,14 @@ async def postforme_sync_accounts(
 
             # 2. Explicitly targeted during OAuth callback session (newly connecting account)
             is_oauth_target = False
-            if target_account_id and pf_id == target_account_id:
-                is_oauth_target = True
+            if target_account_id:
+                if pf_id == target_account_id:
+                    is_oauth_target = True
             elif ext_id == target_ws.id:
                 is_oauth_target = True
-            elif target_account_id is None and target_platform and platform_str == target_platform.lower():
+            elif target_platform and platform_str == target_platform.lower():
                 target_username = payload.get("username")
                 if target_username and username.lower() == str(target_username).strip().lstrip("@").lower():
-                    is_oauth_target = True
-                elif not ext_id:
                     is_oauth_target = True
 
             # STRICT MULTI-TENANCY FILTER:
