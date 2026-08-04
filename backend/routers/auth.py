@@ -250,8 +250,8 @@ async def postforme_sync_accounts(
     try:
         from backend.services.postforme_service import postforme_service
 
-        # Fetch all active accounts from PostForMe project
-        pf_res = await postforme_service.get_social_accounts(limit=200)
+        # Fetch active accounts from PostForMe project (max limit is 50/100 for PostForMe API)
+        pf_res = await postforme_service.get_social_accounts(limit=50)
         pf_accounts = pf_res.get("data", [])
 
         synced_count = 0

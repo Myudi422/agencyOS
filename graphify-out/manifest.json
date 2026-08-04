@@ -110,8 +110,8 @@
     "semantic_hash": ""
   },
   "backend/routers/auth.py": {
-    "mtime": 1785800330.6542065,
-    "ast_hash": "d6da6eaa9ea2502cb0a4d6c26316b8d5",
+    "mtime": 1785801644.1198523,
+    "ast_hash": "63493b3251d9757ceaee39f6babc68ee",
     "semantic_hash": ""
   },
   "backend/routers/billing.py": {
