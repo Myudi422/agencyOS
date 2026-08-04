@@ -85,6 +85,9 @@ export default function AccountBriefingModal({ account, onClose, onSaved }: Acco
       });
 
       toast.success(`Briefing akun @${account.username} berhasil disimpan!`);
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("shiera-ai:accounts-updated"));
+      }
       onSaved();
       onClose();
     } catch (err: any) {

@@ -290,6 +290,7 @@ export default function ShieraAiReportWidget() {
   const [showTooltip, setShowTooltip] = useState(false);
   const chatScrollRef = useRef<HTMLDivElement>(null);
   const tooltipTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const latestAccountsRequestRef = useRef(0);
 
   // ── Accounts & Brainstorm State ──
   const [availableAccounts, setAvailableAccounts] = useState<SocialAccountMeta[]>([]);
@@ -307,16 +308,47 @@ export default function ShieraAiReportWidget() {
 
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Fetch Accounts
-  useEffect(() => {
-    if (!activeWorkspace?.id) return;
+  const refreshAccounts = useCallback(() => {
+    if (!activeWorkspace?.id) {
+      setAvailableAccounts([]);
+      return;
+    }
+
+    const requestId = ++latestAccountsRequestRef.current;
+
     fetchApi<SocialAccountMeta[]>(`/accounts/?workspace_id=${activeWorkspace.id}&limit=100`)
       .then((res: any) => {
+        if (requestId !== latestAccountsRequestRef.current) return;
         const accs = res.items || (Array.isArray(res) ? res : []);
         setAvailableAccounts(accs);
       })
-      .catch(() => setAvailableAccounts([]));
+      .catch(() => {
+        if (requestId !== latestAccountsRequestRef.current) return;
+        setAvailableAccounts([]);
+      });
   }, [activeWorkspace?.id]);
+
+  // Fetch Accounts and refresh from account page updates
+  useEffect(() => {
+    refreshAccounts();
+
+    const handleAccountsUpdated = () => refreshAccounts();
+    const handleWindowFocus = () => refreshAccounts();
+
+    window.addEventListener("shiera-ai:accounts-updated", handleAccountsUpdated);
+    window.addEventListener("focus", handleWindowFocus);
+
+    return () => {
+      window.removeEventListener("shiera-ai:accounts-updated", handleAccountsUpdated);
+      window.removeEventListener("focus", handleWindowFocus);
+    };
+  }, [refreshAccounts]);
+
+  useEffect(() => {
+    if (isFloatingOpen) {
+      refreshAccounts();
+    }
+  }, [isFloatingOpen, refreshAccounts]);
 
   // Outside click for accounts dropdown
   useEffect(() => {

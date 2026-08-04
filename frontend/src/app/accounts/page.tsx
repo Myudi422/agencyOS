@@ -59,6 +59,12 @@ export default function AccountsPage() {
   const [modalError, setModalError] = useState<string | null>(null);
   const [modalSuccess, setModalSuccess] = useState<string | null>(null);
 
+  const refreshAccountsUi = () => {
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new CustomEvent("shiera-ai:accounts-updated"));
+    }
+  };
+
   const loadAccounts = () => {
     if (!activeWorkspace?.id) return;
     setIsLoading(true);
@@ -75,12 +81,14 @@ export default function AccountsPage() {
         setAccounts(res.items || []);
         setTotalAccounts(res.total || 0);
         setIsLoading(false);
+        refreshAccountsUi();
       })
       .catch((err) => {
         console.log("No accounts found or fallback triggered", err);
         setAccounts([]);
         setTotalAccounts(0);
         setIsLoading(false);
+        refreshAccountsUi();
       });
   };
 

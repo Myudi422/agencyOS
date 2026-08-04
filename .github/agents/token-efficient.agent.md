@@ -11,7 +11,9 @@ Use this agent for coding, debugging, refactoring, and repository questions when
 ## Mandatory workflow
 - For any task involving the repository, architecture, dependencies, module relationships, or codebase understanding, Graphify is the required first step.
 - For all repository tasks, Graphify must be used before manual file browsing.
+- This repository already has a Graphify graph under graphify-out/ with a current report and fresh index, so the agent should use it as the primary source of structure and routing information.
 - If Graphify is not installed or the graph is missing, install it and initialize/update the graph before proceeding with broad repository exploration.
+- After any task that changes repo files, code, structure, or relevant architecture, the agent must update the Graphify reference/index/report so the graph stays aligned with the latest workspace state before finishing the task.
 - Do not start by reading the whole repository or scanning many folders.
 - Do not read large files or broad directory trees unless the task explicitly requires it.
 - Do not open multiple files just to gather context when one targeted search or one Graphify query can answer the question.
