@@ -170,6 +170,19 @@ export default function AdminPage() {
     }
   };
 
+  const handleDeleteUser = async (userId: string, userEmail: string) => {
+    if (!confirm(`Apakah Anda yakin ingin menghapus user ${userEmail}? Semua data user akan dihapus.`)) {
+      return;
+    }
+    try {
+      await fetchApi(`/admin/users/${userId}`, { method: "DELETE" });
+      flash("ok", `User ${userEmail} berhasil dihapus.`);
+      loadUsers();
+    } catch (e: any) {
+      flash("err", e.message || "Gagal menghapus user.");
+    }
+  };
+
   useEffect(() => {
     if (activeTab === "users" && isAdmin) loadUsers();
     if (activeTab === "settings" && isAdmin) loadAppSettings();
@@ -601,25 +614,38 @@ export default function AdminPage() {
                 <p className="text-sm font-semibold text-slate-900 truncate">{u.full_name}</p>
                 <p className="text-xs text-slate-400 truncate">{u.email}</p>
               </div>
-              <div className="text-right shrink-0">
-                {u.subscription ? (
-                  <>
-                    <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold ${TIER_COLORS[u.subscription.plan_tier]}`}>
-                      {u.subscription.plan_name}
+              <div className="text-right shrink-0 flex items-center gap-3">
+                <div>
+                  {u.subscription ? (
+                    <>
+                      <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold ${TIER_COLORS[u.subscription.plan_tier]}`}>
+                        {u.subscription.plan_name}
+                      </span>
+                      <p className="text-[10px] text-slate-400 mt-0.5">
+                        {u.subscription.posts_used}/{u.subscription.posts_limit} posts · {u.subscription.status}
+                      </p>
+                    </>
+                  ) : (
+                    <span className="text-[10px] text-slate-400">No subscription</span>
+                  )}
+                  {u.is_admin && (
+                    <span className="ml-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 text-[10px] font-bold">
+                      <Shield className="w-2.5 h-2.5" /> Admin
                     </span>
-                    <p className="text-[10px] text-slate-400 mt-0.5">
-                      {u.subscription.posts_used}/{u.subscription.posts_limit} posts · {u.subscription.status}
-                    </p>
-                  </>
-                ) : (
-                  <span className="text-[10px] text-slate-400">No subscription</span>
-                )}
-                {u.is_admin && (
-                  <span className="ml-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 text-[10px] font-bold">
-                    <Shield className="w-2.5 h-2.5" /> Admin
-                  </span>
+                  )}
+                </div>
+
+                {!u.is_admin && (
+                  <button
+                    onClick={() => handleDeleteUser(u.id, u.email)}
+                    title="Hapus User"
+                    className="p-2 rounded-xl bg-red-50 hover:bg-red-100 text-red-600 transition-colors cursor-pointer"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
                 )}
               </div>
+
             </div>
           ))}
         </div>

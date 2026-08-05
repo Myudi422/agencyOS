@@ -92,6 +92,27 @@ def list_users(
     return {"users": result, "total": db.query(User).count()}
 
 
+@router.delete("/users/{user_id}")
+def delete_user(
+    user_id: str,
+    admin: User = Depends(require_admin),
+    db: Session = Depends(get_db)
+):
+    """Admin: delete a user from the system."""
+    if user_id == admin.id:
+        raise HTTPException(status_code=400, detail="Tidak dapat menghapus akun admin sendiri.")
+
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found.")
+
+    email = user.email
+    db.delete(user)
+    db.commit()
+    return {"status": "ok", "message": f"User '{email}' berhasil dihapus."}
+
+
+
 @router.post("/users/{user_id}/override-subscription")
 def override_user_subscription(
     user_id: str,
@@ -165,22 +186,10 @@ def assign_plan_by_email(
         db.add(user)
         db.flush()
 
-    # Ensure user has a workspace
-    membership = user.memberships[0] if user.memberships else None
-    if not membership:
-        ws = Workspace(
-            name=f"{user.full_name}'s Workspace",
-            slug=f"ws-manual-{user.id[:8]}",
-            timezone="Asia/Jakarta"
-        )
-        db.add(ws)
-        db.flush()
-        db.add(WorkspaceMember(
-            workspace_id=ws.id,
-            user_id=user.id,
-            role=RoleEnum.OWNER
-        ))
-        db.flush()
+    # Note: We do NOT auto-create a workspace here for new users.
+    # By keeping workspace=None, when the user logs in for the first time with Google,
+    # verify_firebase will detect no workspace and set needs_onboarding=True.
+    # This ensures the user gets to complete the Onboarding screen & Client Roster setup.
 
     # Find plan
     plan = db.query(SubscriptionPlan).filter(SubscriptionPlan.tier == req.plan_tier).first()

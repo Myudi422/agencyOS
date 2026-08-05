@@ -105,8 +105,8 @@
     "semantic_hash": ""
   },
   "backend/routers/admin.py": {
-    "mtime": 1785910445.0570343,
-    "ast_hash": "a2109098e2ae75050e0e7af73428ba68",
+    "mtime": 1785911281.8061774,
+    "ast_hash": "1a25877260551bc1197a665f89b4ca11",
     "semantic_hash": ""
   },
   "backend/routers/auth.py": {
@@ -140,8 +140,8 @@
     "semantic_hash": ""
   },
   "backend/routers/firebase_auth.py": {
-    "mtime": 1785910096.9379666,
-    "ast_hash": "a92687afc10d40841f469abb90ab36ba",
+    "mtime": 1785911028.1297417,
+    "ast_hash": "c7d5aedbb9b874f3713ceca2fa82b068",
     "semantic_hash": ""
   },
   "backend/routers/kol.py": {
@@ -275,8 +275,8 @@
     "semantic_hash": ""
   },
   "frontend/src/app/admin/page.tsx": {
-    "mtime": 1785910488.7676284,
-    "ast_hash": "0b86e3e66b93d76f54fd881900ae3d9f",
+    "mtime": 1785911293.42126,
+    "ast_hash": "2f64c7a990f78c289798dc9cab5d5e37",
     "semantic_hash": ""
   },
   "frontend/src/app/auth/callback/page.tsx": {
@@ -470,8 +470,8 @@
     "semantic_hash": ""
   },
   "frontend/src/components/layout/AppLayout.tsx": {
-    "mtime": 1785910070.6780186,
-    "ast_hash": "3ee4393808db8513ab7b528e1ea5606d",
+    "mtime": 1785911028.1276798,
+    "ast_hash": "549562f093c80be8fe09d5b93c8aee77",
     "semantic_hash": ""
   },
   "frontend/src/components/layout/Header.tsx": {
@@ -500,7 +500,7 @@
     "semantic_hash": ""
   },
   "frontend/src/components/providers/AuthProvider.tsx": {
-    "mtime": 1785824788.5278077,
+    "mtime": 1785911028.128713,
     "ast_hash": "116c9c8e7b6f64139b37089f93eb9653",
     "semantic_hash": ""
   },
@@ -530,7 +530,7 @@
     "semantic_hash": ""
   },
   "frontend/src/store/authStore.ts": {
-    "mtime": 1785202396.987116,
+    "mtime": 1785911028.1292264,
     "ast_hash": "0d070b2670bbf7e42b89d7db560a9421",
     "semantic_hash": ""
   },
@@ -782,11 +782,6 @@
   "backend/security.py": {
     "mtime": 1785824788.5278077,
     "ast_hash": "5a5bee32e9bc434d26ecc5ca2fff4090",
-    "semantic_hash": ""
-  },
-  "frontend/src/app/owner-access/page.tsx": {
-    "mtime": 1785910165.9199438,
-    "ast_hash": "744b17ca5f754a86b3b0a0351d44a2b4",
     "semantic_hash": ""
   },
   "package.json": {
