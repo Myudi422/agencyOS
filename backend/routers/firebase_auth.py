@@ -18,11 +18,6 @@ from backend.config import settings
 logger = logging.getLogger("FirebaseAuthRouter")
 router = APIRouter(prefix="/auth/firebase", tags=["Firebase Auth"])
 
-# Owner demo access — secret token for showing to prospects without Google login
-OWNER_DEMO_SECRET = os.getenv("OWNER_DEMO_SECRET", "shiera-owner-demo-2026")
-DEMO_USER_EMAIL = "demo@shiera.internal"
-DEMO_USER_NAME = "Demo Owner"
-
 
 class FirebaseVerifyRequest(BaseModel):
     id_token: str
@@ -36,14 +31,6 @@ def get_current_user_from_token(
     if not authorization or not authorization.startswith("Bearer "):
         return None
     id_token = authorization.split(" ", 1)[1]
-
-    # Owner demo bypass — token format: "owner-demo:<secret>"
-    if id_token.startswith("owner-demo:"):
-        demo_secret = id_token[len("owner-demo:"):]
-        if demo_secret == OWNER_DEMO_SECRET:
-            return db.query(User).filter(User.email == DEMO_USER_EMAIL).first()
-        return None
-
     firebase_user = verify_firebase_token(id_token)
     if not firebase_user:
         return None
@@ -270,111 +257,4 @@ async def get_me(
         },
         "subscription": subscription_data,
         "is_admin": user.is_admin,
-    }
-
-
-class OwnerDemoRequest(BaseModel):
-    secret: str
-
-
-@router.post("/owner-demo")
-async def owner_demo_login(req: OwnerDemoRequest, db: Session = Depends(get_db)):
-    """
-    Owner demo endpoint — allows owner to show the app to prospects
-    without requiring Google login. Uses a shared secret token.
-    Returns a full session payload identical to /verify.
-    """
-    if req.secret != OWNER_DEMO_SECRET:
-        raise HTTPException(status_code=403, detail="Invalid demo access token.")
-
-    # Find or create demo user
-    user = db.query(User).filter(User.email == DEMO_USER_EMAIL).first()
-    if not user:
-        user = User(
-            email=DEMO_USER_EMAIL,
-            full_name=DEMO_USER_NAME,
-            avatar_url=None,
-            firebase_uid=f"demo-owner-uid-shiera",
-            is_admin=False,
-        )
-        db.add(user)
-        db.flush()
-
-    # Ensure demo user has a workspace
-    membership = user.memberships[0] if user.memberships else None
-    workspace = membership.workspace if membership else None
-
-    if not workspace:
-        workspace = Workspace(
-            name="Demo Workspace",
-            slug="demo-workspace-shiera",
-            timezone="Asia/Jakarta"
-        )
-        db.add(workspace)
-        db.flush()
-        db.add(WorkspaceMember(
-            workspace_id=workspace.id,
-            user_id=user.id,
-            role=RoleEnum.OWNER
-        ))
-        db.flush()
-
-    # Ensure demo user has an agency subscription (nice tier for demo)
-    sub = user.subscription
-    if not sub:
-        agency_plan = db.query(SubscriptionPlan).filter(SubscriptionPlan.tier == PlanTier.AGENCY).first()
-        if not agency_plan:
-            agency_plan = db.query(SubscriptionPlan).first()
-        if agency_plan:
-            sub = UserSubscription(
-                user_id=user.id,
-                plan_id=agency_plan.id,
-                status=SubscriptionStatus.ACTIVE,
-                posts_used=42,
-                posts_limit=300,
-                expires_at=None,
-            )
-            db.add(sub)
-            db.flush()
-
-    db.commit()
-    db.refresh(user)
-
-    sub = user.subscription
-    subscription_data = None
-    if sub:
-        plan = sub.plan
-        is_expired = sub.expires_at and sub.expires_at < datetime.utcnow()
-        posts_remaining = max(0, sub.posts_limit - sub.posts_used)
-        subscription_data = {
-            "plan_tier": plan.tier,
-            "plan_name": plan.name,
-            "status": sub.status,
-            "posts_used": sub.posts_used,
-            "posts_limit": sub.posts_limit,
-            "posts_remaining": posts_remaining,
-            "expires_at": sub.expires_at.isoformat() if sub.expires_at else None,
-            "is_expired": is_expired,
-        }
-
-    membership = user.memberships[0] if user.memberships else None
-    workspace = membership.workspace if membership else None
-
-    return {
-        "user": {
-            "id": user.id,
-            "email": user.email,
-            "full_name": user.full_name,
-            "avatar_url": user.avatar_url,
-            "is_admin": False,
-        },
-        "workspace": {
-            "id": workspace.id,
-            "name": workspace.name,
-            "slug": workspace.slug,
-            "timezone": workspace.timezone,
-        } if workspace else None,
-        "subscription": subscription_data,
-        "is_admin": False,
-        "needs_onboarding": workspace is None,
     }

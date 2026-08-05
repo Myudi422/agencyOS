@@ -16,7 +16,7 @@ import ShieraAiReportWidget from "@/components/common/ShieraAiReportWidget";
 import CompetitorProgressWidget from "@/components/common/CompetitorProgressWidget";
 import SplashScreen from "@/components/common/SplashScreen";
 
-const PUBLIC_PATHS = ["/landing", "/login", "/pricing", "/billing/success", "/onboarding", "/kol-portal", "/owner-access"];
+const PUBLIC_PATHS = ["/landing", "/login", "/pricing", "/billing/success", "/onboarding", "/kol-portal"];
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
