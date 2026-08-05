@@ -7,7 +7,7 @@ import {
   LayoutDashboard, Users2, Briefcase, Image as ImageIcon,
   CalendarDays, Cpu, History, Plus, ChevronDown, Sparkles, X,
   ShieldCheck, Wrench, Settings, LogOut, CreditCard,
-  Zap, Rocket, Crown, Building2, UserCircle, Loader2, BarChart2, Target
+  Zap, Rocket, Crown, Building2, UserCircle, Loader2, BarChart2, Target, Bot
 } from "lucide-react";
 import { useStore } from "@/store/useStore";
 import { useAuthStore } from "@/store/authStore";
@@ -75,6 +75,7 @@ export default function Sidebar({ isMobileOpen = false, onCloseMobile }: Sidebar
     { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
     { name: "Proses", href: "/queue", icon: Cpu, activeDot: true },
     { name: "Statistik", href: "/statistics", icon: BarChart2 },
+    { name: "AI Agent", href: "/agent", icon: Bot, badge: "New" },
     { name: "Account Manager", href: "/accounts", icon: Users2, badge: "10 Platforms" },
     { name: "Competitor Spy", href: "/competitor-spy", icon: Target },
     { name: "KOL Manager", href: "/kol-campaigns", icon: Users2, badge: "New" },

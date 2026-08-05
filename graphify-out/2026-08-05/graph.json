@@ -8480,8 +8480,8 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "frontend_package_dependencies_clsx",
-      "community": 66,
-      "community_name": "clsx",
+      "community": 26,
+      "community_name": "dependencies",
       "norm_label": "clsx"
     },
     {
@@ -8491,8 +8491,8 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "clsx",
-      "community": 66,
-      "community_name": "clsx",
+      "community": 26,
+      "community_name": "dependencies",
       "norm_label": "clsx"
     },
     {
@@ -8634,8 +8634,8 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "frontend_package_dependencies_react",
-      "community": 26,
-      "community_name": "dependencies",
+      "community": 66,
+      "community_name": "react",
       "norm_label": "react"
     },
     {
@@ -8645,8 +8645,8 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "react",
-      "community": 26,
-      "community_name": "dependencies",
+      "community": 66,
+      "community_name": "react",
       "norm_label": "react"
     },
     {
@@ -45400,7 +45400,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "frontend/src/app/review/[token]/page.tsx",
-      "source_location": "L47",
+      "source_location": "L45",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_src_app_review_token_page_publicclientreviewpage",
@@ -48840,7 +48840,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "frontend/src/components/posts/PostComposerModal.tsx",
-      "source_location": "L293",
+      "source_location": "L294",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_src_components_posts_postcomposermodal_postcomposermodal",
@@ -53312,5 +53312,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "f152fd065776e710c9c80a818d35f95cc444991e"
+  "built_at_commit": "aa5f57b93e0d1ed10d3dda57b0a707dbc6c6d5b9"
 }

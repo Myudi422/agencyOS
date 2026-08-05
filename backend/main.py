@@ -30,20 +30,22 @@ try:
     from backend.security import SecurityMiddleware
     from backend.routers import (
         auth, workspaces, clients, accounts, media, posts, calendar, queue, activity, dashboard,
-        firebase_auth, billing, admin, webhook, statistics, competitors, kol
+        firebase_auth, billing, admin, webhook, statistics, competitors, kol, agents
     )
     from backend.routers.posts import v1_router as posts_v1_router
     from backend.seed import seed_database
+    from backend.services import agent_scheduler
 except ModuleNotFoundError:
     from config import settings
     from database import engine, Base
     from security import SecurityMiddleware
     from routers import (
         auth, workspaces, clients, accounts, media, posts, calendar, queue, activity, dashboard,
-        firebase_auth, billing, admin, webhook, statistics, competitors, kol
+        firebase_auth, billing, admin, webhook, statistics, competitors, kol, agents
     )
     from routers.posts import v1_router as posts_v1_router
     from seed import seed_database
+    from services import agent_scheduler
 
 # Configure Logging
 logging.basicConfig(level=logging.INFO)
@@ -53,6 +55,8 @@ from sqlalchemy import text
 
 # Create Database tables & apply self-healing schema migrations
 try:
+    # Import agent models so SQLAlchemy registers them before create_all
+    from backend.models.agent_models import AgentConfig, AgentRunLog  # noqa: F401
     Base.metadata.create_all(bind=engine)
     with engine.connect() as conn:
         conn.execute(text("ALTER TABLE social_accounts ADD COLUMN IF NOT EXISTS watermark_config JSON DEFAULT '{}';"))
@@ -60,11 +64,30 @@ try:
 except Exception as e:
     logger.warning(f"Base.metadata.create_all or auto-migration skipped/warning: {e}")
 
+from contextlib import asynccontextmanager
+
+@asynccontextmanager
+async def lifespan(app):
+    # Startup: launch AI Agent scheduler
+    try:
+        agent_scheduler.start()
+        logger.info("✅ AI Agent scheduler started.")
+    except Exception as e:
+        logger.error(f"Failed to start agent scheduler: {e}")
+    yield
+    # Shutdown
+    try:
+        agent_scheduler.shutdown()
+        logger.info("Agent scheduler stopped.")
+    except Exception as e:
+        logger.error(f"Failed to stop agent scheduler: {e}")
+
 app = FastAPI(
     title=settings.APP_NAME,
     version="1.0.0-MVP",
     description="Enterprise Multi-Workspace, Multi-Client Instagram Business & Facebook Page Management Platform.",
-    root_path="/api/backend"
+    root_path="/api/backend",
+    lifespan=lifespan,
 )
 
 def _build_allowed_origins() -> list[str]:
@@ -113,6 +136,7 @@ app.include_router(webhook.router)
 app.include_router(statistics.router)
 app.include_router(competitors.router)
 app.include_router(kol.router)
+app.include_router(agents.router)
 
 
 @app.get("/")
