@@ -4,13 +4,16 @@ import React from "react";
 import { CheckCircle2, AlertCircle, Info, AlertTriangle, X } from "lucide-react";
 import { useToastStore } from "@/store/useToastStore";
 
+import Portal from "@/components/common/Portal";
+
 export default function GlassToastManager() {
   const { toasts, removeToast } = useToastStore();
 
   if (toasts.length === 0) return null;
 
   return (
-    <div className="fixed top-5 right-5 z-[110] flex flex-col gap-2.5 max-w-md w-full pointer-events-none px-4 sm:px-0">
+    <Portal>
+      <div className="fixed top-5 right-5 z-[99999] flex flex-col gap-2.5 max-w-md w-full pointer-events-none px-4 sm:px-0">
       {toasts.map((t) => (
         <div
           key={t.id}
@@ -37,5 +40,6 @@ export default function GlassToastManager() {
         </div>
       ))}
     </div>
+    </Portal>
   );
 }

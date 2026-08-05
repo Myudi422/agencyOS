@@ -2553,7 +2553,7 @@ export default function PostComposerModal() {
 
       {/* Internal Glassmorphic Media Library Picker Modal */}
       {isMediaPickerOpen && (
-        <div className="fixed inset-0 z-[120] bg-slate-900/60 flex items-center justify-center p-3 sm:p-6 animate-fadeIn">
+        <div className="fixed inset-0 z-[250] bg-slate-900/60 flex items-center justify-center p-3 sm:p-6 animate-fadeIn">
           <div className="bg-white border border-slate-200 rounded-2xl sm:rounded-3xl w-full max-w-3xl max-h-[88vh] flex flex-col shadow-2xl overflow-hidden">
             
             {/* Modal Header */}
@@ -2722,7 +2722,7 @@ export default function PostComposerModal() {
 
       {/* Target Account Warning Confirmation Modal */}
       {showAccountConfirmModal && (
-        <div className="fixed inset-0 z-[150] bg-slate-900/70 backdrop-blur-xs flex items-center justify-center p-4 animate-fadeIn">
+        <div className="fixed inset-0 z-[250] bg-slate-900/70 backdrop-blur-xs flex items-center justify-center p-4 animate-fadeIn">
           <div className="bg-white border border-slate-200 rounded-3xl w-full max-w-lg p-6 shadow-2xl space-y-4 text-slate-900">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-2xl bg-amber-100 text-amber-700 flex items-center justify-center shrink-0">
@@ -2811,7 +2811,7 @@ export default function PostComposerModal() {
 
       {/* Close Draft Confirmation Modal */}
       {showCloseConfirmModal && (
-        <div className="fixed inset-0 z-[160] bg-slate-900/70 backdrop-blur-xs flex items-center justify-center p-4 animate-fadeIn">
+        <div className="fixed inset-0 z-[250] bg-slate-900/70 backdrop-blur-xs flex items-center justify-center p-4 animate-fadeIn">
           <div className="bg-white border border-slate-200 rounded-3xl w-full max-w-md p-6 shadow-2xl space-y-4 text-slate-900">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-2xl bg-purple-100 text-purple-700 flex items-center justify-center shrink-0">
