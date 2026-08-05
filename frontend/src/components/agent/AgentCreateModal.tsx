@@ -62,6 +62,7 @@ export default function AgentCreateModal({ onClose, onSave, editAgent }: Props) 
   const [pillar, setPillar] = useState(editAgent?.content_pillar || "");
   const [format, setFormat] = useState(editAgent?.content_format || "");
   const [topicHint, setTopicHint] = useState(editAgent?.topic_hint || "");
+  const [draftsPerRun, setDraftsPerRun] = useState<number>(editAgent?.drafts_per_run || 1);
   const [runTime, setRunTime] = useState(editAgent?.run_time || "08:00");
   const [timezone, setTimezone] = useState(editAgent?.timezone || "Asia/Jakarta");
   const [runDays, setRunDays] = useState<number[]>(editAgent?.run_days || [0, 1, 2, 3, 4]);
@@ -108,6 +109,7 @@ export default function AgentCreateModal({ onClose, onSave, editAgent }: Props) 
         content_pillar: pillar,
         content_format: format,
         topic_hint: topicHint || undefined,
+        drafts_per_run: draftsPerRun,
         run_time: runTime,
         timezone,
         run_days: runDays,
@@ -296,6 +298,29 @@ export default function AgentCreateModal({ onClose, onSave, editAgent }: Props) 
                     {format === f.id && <Check className="w-4 h-4 text-purple-600 shrink-0" />}
                   </button>
                 ))}
+              </div>
+
+              <div className="space-y-1.5 pt-1">
+                <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                  Jumlah Draft Dihasilkan per Run
+                </label>
+                <div className="grid grid-cols-4 gap-2">
+                  {[1, 2, 3, 5].map((num) => (
+                    <button
+                      key={num}
+                      type="button"
+                      onClick={() => setDraftsPerRun(num)}
+                      className={`py-2 px-3 rounded-xl border text-xs font-bold transition-all ${
+                        draftsPerRun === num
+                          ? "border-purple-600 bg-purple-600 text-white shadow-sm"
+                          : "border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100"
+                      }`}
+                    >
+                      {num} Draft
+                    </button>
+                  ))}
+                </div>
+                <p className="text-[10px] text-slate-400">Berapa variasi pilihan draft yang akan dibuatkan AI setiap kali jalan.</p>
               </div>
 
               <div className="space-y-1.5 pt-1">

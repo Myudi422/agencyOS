@@ -43,6 +43,7 @@ class AgentConfig(Base):
     content_pillar = Column(String(100), nullable=False)   # e.g. "Edukasi & Tips"
     content_format = Column(String(50), nullable=False)    # e.g. "carousel", "video", "auto"
     topic_hint = Column(Text, nullable=True)               # Optional seed topic/idea
+    drafts_per_run = Column(Integer, default=1, nullable=False) # Number of draft options per run (1-5)
 
     # Schedule config
     run_time = Column(String(5), nullable=False, default="08:00")   # HH:MM in workspace timezone

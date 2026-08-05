@@ -23,13 +23,16 @@ def run():
         AgentConfig.__table__.create(bind=engine)
         logger.info("✅ Created table: agent_configs")
     else:
-        logger.info("⏭️  Table agent_configs already exists — skipping.")
+        with engine.connect() as conn:
+            conn.execute(text("ALTER TABLE agent_configs ADD COLUMN IF NOT EXISTS drafts_per_run INTEGER DEFAULT 1;"))
+            conn.commit()
+        logger.info("⏭️ Table agent_configs exists — auto-migrated columns.")
 
     if "agent_run_logs" not in existing_tables:
         AgentRunLog.__table__.create(bind=engine)
         logger.info("✅ Created table: agent_run_logs")
     else:
-        logger.info("⏭️  Table agent_run_logs already exists — skipping.")
+        logger.info("⏭️ Table agent_run_logs already exists — skipping.")
 
     logger.info("✅ Migration complete.")
 

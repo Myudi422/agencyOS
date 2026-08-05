@@ -81,17 +81,37 @@ function AgentCard({ agent, selected, onSelect }: { agent: AgentConfig; selected
 }
 
 // ─── Log Card ─────────────────────────────────────────────────────────────────
-function LogCard({ log, onTransfer }: { log: AgentRunLog; onTransfer: (draft: any, log: AgentRunLog) => void }) {
+function LogCard({
+  log,
+  onTransfer,
+  onDeleteLog,
+}: {
+  log: AgentRunLog;
+  onTransfer: (draft: any, log: AgentRunLog) => void;
+  onDeleteLog: (logId: string) => void;
+}) {
   const [expanded, setExpanded] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const cfg = STATUS_CONFIG[log.status] || STATUS_CONFIG.pending;
 
+  const handleDelete = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!confirm("Hapus log hasil agent ini?")) return;
+    setDeleting(true);
+    try {
+      await onDeleteLog(log.id);
+    } catch {
+      setDeleting(false);
+    }
+  };
+
   return (
-    <div className="border border-slate-200 rounded-2xl overflow-hidden">
-      <button
+    <div className="border border-slate-200 rounded-2xl overflow-hidden bg-white">
+      <div
         onClick={() => setExpanded((e) => !e)}
-        className="w-full flex items-center justify-between p-3.5 hover:bg-slate-50 transition-colors text-left"
+        className="w-full flex items-center justify-between p-3.5 hover:bg-slate-50 transition-colors cursor-pointer"
       >
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2 flex-wrap">
           <span className={`text-[10px] px-2 py-0.5 rounded-full border font-semibold ${cfg.color}`}>
             {cfg.label}
           </span>
@@ -104,27 +124,44 @@ function LogCard({ log, onTransfer }: { log: AgentRunLog; onTransfer: (draft: an
             </span>
           )}
         </div>
-        <div className="text-right shrink-0">
+        <div className="flex items-center gap-2 shrink-0">
           <p className="text-[10px] text-slate-500">{formatDateTime(log.started_at)}</p>
+          <button
+            onClick={handleDelete}
+            disabled={deleting}
+            title="Hapus Log"
+            className="p-1 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+          </button>
         </div>
-      </button>
+      </div>
 
       {expanded && (
         <div className="border-t border-slate-100 bg-slate-50/50">
           {log.error_message && (
-            <div className="px-4 py-3 flex items-start gap-2 text-xs text-red-600 bg-red-50 border-b border-red-100">
+            <div className="px-4 py-3 flex items-start gap-2 text-xs text-red-600 bg-red-50 border-b border-red-100 break-words">
               <AlertTriangle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
-              <span>{log.error_message}</span>
+              <span className="break-all">{log.error_message}</span>
             </div>
           )}
 
           {(log.drafts || []).map((draft, i) => (
-            <div key={i} className="p-4 border-b border-slate-100 last:border-0">
+            <div key={i} className="p-3 sm:p-4 border-b border-slate-100 last:border-0 space-y-2">
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-[10px] font-bold text-purple-700 bg-purple-100 px-2 py-0.5 rounded-md">
+                  Draft Opsi #{i + 1}
+                </span>
+                <span className="text-[10px] text-slate-400 font-mono">
+                  {formatTimeOnly(draft.generated_at)}
+                </span>
+              </div>
+
               {/* Account chips */}
               {draft.accounts?.length > 0 && (
-                <div className="flex flex-wrap gap-1.5 mb-3">
+                <div className="flex flex-wrap gap-1.5 mb-2">
                   {draft.accounts.map((acc) => (
-                    <span key={acc.id} className="inline-flex items-center gap-1 text-[10px] px-2 py-1 rounded-full bg-white border border-slate-200 font-semibold text-slate-600">
+                    <span key={acc.id} className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-white border border-slate-200 font-semibold text-slate-600 truncate max-w-full">
                       {PLATFORM_ICONS[acc.platform] || "🌐"} @{acc.username}
                     </span>
                   ))}
@@ -132,12 +169,12 @@ function LogCard({ log, onTransfer }: { log: AgentRunLog; onTransfer: (draft: an
               )}
 
               {/* Brief preview */}
-              <div className="bg-white border border-slate-200 rounded-xl p-3 text-xs max-h-52 overflow-y-auto">
+              <div className="bg-white border border-slate-200 rounded-xl p-3 text-xs max-h-72 overflow-y-auto break-words max-w-full">
                 <ShieraMarkdownViewer content={draft.brief_text} />
               </div>
 
               {/* Actions */}
-              <div className="flex gap-2 mt-3">
+              <div className="flex flex-wrap gap-2 pt-1">
                 {draft.composer_payload && (
                   <button
                     onClick={() => onTransfer(draft, log)}
@@ -174,7 +211,7 @@ export default function AgentPage() {
   const { activeWorkspace, openComposerWithBrief } = useStore();
   const {
     agents, selectedAgentId, logs, loadingAgents, loadingLogs,
-    fetchAgents, selectAgent, upsertAgent, removeAgent, setRunning, runningAgentIds
+    fetchAgents, selectAgent, upsertAgent, removeAgent, deleteLog, setRunning, runningAgentIds
   } = useAgentStore();
 
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -212,7 +249,6 @@ export default function AgentPage() {
     try {
       await fetchApi(`/agents/${agent.id}/run-now`, { method: "POST" });
       toast.success(`Agent "${agent.name}" sedang berjalan di background...`);
-      // Poll logs
       if (selectedAgentId === agent.id) {
         const interval = pollLogs(agent.id);
         setPollingMap((p) => ({ ...p, [agent.id]: interval }));
@@ -244,6 +280,15 @@ export default function AgentPage() {
     }
   };
 
+  const handleDeleteLog = async (logId: string) => {
+    try {
+      await deleteLog(logId);
+      toast.success("Log hasil agent dihapus.");
+    } catch (e: any) {
+      toast.error(e.message || "Gagal menghapus log.");
+    }
+  };
+
   const handleTransferToComposer = (draft: any, log: AgentRunLog) => {
     const payload = draft.composer_payload || {};
     const accountIds = draft.accounts?.map((a: any) => a.id) || [];
@@ -260,9 +305,9 @@ export default function AgentPage() {
   const isRunning = (agentId: string) => runningAgentIds.has(agentId);
 
   return (
-    <div className="flex flex-col h-screen bg-slate-50">
+    <div className="flex flex-col min-h-screen md:h-screen bg-slate-50 overflow-x-hidden max-w-full">
       {/* Beta Info Banner */}
-      <div className="shrink-0 px-5 py-2.5 bg-amber-50 border-b border-amber-200 flex items-center gap-2.5">
+      <div className="shrink-0 px-4 sm:px-5 py-2.5 bg-amber-50 border-b border-amber-200 flex items-center gap-2.5">
         <span className="flex items-center justify-center w-5 h-5 rounded-full bg-amber-400 shrink-0">
           <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
             <path d="M5 1v4M5 8v.5" stroke="#fff" strokeWidth="1.5" strokeLinecap="round"/>
@@ -277,10 +322,10 @@ export default function AgentPage() {
       </div>
 
       {/* Page Header */}
-      <div className="shrink-0 px-6 py-4 bg-white border-b border-slate-200">
-        <div className="flex items-center justify-between">
+      <div className="shrink-0 px-4 sm:px-6 py-4 bg-white border-b border-slate-200">
+        <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-purple-600 to-indigo-700 flex items-center justify-center shadow-md shadow-purple-500/25">
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-purple-600 to-indigo-700 flex items-center justify-center shadow-md shadow-purple-500/25 shrink-0">
               <Bot className="w-5 h-5 text-amber-300" />
             </div>
             <div>
@@ -290,18 +335,19 @@ export default function AgentPage() {
           </div>
           <button
             onClick={() => { setEditingAgent(null); setShowCreateModal(true); }}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold transition-all shadow-md shadow-purple-500/20"
+            className="flex items-center gap-2 px-3.5 sm:px-4 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold transition-all shadow-md shadow-purple-500/20 shrink-0"
           >
             <Plus className="w-4 h-4" />
-            Buat Agent Baru
+            <span className="hidden sm:inline">Buat Agent Baru</span>
+            <span className="sm:hidden">Buat</span>
           </button>
         </div>
       </div>
 
       {/* Main Layout */}
-      <div className="flex flex-1 min-h-0">
+      <div className="flex flex-col md:flex-row flex-1 min-h-0 min-w-0 max-w-full">
         {/* Left Panel: Agent List */}
-        <div className="w-72 shrink-0 border-r border-slate-200 bg-white flex flex-col">
+        <div className={`w-full md:w-72 shrink-0 border-r border-slate-200 bg-white flex flex-col ${selectedAgentId ? "hidden md:flex" : "flex"}`}>
           <div className="p-4 border-b border-slate-100">
             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
               {agents.length} Agent Terkonfigurasi
@@ -342,7 +388,7 @@ export default function AgentPage() {
         </div>
 
         {/* Right Panel: Agent Detail */}
-        <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+        <div className={`flex-1 flex-col min-w-0 overflow-hidden ${selectedAgentId ? "flex" : "hidden md:flex"}`}>
           {!selectedAgent ? (
             <div className="flex flex-col items-center justify-center flex-1 text-center gap-4 p-8">
               <div className="w-16 h-16 rounded-3xl bg-gradient-to-br from-purple-100 to-indigo-100 flex items-center justify-center">
@@ -356,27 +402,34 @@ export default function AgentPage() {
           ) : (
             <div className="flex flex-col h-full">
               {/* Agent Header */}
-              <div className="shrink-0 px-6 py-4 bg-white border-b border-slate-200">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex items-start gap-3">
+              <div className="shrink-0 px-4 sm:px-6 py-4 bg-white border-b border-slate-200">
+                <button
+                  onClick={() => selectAgent(null)}
+                  className="md:hidden flex items-center gap-1 text-xs text-purple-600 font-semibold mb-3 hover:underline"
+                >
+                  ← Kembali ke Daftar Agent
+                </button>
+
+                <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+                  <div className="flex items-start gap-3 min-w-0">
                     <div className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 ${selectedAgent.is_active ? "bg-gradient-to-br from-purple-600 to-indigo-700 shadow-md shadow-purple-500/25" : "bg-slate-200"}`}>
                       <Bot className={`w-5 h-5 ${selectedAgent.is_active ? "text-amber-300" : "text-slate-500"}`} />
                     </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <h2 className="text-sm font-extrabold text-slate-900 font-['Outfit']">{selectedAgent.name}</h2>
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h2 className="text-sm font-extrabold text-slate-900 font-['Outfit'] truncate">{selectedAgent.name}</h2>
                         <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold border ${selectedAgent.is_active ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-slate-100 text-slate-500 border-slate-200"}`}>
                           {selectedAgent.is_active ? "● Aktif" : "○ Nonaktif"}
                         </span>
                       </div>
                       {selectedAgent.description && (
-                        <p className="text-[11px] text-slate-500 mt-0.5">{selectedAgent.description}</p>
+                        <p className="text-[11px] text-slate-500 mt-0.5 truncate">{selectedAgent.description}</p>
                       )}
                     </div>
                   </div>
 
                   {/* Action buttons */}
-                  <div className="flex items-center gap-2 shrink-0">
+                  <div className="flex items-center gap-2 shrink-0 flex-wrap">
                     <button
                       onClick={() => handleRunNow(selectedAgent)}
                       disabled={isRunning(selectedAgent.id)}
@@ -424,6 +477,9 @@ export default function AgentPage() {
                   <span className="inline-flex items-center gap-1 text-[10px] px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-700 font-semibold border border-indigo-200">
                     🎨 {selectedAgent.content_format}
                   </span>
+                  <span className="inline-flex items-center gap-1 text-[10px] px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 font-semibold border border-amber-200">
+                    📄 Max {selectedAgent.drafts_per_run || 1} Draft/Run
+                  </span>
                   {selectedAgent.next_run_at && (
                     <span className="inline-flex items-center gap-1 text-[10px] px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 font-semibold border border-emerald-200">
                       ⏰ Next: {formatDateTime(selectedAgent.next_run_at)}
@@ -433,7 +489,7 @@ export default function AgentPage() {
               </div>
 
               {/* Logs */}
-              <div className="flex-1 overflow-y-auto px-6 py-4">
+              <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-4">
                 <div className="flex items-center justify-between mb-3">
                   <p className="text-xs font-bold text-slate-700">Riwayat Run</p>
                   <button
@@ -464,6 +520,7 @@ export default function AgentPage() {
                         key={log.id}
                         log={log}
                         onTransfer={handleTransferToComposer}
+                        onDeleteLog={handleDeleteLog}
                       />
                     ))}
                   </div>

@@ -39,6 +39,7 @@ class AgentCreateRequest(BaseModel):
     content_pillar: str
     content_format: str
     topic_hint: Optional[str] = None
+    drafts_per_run: int = Field(default=1, ge=1, le=5)
     run_time: str = "08:00"      # HH:MM
     timezone: str = "Asia/Jakarta"
     run_days: List[int] = Field(default=[0, 1, 2, 3, 4])  # 0=Mon..6=Sun
@@ -52,6 +53,7 @@ class AgentUpdateRequest(BaseModel):
     content_pillar: Optional[str] = None
     content_format: Optional[str] = None
     topic_hint: Optional[str] = None
+    drafts_per_run: Optional[int] = Field(default=None, ge=1, le=5)
     run_time: Optional[str] = None
     timezone: Optional[str] = None
     run_days: Optional[List[int]] = None
@@ -78,6 +80,7 @@ def _serialize_agent(agent: AgentConfig, db: Session) -> dict:
         "content_pillar": agent.content_pillar,
         "content_format": agent.content_format,
         "topic_hint": agent.topic_hint,
+        "drafts_per_run": getattr(agent, "drafts_per_run", 1) or 1,
         "run_time": agent.run_time,
         "timezone": agent.timezone,
         "run_days": agent.run_days or [0, 1, 2, 3, 4],
@@ -154,6 +157,7 @@ def create_agent(
         content_pillar=req.content_pillar,
         content_format=req.content_format,
         topic_hint=req.topic_hint,
+        drafts_per_run=req.drafts_per_run,
         run_time=req.run_time,
         timezone=req.timezone,
         run_days=req.run_days,
@@ -214,6 +218,8 @@ def update_agent(
         agent.topic_hint = req.topic_hint
     if req.topic_hint == "":
         agent.topic_hint = None
+    if req.drafts_per_run is not None:
+        agent.drafts_per_run = req.drafts_per_run
     if req.run_time is not None:
         agent.run_time = req.run_time
         schedule_changed = True
@@ -355,3 +361,22 @@ def get_agent_logs(
         .all()
     )
     return [_serialize_log(log) for log in logs]
+
+
+@router.delete("/logs/{log_id}")
+def delete_agent_log(
+    log_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_user),
+):
+    """Delete a single agent run log entry."""
+    log = db.query(AgentRunLog).filter(AgentRunLog.id == log_id).first()
+    if not log:
+        raise HTTPException(status_code=404, detail="Log hasil agent tidak ditemukan.")
+    get_user_workspace(current_user, log.workspace_id, db)
+
+    db.delete(log)
+    db.commit()
+
+    return {"status": "deleted", "log_id": log_id}
+

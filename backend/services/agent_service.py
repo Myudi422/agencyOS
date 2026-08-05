@@ -114,29 +114,39 @@ async def run_agent(agent_id: str, trigger: str = "scheduled") -> dict:
             for a in accounts_with_briefing
         ]
 
-        # Call Gemini AI
+        # Call Gemini AI for drafts_per_run variations
         from backend.services.gemini_service import gemini_service
 
         topic = agent.topic_hint or "konten harian yang relevan dan engaging"
-        ai_response = await gemini_service.generate_content_brainstorm(
-            accounts_info=accounts_info,
-            content_pillar=agent.content_pillar,
-            content_format=agent.content_format,
-            user_idea=topic,
-            chat_history=None,
-            db=db,
-        )
+        num_drafts = max(1, min(getattr(agent, "drafts_per_run", 1) or 1, 5))
 
-        # Parse & store drafts
-        composer_payload = _extract_composer_payload(ai_response)
-        clean_brief = re.sub(r"```json\s*[\s\S]*?\s*```", "", ai_response).strip()
+        drafts = []
+        for i in range(1, num_drafts + 1):
+            try:
+                ai_response = await gemini_service.generate_agent_content(
+                    accounts_info=accounts_info,
+                    content_pillar=agent.content_pillar,
+                    content_format=agent.content_format,
+                    user_idea=topic,
+                    variation_index=i,
+                    total_variations=num_drafts,
+                    db=db,
+                )
+                composer_payload = _extract_composer_payload(ai_response)
+                clean_brief = re.sub(r"```json\s*[\s\S]*?\s*```", "", ai_response).strip()
 
-        drafts = [{
-            "accounts": [{"id": a["id"], "username": a["username"], "platform": a["platform"]} for a in accounts_info],
-            "brief_text": clean_brief,
-            "composer_payload": composer_payload,
-            "generated_at": datetime.utcnow().isoformat(),
-        }]
+                drafts.append({
+                    "accounts": [{"id": a["id"], "username": a["username"], "platform": a["platform"]} for a in accounts_info],
+                    "brief_text": clean_brief,
+                    "composer_payload": composer_payload,
+                    "generated_at": datetime.utcnow().isoformat(),
+                })
+            except Exception as draft_err:
+                logger.warning(f"Error generating variation {i} for agent {agent_id}: {draft_err}")
+
+        if not drafts:
+            _fail_run(db, run_log, agent, "Gagal menghasilkan draft konten dari Shiera AI Engine.")
+            return {"status": "failed", "error": "AI generation failed"}
 
         # Update run log → DONE
         run_log.drafts = drafts

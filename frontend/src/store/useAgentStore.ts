@@ -10,6 +10,7 @@ export interface AgentConfig {
   content_pillar: string;
   content_format: string;
   topic_hint?: string;
+  drafts_per_run?: number;
   run_time: string;
   timezone: string;
   run_days: number[];
@@ -61,6 +62,7 @@ interface AgentStore {
 
   fetchAgents: (workspaceId: string) => Promise<void>;
   fetchLogs: (agentId: string) => Promise<void>;
+  deleteLog: (logId: string) => Promise<void>;
   selectAgent: (id: string | null) => void;
   setAgents: (agents: AgentConfig[]) => void;
   upsertAgent: (agent: AgentConfig) => void;
@@ -97,6 +99,18 @@ export const useAgentStore = create<AgentStore>((set, get) => ({
       console.error("Failed to fetch agent logs:", e);
     } finally {
       set({ loadingLogs: false });
+    }
+  },
+
+  deleteLog: async (logId) => {
+    try {
+      await fetchApi(`/agents/logs/${logId}`, { method: "DELETE" });
+      set((state) => ({
+        logs: state.logs.filter((l) => l.id !== logId),
+      }));
+    } catch (e) {
+      console.error("Failed to delete agent log:", e);
+      throw e;
     }
   },
 

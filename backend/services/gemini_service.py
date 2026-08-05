@@ -385,6 +385,141 @@ CONTOH BLOK JSON TERSEMBUNYI DI AKHIR JAWABAN:
 
         raise RuntimeError("Gagal menghasilkan brief AI. Pastikan Session Cookie Shiera AI atau API Key valid di Admin Settings.")
 
+    async def generate_agent_content(
+        self,
+        accounts_info: List[Dict[str, Any]],
+        content_pillar: str,
+        content_format: str,
+        user_idea: str,
+        variation_index: int = 1,
+        total_variations: int = 1,
+        db: Session = None
+    ) -> str:
+        """
+        Generate concise, direct AI Agent draft content (no conversational fluff).
+        Structured specifically into:
+        1. Teks Konten (Visual Text / Slide breakdown / Video script)
+        2. Caption & Hashtags
+        3. Hidden JSON payload for Post Composer
+        """
+        if not db:
+            raise ValueError("Database session required to fetch Gemini settings.")
+
+        psid, psidts, api_key = self._get_gemini_credentials(db)
+
+        if not psid and not api_key:
+            raise ValueError("Admin belum mengatur Session Cookie Shiera AI atau API Key di Control Panel.")
+
+        acc_briefings_str = ""
+        for acc in accounts_info:
+            b = acc.get("briefing") or {}
+            acc_briefings_str += (
+                f"- **@{acc.get('username')} ({acc.get('platform')})**:\n"
+                f"  * Brand: {b.get('brand_name') or acc.get('name') or 'N/A'}\n"
+                f"  * Deskripsi: {b.get('business_description') or 'Belum diisi'}\n"
+                f"  * Target Audiens: {b.get('target_audience') or 'Umum'}\n"
+                f"  * Tone of Voice: {b.get('tone_of_voice') or 'Kasual & Profesional'}\n"
+                f"  * Pilar Konten: {', '.join(b.get('content_pillars') or []) or 'Umum'}\n"
+                f"  * Do's & Don'ts: {b.get('dos_and_donts') or 'Bebas'}\n\n"
+            )
+
+        variation_note = f"\n(Variasi Opsi ke-{variation_index} dari {total_variations}. Buat sudut pandang/headline unik yang berbeda dari opsi lain)." if total_variations > 1 else ""
+
+        format_instruction = ""
+        if content_format == "carousel":
+            format_instruction = """
+FORMAT: CAROUSEL (MULTI-SLIDE)
+Sajikan Teks Tulisan Per Slide:
+- Slide 1 (Cover Hook): [Teks Headline Utama & Sub-hook]
+- Slide 2: [Teks Poin 1]
+- Slide 3: [Teks Poin 2]
+- Slide 4: [Teks Poin 3]
+- Slide 5 (CTA): [Teks Penutup & Call to Action]
+"""
+            post_type_val = "carousel"
+        elif content_format == "video":
+            format_instruction = """
+FORMAT: VIDEO / REELS / TIKTOK / SHORTS
+Sajikan Video Script:
+- Detik 0-3 (Visual Hook): [On-screen Text & Action] | Voiceover: "..."
+- Detik 4-15 (Isi Script): [On-screen Text & Action] | Voiceover: "..."
+- Detik 16-20 (Closing & CTA): [On-screen Text & Action] | Voiceover: "..."
+"""
+            post_type_val = "video"
+        else:
+            format_instruction = """
+FORMAT: SINGLE POST / FEED IMAGE
+Sajikan Teks Tulisan Gambar:
+- Headline Utama di Gambar: "..."
+- Sub-text / Visual Highlight: "..."
+"""
+            post_type_val = "image"
+
+        prompt = f"""
+Kamu adalah AI Content Generator khusus Shiera AI Agent.
+Tugasmu adalah membuat DRAFT KONTEN HARIAN LANGSUNG, RINGKAS, & TO THE POINT.
+DILARANG memberikan pembuka, salam, evaluasi, atau basa-basi analisis. Langsung ke isi konten.
+
+### DATA BRAND AKUN:
+{acc_briefings_str}
+
+### PARAMETER:
+- Pilar Konten: {content_pillar}
+- Format Konten: {content_format}
+- Ide / Topik Hint: {user_idea} {variation_note}
+
+{format_instruction}
+
+### ATURAN FORMAT MANDATORI (WAJIB TEPAT MURNI MARKDOWN DENGAN 2 SEKSI BERIKUT):
+
+### 📝 TEKS KONTEN
+(Sajikan teks tulisan gambar / slide breakdown / video script sesuai format di atas)
+
+### ✍️ CAPTION & HASHTAGS
+(Sajikan caption copywriting lengkap siap tayang, langsung diakhiri 5 hashtag paling relevan)
+
+```json
+{{
+  "composer_payload": {{
+    "post_type": "{post_type_val}",
+    "caption": "Tuliskan caption copywriting murni lengkap yang siap posting di sini...",
+    "hashtags": "#hashtag1 #hashtag2 #hashtag3 #hashtag4 #hashtag5"
+  }}
+}}
+```
+"""
+
+        # 1. Try gemini-webapi cookie if available
+        if psid:
+            try:
+                from gemini_webapi import GeminiClient
+                client = GeminiClient(secure_1psid=psid, secure_1psidts=psidts)
+                await client.init()
+                response = await client.generate_content(prompt)
+                text_res = getattr(response, "text", str(response))
+                cleaned_text = self._clean_code_interpreter_artifacts(text_res)
+                if cleaned_text and len(cleaned_text.strip()) > 10:
+                    return cleaned_text
+            except Exception as exc:
+                logger.warning(f"gemini-webapi generation failed, fallbacking: {exc}")
+                self._notify_owner_cookie_invalid(str(exc))
+
+        # 2. Try google-generativeai API Key as fallback
+        if api_key:
+            try:
+                import google.generativeai as genai
+                genai.configure(api_key=api_key)
+                model = genai.GenerativeModel("gemini-1.5-flash")
+                res = model.generate_content(prompt)
+                if res.text:
+                    return self._clean_code_interpreter_artifacts(res.text)
+            except Exception as exc:
+                logger.error(f"google-generativeai API Key generation failed: {exc}")
+                raise RuntimeError(f"Gagal memproses dengan Shiera AI Engine: {exc}")
+
+        raise RuntimeError("Gagal menghasilkan brief AI. Pastikan Session Cookie Shiera AI atau API Key valid di Admin Settings.")
+
+
     _last_wa_alert_time: float = 0.0
     OWNER_WA_NUMBER: str = "082125182347"
 
