@@ -7,7 +7,7 @@ import {
   Send, Clock, Save, CheckCircle2, Sparkles, Folder, Check, Calendar,
   Youtube, MessageSquare, Instagram as InstagramIcon, Twitter, Facebook as FacebookIcon, Share2, 
   Eye, Edit3, Settings2, Link as LinkIcon, AlertCircle, Plus, Play, RefreshCw, AlertTriangle,
-  ChevronLeft, ChevronRight, UploadCloud, Info, Globe, Minus
+  ChevronLeft, ChevronRight, UploadCloud, Info, Globe, Minus, Copy, ChevronDown
 } from "lucide-react";
 import { useStore } from "@/store/useStore";
 import { toast } from "@/store/useToastStore";
@@ -110,6 +110,7 @@ export default function PostComposerModal() {
   // Watermark Toggle State (Default OFF)
   const [applyWatermark, setApplyWatermark] = useState<boolean>(false);
   const [isGeneratingReviewLink, setIsGeneratingReviewLink] = useState<boolean>(false);
+  const [showShareDropdown, setShowShareDropdown] = useState<boolean>(false);
 
   // AI Content Brief State (Saved in draft for future re-editing)
   const [aiBriefText, setAiBriefText] = useState("");
@@ -630,14 +631,14 @@ export default function PostComposerModal() {
     return new Date(`${localStr}:00+07:00`).toISOString();
   };
 
-  const handleGenerateClientReviewLink = async () => {
+  const getOrCreateReviewLink = async (): Promise<string | null> => {
     if (!caption.trim() && mediaUrls.length === 0) {
       toast.warning("Silakan isi caption atau tambahkan minimal 1 media terlebih dahulu.");
-      return;
+      return null;
     }
     if (selectedAccountIds.length === 0) {
       toast.warning("Silakan pilih minimal 1 akun sosial media target.");
-      return;
+      return null;
     }
 
     setIsGeneratingReviewLink(true);
@@ -673,14 +674,32 @@ export default function PostComposerModal() {
       }
 
       if (currentPostId) {
-        const reviewUrl = `${window.location.origin}/review/${currentPostId}`;
-        await navigator.clipboard.writeText(reviewUrl);
-        toast.success("🔗 Link review klien berhasil disalin! Siap dikirim via WhatsApp.");
+        return `${window.location.origin}/review/${currentPostId}`;
       }
+      return null;
     } catch (err: any) {
       toast.info(err.message || "Gagal membuat link review klien.");
+      return null;
     } finally {
       setIsGeneratingReviewLink(false);
+    }
+  };
+
+  const handleCopyReviewLink = async () => {
+    setShowShareDropdown(false);
+    const link = await getOrCreateReviewLink();
+    if (link) {
+      await navigator.clipboard.writeText(link);
+      toast.success("📋 Link review berhasil disalin ke clipboard!");
+    }
+  };
+
+  const handleShareToWhatsApp = async () => {
+    setShowShareDropdown(false);
+    const link = await getOrCreateReviewLink();
+    if (link) {
+      const text = encodeURIComponent(`Halo, berikut link preview review postingan:\n${link}`);
+      window.open(`https://wa.me/?text=${text}`, "_blank");
     }
   };
 
@@ -2506,20 +2525,45 @@ export default function PostComposerModal() {
           </div>
 
           <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={handleGenerateClientReviewLink}
-              disabled={isGeneratingReviewLink || isSubmitting}
-              className="py-2.5 px-3.5 rounded-2xl bg-purple-50 hover:bg-purple-100 text-purple-700 font-extrabold text-xs border border-purple-200 flex items-center gap-1.5 transition-all cursor-pointer shadow-xs disabled:opacity-50"
-              title="Salin link review visual postingan ini untuk dikirim ke WhatsApp Klien"
-            >
-              {isGeneratingReviewLink ? (
-                <RefreshCw className="w-4 h-4 animate-spin text-purple-600" />
-              ) : (
-                <LinkIcon className="w-4 h-4 text-purple-600" />
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setShowShareDropdown(prev => !prev)}
+                disabled={isGeneratingReviewLink || isSubmitting}
+                className="py-2.5 px-3.5 rounded-2xl bg-purple-50 hover:bg-purple-100 text-purple-700 font-extrabold text-xs border border-purple-200 flex items-center gap-1.5 transition-all cursor-pointer shadow-xs disabled:opacity-50"
+                title="Bagikan link review"
+              >
+                {isGeneratingReviewLink ? (
+                  <RefreshCw className="w-4 h-4 animate-spin text-purple-600" />
+                ) : (
+                  <Share2 className="w-4 h-4 text-purple-600" />
+                )}
+                <span>Share</span>
+                <ChevronDown className="w-3.5 h-3.5 text-purple-500" />
+              </button>
+
+              {showShareDropdown && (
+                <div className="absolute right-0 bottom-full mb-2 w-48 bg-white border border-slate-200 rounded-2xl shadow-xl p-1.5 z-50 animate-in fade-in zoom-in-95 space-y-1">
+                  <button
+                    type="button"
+                    onClick={handleCopyReviewLink}
+                    className="w-full px-3 py-2 text-left rounded-xl hover:bg-purple-50 text-xs font-bold text-slate-700 hover:text-purple-700 flex items-center gap-2 transition-colors cursor-pointer"
+                  >
+                    <Copy className="w-4 h-4 text-purple-600" />
+                    <span>Salin Link Review</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handleShareToWhatsApp}
+                    className="w-full px-3 py-2 text-left rounded-xl hover:bg-emerald-50 text-xs font-bold text-slate-700 hover:text-emerald-700 flex items-center gap-2 transition-colors cursor-pointer"
+                  >
+                    <MessageSquare className="w-4 h-4 text-emerald-600" />
+                    <span>Bagikan ke WA</span>
+                  </button>
+                </div>
               )}
-              <span className="truncate">🔗 Link Review Klien (WA)</span>
-            </button>
+            </div>
 
             <button
               type="button"
