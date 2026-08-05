@@ -332,7 +332,7 @@ export default function QueuePage() {
   const handleCancelScheduled = (post: PfPost) => {
     confirmModal({
       title: "Batalkan Jadwal",
-      message: `Apakah kamu yakin ingin membatalkan jadwal post ini di PostForMe? Post akan dihapus dari antrean dan tidak akan tayang.`,
+      message: `Apakah kamu yakin ingin membatalkan jadwal post ini? Post akan dihapus dari antrean dan tidak akan tayang.`,
       variant: "danger", confirmText: "Batalkan Jadwal",
       onConfirm: async () => {
         try {
@@ -386,7 +386,7 @@ export default function QueuePage() {
             Manage Posts & Queue
           </h1>
           <p className="text-xs sm:text-sm text-slate-600 max-w-2xl leading-relaxed">
-            Draft tersimpan lokal. Jadwal & riwayat tayang diambil langsung dari <strong>PostForMe API</strong>. Waktu ditampilkan dalam <strong>WIB (UTC+7)</strong>.
+            Draft tersimpan lokal. Jadwal & riwayat tayang diambil langsung dari sistem. Waktu ditampilkan dalam <strong>WIB (UTC+7)</strong>.
           </p>
         </div>
         <div className="flex items-center gap-2 z-10 flex-wrap">
@@ -452,7 +452,7 @@ export default function QueuePage() {
             <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
               <PenLine className="w-4 h-4 text-slate-500" />
               <h3 className="text-xs font-extrabold text-slate-900 uppercase tracking-wider">Draft Lokal</h3>
-              <span className="ml-1 text-[10px] text-slate-400 font-normal">— Belum dikirim ke PostForMe</span>
+              <span className="ml-1 text-[10px] text-slate-400 font-normal">— Belum dijadwalkan</span>
             </div>
 
             {draftsLoading ? (
@@ -530,7 +530,7 @@ export default function QueuePage() {
           {/* Info banner */}
           <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-blue-50 border border-blue-200 text-blue-700 text-xs font-medium">
             <Globe className="w-4 h-4 shrink-0" />
-            <span>Data diambil langsung dari <strong>PostForMe API</strong>. Waktu tayang ditampilkan dalam <strong>WIB (UTC+7)</strong> dan <strong>UTC</strong>.</span>
+            <span>Data diambil langsung dari sistem antrean. Waktu tayang ditampilkan dalam <strong>WIB (UTC+7)</strong> dan <strong>UTC</strong>.</span>
           </div>
 
           <div className="p-6 rounded-3xl glass-card space-y-4">
@@ -545,7 +545,7 @@ export default function QueuePage() {
             {scheduledLoading ? (
               <div className="flex items-center justify-center py-16 gap-3 text-slate-400">
                 <Loader2 className="w-6 h-6 animate-spin text-blue-500" />
-                <span className="text-sm font-medium">Memuat jadwal dari PostForMe...</span>
+                <span className="text-sm font-medium">Memuat jadwal...</span>
               </div>
             ) : scheduled.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-16 gap-3 text-slate-400">
@@ -619,7 +619,7 @@ export default function QueuePage() {
             {processedLoading ? (
               <div className="flex items-center justify-center py-16 gap-3 text-slate-400">
                 <Loader2 className="w-6 h-6 animate-spin text-amber-500" />
-                <span className="text-sm font-medium">Memuat data dari PostForMe...</span>
+                <span className="text-sm font-medium">Memuat data...</span>
               </div>
             ) : processed.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-16 gap-3 text-slate-400">

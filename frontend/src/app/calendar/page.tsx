@@ -130,7 +130,7 @@ export default function CalendarPage() {
         <div className="space-y-1.5 z-10">
           <div className="flex items-center gap-2 flex-wrap">
             <span className="px-3 py-1 rounded-full bg-purple-100 text-purple-700 text-[11px] font-bold tracking-wide uppercase border border-purple-200">
-              PostForMe Live Planner
+              Live Planner
             </span>
             <span className="px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 text-[10px] font-semibold flex items-center gap-1 border border-slate-200">
               <Globe className="w-3 h-3 text-purple-500" />
@@ -141,7 +141,7 @@ export default function CalendarPage() {
             Content Calendar
           </h1>
           <p className="text-xs sm:text-sm text-slate-600 max-w-2xl leading-relaxed">
-            Pantau dan kelola jadwal postingan sosmed kamu secara visual & terintegrasi penuh dengan PostForMe API.
+            Pantau dan kelola jadwal postingan sosmed kamu secara visual & terintegrasi penuh.
           </p>
         </div>
 
