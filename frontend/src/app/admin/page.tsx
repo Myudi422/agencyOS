@@ -42,6 +42,13 @@ export default function AdminPage() {
   const [users, setUsers] = useState<any[]>([]);
   const [usersLoading, setUsersLoading] = useState(false);
 
+  // Assign plan state
+  const [assignEmail, setAssignEmail] = useState("");
+  const [assignTier, setAssignTier] = useState("agency");
+  const [assignDays, setAssignDays] = useState(30);
+  const [assignLoading, setAssignLoading] = useState(false);
+  const [assignResult, setAssignResult] = useState<{ type: "ok" | "err"; text: string } | null>(null);
+
   // Settings state
   const [appSettings, setAppSettings] = useState<Record<string, any>>({});
   const [newSettingKey, setNewSettingKey] = useState("");
@@ -137,6 +144,29 @@ export default function AdminPage() {
       setUsers(data.users || []);
     } catch { } finally {
       setUsersLoading(false);
+    }
+  };
+
+  const handleAssignPlan = async () => {
+    if (!assignEmail.trim()) return;
+    setAssignLoading(true);
+    setAssignResult(null);
+    try {
+      const data: any = await fetchApi("/admin/assign-plan-by-email", {
+        method: "POST",
+        body: JSON.stringify({
+          email: assignEmail.trim().toLowerCase(),
+          plan_tier: assignTier,
+          expires_days: assignDays || null,
+        }),
+      });
+      setAssignResult({ type: "ok", text: data.message || "Plan berhasil di-assign!" });
+      setAssignEmail("");
+      loadUsers();
+    } catch (e: any) {
+      setAssignResult({ type: "err", text: e.message || "Gagal assign plan." });
+    } finally {
+      setAssignLoading(false);
     }
   };
 
@@ -479,7 +509,83 @@ export default function AdminPage() {
 
       {/* ── USERS TAB ── */}
       {activeTab === "users" && (
-        <div className="space-y-3">
+        <div className="space-y-4">
+
+          {/* ── Assign Plan by Email ── */}
+          <div className="p-5 rounded-3xl bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-200 space-y-4">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-xl bg-emerald-100 border border-emerald-200 flex items-center justify-center">
+                <Plus className="w-4 h-4 text-emerald-700" />
+              </div>
+              <div>
+                <p className="text-sm font-bold text-emerald-900 font-['Outfit']">Assign Plan ke User</p>
+                <p className="text-[11px] text-emerald-600">Input email → pilih paket → langsung aktif tanpa pembayaran</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="sm:col-span-1">
+                <label className="block text-[11px] font-bold text-emerald-800 mb-1">Email User</label>
+                <input
+                  id="assign-email-input"
+                  type="email"
+                  value={assignEmail}
+                  onChange={(e) => setAssignEmail(e.target.value)}
+                  placeholder="user@email.com"
+                  className="w-full px-3 py-2 rounded-xl border border-emerald-200 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-400 bg-white"
+                />
+              </div>
+              <div>
+                <label className="block text-[11px] font-bold text-emerald-800 mb-1">Tier Paket</label>
+                <select
+                  id="assign-tier-select"
+                  value={assignTier}
+                  onChange={(e) => setAssignTier(e.target.value)}
+                  className="w-full px-3 py-2 rounded-xl border border-emerald-200 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-400 bg-white font-semibold"
+                >
+                  <option value="trial">Trial (3 hari)</option>
+                  <option value="creator">Creator</option>
+                  <option value="agency">Agency</option>
+                  <option value="studio">Studio</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-[11px] font-bold text-emerald-800 mb-1">Durasi (hari, 0 = selamanya)</label>
+                <input
+                  id="assign-days-input"
+                  type="number"
+                  value={assignDays}
+                  onChange={(e) => setAssignDays(Number(e.target.value))}
+                  placeholder="30"
+                  min={0}
+                  className="w-full px-3 py-2 rounded-xl border border-emerald-200 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-400 bg-white font-mono"
+                />
+              </div>
+            </div>
+
+            {assignResult && (
+              <div className={`flex items-center gap-2 p-3 rounded-xl text-xs font-medium ${
+                assignResult.type === "ok"
+                  ? "bg-emerald-100 border border-emerald-300 text-emerald-800"
+                  : "bg-red-50 border border-red-200 text-red-700"
+              }`}>
+                {assignResult.type === "ok" ? <CheckCircle className="w-4 h-4 shrink-0" /> : <AlertTriangle className="w-4 h-4 shrink-0" />}
+                {assignResult.text}
+              </div>
+            )}
+
+            <button
+              id="assign-plan-submit"
+              onClick={handleAssignPlan}
+              disabled={assignLoading || !assignEmail.trim()}
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-md shadow-emerald-500/20 transition-all disabled:opacity-50"
+            >
+              {assignLoading ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <ChevronRight className="w-3.5 h-3.5" />}
+              {assignLoading ? "Memproses..." : "Assign Plan Sekarang"}
+            </button>
+          </div>
+
+          {/* ── User List ── */}
           <div className="flex items-center justify-between">
             <p className="text-xs text-slate-500">{users.length} users registered</p>
             <button onClick={loadUsers} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 text-slate-700 text-xs font-medium hover:bg-slate-200">

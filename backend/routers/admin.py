@@ -133,6 +133,92 @@ def override_user_subscription(
     return {"status": "ok", "message": f"Subscription overridden to {req.plan_tier} for {user.email}"}
 
 
+class AssignPlanByEmailRequest(BaseModel):
+    email: str
+    plan_tier: str
+    posts_limit: Optional[int] = None
+    expires_days: Optional[int] = 30  # None = never expires
+
+
+@router.post("/assign-plan-by-email")
+def assign_plan_by_email(
+    req: AssignPlanByEmailRequest,
+    admin: User = Depends(require_admin),
+    db: Session = Depends(get_db)
+):
+    """
+    Admin: cari user by email, buat akun + workspace jika belum ada,
+    lalu assign subscription plan tertentu. Cocok untuk onboarding manual.
+    """
+    from backend.models.models import Workspace, WorkspaceMember, RoleEnum
+
+    # Find or create user
+    user = db.query(User).filter(User.email == req.email).first()
+    if not user:
+        user = User(
+            email=req.email,
+            full_name=req.email.split("@")[0].replace(".", " ").title(),
+            avatar_url=None,
+            firebase_uid=None,
+            is_admin=False,
+        )
+        db.add(user)
+        db.flush()
+
+    # Ensure user has a workspace
+    membership = user.memberships[0] if user.memberships else None
+    if not membership:
+        ws = Workspace(
+            name=f"{user.full_name}'s Workspace",
+            slug=f"ws-manual-{user.id[:8]}",
+            timezone="Asia/Jakarta"
+        )
+        db.add(ws)
+        db.flush()
+        db.add(WorkspaceMember(
+            workspace_id=ws.id,
+            user_id=user.id,
+            role=RoleEnum.OWNER
+        ))
+        db.flush()
+
+    # Find plan
+    plan = db.query(SubscriptionPlan).filter(SubscriptionPlan.tier == req.plan_tier).first()
+    if not plan:
+        raise HTTPException(status_code=404, detail=f"Plan '{req.plan_tier}' not found.")
+
+    posts_limit = req.posts_limit or plan.post_quota
+    expires_at = datetime.utcnow() + timedelta(days=req.expires_days) if req.expires_days else None
+
+    sub = user.subscription
+    if sub:
+        sub.plan_id = plan.id
+        sub.status = SubscriptionStatus.ACTIVE
+        sub.posts_used = 0
+        sub.posts_limit = posts_limit
+        sub.expires_at = expires_at
+    else:
+        sub = UserSubscription(
+            user_id=user.id,
+            plan_id=plan.id,
+            status=SubscriptionStatus.ACTIVE,
+            posts_used=0,
+            posts_limit=posts_limit,
+            expires_at=expires_at,
+        )
+        db.add(sub)
+
+    db.commit()
+    db.refresh(user)
+    return {
+        "status": "ok",
+        "message": f"Plan '{plan.name}' assigned to {user.email}",
+        "user_id": user.id,
+        "is_new_user": not user.firebase_uid,
+    }
+
+
+
 # ─── Plans Management ─────────────────────────────────────────────────────────
 
 @router.get("/plans")
