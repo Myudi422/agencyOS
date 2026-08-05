@@ -946,22 +946,24 @@ export default function PostComposerModal() {
               <button
                 type="button"
                 onClick={() => setMobileTab("editor")}
-                className={`px-2.5 py-1 rounded-lg flex items-center gap-1 transition-all cursor-pointer ${
+                className={`px-2 py-1 rounded-lg flex items-center gap-1 transition-all cursor-pointer ${
                   mobileTab === "editor" ? "bg-white text-purple-700 shadow-xs" : "text-slate-600"
                 }`}
+                title="Editor Mode"
               >
                 <Edit3 className="w-3.5 h-3.5" />
-                <span>Editor</span>
+                <span className="hidden sm:inline">Editor</span>
               </button>
               <button
                 type="button"
                 onClick={() => setMobileTab("preview")}
-                className={`px-2.5 py-1 rounded-lg flex items-center gap-1 transition-all cursor-pointer ${
+                className={`px-2 py-1 rounded-lg flex items-center gap-1 transition-all cursor-pointer ${
                   mobileTab === "preview" ? "bg-white text-purple-700 shadow-xs" : "text-slate-600"
                 }`}
+                title="Preview Mode"
               >
                 <Eye className="w-3.5 h-3.5" />
-                <span>Preview</span>
+                <span className="hidden sm:inline">Preview</span>
               </button>
             </div>
 
@@ -2543,7 +2545,7 @@ export default function PostComposerModal() {
               </button>
 
               {showShareDropdown && (
-                <div className="absolute right-0 bottom-full mb-2 w-48 bg-white border border-slate-200 rounded-2xl shadow-xl p-1.5 z-50 animate-in fade-in zoom-in-95 space-y-1">
+                <div className="absolute left-0 sm:left-auto sm:right-0 bottom-full mb-2 w-48 bg-white border border-slate-200 rounded-2xl shadow-xl p-1.5 z-[60] animate-in fade-in zoom-in-95 space-y-1">
                   <button
                     type="button"
                     onClick={handleCopyReviewLink}
