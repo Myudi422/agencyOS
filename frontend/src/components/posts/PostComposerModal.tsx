@@ -621,7 +621,7 @@ export default function PostComposerModal() {
 
   if (isComposerMinimized) {
     return (
-      <div className="fixed bottom-5 right-5 z-[110] bg-slate-900 text-white p-3.5 rounded-2xl shadow-2xl border border-purple-500/40 flex items-center gap-3 animate-fadeIn">
+      <div className="fixed top-20 right-5 z-[110] bg-slate-900 text-white p-3.5 rounded-2xl shadow-2xl border border-purple-500/40 flex items-center gap-3 animate-fadeIn">
         <div className="w-8 h-8 rounded-xl gradient-brand flex items-center justify-center shrink-0 shadow-md">
           <Sparkles className="w-4 h-4 text-white" />
         </div>
