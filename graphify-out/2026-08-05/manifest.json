@@ -30,8 +30,8 @@
     "semantic_hash": ""
   },
   "backend/main.py": {
-    "mtime": 1785824788.5248506,
-    "ast_hash": "5bd02ad1ab65fdb900d8f329418a169d",
+    "mtime": 1785753270.0517058,
+    "ast_hash": "73641505086e2cd0f2d31a039569112a",
     "semantic_hash": ""
   },
   "backend/migrate_account_briefing.py": {
@@ -110,8 +110,8 @@
     "semantic_hash": ""
   },
   "backend/routers/auth.py": {
-    "mtime": 1785824788.5264134,
-    "ast_hash": "a287cf8809765421b38d29de0012c188",
+    "mtime": 1785801955.3998556,
+    "ast_hash": "78a6f250ec4d1c86a2d6a7c2de0a4759",
     "semantic_hash": ""
   },
   "backend/routers/billing.py": {
@@ -140,8 +140,8 @@
     "semantic_hash": ""
   },
   "backend/routers/firebase_auth.py": {
-    "mtime": 1785910096.9379666,
-    "ast_hash": "a92687afc10d40841f469abb90ab36ba",
+    "mtime": 1785202396.9755092,
+    "ast_hash": "7e462506dc52e28854673e37c7e84981",
     "semantic_hash": ""
   },
   "backend/routers/kol.py": {
@@ -155,8 +155,8 @@
     "semantic_hash": "bdc9a6f4415277f814906b756c59161d"
   },
   "backend/routers/posts.py": {
-    "mtime": 1785824788.5278077,
-    "ast_hash": "a9708bd2bd476e460076c03b78ecc868",
+    "mtime": 1785759237.1819334,
+    "ast_hash": "4d62b22726ea172ad03d68394aa0f2f8",
     "semantic_hash": ""
   },
   "backend/routers/queue.py": {
@@ -265,8 +265,8 @@
     "semantic_hash": ""
   },
   "frontend/src/app/accounts/page.tsx": {
-    "mtime": 1785824788.5278077,
-    "ast_hash": "c400dc84f0d7fe6ee6ac81df1fc632b1",
+    "mtime": 1785800029.9252417,
+    "ast_hash": "2e67b50d65631ba3b7094bf17c279481",
     "semantic_hash": ""
   },
   "frontend/src/app/activity/page.tsx": {
@@ -280,8 +280,8 @@
     "semantic_hash": ""
   },
   "frontend/src/app/auth/callback/page.tsx": {
-    "mtime": 1785807615.64825,
-    "ast_hash": "b7c5f43a2e32a24f41192aa29d86e9d4",
+    "mtime": 1785801949.6062028,
+    "ast_hash": "6cb503d1ff078bb5455a77694663e5d9",
     "semantic_hash": ""
   },
   "frontend/src/app/billing/success/page.tsx": {
@@ -375,8 +375,8 @@
     "semantic_hash": "8cdbb77bc6b66b34e45cd560516036d6"
   },
   "frontend/src/components/accounts/AccountBriefingModal.tsx": {
-    "mtime": 1785810992.983114,
-    "ast_hash": "45e5cda8663c6df0533b3f317b00f1d2",
+    "mtime": 1785487532.768747,
+    "ast_hash": "972887e6192420083e8da9b30a795ebf",
     "semantic_hash": ""
   },
   "frontend/src/components/billing/SubscriptionGuard.tsx": {
@@ -410,8 +410,8 @@
     "semantic_hash": ""
   },
   "frontend/src/components/common/ShieraAiReportWidget.tsx": {
-    "mtime": 1785811520.7785954,
-    "ast_hash": "c51107ffcb32e64f9f08e2148d296f21",
+    "mtime": 1785490379.5014439,
+    "ast_hash": "3af30ebde40a4f3225ec25a0404a866d",
     "semantic_hash": ""
   },
   "frontend/src/components/common/ShieraMarkdownViewer.tsx": {
@@ -470,9 +470,9 @@
     "semantic_hash": ""
   },
   "frontend/src/components/layout/AppLayout.tsx": {
-    "mtime": 1785910070.6780186,
-    "ast_hash": "3ee4393808db8513ab7b528e1ea5606d",
-    "semantic_hash": ""
+    "mtime": 1785478596.2842689,
+    "ast_hash": "549562f093c80be8fe09d5b93c8aee77",
+    "semantic_hash": "549562f093c80be8fe09d5b93c8aee77"
   },
   "frontend/src/components/layout/Header.tsx": {
     "mtime": 1785227634.5384352,
@@ -480,9 +480,9 @@
     "semantic_hash": "d882b899234eb67caa44aa4711652fb7"
   },
   "frontend/src/components/layout/Sidebar.tsx": {
-    "mtime": 1785909994.7381701,
-    "ast_hash": "f65ed529d9f3872eab1d3adeebeb847b",
-    "semantic_hash": ""
+    "mtime": 1785473073.4293942,
+    "ast_hash": "f60ff4f443b5d79f4201526f7434cec9",
+    "semantic_hash": "f60ff4f443b5d79f4201526f7434cec9"
   },
   "frontend/src/components/media/MoveToFolderModal.tsx": {
     "mtime": 1785138940.8604236,
@@ -500,8 +500,8 @@
     "semantic_hash": ""
   },
   "frontend/src/components/providers/AuthProvider.tsx": {
-    "mtime": 1785824788.5278077,
-    "ast_hash": "116c9c8e7b6f64139b37089f93eb9653",
+    "mtime": 1785202396.987116,
+    "ast_hash": "d7ebfad637e83d745942c95ee547d4c8",
     "semantic_hash": ""
   },
   "frontend/src/components/providers/Providers.tsx": {
@@ -510,9 +510,9 @@
     "semantic_hash": "3092d97df813c941a623aa7b77cf661c"
   },
   "frontend/src/lib/api.ts": {
-    "mtime": 1785824788.5278077,
-    "ast_hash": "df2877f14731e49a405aa46661020209",
-    "semantic_hash": ""
+    "mtime": 1785202396.987116,
+    "ast_hash": "bafb94d1380a08e3a59a8e08b3ba6274",
+    "semantic_hash": "bafb94d1380a08e3a59a8e08b3ba6274"
   },
   "frontend/src/lib/auth.ts": {
     "mtime": 1785202396.987116,
@@ -777,36 +777,6 @@
   "frontend/src/components/accounts/AccountWatermarkModal.tsx": {
     "mtime": 1785752933.1905386,
     "ast_hash": "7c62d528b8ebbb8f3e00024cec905b81",
-    "semantic_hash": ""
-  },
-  "backend/security.py": {
-    "mtime": 1785824788.5278077,
-    "ast_hash": "5a5bee32e9bc434d26ecc5ca2fff4090",
-    "semantic_hash": ""
-  },
-  "frontend/src/app/owner-access/page.tsx": {
-    "mtime": 1785910061.9335816,
-    "ast_hash": "0957004c0d2049c988f5d636bea3045f",
-    "semantic_hash": ""
-  },
-  "package.json": {
-    "mtime": 1785814501.6772854,
-    "ast_hash": "8a80554c91d9fca8acb82f023de02f11",
-    "semantic_hash": ""
-  },
-  ".agents/rules/token-efficient.md": {
-    "mtime": 1785809336.1755126,
-    "ast_hash": "1d921c6a894c2ad7fa7ff14f08916304",
-    "semantic_hash": ""
-  },
-  ".agents/workflows/token-efficient.md": {
-    "mtime": 1785809336.1755126,
-    "ast_hash": "fd31aa73ce10c407ca96b07b20fe4dff",
-    "semantic_hash": ""
-  },
-  ".github/agents/token-efficient.agent.md": {
-    "mtime": 1785810992.983114,
-    "ast_hash": "58804c598f86af45d97ca22a2c097e8e",
     "semantic_hash": ""
   }
 }

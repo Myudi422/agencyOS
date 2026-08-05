@@ -79,10 +79,10 @@ export default function Sidebar({ isMobileOpen = false, onCloseMobile }: Sidebar
     { name: "Competitor Spy", href: "/competitor-spy", icon: Target },
     { name: "KOL Manager", href: "/kol-campaigns", icon: Users2, badge: "New" },
     { name: "Client Roster", href: "/clients", icon: Briefcase },
-    { name: "Media Library", href: "/media", icon: ImageIcon },
+    // { name: "Media Library", href: "/media", icon: ImageIcon },  // Hidden per owner request
     { name: "Content Calendar", href: "/calendar", icon: CalendarDays },
     { name: "Activity Log", href: "/activity", icon: History },
-    { name: "Tools", href: "/yt-clipper", icon: Wrench, badge: "Local AI" },
+    // { name: "Tools", href: "/yt-clipper", icon: Wrench, badge: "Local AI" },  // Hidden per owner request
     ...(isAdmin ? [{ name: "Admin Settings", href: "/admin", icon: Settings, isAdmin: true }] : []),
   ];
 
