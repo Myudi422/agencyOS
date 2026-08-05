@@ -859,7 +859,30 @@ export default function AdminPage() {
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-semibold text-amber-300 block">INSTAGRAM_2FA_SEED (Sangat Direkomendasikan)</label>
+                  <div className="flex gap-1.5">
+                    <input
+                      type="password"
+                      defaultValue={appSettings["INSTAGRAM_2FA_SEED"] || ""}
+                      id="setting-INSTAGRAM_2FA_SEED"
+                      placeholder="2FA Secret Key (TOTP)..."
+                      className="flex-1 px-3 py-1.5 rounded-xl border border-amber-500/40 text-xs bg-slate-900/60 text-amber-200 placeholder-pink-300/40 focus:outline-none focus:ring-2 focus:ring-amber-400 font-mono"
+                    />
+                    <button
+                      onClick={() => {
+                        const el = document.getElementById("setting-INSTAGRAM_2FA_SEED") as HTMLInputElement;
+                        if (el) saveSetting("INSTAGRAM_2FA_SEED", el.value);
+                      }}
+                      disabled={settingsSaving}
+                      className="px-3 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-xs font-medium transition-all disabled:opacity-60 shrink-0"
+                    >
+                      <Save className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+
                 <div className="space-y-1.5">
                   <label className="text-[11px] font-semibold text-white block">INSTAGRAM_CHALLENGE_EMAIL</label>
                   <div className="flex gap-1.5">

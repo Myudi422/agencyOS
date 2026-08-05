@@ -11,7 +11,7 @@
       "_origin": "ast",
       "id": "api_index",
       "community": 0,
-      "community_name": "config.py",
+      "community_name": "main.py",
       "norm_label": "index.py"
     },
     {
@@ -32,8 +32,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_config",
-      "community": 0,
-      "community_name": "config.py",
+      "community": 65,
+      "community_name": "models.py",
       "norm_label": "config.py"
     },
     {
@@ -43,8 +43,8 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "backend_config_settings",
-      "community": 0,
-      "community_name": "config.py",
+      "community": 65,
+      "community_name": "models.py",
       "norm_label": "settings"
     },
     {
@@ -54,8 +54,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_database",
-      "community": 71,
-      "community_name": "database.py",
+      "community": 65,
+      "community_name": "models.py",
       "norm_label": "database.py"
     },
     {
@@ -110,7 +110,7 @@
       "_origin": "ast",
       "id": "backend_main",
       "community": 0,
-      "community_name": "config.py",
+      "community_name": "main.py",
       "norm_label": "main.py"
     },
     {
@@ -121,7 +121,7 @@
       "_origin": "ast",
       "id": "backend_main_build_allowed_origins",
       "community": 0,
-      "community_name": "config.py",
+      "community_name": "main.py",
       "norm_label": "_build_allowed_origins()"
     },
     {
@@ -132,7 +132,7 @@
       "_origin": "ast",
       "id": "backend_main_py_get",
       "community": 0,
-      "community_name": "config.py",
+      "community_name": "main.py",
       "norm_label": "get"
     },
     {
@@ -143,7 +143,7 @@
       "_origin": "ast",
       "id": "backend_main_root",
       "community": 0,
-      "community_name": "config.py",
+      "community_name": "main.py",
       "norm_label": "root()"
     },
     {
@@ -154,7 +154,7 @@
       "_origin": "ast",
       "id": "backend_migrate_account_briefing",
       "community": 71,
-      "community_name": "database.py",
+      "community_name": "migrate_account_briefing.py",
       "norm_label": "migrate_account_briefing.py"
     },
     {
@@ -165,7 +165,7 @@
       "_origin": "ast",
       "id": "backend_migrate_account_briefing_run_migration",
       "community": 71,
-      "community_name": "database.py",
+      "community_name": "migrate_account_briefing.py",
       "norm_label": "run_migration()"
     },
     {
@@ -176,7 +176,7 @@
       "_origin": "ast",
       "id": "backend_migrate_account_briefing_rationale_1",
       "community": 71,
-      "community_name": "database.py",
+      "community_name": "migrate_account_briefing.py",
       "norm_label": "migration script: add briefing column to social_accounts table"
     },
     {
@@ -186,8 +186,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_migrate_competitor_accounts",
-      "community": 71,
-      "community_name": "database.py",
+      "community": 72,
+      "community_name": "migrate_competitor_accounts.py",
       "norm_label": "migrate_competitor_accounts.py"
     },
     {
@@ -197,8 +197,8 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "backend_migrate_competitor_accounts_run_migration",
-      "community": 71,
-      "community_name": "database.py",
+      "community": 72,
+      "community_name": "migrate_competitor_accounts.py",
       "norm_label": "run_migration()"
     },
     {
@@ -208,8 +208,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_migrate_competitor_accounts_rationale_1",
-      "community": 71,
-      "community_name": "database.py",
+      "community": 72,
+      "community_name": "migrate_competitor_accounts.py",
       "norm_label": "migration script: add social_account_id column to competitor_accounts table"
     },
     {
@@ -220,7 +220,7 @@
       "_origin": "ast",
       "id": "backend_migrate_db",
       "community": 71,
-      "community_name": "database.py",
+      "community_name": "migrate_account_briefing.py",
       "norm_label": "migrate_db.py"
     },
     {
@@ -231,7 +231,7 @@
       "_origin": "ast",
       "id": "backend_migrate_db_migrate",
       "community": 71,
-      "community_name": "database.py",
+      "community_name": "migrate_account_briefing.py",
       "norm_label": "migrate()"
     },
     {
@@ -242,7 +242,7 @@
       "_origin": "ast",
       "id": "backend_migrate_db_rationale_1",
       "community": 71,
-      "community_name": "database.py",
+      "community_name": "migrate_account_briefing.py",
       "norm_label": "database migration script \u2014 migrate database schema from stripe to midtrans...."
     },
     {
@@ -252,8 +252,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_migrate_kol",
-      "community": 71,
-      "community_name": "database.py",
+      "community": 73,
+      "community_name": "migrate_kol.py",
       "norm_label": "migrate_kol.py"
     },
     {
@@ -263,8 +263,8 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "backend_migrate_kol_run_migration",
-      "community": 71,
-      "community_name": "database.py",
+      "community": 73,
+      "community_name": "migrate_kol.py",
       "norm_label": "run_migration()"
     },
     {
@@ -274,8 +274,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_migrate_kol_rationale_1",
-      "community": 71,
-      "community_name": "database.py",
+      "community": 73,
+      "community_name": "migrate_kol.py",
       "norm_label": "migration script: create kol campaign & deliverable tracker tables"
     },
     {
@@ -285,8 +285,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_migrate_kol_stats",
-      "community": 71,
-      "community_name": "database.py",
+      "community": 74,
+      "community_name": "migrate_kol_stats.py",
       "norm_label": "migrate_kol_stats.py"
     },
     {
@@ -296,8 +296,8 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "backend_migrate_kol_stats_column_exists",
-      "community": 71,
-      "community_name": "database.py",
+      "community": 74,
+      "community_name": "migrate_kol_stats.py",
       "norm_label": "column_exists()"
     },
     {
@@ -307,8 +307,8 @@
       "source_location": "L21",
       "_origin": "ast",
       "id": "backend_migrate_kol_stats_migrate",
-      "community": 71,
-      "community_name": "database.py",
+      "community": 74,
+      "community_name": "migrate_kol_stats.py",
       "norm_label": "migrate()"
     },
     {
@@ -318,8 +318,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_migrate_kol_token",
-      "community": 71,
-      "community_name": "database.py",
+      "community": 65,
+      "community_name": "models.py",
       "norm_label": "migrate_kol_token.py"
     },
     {
@@ -329,8 +329,8 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "backend_migrate_kol_token_migrate",
-      "community": 71,
-      "community_name": "database.py",
+      "community": 65,
+      "community_name": "models.py",
       "norm_label": "migrate()"
     },
     {
@@ -341,7 +341,7 @@
       "_origin": "ast",
       "id": "backend_migrate_post_ai_brief",
       "community": 71,
-      "community_name": "database.py",
+      "community_name": "migrate_account_briefing.py",
       "norm_label": "migrate_post_ai_brief.py"
     },
     {
@@ -352,7 +352,7 @@
       "_origin": "ast",
       "id": "backend_migrate_post_ai_brief_run_migration",
       "community": 71,
-      "community_name": "database.py",
+      "community_name": "migrate_account_briefing.py",
       "norm_label": "run_migration()"
     },
     {
@@ -363,7 +363,7 @@
       "_origin": "ast",
       "id": "backend_migrate_post_ai_brief_rationale_1",
       "community": 71,
-      "community_name": "database.py",
+      "community_name": "migrate_account_briefing.py",
       "norm_label": "migration script: add ai_brief column to posts table"
     },
     {
@@ -374,7 +374,7 @@
       "_origin": "ast",
       "id": "backend_migrate_publish_results",
       "community": 71,
-      "community_name": "database.py",
+      "community_name": "migrate_account_briefing.py",
       "norm_label": "migrate_publish_results.py"
     },
     {
@@ -385,7 +385,7 @@
       "_origin": "ast",
       "id": "backend_migrate_publish_results_run_migration",
       "community": 71,
-      "community_name": "database.py",
+      "community_name": "migrate_account_briefing.py",
       "norm_label": "run_migration()"
     },
     {
@@ -396,7 +396,7 @@
       "_origin": "ast",
       "id": "backend_migrate_publish_results_rationale_1",
       "community": 71,
-      "community_name": "database.py",
+      "community_name": "migrate_account_briefing.py",
       "norm_label": "migration: tambah tabel post_publish_results dan kolom baru ke posts. jalankan:..."
     },
     {
@@ -407,7 +407,7 @@
       "_origin": "ast",
       "id": "backend_migrate_wa_otp",
       "community": 71,
-      "community_name": "database.py",
+      "community_name": "migrate_account_briefing.py",
       "norm_label": "migrate_wa_otp.py"
     },
     {
@@ -418,7 +418,7 @@
       "_origin": "ast",
       "id": "backend_migrate_wa_otp_migrate",
       "community": 71,
-      "community_name": "database.py",
+      "community_name": "migrate_account_briefing.py",
       "norm_label": "migrate()"
     },
     {
@@ -429,7 +429,7 @@
       "_origin": "ast",
       "id": "backend_migrate_wa_otp_rationale_1",
       "community": 71,
-      "community_name": "database.py",
+      "community_name": "migrate_account_briefing.py",
       "norm_label": "database migration \u2014 wa otp verification menambah kolom phone_number &..."
     },
     {
@@ -538,8 +538,8 @@
       "source_location": "L58",
       "_origin": "ast",
       "id": "backend_models_models_poststatus",
-      "community": 65,
-      "community_name": "models.py",
+      "community": 2,
+      "community_name": "posts.py",
       "norm_label": "poststatus"
     },
     {
@@ -571,8 +571,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "base",
-      "community": 9,
-      "community_name": "kol.py",
+      "community": 66,
+      "community_name": "SocialAccount",
       "norm_label": "base"
     },
     {
@@ -626,8 +626,8 @@
       "source_location": "L162",
       "_origin": "ast",
       "id": "backend_models_models_socialaccount",
-      "community": 9,
-      "community_name": "kol.py",
+      "community": 66,
+      "community_name": "SocialAccount",
       "norm_label": "socialaccount"
     },
     {
@@ -659,8 +659,8 @@
       "source_location": "L241",
       "_origin": "ast",
       "id": "backend_models_models_posttarget",
-      "community": 65,
-      "community_name": "models.py",
+      "community": 2,
+      "community_name": "posts.py",
       "norm_label": "posttarget"
     },
     {
@@ -681,8 +681,8 @@
       "source_location": "L274",
       "_origin": "ast",
       "id": "backend_models_models_postpublishresult",
-      "community": 65,
-      "community_name": "models.py",
+      "community": 56,
+      "community_name": "QueueService",
       "norm_label": "postpublishresult"
     },
     {
@@ -736,8 +736,8 @@
       "source_location": "L364",
       "_origin": "ast",
       "id": "backend_models_models_competitoraccount",
-      "community": 68,
-      "community_name": "competitors.py",
+      "community": 66,
+      "community_name": "SocialAccount",
       "norm_label": "competitoraccount"
     },
     {
@@ -747,8 +747,8 @@
       "source_location": "L393",
       "_origin": "ast",
       "id": "backend_models_models_competitorpost",
-      "community": 68,
-      "community_name": "competitors.py",
+      "community": 66,
+      "community_name": "SocialAccount",
       "norm_label": "competitorpost"
     },
     {
@@ -857,8 +857,8 @@
       "source_location": "L275",
       "_origin": "ast",
       "id": "backend_models_models_rationale_275",
-      "community": 65,
-      "community_name": "models.py",
+      "community": 56,
+      "community_name": "QueueService",
       "norm_label": "menyimpan hasil aktual publish dari postforme api (/v1/social-post-results)...."
     },
     {
@@ -890,8 +890,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_reset_competitor_data",
-      "community": 68,
-      "community_name": "competitors.py",
+      "community": 66,
+      "community_name": "SocialAccount",
       "norm_label": "reset_competitor_data.py"
     },
     {
@@ -912,8 +912,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_reset_competitor_data_rationale_1",
-      "community": 68,
-      "community_name": "competitors.py",
+      "community": 66,
+      "community_name": "SocialAccount",
       "norm_label": "reset competitor data script deletes all records from competitor_posts and..."
     },
     {
@@ -923,8 +923,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_reset_subscriptions",
-      "community": 71,
-      "community_name": "database.py",
+      "community": 65,
+      "community_name": "models.py",
       "norm_label": "reset_subscriptions.py"
     },
     {
@@ -934,8 +934,8 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "backend_reset_subscriptions_reset_all_subscriptions",
-      "community": 71,
-      "community_name": "database.py",
+      "community": 65,
+      "community_name": "models.py",
       "norm_label": "reset_all_subscriptions()"
     },
     {
@@ -945,8 +945,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_reset_subscriptions_rationale_1",
-      "community": 71,
-      "community_name": "database.py",
+      "community": 65,
+      "community_name": "models.py",
       "norm_label": "reset subscriptions script \u2014 clears all user subscriptions in db. run: python..."
     },
     {
@@ -1220,8 +1220,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_routers_activity",
-      "community": 35,
-      "community_name": "activity.py",
+      "community": 65,
+      "community_name": "models.py",
       "norm_label": "activity.py"
     },
     {
@@ -1232,7 +1232,7 @@
       "_origin": "ast",
       "id": "backend_routers_activity_py_get",
       "community": 35,
-      "community_name": "activity.py",
+      "community_name": "clear_all_activity_logs",
       "norm_label": "get"
     },
     {
@@ -1243,7 +1243,7 @@
       "_origin": "ast",
       "id": "backend_routers_activity_get_activity_logs",
       "community": 35,
-      "community_name": "activity.py",
+      "community_name": "clear_all_activity_logs",
       "norm_label": "get_activity_logs()"
     },
     {
@@ -1254,7 +1254,7 @@
       "_origin": "ast",
       "id": "backend_routers_activity_py_session",
       "community": 35,
-      "community_name": "activity.py",
+      "community_name": "clear_all_activity_logs",
       "norm_label": "session"
     },
     {
@@ -1265,7 +1265,7 @@
       "_origin": "ast",
       "id": "backend_routers_activity_py_delete",
       "community": 35,
-      "community_name": "activity.py",
+      "community_name": "clear_all_activity_logs",
       "norm_label": "delete"
     },
     {
@@ -1276,7 +1276,7 @@
       "_origin": "ast",
       "id": "backend_routers_activity_delete_activity_log",
       "community": 35,
-      "community_name": "activity.py",
+      "community_name": "clear_all_activity_logs",
       "norm_label": "delete_activity_log()"
     },
     {
@@ -1287,7 +1287,7 @@
       "_origin": "ast",
       "id": "backend_routers_activity_clear_all_activity_logs",
       "community": 35,
-      "community_name": "activity.py",
+      "community_name": "clear_all_activity_logs",
       "norm_label": "clear_all_activity_logs()"
     },
     {
@@ -1298,7 +1298,7 @@
       "_origin": "ast",
       "id": "backend_routers_activity_rationale_16",
       "community": 35,
-      "community_name": "activity.py",
+      "community_name": "clear_all_activity_logs",
       "norm_label": "retrieves chronological activity audit logs."
     },
     {
@@ -1309,7 +1309,7 @@
       "_origin": "ast",
       "id": "backend_routers_activity_rationale_39",
       "community": 35,
-      "community_name": "activity.py",
+      "community_name": "clear_all_activity_logs",
       "norm_label": "deletes a specific activity log entry."
     },
     {
@@ -1320,7 +1320,7 @@
       "_origin": "ast",
       "id": "backend_routers_activity_rationale_49",
       "community": 35,
-      "community_name": "activity.py",
+      "community_name": "clear_all_activity_logs",
       "norm_label": "clears all activity logs for a workspace."
     },
     {
@@ -2640,7 +2640,7 @@
       "_origin": "ast",
       "id": "backend_routers_clients",
       "community": 33,
-      "community_name": "require_user",
+      "community_name": "clients.py",
       "norm_label": "clients.py"
     },
     {
@@ -2651,7 +2651,7 @@
       "_origin": "ast",
       "id": "backend_routers_clients_clientcreate",
       "community": 33,
-      "community_name": "require_user",
+      "community_name": "clients.py",
       "norm_label": "clientcreate"
     },
     {
@@ -2662,7 +2662,7 @@
       "_origin": "ast",
       "id": "backend_routers_clients_py_basemodel",
       "community": 33,
-      "community_name": "require_user",
+      "community_name": "clients.py",
       "norm_label": "basemodel"
     },
     {
@@ -2673,7 +2673,7 @@
       "_origin": "ast",
       "id": "backend_routers_clients_py_get",
       "community": 33,
-      "community_name": "require_user",
+      "community_name": "clients.py",
       "norm_label": "get"
     },
     {
@@ -2684,7 +2684,7 @@
       "_origin": "ast",
       "id": "backend_routers_clients_get_clients",
       "community": 33,
-      "community_name": "require_user",
+      "community_name": "clients.py",
       "norm_label": "get_clients()"
     },
     {
@@ -2695,7 +2695,7 @@
       "_origin": "ast",
       "id": "backend_routers_clients_py_session",
       "community": 33,
-      "community_name": "require_user",
+      "community_name": "clients.py",
       "norm_label": "session"
     },
     {
@@ -2706,7 +2706,7 @@
       "_origin": "ast",
       "id": "backend_routers_clients_py_post",
       "community": 33,
-      "community_name": "require_user",
+      "community_name": "clients.py",
       "norm_label": "post"
     },
     {
@@ -2717,7 +2717,7 @@
       "_origin": "ast",
       "id": "backend_routers_clients_create_client",
       "community": 33,
-      "community_name": "require_user",
+      "community_name": "clients.py",
       "norm_label": "create_client()"
     },
     {
@@ -2728,7 +2728,7 @@
       "_origin": "ast",
       "id": "backend_routers_clients_py_delete",
       "community": 33,
-      "community_name": "require_user",
+      "community_name": "clients.py",
       "norm_label": "delete"
     },
     {
@@ -2739,7 +2739,7 @@
       "_origin": "ast",
       "id": "backend_routers_clients_delete_client",
       "community": 33,
-      "community_name": "require_user",
+      "community_name": "clients.py",
       "norm_label": "delete_client()"
     },
     {
@@ -2750,7 +2750,7 @@
       "_origin": "ast",
       "id": "backend_routers_clients_rationale_25",
       "community": 33,
-      "community_name": "require_user",
+      "community_name": "clients.py",
       "norm_label": "retrieves all clients under a workspace owned by the current user."
     },
     {
@@ -2761,7 +2761,7 @@
       "_origin": "ast",
       "id": "backend_routers_clients_rationale_64",
       "community": 33,
-      "community_name": "require_user",
+      "community_name": "clients.py",
       "norm_label": "creates a new client under a workspace owned by the current user."
     },
     {
@@ -2837,8 +2837,8 @@
       "source_location": "L103",
       "_origin": "ast",
       "id": "backend_routers_competitors_validateusernamerequest",
-      "community": 68,
-      "community_name": "competitors.py",
+      "community": 66,
+      "community_name": "SocialAccount",
       "norm_label": "validateusernamerequest"
     },
     {
@@ -2848,8 +2848,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_routers_competitors_py_basemodel",
-      "community": 68,
-      "community_name": "competitors.py",
+      "community": 66,
+      "community_name": "SocialAccount",
       "norm_label": "basemodel"
     },
     {
@@ -2859,8 +2859,8 @@
       "source_location": "L106",
       "_origin": "ast",
       "id": "backend_routers_competitors_addcompetitorrequest",
-      "community": 68,
-      "community_name": "competitors.py",
+      "community": 66,
+      "community_name": "SocialAccount",
       "norm_label": "addcompetitorrequest"
     },
     {
@@ -2870,8 +2870,8 @@
       "source_location": "L110",
       "_origin": "ast",
       "id": "backend_routers_competitors_competitorresponse",
-      "community": 68,
-      "community_name": "competitors.py",
+      "community": 66,
+      "community_name": "SocialAccount",
       "norm_label": "competitorresponse"
     },
     {
@@ -3343,8 +3343,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_routers_firebase_auth",
-      "community": 6,
-      "community_name": "admin.py",
+      "community": 65,
+      "community_name": "models.py",
       "norm_label": "firebase_auth.py"
     },
     {
@@ -3409,8 +3409,8 @@
       "source_location": "L54",
       "_origin": "ast",
       "id": "backend_routers_firebase_auth_require_user",
-      "community": 33,
-      "community_name": "require_user",
+      "community": 65,
+      "community_name": "models.py",
       "norm_label": "require_user()"
     },
     {
@@ -3475,8 +3475,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_routers_firebase_auth_rationale_1",
-      "community": 6,
-      "community_name": "admin.py",
+      "community": 65,
+      "community_name": "models.py",
       "norm_label": "firebase auth router \u2014 /auth/firebase verifies google firebase id token and..."
     },
     {
@@ -3508,8 +3508,8 @@
       "source_location": "L58",
       "_origin": "ast",
       "id": "backend_routers_firebase_auth_rationale_58",
-      "community": 33,
-      "community_name": "require_user",
+      "community": 65,
+      "community_name": "models.py",
       "norm_label": "dependency: requires authenticated user."
     },
     {
@@ -5807,8 +5807,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_seed_plans",
-      "community": 71,
-      "community_name": "database.py",
+      "community": 65,
+      "community_name": "models.py",
       "norm_label": "seed_plans.py"
     },
     {
@@ -5829,8 +5829,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_seed_plans_rationale_1",
-      "community": 71,
-      "community_name": "database.py",
+      "community": 65,
+      "community_name": "models.py",
       "norm_label": "seed script \u2014 creates 4 subscription plans in db with midtrans idr pricing. all..."
     },
     {
@@ -5840,8 +5840,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_services_firebase_service",
-      "community": 6,
-      "community_name": "admin.py",
+      "community": 65,
+      "community_name": "models.py",
       "norm_label": "firebase_service.py"
     },
     {
@@ -5873,8 +5873,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_services_firebase_service_rationale_1",
-      "community": 6,
-      "community_name": "admin.py",
+      "community": 65,
+      "community_name": "models.py",
       "norm_label": "firebase id token verification service uses google's public keys to verify..."
     },
     {
@@ -6318,10 +6318,32 @@
       "norm_label": ".custom_challenge_code_handler()"
     },
     {
-      "label": ".login_with_credentials()",
+      "label": "._load_stored_2fa_seed()",
       "file_type": "code",
       "source_file": "backend/services/instagrapi_service.py",
       "source_location": "L224",
+      "_origin": "ast",
+      "id": "backend_services_instagrapi_service_instagrapiservice_load_stored_2fa_seed",
+      "community": 20,
+      "community_name": "InstagrapiService",
+      "norm_label": "._load_stored_2fa_seed()"
+    },
+    {
+      "label": "._generate_totp_code()",
+      "file_type": "code",
+      "source_file": "backend/services/instagrapi_service.py",
+      "source_location": "L234",
+      "_origin": "ast",
+      "id": "backend_services_instagrapi_service_instagrapiservice_generate_totp_code",
+      "community": 20,
+      "community_name": "InstagrapiService",
+      "norm_label": "._generate_totp_code()"
+    },
+    {
+      "label": ".login_with_credentials()",
+      "file_type": "code",
+      "source_file": "backend/services/instagrapi_service.py",
+      "source_location": "L249",
       "_origin": "ast",
       "id": "backend_services_instagrapi_service_instagrapiservice_login_with_credentials",
       "community": 20,
@@ -6332,7 +6354,7 @@
       "label": ".get_client()",
       "file_type": "code",
       "source_file": "backend/services/instagrapi_service.py",
-      "source_location": "L266",
+      "source_location": "L311",
       "_origin": "ast",
       "id": "backend_services_instagrapi_service_instagrapiservice_get_client",
       "community": 20,
@@ -6343,7 +6365,7 @@
       "label": ".test_connection()",
       "file_type": "code",
       "source_file": "backend/services/instagrapi_service.py",
-      "source_location": "L311",
+      "source_location": "L356",
       "_origin": "ast",
       "id": "backend_services_instagrapi_service_instagrapiservice_test_connection",
       "community": 20,
@@ -6354,7 +6376,7 @@
       "label": ".validate_username()",
       "file_type": "code",
       "source_file": "backend/services/instagrapi_service.py",
-      "source_location": "L336",
+      "source_location": "L381",
       "_origin": "ast",
       "id": "backend_services_instagrapi_service_instagrapiservice_validate_username",
       "community": 20,
@@ -6365,7 +6387,7 @@
       "label": ".fetch_competitor_profile()",
       "file_type": "code",
       "source_file": "backend/services/instagrapi_service.py",
-      "source_location": "L353",
+      "source_location": "L398",
       "_origin": "ast",
       "id": "backend_services_instagrapi_service_instagrapiservice_fetch_competitor_profile",
       "community": 20,
@@ -6376,7 +6398,7 @@
       "label": ".fetch_competitor_posts()",
       "file_type": "code",
       "source_file": "backend/services/instagrapi_service.py",
-      "source_location": "L379",
+      "source_location": "L424",
       "_origin": "ast",
       "id": "backend_services_instagrapi_service_instagrapiservice_fetch_competitor_posts",
       "community": 20,
@@ -6387,7 +6409,7 @@
       "label": ".connect_with_sessionid()",
       "file_type": "code",
       "source_file": "backend/services/instagrapi_service.py",
-      "source_location": "L514",
+      "source_location": "L559",
       "_origin": "ast",
       "id": "backend_services_instagrapi_service_instagrapiservice_connect_with_sessionid",
       "community": 20,
@@ -6398,7 +6420,7 @@
       "label": ".connect_with_credentials()",
       "file_type": "code",
       "source_file": "backend/services/instagrapi_service.py",
-      "source_location": "L530",
+      "source_location": "L575",
       "_origin": "ast",
       "id": "backend_services_instagrapi_service_instagrapiservice_connect_with_credentials",
       "community": 20,
@@ -6409,7 +6431,7 @@
       "label": ".resolve_challenge()",
       "file_type": "code",
       "source_file": "backend/services/instagrapi_service.py",
-      "source_location": "L550",
+      "source_location": "L595",
       "_origin": "ast",
       "id": "backend_services_instagrapi_service_instagrapiservice_resolve_challenge",
       "community": 20,
@@ -6505,12 +6527,34 @@
       "norm_label": "handler called by instagrapi when instagram requires verification code..."
     },
     {
+      "label": "Fetch saved Instagram 2FA Secret Key (TOTP Seed) from settings table.",
+      "file_type": "rationale",
+      "source_file": "backend/services/instagrapi_service.py",
+      "source_location": "L225",
+      "_origin": "ast",
+      "id": "backend_services_instagrapi_service_rationale_225",
+      "community": 20,
+      "community_name": "InstagrapiService",
+      "norm_label": "fetch saved instagram 2fa secret key (totp seed) from settings table."
+    },
+    {
+      "label": "Generates a 6-digit TOTP verification code from 2FA Secret Key.",
+      "file_type": "rationale",
+      "source_file": "backend/services/instagrapi_service.py",
+      "source_location": "L235",
+      "_origin": "ast",
+      "id": "backend_services_instagrapi_service_rationale_235",
+      "community": 20,
+      "community_name": "InstagrapiService",
+      "norm_label": "generates a 6-digit totp verification code from 2fa secret key."
+    },
+    {
       "label": "Perform login via username & password using instagrapi Client with Challenge\u2026",
       "file_type": "rationale",
       "source_file": "backend/services/instagrapi_service.py",
-      "source_location": "L227",
+      "source_location": "L252",
       "_origin": "ast",
-      "id": "backend_services_instagrapi_service_rationale_227",
+      "id": "backend_services_instagrapi_service_rationale_252",
       "community": 20,
       "community_name": "InstagrapiService",
       "norm_label": "perform login via username & password using instagrapi client with challenge..."
@@ -6519,9 +6563,9 @@
       "label": "Initializes an instagrapi Client with Automatic Session Refresh, Auto-Login\u2026",
       "file_type": "rationale",
       "source_file": "backend/services/instagrapi_service.py",
-      "source_location": "L267",
+      "source_location": "L312",
       "_origin": "ast",
-      "id": "backend_services_instagrapi_service_rationale_267",
+      "id": "backend_services_instagrapi_service_rationale_312",
       "community": 20,
       "community_name": "InstagrapiService",
       "norm_label": "initializes an instagrapi client with automatic session refresh, auto-login..."
@@ -6530,9 +6574,9 @@
       "label": "Test Instagram login session or credentials with instagrapi.",
       "file_type": "rationale",
       "source_file": "backend/services/instagrapi_service.py",
-      "source_location": "L314",
+      "source_location": "L359",
       "_origin": "ast",
-      "id": "backend_services_instagrapi_service_rationale_314",
+      "id": "backend_services_instagrapi_service_rationale_359",
       "community": 20,
       "community_name": "InstagrapiService",
       "norm_label": "test instagram login session or credentials with instagrapi."
@@ -6541,9 +6585,9 @@
       "label": "Validate if an Instagram account exists and fetch basic profile preview.",
       "file_type": "rationale",
       "source_file": "backend/services/instagrapi_service.py",
-      "source_location": "L337",
+      "source_location": "L382",
       "_origin": "ast",
-      "id": "backend_services_instagrapi_service_rationale_337",
+      "id": "backend_services_instagrapi_service_rationale_382",
       "community": 20,
       "community_name": "InstagrapiService",
       "norm_label": "validate if an instagram account exists and fetch basic profile preview."
@@ -6552,9 +6596,9 @@
       "label": "Fetch competitor profile information from Instagram.",
       "file_type": "rationale",
       "source_file": "backend/services/instagrapi_service.py",
-      "source_location": "L354",
+      "source_location": "L399",
       "_origin": "ast",
-      "id": "backend_services_instagrapi_service_rationale_354",
+      "id": "backend_services_instagrapi_service_rationale_399",
       "community": 20,
       "community_name": "InstagrapiService",
       "norm_label": "fetch competitor profile information from instagram."
@@ -6563,9 +6607,9 @@
       "label": "Fetch recent posts for a competitor, calculate engagement rate, top hashtags,\u2026",
       "file_type": "rationale",
       "source_file": "backend/services/instagrapi_service.py",
-      "source_location": "L380",
+      "source_location": "L425",
       "_origin": "ast",
-      "id": "backend_services_instagrapi_service_rationale_380",
+      "id": "backend_services_instagrapi_service_rationale_425",
       "community": 20,
       "community_name": "InstagrapiService",
       "norm_label": "fetch recent posts for a competitor, calculate engagement rate, top hashtags,..."
@@ -6574,9 +6618,9 @@
       "label": "Connect Instagram using raw sessionid cookie.",
       "file_type": "rationale",
       "source_file": "backend/services/instagrapi_service.py",
-      "source_location": "L515",
+      "source_location": "L560",
       "_origin": "ast",
-      "id": "backend_services_instagrapi_service_rationale_515",
+      "id": "backend_services_instagrapi_service_rationale_560",
       "community": 20,
       "community_name": "InstagrapiService",
       "norm_label": "connect instagram using raw sessionid cookie."
@@ -6585,9 +6629,9 @@
       "label": "Connect Instagram using username & password with Challenge Resolvers.",
       "file_type": "rationale",
       "source_file": "backend/services/instagrapi_service.py",
-      "source_location": "L531",
+      "source_location": "L576",
       "_origin": "ast",
-      "id": "backend_services_instagrapi_service_rationale_531",
+      "id": "backend_services_instagrapi_service_rationale_576",
       "community": 20,
       "community_name": "InstagrapiService",
       "norm_label": "connect instagram using username & password with challenge resolvers."
@@ -6596,9 +6640,9 @@
       "label": "Submit challenge verification code to solve pending challenge.",
       "file_type": "rationale",
       "source_file": "backend/services/instagrapi_service.py",
-      "source_location": "L551",
+      "source_location": "L596",
       "_origin": "ast",
-      "id": "backend_services_instagrapi_service_rationale_551",
+      "id": "backend_services_instagrapi_service_rationale_596",
       "community": 20,
       "community_name": "InstagrapiService",
       "norm_label": "submit challenge verification code to solve pending challenge."
@@ -7908,8 +7952,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_services_storage_service",
-      "community": 0,
-      "community_name": "config.py",
+      "community": 65,
+      "community_name": "models.py",
       "norm_label": "storage_service.py"
     },
     {
@@ -24014,7 +24058,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "backend/services/instagrapi_service.py",
-      "source_location": "L255",
+      "source_location": "L300",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_services_instagrapi_service_instagrapiservice_login_with_credentials",
@@ -37747,7 +37791,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "backend/services/instagrapi_service.py",
-      "source_location": "L530",
+      "source_location": "L575",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_services_instagrapi_service_instagrapiservice",
@@ -37758,7 +37802,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "backend/services/instagrapi_service.py",
-      "source_location": "L514",
+      "source_location": "L559",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_services_instagrapi_service_instagrapiservice",
@@ -37802,7 +37846,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "backend/services/instagrapi_service.py",
-      "source_location": "L379",
+      "source_location": "L424",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_services_instagrapi_service_instagrapiservice",
@@ -37813,7 +37857,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "backend/services/instagrapi_service.py",
-      "source_location": "L353",
+      "source_location": "L398",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_services_instagrapi_service_instagrapiservice",
@@ -37824,7 +37868,18 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "backend/services/instagrapi_service.py",
-      "source_location": "L266",
+      "source_location": "L234",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "backend_services_instagrapi_service_instagrapiservice",
+      "target": "backend_services_instagrapi_service_instagrapiservice_generate_totp_code",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/services/instagrapi_service.py",
+      "source_location": "L311",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_services_instagrapi_service_instagrapiservice",
@@ -37857,6 +37912,17 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "backend/services/instagrapi_service.py",
+      "source_location": "L224",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "backend_services_instagrapi_service_instagrapiservice",
+      "target": "backend_services_instagrapi_service_instagrapiservice_load_stored_2fa_seed",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/services/instagrapi_service.py",
       "source_location": "L63",
       "weight": 1.0,
       "_origin": "ast",
@@ -37879,7 +37945,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "backend/services/instagrapi_service.py",
-      "source_location": "L224",
+      "source_location": "L249",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_services_instagrapi_service_instagrapiservice",
@@ -37890,7 +37956,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "backend/services/instagrapi_service.py",
-      "source_location": "L550",
+      "source_location": "L595",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_services_instagrapi_service_instagrapiservice",
@@ -37912,7 +37978,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "backend/services/instagrapi_service.py",
-      "source_location": "L311",
+      "source_location": "L356",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_services_instagrapi_service_instagrapiservice",
@@ -37923,7 +37989,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "backend/services/instagrapi_service.py",
-      "source_location": "L336",
+      "source_location": "L381",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_services_instagrapi_service_instagrapiservice",
@@ -37935,7 +38001,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "backend/services/instagrapi_service.py",
-      "source_location": "L273",
+      "source_location": "L318",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_services_instagrapi_service_instagrapiservice_get_client",
@@ -38018,7 +38084,7 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "backend/services/instagrapi_service.py",
-      "source_location": "L379",
+      "source_location": "L424",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_services_instagrapi_service_instagrapiservice_fetch_competitor_posts",
@@ -38030,7 +38096,7 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "backend/services/instagrapi_service.py",
-      "source_location": "L353",
+      "source_location": "L398",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_services_instagrapi_service_instagrapiservice_fetch_competitor_profile",
@@ -38042,7 +38108,7 @@
       "context": "generic_arg",
       "confidence": "EXTRACTED",
       "source_file": "backend/services/instagrapi_service.py",
-      "source_location": "L266",
+      "source_location": "L311",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_services_instagrapi_service_instagrapiservice_get_client",
@@ -38066,6 +38132,18 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "backend/services/instagrapi_service.py",
+      "source_location": "L224",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "backend_services_instagrapi_service_instagrapiservice_load_stored_2fa_seed",
+      "target": "backend_services_instagrapi_service_py_session",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/services/instagrapi_service.py",
       "source_location": "L63",
       "weight": 1.0,
       "_origin": "ast",
@@ -38078,7 +38156,7 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "backend/services/instagrapi_service.py",
-      "source_location": "L224",
+      "source_location": "L249",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_services_instagrapi_service_instagrapiservice_login_with_credentials",
@@ -38102,7 +38180,7 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "backend/services/instagrapi_service.py",
-      "source_location": "L311",
+      "source_location": "L356",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_services_instagrapi_service_instagrapiservice_test_connection",
@@ -38114,7 +38192,7 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "backend/services/instagrapi_service.py",
-      "source_location": "L336",
+      "source_location": "L381",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_services_instagrapi_service_instagrapiservice_validate_username",
@@ -38150,7 +38228,7 @@
       "context": "generic_arg",
       "confidence": "EXTRACTED",
       "source_file": "backend/services/instagrapi_service.py",
-      "source_location": "L379",
+      "source_location": "L424",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_services_instagrapi_service_instagrapiservice_fetch_competitor_posts",
@@ -38162,7 +38240,7 @@
       "context": "generic_arg",
       "confidence": "EXTRACTED",
       "source_file": "backend/services/instagrapi_service.py",
-      "source_location": "L353",
+      "source_location": "L398",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_services_instagrapi_service_instagrapiservice_fetch_competitor_profile",
@@ -38174,7 +38252,7 @@
       "context": "return_type",
       "confidence": "EXTRACTED",
       "source_file": "backend/services/instagrapi_service.py",
-      "source_location": "L266",
+      "source_location": "L311",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_services_instagrapi_service_instagrapiservice_get_client",
@@ -38186,7 +38264,7 @@
       "context": "return_type",
       "confidence": "EXTRACTED",
       "source_file": "backend/services/instagrapi_service.py",
-      "source_location": "L224",
+      "source_location": "L249",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_services_instagrapi_service_instagrapiservice_login_with_credentials",
@@ -38198,7 +38276,7 @@
       "context": "generic_arg",
       "confidence": "EXTRACTED",
       "source_file": "backend/services/instagrapi_service.py",
-      "source_location": "L311",
+      "source_location": "L356",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_services_instagrapi_service_instagrapiservice_test_connection",
@@ -38210,7 +38288,7 @@
       "context": "generic_arg",
       "confidence": "EXTRACTED",
       "source_file": "backend/services/instagrapi_service.py",
-      "source_location": "L336",
+      "source_location": "L381",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_services_instagrapi_service_instagrapiservice_validate_username",
@@ -38222,7 +38300,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "backend/services/instagrapi_service.py",
-      "source_location": "L247",
+      "source_location": "L292",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_services_instagrapi_service_instagrapiservice_login_with_credentials",
@@ -38245,7 +38323,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "backend/services/instagrapi_service.py",
-      "source_location": "L235",
+      "source_location": "L260",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_services_instagrapi_service_instagrapiservice_login_with_credentials",
@@ -38268,7 +38346,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "backend/services/instagrapi_service.py",
-      "source_location": "L532",
+      "source_location": "L577",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_services_instagrapi_service_instagrapiservice_connect_with_credentials",
@@ -38280,7 +38358,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "backend/services/instagrapi_service.py",
-      "source_location": "L516",
+      "source_location": "L561",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_services_instagrapi_service_instagrapiservice_connect_with_sessionid",
@@ -38316,7 +38394,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "backend/services/instagrapi_service.py",
-      "source_location": "L271",
+      "source_location": "L316",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_services_instagrapi_service_instagrapiservice_get_client",
@@ -38328,7 +38406,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "backend/services/instagrapi_service.py",
-      "source_location": "L240",
+      "source_location": "L265",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_services_instagrapi_service_instagrapiservice_login_with_credentials",
@@ -38340,7 +38418,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "backend/services/instagrapi_service.py",
-      "source_location": "L552",
+      "source_location": "L597",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_services_instagrapi_service_instagrapiservice_resolve_challenge",
@@ -38408,7 +38486,53 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "backend/services/instagrapi_service.py",
-      "source_location": "L302",
+      "source_location": "L269",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "backend_services_instagrapi_service_instagrapiservice_login_with_credentials",
+      "target": "backend_services_instagrapi_service_instagrapiservice_load_stored_2fa_seed",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/services/instagrapi_service.py",
+      "source_location": "L225",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "backend_services_instagrapi_service_rationale_225",
+      "target": "backend_services_instagrapi_service_instagrapiservice_load_stored_2fa_seed",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/services/instagrapi_service.py",
+      "source_location": "L271",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "backend_services_instagrapi_service_instagrapiservice_login_with_credentials",
+      "target": "backend_services_instagrapi_service_instagrapiservice_generate_totp_code",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/services/instagrapi_service.py",
+      "source_location": "L235",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "backend_services_instagrapi_service_rationale_235",
+      "target": "backend_services_instagrapi_service_instagrapiservice_generate_totp_code",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/services/instagrapi_service.py",
+      "source_location": "L347",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_services_instagrapi_service_instagrapiservice_get_client",
@@ -38420,7 +38544,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "backend/services/instagrapi_service.py",
-      "source_location": "L317",
+      "source_location": "L362",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_services_instagrapi_service_instagrapiservice_test_connection",
@@ -38431,10 +38555,10 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "backend/services/instagrapi_service.py",
-      "source_location": "L227",
+      "source_location": "L252",
       "weight": 1.0,
       "_origin": "ast",
-      "source": "backend_services_instagrapi_service_rationale_227",
+      "source": "backend_services_instagrapi_service_rationale_252",
       "target": "backend_services_instagrapi_service_instagrapiservice_login_with_credentials",
       "confidence_score": 1.0
     },
@@ -38443,7 +38567,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "backend/services/instagrapi_service.py",
-      "source_location": "L384",
+      "source_location": "L429",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_services_instagrapi_service_instagrapiservice_fetch_competitor_posts",
@@ -38455,7 +38579,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "backend/services/instagrapi_service.py",
-      "source_location": "L356",
+      "source_location": "L401",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_services_instagrapi_service_instagrapiservice_fetch_competitor_profile",
@@ -38467,7 +38591,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "backend/services/instagrapi_service.py",
-      "source_location": "L319",
+      "source_location": "L364",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_services_instagrapi_service_instagrapiservice_test_connection",
@@ -38478,10 +38602,10 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "backend/services/instagrapi_service.py",
-      "source_location": "L267",
+      "source_location": "L312",
       "weight": 1.0,
       "_origin": "ast",
-      "source": "backend_services_instagrapi_service_rationale_267",
+      "source": "backend_services_instagrapi_service_rationale_312",
       "target": "backend_services_instagrapi_service_instagrapiservice_get_client",
       "confidence_score": 1.0
     },
@@ -38489,10 +38613,10 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "backend/services/instagrapi_service.py",
-      "source_location": "L314",
+      "source_location": "L359",
       "weight": 1.0,
       "_origin": "ast",
-      "source": "backend_services_instagrapi_service_rationale_314",
+      "source": "backend_services_instagrapi_service_rationale_359",
       "target": "backend_services_instagrapi_service_instagrapiservice_test_connection",
       "confidence_score": 1.0
     },
@@ -38501,7 +38625,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "backend/services/instagrapi_service.py",
-      "source_location": "L339",
+      "source_location": "L384",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_services_instagrapi_service_instagrapiservice_validate_username",
@@ -38512,10 +38636,10 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "backend/services/instagrapi_service.py",
-      "source_location": "L337",
+      "source_location": "L382",
       "weight": 1.0,
       "_origin": "ast",
-      "source": "backend_services_instagrapi_service_rationale_337",
+      "source": "backend_services_instagrapi_service_rationale_382",
       "target": "backend_services_instagrapi_service_instagrapiservice_validate_username",
       "confidence_score": 1.0
     },
@@ -38523,10 +38647,10 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "backend/services/instagrapi_service.py",
-      "source_location": "L354",
+      "source_location": "L399",
       "weight": 1.0,
       "_origin": "ast",
-      "source": "backend_services_instagrapi_service_rationale_354",
+      "source": "backend_services_instagrapi_service_rationale_399",
       "target": "backend_services_instagrapi_service_instagrapiservice_fetch_competitor_profile",
       "confidence_score": 1.0
     },
@@ -38534,10 +38658,10 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "backend/services/instagrapi_service.py",
-      "source_location": "L380",
+      "source_location": "L425",
       "weight": 1.0,
       "_origin": "ast",
-      "source": "backend_services_instagrapi_service_rationale_380",
+      "source": "backend_services_instagrapi_service_rationale_425",
       "target": "backend_services_instagrapi_service_instagrapiservice_fetch_competitor_posts",
       "confidence_score": 1.0
     },
@@ -38545,10 +38669,10 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "backend/services/instagrapi_service.py",
-      "source_location": "L515",
+      "source_location": "L560",
       "weight": 1.0,
       "_origin": "ast",
-      "source": "backend_services_instagrapi_service_rationale_515",
+      "source": "backend_services_instagrapi_service_rationale_560",
       "target": "backend_services_instagrapi_service_instagrapiservice_connect_with_sessionid",
       "confidence_score": 1.0
     },
@@ -38556,10 +38680,10 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "backend/services/instagrapi_service.py",
-      "source_location": "L531",
+      "source_location": "L576",
       "weight": 1.0,
       "_origin": "ast",
-      "source": "backend_services_instagrapi_service_rationale_531",
+      "source": "backend_services_instagrapi_service_rationale_576",
       "target": "backend_services_instagrapi_service_instagrapiservice_connect_with_credentials",
       "confidence_score": 1.0
     },
@@ -38567,10 +38691,10 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "backend/services/instagrapi_service.py",
-      "source_location": "L551",
+      "source_location": "L596",
       "weight": 1.0,
       "_origin": "ast",
-      "source": "backend_services_instagrapi_service_rationale_551",
+      "source": "backend_services_instagrapi_service_rationale_596",
       "target": "backend_services_instagrapi_service_instagrapiservice_resolve_challenge",
       "confidence_score": 1.0
     },
@@ -52666,5 +52790,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "aae992f1ddf4182076553d667fa7bb09022fdba1"
+  "built_at_commit": "da62ad4d1e9ed63f1b8650ae40efd7d81e928182"
 }

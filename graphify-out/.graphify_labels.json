@@ -1,5 +1,5 @@
 {
-  "0": "config.py",
+  "0": "main.py",
   "1": "User",
   "2": "posts.py",
   "3": "yt_clipper_agent.py",
@@ -32,9 +32,9 @@
   "30": "YTPlayer",
   "31": "Components",
   "32": "MetaAdapter",
-  "33": "require_user",
+  "33": "clients.py",
   "34": "3. Routers & Endpoints (Backend)",
-  "35": "activity.py",
+  "35": "clear_all_activity_logs",
   "36": "app/page.tsx",
   "37": "package.json",
   "38": "services",
@@ -65,9 +65,13 @@
   "63": "get_dashboard_overview",
   "64": "Token-efficient agent",
   "65": "models.py",
+  "66": "SocialAccount",
   "67": "rules/token-efficient.md",
   "68": "competitors.py",
   "69": "workflows/token-efficient.md",
   "70": "package.json",
-  "71": "database.py"
+  "71": "migrate_account_briefing.py",
+  "72": "migrate_competitor_accounts.py",
+  "73": "migrate_kol.py",
+  "74": "migrate_kol_stats.py"
 }

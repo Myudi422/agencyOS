@@ -221,11 +221,36 @@ class InstagrapiService:
         logger.warning("Challenge code tidak ditemukan via IMAP maupun DB Admin Settings.")
         return False
 
+    def _load_stored_2fa_seed(self, db: Session) -> Optional[str]:
+        """Fetch saved Instagram 2FA Secret Key (TOTP Seed) from settings table."""
+        row = db.query(Setting).filter(
+            Setting.workspace_id == GLOBAL_WS_ID,
+            Setting.key.in_(["INSTAGRAM_2FA_SEED", "INSTAGRAM_TOTP_SECRET", "INSTAGRAM_2FA_SECRET"])
+        ).first()
+        if row and row.value:
+            return str(row.value).strip()
+        return None
+
+    def _generate_totp_code(self, seed: str) -> Optional[str]:
+        """Generates a 6-digit TOTP verification code from 2FA Secret Key."""
+        if not seed:
+            return None
+        clean_seed = seed.replace(" ", "").upper()
+        try:
+            import pyotp
+            totp = pyotp.TOTP(clean_seed)
+            code = totp.now()
+            logger.info("Berhasil membuat 6-digit 2FA TOTP code dari Secret Key untuk login Instagram.")
+            return code
+        except Exception as e:
+            logger.warning(f"Gagal generate TOTP code dari 2FA seed: {e}")
+            return None
+
     def login_with_credentials(
         self, db: Session, username: Optional[str] = None, password: Optional[str] = None
     ) -> Any:
         """
-        Perform login via username & password using instagrapi Client with Challenge Resolvers attached,
+        Perform login via username & password using instagrapi Client with Challenge Resolvers & 2FA TOTP attached,
         and automatically persist generated session settings dump to DB.
         """
         creds = None
@@ -239,8 +264,28 @@ class InstagrapiService:
 
         cl = self._create_client(db)
 
+        # Attempt 2FA TOTP code generation if 2FA seed is configured
+        verification_code = None
+        seed = self._load_stored_2fa_seed(db)
+        if seed:
+            verification_code = self._generate_totp_code(seed)
+
         logger.info(f"Mencoba login Instagram untuk @{creds['username']}...")
-        cl.login(creds["username"], creds["password"])
+        try:
+            if verification_code:
+                cl.login(creds["username"], creds["password"], verification_code=verification_code)
+            else:
+                cl.login(creds["username"], creds["password"])
+        except Exception as e_login:
+            err_str = str(e_login)
+            if "native challenge" in err_str.lower() or "checkpoint" in err_str.lower() or "official instagram app" in err_str.lower() or "challenge_code_handler" in err_str.lower():
+                raise ValueError(
+                    f"Instagram memicu Verifikasi Keamanan Perangkat (Native Checkpoint) untuk @{creds['username']}.\n"
+                    "💡 Solusi:\n"
+                    "1. Buka aplikasi/web Instagram di HP/Browser tempat Anda biasa login ➡️ tekan 'Ini Saya' / 'This Was Me'.\n"
+                    "2. ATAU aktifkan 2FA (Two-Factor Authentication) di akun Instagram tersebut, lalu masukkan 2FA Secret Key (TOTP) di Admin Settings -> INSTAGRAM_2FA_SEED untuk auto-login bebas challenge!"
+                ) from e_login
+            raise e_login
 
         # Auto-dump settings and save to DB
         settings_dump = cl.get_settings()
