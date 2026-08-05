@@ -81,6 +81,7 @@ export default function PostComposerModal() {
     minimizeComposer, 
     maximizeComposer, 
     activeWorkspace, 
+    activeClientId,
     composerPreselectedAccounts, 
     composerInitialPost, 
     composerInitialBrief 
@@ -108,6 +109,7 @@ export default function PostComposerModal() {
 
   // Watermark Toggle State (Default OFF)
   const [applyWatermark, setApplyWatermark] = useState<boolean>(false);
+  const [isGeneratingReviewLink, setIsGeneratingReviewLink] = useState<boolean>(false);
 
   // AI Content Brief State (Saved in draft for future re-editing)
   const [aiBriefText, setAiBriefText] = useState("");
@@ -626,6 +628,60 @@ export default function PostComposerModal() {
     if (!localStr) return "";
     // Append WIB offset so Date() parses it as WIB, not browser-local
     return new Date(`${localStr}:00+07:00`).toISOString();
+  };
+
+  const handleGenerateClientReviewLink = async () => {
+    if (!caption.trim() && mediaUrls.length === 0) {
+      toast.warning("Silakan isi caption atau tambahkan minimal 1 media terlebih dahulu.");
+      return;
+    }
+    if (selectedAccountIds.length === 0) {
+      toast.warning("Silakan pilih minimal 1 akun sosial media target.");
+      return;
+    }
+
+    setIsGeneratingReviewLink(true);
+    try {
+      const targetWsId = activeWorkspace?.id || "ws-default";
+      const payload = {
+        workspace_id: targetWsId,
+        client_id: activeClientId,
+        account_ids: selectedAccountIds,
+        post_type: postType,
+        caption,
+        hashtags,
+        ai_brief: aiBriefText,
+        media_urls: mediaUrls,
+        scheduled_at: scheduledAt ? scheduledAtToUtcIso(scheduledAt) : null,
+        action: "save_draft",
+        apply_watermark: applyWatermark,
+      };
+
+      let currentPostId = editingPostId;
+      if (editingPostId) {
+        await fetchApi(`/posts/${editingPostId}`, {
+          method: "PUT",
+          body: JSON.stringify(payload),
+        });
+      } else {
+        const res = await fetchApi<any>("/posts/", {
+          method: "POST",
+          body: JSON.stringify(payload),
+        });
+        currentPostId = res.post_id;
+        if (res.post_id) setEditingPostId(res.post_id);
+      }
+
+      if (currentPostId) {
+        const reviewUrl = `${window.location.origin}/review/${currentPostId}`;
+        await navigator.clipboard.writeText(reviewUrl);
+        toast.success("🔗 Link review klien berhasil disalin! Siap dikirim via WhatsApp.");
+      }
+    } catch (err: any) {
+      toast.info(err.message || "Gagal membuat link review klien.");
+    } finally {
+      setIsGeneratingReviewLink(false);
+    }
   };
 
   if (!isComposerOpen) return null;
@@ -2424,7 +2480,7 @@ export default function PostComposerModal() {
 
         {/* Modal Footer */}
         <div className="px-4 sm:px-6 py-3.5 border-t border-slate-200/80 bg-slate-50/90 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shrink-0">
-          <div className="flex items-center gap-1.5 sm:gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto">
             {[
               { id: "publish_now", label: "Publish Now", icon: Send },
               { id: "schedule", label: "Schedule", icon: Clock },
@@ -2449,31 +2505,48 @@ export default function PostComposerModal() {
             })}
           </div>
 
-          <button
-            type="button"
-            onClick={handleSubmit}
-            disabled={isSubmitting}
-            className="py-2.5 px-6 rounded-2xl gradient-brand text-white font-semibold text-xs flex items-center justify-center gap-2 shadow-md shadow-purple-500/25 hover:shadow-lg hover:shadow-purple-500/35 transition-all cursor-pointer"
-          >
-            {isSubmitting ? (
-              <span>Processing...</span>
-            ) : actionType === "schedule" ? (
-              <>
-                <Clock className="w-4 h-4" />
-                <span>Schedule Post</span>
-              </>
-            ) : actionType === "save_draft" ? (
-              <>
-                <Save className="w-4 h-4" />
-                <span>Save Draft</span>
-              </>
-            ) : (
-              <>
-                <Send className="w-4 h-4" />
-                <span>Publish Post Now</span>
-              </>
-            )}
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={handleGenerateClientReviewLink}
+              disabled={isGeneratingReviewLink || isSubmitting}
+              className="py-2.5 px-3.5 rounded-2xl bg-purple-50 hover:bg-purple-100 text-purple-700 font-extrabold text-xs border border-purple-200 flex items-center gap-1.5 transition-all cursor-pointer shadow-xs disabled:opacity-50"
+              title="Salin link review visual postingan ini untuk dikirim ke WhatsApp Klien"
+            >
+              {isGeneratingReviewLink ? (
+                <RefreshCw className="w-4 h-4 animate-spin text-purple-600" />
+              ) : (
+                <LinkIcon className="w-4 h-4 text-purple-600" />
+              )}
+              <span className="truncate">🔗 Link Review Klien (WA)</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={handleSubmit}
+              disabled={isSubmitting}
+              className="py-2.5 px-6 rounded-2xl gradient-brand text-white font-semibold text-xs flex items-center justify-center gap-2 shadow-md shadow-purple-500/25 hover:shadow-lg hover:shadow-purple-500/35 transition-all cursor-pointer"
+            >
+              {isSubmitting ? (
+                <span>Processing...</span>
+              ) : actionType === "schedule" ? (
+                <>
+                  <Clock className="w-4 h-4" />
+                  <span>Schedule Post</span>
+                </>
+              ) : actionType === "save_draft" ? (
+                <>
+                  <Save className="w-4 h-4" />
+                  <span>Save Draft</span>
+                </>
+              ) : (
+                <>
+                  <Send className="w-4 h-4" />
+                  <span>Publish Post Now</span>
+                </>
+              )}
+            </button>
+          </div>
         </div>
 
       </div>

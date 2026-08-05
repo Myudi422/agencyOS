@@ -1,70 +1,70 @@
 # Graph Report - agencyOS  (2026-08-05)
 
 ## Corpus Check
-- 138 files · ~763,098 words
+- 140 files · ~764,806 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1394 nodes · 3255 edges · 75 communities (57 shown, 18 thin omitted)
+- 1404 nodes · 3286 edges · 81 communities (59 shown, 22 thin omitted)
 - Extraction: 87% EXTRACTED · 13% INFERRED · 0% AMBIGUOUS · INFERRED: 417 edges (avg confidence: 0.5)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `79f26c11`
+- Built from commit: `78f29dc6`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
 ## Community Hubs (Navigation)
-- main.py
-- User
-- posts.py
+- kol.py
+- ActivityLog
+- models.py
 - yt_clipper_agent.py
 - statistics/page.tsx
 - PostForMeService
-- admin.py
-- ActivityLog
+- User
+- media.py
+- fetchApi
+- competitor-spy/page.tsx
 - useStore
-- kol.py
-- accounts/page.tsx
 - useAuthStore
 - statistics.py
-- get_calendar_posts
+- WorkspaceMember
 - .apply_watermark
 - GeminiService
 - compilerOptions
 - firebase
 - Session
-- fetchApi
+- kol-campaigns/page.tsx
 - InstagrapiService
-- WorkspaceMember
+- auth.py
 - Component: Firebase Auth (Backend)
 - devDependencies
 - Kelola Semua Sosmed, Campaign KOL, & Kompetitor Dalam Satu Command Center
 - midtrans_service.py
 - dependencies
-- competitor-spy/page.tsx
+- get_user_workspace
 - AuthProvider.tsx
 - queue/page.tsx
 - YTPlayer
 - Components
 - MetaAdapter
-- clients.py
+- get_calendar_posts
 - 3. Routers & Endpoints (Backend)
 - clear_all_activity_logs
 - app/page.tsx
 - package.json
 - services
 - server.js
-- pricing/page.tsx
+- update_post
 - AgencyOS Backend Documentation
 - 🚀 AgencyOS Server Upscaling & Load Management Guide (`load.md`)
-- postforme_webhook
+- create_workspace
 - 🛠️ 2. Komponen Teknis Terimplementasi
 - AgencyOS - Enterprise Digital Agency Social Management Platform
 - rules/graphify.md
 - workflows/graphify.md
 - [token]/page.tsx
-- StorageService
+- create_client
 - date-fns
 - react
 - next.config.js
@@ -75,22 +75,28 @@
 - tailwind-merge
 - zustand
 - SecurityMiddleware
-- get_dashboard_overview
+- generate_ai_brainstorm
 - Token-efficient agent
-- models.py
-- SocialAccount
+- billing.py
+- calendar/page.tsx
 - rules/token-efficient.md
 - competitors.py
 - workflows/token-efficient.md
 - migrate_account_briefing.py
-- migrate_competitor_accounts.py
-- migrate_kol.py
+- dashboard/page.tsx
+- get_dashboard_overview
 - migrate_kol_stats.py
+- migrate_competitor_accounts.py
+- migrate_db.py
+- migrate_kol.py
+- migrate_post_ai_brief.py
+- migrate_publish_results.py
+- migrate_wa_otp.py
 
 ## God Nodes (most connected - your core abstractions)
 1. `User` - 150 edges
-2. `fetchApi()` - 62 edges
-3. `ActivityLog` - 59 edges
+2. `fetchApi()` - 64 edges
+3. `ActivityLog` - 60 edges
 4. `SocialAccount` - 55 edges
 5. `WorkspaceMember` - 44 edges
 6. `Workspace` - 43 edges
@@ -114,15 +120,19 @@
 ## Import Cycles
 - None detected.
 
-## Communities (75 total, 18 thin omitted)
+## Communities (81 total, 22 thin omitted)
 
-### Community 1 - "User"
-Cohesion: 0.20
-Nodes (26): User, AccountBriefingSchema, bulk_action(), BulkActionRequest, delete_account(), get_account_briefing(), get_account_watermark(), get_accounts() (+18 more)
+### Community 0 - "kol.py"
+Cohesion: 0.13
+Nodes (41): Reset Competitor Data Script Deletes all records from competitor_posts and…, reset_competitors(), add_kol_to_campaign(), create_campaign(), create_deliverable(), create_kol_profile(), delete_campaign(), delete_deliverable() (+33 more)
 
-### Community 2 - "posts.py"
-Cohesion: 0.15
-Nodes (29): PostStatus, PostTarget, PostType, create_media_upload_url(), create_post(), delete_post(), get_posts(), patch_post() (+21 more)
+### Community 1 - "ActivityLog"
+Cohesion: 0.29
+Nodes (23): AccountPlatform, AccountStatus, ActivityLog, Client, SocialAccount, AccountBriefingSchema, BulkActionRequest, delete_account() (+15 more)
+
+### Community 2 - "models.py"
+Cohesion: 0.10
+Nodes (37): Settings, get_db(), Script perbaikan langsung: Ambil hasil dari PostForMe API untuk semua post yang…, get, root(), JobStatus, Post, PostStatus (+29 more)
 
 ### Community 3 - "yt_clipper_agent.py"
 Cohesion: 0.06
@@ -136,45 +146,45 @@ Nodes (39): AccountMetrics, AccountSummary, CHART_COLORS, CustomTooltip(), Daily
 Cohesion: 0.09
 Nodes (22): PostForMeService, Any, Get connected social accounts from PostForMe. Endpoint: GET /v1/social-accounts, Manually register or update a social account in PostForMe. Endpoint: POST…, Disconnect a social account in PostForMe. Endpoint: POST /v1/social-…, Delete a social account in PostForMe. Endpoint: DELETE /v1/social-accounts/{id}, Create a post across multi-platform social accounts in PostForMe. Endpoint:…, Delete a post from PostForMe. Endpoint: DELETE /v1/social-posts/{id} (+14 more)
 
-### Community 6 - "admin.py"
-Cohesion: 0.05
-Nodes (90): PlanTier, Paket langganan — semua plan unlimited akun sosmed, beda di quota post., Subscription aktif milik satu user., Menyimpan OTP WhatsApp sementara untuk verifikasi sebelum claim trial., RoleEnum, Setting, SubscriptionPlan, SubscriptionStatus (+82 more)
+### Community 6 - "User"
+Cohesion: 0.09
+Nodes (58): PlanTier, Paket langganan — semua plan unlimited akun sosmed, beda di quota post., Subscription aktif milik satu user., Menyimpan OTP WhatsApp sementara untuk verifikasi sebelum claim trial., RoleEnum, Setting, SubscriptionPlan, SubscriptionStatus (+50 more)
 
-### Community 7 - "ActivityLog"
-Cohesion: 0.15
-Nodes (27): ActivityLog, Media, bulk_delete_media(), bulk_move_media(), BulkDeleteRequest, BulkMoveRequest, delete_folder(), delete_media() (+19 more)
+### Community 7 - "media.py"
+Cohesion: 0.08
+Nodes (33): Media, bulk_delete_media(), bulk_move_media(), BulkDeleteRequest, BulkMoveRequest, delete_folder(), delete_media(), get_media_items() (+25 more)
 
-### Community 8 - "useStore"
+### Community 8 - "fetchApi"
+Cohesion: 0.08
+Nodes (31): AdminPage(), TabType, TIER_COLORS, TIER_ICONS, BillingSuccessContent(), dynamic, CompetitorSpyPage(), CampaignDetailPage() (+23 more)
+
+### Community 9 - "competitor-spy/page.tsx"
 Cohesion: 0.10
-Nodes (18): OAuthCallbackHandler(), CalendarImageThumbnail(), CalendarPage(), getProxiedImageUrl(), PLATFORM_ICONS, PLATFORM_LABELS, DashboardImageThumbnail(), DashboardPage() (+10 more)
+Nodes (18): ActiveTab, AddJobState, Competitor, CompetitorPost, CompetitorProfilePreview, ConnectedIgAccount, Portal(), KolAddEditModal() (+10 more)
 
-### Community 9 - "kol.py"
-Cohesion: 0.14
-Nodes (62): AccountPlatform, KolCampaign, KolCampaignKol, KolCampaignStatus, KolDeliverable, KolDeliverableStatus, KolDeliverableType, KolPaymentStatus (+54 more)
-
-### Community 10 - "accounts/page.tsx"
+### Community 10 - "useStore"
 Cohesion: 0.11
-Nodes (25): AccountsPage(), dynamic, PLATFORMS_CONFIG, ActivityPage(), ClientsPage(), MediaPage(), AccountBriefingModal(), AccountBriefingModalProps (+17 more)
+Nodes (28): AccountsPage(), dynamic, PLATFORMS_CONFIG, ActivityPage(), ClientsPage(), MediaPage(), OnboardingPage(), AccountBriefingModal() (+20 more)
 
 ### Community 11 - "useAuthStore"
-Cohesion: 0.12
-Nodes (21): AdminPage(), TabType, TIER_COLORS, TIER_ICONS, BillingSuccessContent(), dynamic, SubscriptionGuard(), TIER_META (+13 more)
+Cohesion: 0.11
+Nodes (25): OAuthCallbackHandler(), LoginPage(), SubscriptionGuard(), TIER_META, GlassToastManager(), PUBLIC_SPLASH_PATHS, SplashScreen(), AppLayout() (+17 more)
 
 ### Community 12 - "statistics.py"
-Cohesion: 0.13
-Nodes (31): AccountStatus, AIBrainstormRequest, AISummaryRequest, ChatItem, _compute_daily_breakdown(), _fetch_all_posts_for_account(), generate_ai_brainstorm(), generate_ai_summary() (+23 more)
+Cohesion: 0.17
+Nodes (23): _compute_daily_breakdown(), _fetch_all_posts_for_account(), generate_ai_summary(), get_statistics_accounts(), get_statistics_feed(), _normalize_metrics(), _parse_iso(), _period_label() (+15 more)
 
-### Community 13 - "get_calendar_posts"
-Cohesion: 0.18
-Nodes (15): _ensure_utc(), get_calendar_posts(), _in_range(), _parse_and_ensure_utc(), Any, datetime, get, put (+7 more)
+### Community 13 - "WorkspaceMember"
+Cohesion: 0.47
+Nodes (24): KolCampaign, KolCampaignKol, KolCampaignStatus, KolDeliverable, KolDeliverableStatus, KolDeliverableType, KolPaymentStatus, KolProfile (+16 more)
 
 ### Community 14 - ".apply_watermark"
 Cohesion: 0.20
 Nodes (8): Any, Watermark Service — High Performance Image Watermarking Engine for agencyOS…, Returns base64 data URI string of watermarked image for frontend live preview., Calculates top-left (X, Y) coordinate for watermark placement based on 9-point…, Download remote logo image via httpx., Applies a watermark (Text or Image Logo) onto the base image. Config schema: {…, WatermarkService, Image
 
 ### Community 15 - "GeminiService"
-Cohesion: 0.12
-Nodes (19): generate_otp(), normalize_phone(), Fonnte WhatsApp OTP Service Mengirim kode OTP via WhatsApp menggunakan Fonnte…, Generate OTP numerik acak., Normalisasi nomor WA ke format internasional tanpa '+'. Contoh: '08123456789' →…, Kirim OTP ke nomor WhatsApp via Fonnte API. Args: phone: Nomor WA (format…, Kirim pesan notifikasi umum via Fonnte WhatsApp API., send_otp_whatsapp() (+11 more)
+Cohesion: 0.13
+Nodes (18): generate_otp(), normalize_phone(), Fonnte WhatsApp OTP Service Mengirim kode OTP via WhatsApp menggunakan Fonnte…, Generate OTP numerik acak., Normalisasi nomor WA ke format internasional tanpa '+'. Contoh: '08123456789' →…, Kirim OTP ke nomor WhatsApp via Fonnte API. Args: phone: Nomor WA (format…, Kirim pesan notifikasi umum via Fonnte WhatsApp API., send_otp_whatsapp() (+10 more)
 
 ### Community 16 - "compilerOptions"
 Cohesion: 0.07
@@ -184,17 +194,17 @@ Nodes (26): compilerOptions, allowJs, esModuleInterop, incremental, isolatedModu
 Cohesion: 0.11
 Nodes (23): cancel_postforme_post(), delete_queue_job(), _fallback_local_results(), get_postforme_posts(), get_postforme_results(), get_publish_history(), get_queue_status(), BackgroundTasks (+15 more)
 
-### Community 19 - "fetchApi"
-Cohesion: 0.09
-Nodes (33): CampaignDetailPage(), DELIVERABLE_STATUS_COLORS, PAYMENT_STATUS_BADGES, KolCampaignsPage(), formatNumberToRupiahString(), getTerbilangShort(), parseRupiahStringToNumber(), RupiahInput() (+25 more)
+### Community 19 - "kol-campaigns/page.tsx"
+Cohesion: 0.15
+Nodes (16): KolCampaignsPage(), formatNumberToRupiahString(), getTerbilangShort(), parseRupiahStringToNumber(), RupiahInput(), RupiahInputProps, CampaignCard(), CampaignCardProps (+8 more)
 
 ### Community 20 - "InstagrapiService"
-Cohesion: 0.09
-Nodes (22): InstagrapiService, Any, Session, Instagrapi Service — Instagram Private API Integration for Competitor Spy Uses…, Handler called by instagrapi when Instagram forces a password change during…, Handler called by instagrapi when Instagram requires verification code…, Fetch saved Instagram 2FA Secret Key (TOTP Seed) from settings table., Generates a 6-digit TOTP verification code from 2FA Secret Key. (+14 more)
-
-### Community 21 - "WorkspaceMember"
 Cohesion: 0.10
-Nodes (53): Client, Workspace, WorkspaceMember, BlueskyConnectRequest, ChallengeResolveRequest, CookieLoginRequest, CredentialLoginRequest, extract_followers_count() (+45 more)
+Nodes (21): InstagrapiService, Any, Session, Handler called by instagrapi when Instagram forces a password change during…, Handler called by instagrapi when Instagram requires verification code…, Fetch saved Instagram 2FA Secret Key (TOTP Seed) from settings table., Generates a 6-digit TOTP verification code from 2FA Secret Key., Perform login via username & password using instagrapi Client with Challenge… (+13 more)
+
+### Community 21 - "auth.py"
+Cohesion: 0.12
+Nodes (32): extract_followers_count(), _get_user_target_workspace(), instagram_challenge_resolve(), instagram_connect(), instagram_cookie_login(), instagram_credential_login(), meta_callback(), meta_connect() (+24 more)
 
 ### Community 22 - "Component: Firebase Auth (Backend)"
 Cohesion: 0.06
@@ -216,17 +226,17 @@ Nodes (14): create_snap_transaction(), get_core_api_client(), get_snap_client(),
 Cohesion: 0.13
 Nodes (15): clsx, dependencies, clsx, jspdf, lucide-react, react-dom, react-is, recharts (+7 more)
 
-### Community 27 - "competitor-spy/page.tsx"
-Cohesion: 0.11
-Nodes (21): ActiveTab, AddJobState, Competitor, CompetitorPost, CompetitorProfilePreview, CompetitorSpyPage(), ConnectedIgAccount, LoginPage() (+13 more)
+### Community 27 - "get_user_workspace"
+Cohesion: 0.21
+Nodes (17): bulk_action(), get_account_briefing(), get_account_watermark(), get_accounts(), delete, get, post, put (+9 more)
 
 ### Community 28 - "AuthProvider.tsx"
 Cohesion: 0.21
 Nodes (9): jsonLd, metadata, AuthProvider(), Providers(), getIdToken(), onAuthChange(), auth, firebaseConfig (+1 more)
 
 ### Community 29 - "queue/page.tsx"
-Cohesion: 0.19
-Nodes (12): isDatePast(), LocalPost, LocalPostStatus, PfPost, PfResult, PLATFORM_COLORS, PLATFORM_ICONS, QueuePage() (+4 more)
+Cohesion: 0.13
+Nodes (16): isDatePast(), LocalPost, LocalPostStatus, PfPost, PfResult, PLATFORM_COLORS, PLATFORM_ICONS, QueuePage() (+8 more)
 
 ### Community 30 - "YTPlayer"
 Cohesion: 0.17
@@ -237,12 +247,12 @@ Cohesion: 0.06
 Nodes (31): Brand & Accent, Buttons, Collapsing Strategy, Colors, Components, Date Picker, Elevation, Font Family (+23 more)
 
 ### Community 32 - "MetaAdapter"
-Cohesion: 0.14
+Cohesion: 0.15
 Nodes (7): MetaAdapter, Any, Adapter for Meta Graph API (Instagram Business API & Facebook Page API).…, Publishes post to Instagram Business via Graph API container flow., Publishes post to Facebook Page via Graph API., Exchanges OAuth auth code for short-lived access token, then long-lived access…, Fetches connected Facebook Pages and associated Instagram Business Accounts.
 
-### Community 33 - "clients.py"
-Cohesion: 0.21
-Nodes (11): ClientCreate, create_client(), delete_client(), get_clients(), BaseModel, delete, get, post (+3 more)
+### Community 33 - "get_calendar_posts"
+Cohesion: 0.18
+Nodes (15): _ensure_utc(), get_calendar_posts(), _in_range(), _parse_and_ensure_utc(), Any, datetime, get, put (+7 more)
 
 ### Community 34 - "3. Routers & Endpoints (Backend)"
 Cohesion: 0.09
@@ -268,9 +278,9 @@ Nodes (8): entrypoint, root, framework, root, rewrites, services, backend, front
 Cohesion: 0.33
 Nodes (5): app, { createServer }, handle, next, { parse }
 
-### Community 40 - "pricing/page.tsx"
-Cohesion: 0.24
-Nodes (8): DEFAULT_PLANS, PricingPage(), TIER_ORDER, TIER_UI_META, Window, Step, WaVerifyModal(), WaVerifyModalProps
+### Community 40 - "update_post"
+Cohesion: 0.19
+Nodes (14): approve_public_post_review(), delete_post(), get_posts(), get_public_post_review(), BackgroundTasks, delete, get, put (+6 more)
 
 ### Community 41 - "AgencyOS Backend Documentation"
 Cohesion: 0.11
@@ -280,9 +290,9 @@ Nodes (17): AgencyOS Backend Documentation, **Atau Jika Berada di Dalam Folder `
 Cohesion: 0.13
 Nodes (14): 📊 1. Matriks Kapasitas Infrastruktur, 🏗️ 2. Roadmap Upscaling Bertahap, 🛠️ 3. Langkah Implementasi Upscaling, 🧪 4. Load Testing & Benchmark Scripts, 📈 5. Monitoring & Alerting Checklist, A. Install Dependencies, 🚀 AgencyOS Server Upscaling & Load Management Guide (`load.md`), B. Konfigurasi Redis Queue (`backend/services/redis_queue.py`) (+6 more)
 
-### Community 43 - "postforme_webhook"
-Cohesion: 0.16
-Nodes (14): list_postforme_webhooks(), postforme_webhook(), _process_post_result_event(), BackgroundTasks, get, post, Request, Menerima event dari PostForMe API. PostForMe mengirim POST request dengan: -… (+6 more)
+### Community 43 - "create_workspace"
+Cohesion: 0.20
+Nodes (12): create_workspace(), get_workspaces(), OnboardingSetupRequest, BaseModel, get, post, Session, Onboarding endpoint — creates the first workspace for a new user. Validates… (+4 more)
 
 ### Community 44 - "🛠️ 2. Komponen Teknis Terimplementasi"
 Cohesion: 0.15
@@ -292,56 +302,60 @@ Nodes (12): 🚀 1. Overview & Arsitektur Sistem, 🛠️ 2. Komponen Teknis Ter
 Cohesion: 0.20
 Nodes (9): 1. Run Backend (FastAPI), 2. Run Frontend (Next.js 15), AgencyOS - Enterprise Digital Agency Social Management Platform, Backend, Default Configured Credentials, Frontend, Getting Started, Key Features MVP 1.0 (+1 more)
 
-### Community 49 - "StorageService"
+### Community 49 - "create_client"
 Cohesion: 0.22
-Nodes (7): Any, Deletes a single file object permanently from Backblaze B2 bucket, including…, Permanently deletes multiple file objects and all their versions/delete markers…, Uploads file content to Backblaze B2 under…, Backblaze B2 S3 Compatible Object Storage Service. Strictly isolated under root…, Lists ONLY objects strictly starting with 'AgencyOS/' prefix from Backblaze B2…, StorageService
+Nodes (9): create_client(), delete_client(), get_clients(), delete, get, post, Session, Retrieves all clients under a workspace owned by the current user. (+1 more)
 
 ### Community 56 - "QueueService"
-Cohesion: 0.20
-Nodes (12): PostPublishResult, Menyimpan hasil aktual publish dari PostForMe API (/v1/social-post-results).…, Any, Session, QueueService, Queue Engine menggunakan background tasks FastAPI. Mengelola publish job per…, Creates PublishJob records and executes them immediately., Sinkronisasi hasil publish dari PostForMe untuk satu target. Mengambil data… (+4 more)
+Cohesion: 0.09
+Nodes (26): PostPublishResult, Menyimpan hasil aktual publish dari PostForMe API (/v1/social-post-results).…, list_postforme_webhooks(), postforme_webhook(), _process_post_result_event(), BackgroundTasks, get, post (+18 more)
 
 ### Community 62 - "SecurityMiddleware"
 Cohesion: 0.29
 Nodes (4): InMemoryRateLimiter, Request, SecurityMiddleware, BaseHTTPMiddleware
 
-### Community 63 - "get_dashboard_overview"
-Cohesion: 0.50
-Nodes (4): get_dashboard_overview(), get, Session, Sub-300ms fast executive dashboard endpoint returning real-time metrics, queue…
+### Community 63 - "generate_ai_brainstorm"
+Cohesion: 0.33
+Nodes (6): AIBrainstormRequest, AISummaryRequest, generate_ai_brainstorm(), BaseModel, post, Generate structured content brief & post composer payload based on account…
 
 ### Community 64 - "Token-efficient agent"
 Cohesion: 0.25
 Nodes (7): Graphify-first rule, Mandatory workflow, Preferred approach, Responsibilities, Token-efficient agent, Tool preferences, When to use this agent
 
-### Community 65 - "models.py"
-Cohesion: 0.13
-Nodes (17): Settings, get_db(), Script perbaikan langsung: Ambil hasil dari PostForMe API untuk semua post yang…, JobStatus, Post, PublishJob, Reset Subscriptions Script — Clears all user subscriptions in DB. Run: python…, BaseModel (+9 more)
+### Community 65 - "billing.py"
+Cohesion: 0.10
+Nodes (35): _activate_user_subscription(), create_checkout(), get_frontend_url(), get_subscription(), _get_user_from_auth(), list_plans(), midtrans_notification(), get (+27 more)
 
-### Community 66 - "SocialAccount"
+### Community 66 - "calendar/page.tsx"
 Cohesion: 0.40
-Nodes (9): CompetitorAccount, CompetitorPost, SocialAccount, Reset Competitor Data Script Deletes all records from competitor_posts and…, AddCompetitorRequest, CompetitorResponse, BaseModel, ValidateUsernameRequest (+1 more)
+Nodes (5): CalendarImageThumbnail(), CalendarPage(), getProxiedImageUrl(), PLATFORM_ICONS, PLATFORM_LABELS
 
 ### Community 68 - "competitors.py"
 Cohesion: 0.07
-Nodes (65): add_competitor(), delete_competitor(), get_add_competitor_status(), get_benchmark_matrix(), _get_cached_competitor_profile(), get_competitor_posts(), get_current_user_and_workspace(), get_daily_feed() (+57 more)
+Nodes (71): CompetitorAccount, CompetitorPost, add_competitor(), AddCompetitorRequest, CompetitorResponse, delete_competitor(), get_add_competitor_status(), get_benchmark_matrix() (+63 more)
 
-### Community 71 - "migrate_account_briefing.py"
-Cohesion: 0.10
-Nodes (5): Migration Script: Add briefing column to social_accounts table, Database Migration Script — Migrate database schema from Stripe to Midtrans.…, Migration Script: Add ai_brief column to posts table, Migration: Tambah tabel post_publish_results dan kolom baru ke posts. Jalankan:…, Database Migration — WA OTP Verification Menambah kolom phone_number &…
+### Community 72 - "dashboard/page.tsx"
+Cohesion: 0.50
+Nodes (3): DashboardImageThumbnail(), DashboardPage(), getProxiedImageUrl()
+
+### Community 73 - "get_dashboard_overview"
+Cohesion: 0.50
+Nodes (4): get_dashboard_overview(), get, Session, Sub-300ms fast executive dashboard endpoint returning real-time metrics, queue…
 
 ## Knowledge Gaps
-- **299 isolated node(s):** `Settings`, `nextConfig`, `name`, `version`, `private` (+294 more)
+- **301 isolated node(s):** `Settings`, `nextConfig`, `name`, `version`, `private` (+296 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **18 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **22 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `User` connect `User` to `models.py`, `SocialAccount`, `clients.py`, `competitors.py`, `posts.py`, `admin.py`, `kol.py`, `statistics.py`, `get_calendar_posts`, `Session`, `WorkspaceMember`, `QueueService`, `get_dashboard_overview`?**
-  _High betweenness centrality (0.099) - this node is a cross-community bridge._
+- **Why does `User` connect `User` to `kol.py`, `ActivityLog`, `models.py`, `billing.py`, `get_calendar_posts`, `competitors.py`, `get_dashboard_overview`, `create_workspace`, `statistics.py`, `WorkspaceMember`, `create_client`, `Session`, `auth.py`, `QueueService`, `get_user_workspace`, `generate_ai_brainstorm`?**
+  _High betweenness centrality (0.100) - this node is a cross-community bridge._
 - **Why does `PostForMeService` connect `PostForMeService` to `models.py`?**
-  _High betweenness centrality (0.032) - this node is a cross-community bridge._
-- **Why does `Setting` connect `admin.py` to `models.py`, `SocialAccount`, `InstagrapiService`, `GeminiService`?**
-  _High betweenness centrality (0.029) - this node is a cross-community bridge._
+  _High betweenness centrality (0.031) - this node is a cross-community bridge._
+- **Why does `Setting` connect `User` to `models.py`, `WorkspaceMember`, `GeminiService`, `InstagrapiService`, `auth.py`?**
+  _High betweenness centrality (0.025) - this node is a cross-community bridge._
 - **Are the 46 inferred relationships involving `User` (e.g. with `AccountBriefingSchema` and `BulkActionRequest`) actually correct?**
   _`User` has 46 INFERRED edges - model-reasoned connections that need verification._
 - **Are the 32 inferred relationships involving `ActivityLog` (e.g. with `AccountBriefingSchema` and `BulkActionRequest`) actually correct?**

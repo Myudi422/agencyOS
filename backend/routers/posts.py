@@ -513,6 +513,107 @@ async def delete_post(post_id: str, db: Session = Depends(get_db)):
     return {"status": "success", "message": "Post deleted"}
 
 
+# ─── CLIENT REVIEW & ONE-CLICK ACC ENDPOINTS ─────────────────────────────
+
+@router.get("/public/review/{post_id}")
+async def get_public_post_review(post_id: str, db: Session = Depends(get_db)):
+    """
+    Public endpoint: Returns preview metadata for client review without login.
+    Strictly sanitized & scoped to prevent IDOR/Enumeration attacks.
+    """
+    clean_post_id = sanitize_text(post_id, max_length=64, allow_newlines=False)
+    if not clean_post_id:
+        raise HTTPException(status_code=400, detail="ID Posting tidak valid.")
+
+    post = db.query(Post).filter(Post.id == clean_post_id).first()
+    if not post:
+        raise HTTPException(status_code=404, detail="Posting tidak ditemukan atau link sudah kedaluwarsa.")
+
+    workspace = post.workspace
+    targets = []
+    platforms = []
+    for t in post.targets:
+        acc = t.social_account
+        plat = acc.platform.value if acc else "unknown"
+        if plat not in platforms:
+            platforms.append(plat)
+        targets.append({
+            "platform": plat,
+            "username": acc.username if acc else "Account",
+            "name": acc.name if acc else "Social Account",
+            "avatar_url": acc.avatar_url if acc else None,
+        })
+
+    return {
+        "id": post.id,
+        "workspace_name": workspace.name if workspace else "Shiera Agency",
+        "post_type": post.post_type.value if post.post_type else "image",
+        "caption": post.caption or "",
+        "hashtags": post.hashtags or "",
+        "media_urls": post.media_urls or [],
+        "platforms": platforms,
+        "targets": targets,
+        "scheduled_at": post.scheduled_at.isoformat() if post.scheduled_at else None,
+        "status": post.status.value if post.status else "draft",
+        "created_at": post.created_at.isoformat() if post.created_at else None,
+    }
+
+
+@router.post("/public/review/{post_id}/approve")
+async def approve_public_post_review(
+    post_id: str,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db)
+):
+    """
+    Public endpoint: One-Click ACC from Client.
+    Transitions post status from DRAFT to SCHEDULED and triggers queue.
+    """
+    clean_post_id = sanitize_text(post_id, max_length=64, allow_newlines=False)
+    if not clean_post_id:
+        raise HTTPException(status_code=400, detail="ID Posting tidak valid.")
+
+    post = db.query(Post).filter(Post.id == clean_post_id).first()
+    if not post:
+        raise HTTPException(status_code=404, detail="Posting tidak ditemukan.")
+
+    if post.status in (PostStatus.PUBLISHED, PostStatus.PUBLISHING):
+        return {
+            "status": "already_approved",
+            "message": "Postingan ini sudah disetujui dan sedang dalam proses tayang!",
+            "post_status": post.status.value,
+        }
+
+    # Set status to SCHEDULED
+    post.status = PostStatus.SCHEDULED
+    post.updated_at = datetime.utcnow()
+
+    # Update targets status
+    for t in post.targets:
+        t.status = post.status
+
+    db.add(ActivityLog(
+        workspace_id=post.workspace_id,
+        action="CLIENT_ACC_APPROVED",
+        details=f"Post {post.id} was ACC & Approved by Client via WA Review Link.",
+        entity_type="Post",
+        entity_id=post.id
+    ))
+
+    db.commit()
+    db.refresh(post)
+
+    # Dispatch background queue task to PostForMe
+    background_tasks.add_task(queue_service.enqueue_post_publishing, db, post.id)
+
+    return {
+        "status": "success",
+        "message": "Postingan berhasil di-ACC & dijadwalkan tayang otomatis!",
+        "post_status": post.status.value,
+        "scheduled_at": post.scheduled_at.isoformat() if post.scheduled_at else None,
+    }
+
+
 # ─── /v1/social-posts alias ─────────────────────────────────────────────────
 # Mirrors the same CRUD so the frontend can call /v1/social-posts/* or /posts/*
 v1_router = APIRouter(prefix="/v1/social-posts", tags=["Social Posts v1"])
@@ -521,3 +622,6 @@ v1_router.get("/")(get_posts)
 v1_router.patch("/{post_id}")(patch_post)
 v1_router.put("/{post_id}")(update_post)
 v1_router.delete("/{post_id}")(delete_post)
+v1_router.get("/public/review/{post_id}")(get_public_post_review)
+v1_router.post("/public/review/{post_id}/approve")(approve_public_post_review)
+
