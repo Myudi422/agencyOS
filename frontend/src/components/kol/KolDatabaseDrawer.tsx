@@ -108,11 +108,11 @@ export default function KolDatabaseDrawer({ isOpen, onClose }: KolDatabaseDrawer
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex justify-end">
-      {/* Full Backdrop covering entire screen */}
+    <div className="fixed inset-0 w-screen h-screen z-[200] flex justify-end overflow-hidden">
+      {/* Full Backdrop covering entire viewport */}
       <div
         onClick={onClose}
-        className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity animate-in fade-in duration-200"
+        className="fixed inset-0 w-full h-full bg-slate-900/60 backdrop-blur-md transition-opacity animate-in fade-in duration-200"
       />
 
       {/* Drawer Panel */}

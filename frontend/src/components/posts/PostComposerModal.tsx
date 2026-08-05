@@ -402,18 +402,28 @@ export default function PostComposerModal() {
         const savedDraft = localStorage.getItem("shiera_composer_local_draft");
         if (savedDraft) {
           const d = JSON.parse(savedDraft);
-          setEditingPostId(null);
-          if (d.caption !== undefined) setCaption(d.caption);
-          if (d.hashtags !== undefined) setHashtags(d.hashtags);
-          if (Array.isArray(d.mediaUrls)) setMediaUrls(d.mediaUrls);
-          if (Array.isArray(d.selectedAccountIds) && d.selectedAccountIds.length > 0) setSelectedAccountIds(d.selectedAccountIds);
-          if (d.postType) setPostType(d.postType);
-          if (d.aiBriefText) { setAiBriefText(d.aiBriefText); setShowBriefPanel(true); } else { setAiBriefText(""); setShowBriefPanel(false); }
-          if (d.scheduledAt) setScheduledAt(d.scheduledAt);
-          if (d.actionType) setActionType(d.actionType);
-          if (d.applyWatermark !== undefined) setApplyWatermark(d.applyWatermark);
-          if (d.reelsThumbnailUrl) setReelsThumbnailUrl(d.reelsThumbnailUrl);
-          toast.info("Draft lokal otomatis dimuat!");
+          const hasRealContent = Boolean(
+            (d.caption && d.caption.trim() !== "") ||
+            (Array.isArray(d.mediaUrls) && d.mediaUrls.length > 0) ||
+            (d.aiBriefText && d.aiBriefText.trim() !== "")
+          );
+
+          if (hasRealContent) {
+            setEditingPostId(null);
+            if (d.caption !== undefined) setCaption(d.caption);
+            if (d.hashtags !== undefined) setHashtags(d.hashtags);
+            if (Array.isArray(d.mediaUrls)) setMediaUrls(d.mediaUrls);
+            if (Array.isArray(d.selectedAccountIds) && d.selectedAccountIds.length > 0) setSelectedAccountIds(d.selectedAccountIds);
+            if (d.postType) setPostType(d.postType);
+            if (d.aiBriefText) { setAiBriefText(d.aiBriefText); setShowBriefPanel(true); } else { setAiBriefText(""); setShowBriefPanel(false); }
+            if (d.scheduledAt) setScheduledAt(d.scheduledAt);
+            if (d.actionType) setActionType(d.actionType);
+            if (d.applyWatermark !== undefined) setApplyWatermark(d.applyWatermark);
+            if (d.reelsThumbnailUrl) setReelsThumbnailUrl(d.reelsThumbnailUrl);
+            toast.info("Draft lokal otomatis dimuat!");
+          } else {
+            resetForm();
+          }
         } else {
           resetForm();
         }
