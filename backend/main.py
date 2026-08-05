@@ -34,7 +34,6 @@ try:
     )
     from backend.routers.posts import v1_router as posts_v1_router
     from backend.seed import seed_database
-    from backend.services import agent_scheduler
 except ModuleNotFoundError:
     from config import settings
     from database import engine, Base
@@ -45,7 +44,15 @@ except ModuleNotFoundError:
     )
     from routers.posts import v1_router as posts_v1_router
     from seed import seed_database
-    from services import agent_scheduler
+
+# Import agent_scheduler separately — safe if apscheduler not installed
+try:
+    from backend.services import agent_scheduler
+except (ImportError, ModuleNotFoundError):
+    try:
+        from services import agent_scheduler
+    except (ImportError, ModuleNotFoundError):
+        agent_scheduler = None  # type: ignore
 
 # Configure Logging
 logging.basicConfig(level=logging.INFO)
@@ -68,19 +75,21 @@ from contextlib import asynccontextmanager
 
 @asynccontextmanager
 async def lifespan(app):
-    # Startup: launch AI Agent scheduler
-    try:
-        agent_scheduler.start()
-        logger.info("✅ AI Agent scheduler started.")
-    except Exception as e:
-        logger.error(f"Failed to start agent scheduler: {e}")
+    # Startup: launch AI Agent scheduler (no-op on serverless / if not installed)
+    if agent_scheduler:
+        try:
+            agent_scheduler.start()
+            logger.info("✅ AI Agent scheduler started.")
+        except Exception as e:
+            logger.error(f"Failed to start agent scheduler: {e}")
     yield
     # Shutdown
-    try:
-        agent_scheduler.shutdown()
-        logger.info("Agent scheduler stopped.")
-    except Exception as e:
-        logger.error(f"Failed to stop agent scheduler: {e}")
+    if agent_scheduler:
+        try:
+            agent_scheduler.shutdown()
+            logger.info("Agent scheduler stopped.")
+        except Exception as e:
+            logger.error(f"Failed to stop agent scheduler: {e}")
 
 app = FastAPI(
     title=settings.APP_NAME,

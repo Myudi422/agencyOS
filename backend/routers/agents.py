@@ -14,7 +14,15 @@ from backend.database import get_db
 from backend.models.models import User
 from backend.models.agent_models import AgentConfig, AgentRunLog, AgentRunStatus
 from backend.routers.firebase_auth import require_user, get_user_workspace
-from backend.services import agent_scheduler
+
+try:
+    from backend.services import agent_scheduler
+except ImportError:
+    try:
+        from services import agent_scheduler
+    except ImportError:
+        agent_scheduler = None  # type: ignore
+
 
 logger = logging.getLogger("AgentsRouter")
 
@@ -59,7 +67,7 @@ def _serialize_agent(agent: AgentConfig, db: Session) -> dict:
         .order_by(AgentRunLog.started_at.desc())
         .first()
     )
-    next_run = agent_scheduler.get_next_run(agent.id)
+    next_run = agent_scheduler.get_next_run(agent.id) if agent_scheduler else None
 
     return {
         "id": agent.id,
@@ -156,7 +164,7 @@ def create_agent(
     db.refresh(agent)
 
     # Schedule if active
-    if agent.is_active:
+    if agent.is_active and agent_scheduler:
         agent_scheduler.add_agent(agent.id, agent.run_time, agent.timezone, agent.run_days)
 
     logger.info(f"✅ Agent '{agent.name}' created (id={agent.id})")
@@ -226,7 +234,7 @@ def update_agent(
     db.refresh(agent)
 
     # Reschedule
-    if schedule_changed:
+    if schedule_changed and agent_scheduler:
         if agent.is_active:
             agent_scheduler.add_agent(agent.id, agent.run_time, agent.timezone, agent.run_days)
         else:
@@ -247,7 +255,8 @@ def delete_agent(
         raise HTTPException(status_code=404, detail="Agent tidak ditemukan.")
     get_user_workspace(current_user, agent.workspace_id, db)
 
-    agent_scheduler.remove_agent(agent.id)
+    if agent_scheduler:
+        agent_scheduler.remove_agent(agent.id)
 
     db.query(AgentRunLog).filter(AgentRunLog.agent_id == agent_id).delete()
     db.delete(agent)
@@ -273,10 +282,11 @@ def toggle_agent(
     db.commit()
     db.refresh(agent)
 
-    if agent.is_active:
-        agent_scheduler.add_agent(agent.id, agent.run_time, agent.timezone, agent.run_days)
-    else:
-        agent_scheduler.remove_agent(agent.id)
+    if agent_scheduler:
+        if agent.is_active:
+            agent_scheduler.add_agent(agent.id, agent.run_time, agent.timezone, agent.run_days)
+        else:
+            agent_scheduler.remove_agent(agent.id)
 
     return _serialize_agent(agent, db)
 
@@ -306,8 +316,20 @@ def run_agent_now(
     if running_log:
         raise HTTPException(status_code=409, detail="Agent sudah sedang berjalan. Tunggu hingga selesai.")
 
-    # Fire background task
-    agent_scheduler.run_now(agent.id)
+    if agent_scheduler:
+        agent_scheduler.run_now(agent.id)
+    else:
+        # Direct thread fallback when scheduler module not available
+        import threading
+        from backend.services.agent_service import run_agent
+        import asyncio
+        def _run():
+            loop = asyncio.new_event_loop()
+            try:
+                loop.run_until_complete(run_agent(agent.id, trigger="manual"))
+            finally:
+                loop.close()
+        threading.Thread(target=_run, daemon=True).start()
 
     return {"status": "triggered", "message": f"Agent '{agent.name}' sedang dijalankan di background."}
 

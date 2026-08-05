@@ -1,19 +1,27 @@
 """
 Agent Scheduler — APScheduler wrapper for Shiera AI Agent system.
-Uses BackgroundScheduler (in-process) with CronTrigger.
-Loaded at FastAPI startup, loads all active AgentConfigs from DB.
+
+Vercel/Serverless awareness:
+- Vercel is stateless serverless → BackgroundScheduler threads die per request.
+- On Vercel: scheduler is a no-op stub. "Run Now" (manual trigger) still works.
+- On a persistent server (Railway, VPS, etc.): full scheduler with cron runs.
 """
 import asyncio
 import logging
+import os
 from datetime import datetime
 from typing import Optional
 
-from apscheduler.schedulers.background import BackgroundScheduler
-from apscheduler.triggers.cron import CronTrigger
-
 logger = logging.getLogger("AgentScheduler")
 
-_scheduler: Optional[BackgroundScheduler] = None
+# Detect if running in a serverless environment
+_IS_SERVERLESS = bool(
+    os.getenv("VERCEL") or
+    os.getenv("AWS_LAMBDA_FUNCTION_NAME") or
+    os.getenv("FUNCTION_NAME")
+)
+
+_scheduler = None
 
 # Weekday map: APScheduler cron uses mon, tue, wed, thu, fri, sat, sun
 _DAY_MAP = {0: "mon", 1: "tue", 2: "wed", 3: "thu", 4: "fri", 5: "sat", 6: "sun"}
@@ -37,8 +45,19 @@ def _build_cron_days(run_days: list) -> str:
 
 
 def start():
-    """Initialize and start the scheduler. Load all active agents from DB."""
+    """Initialize and start the scheduler. No-op on serverless environments."""
     global _scheduler
+
+    if _IS_SERVERLESS:
+        logger.info("⚡ Serverless environment detected — APScheduler skipped (use manual run-now or external cron).")
+        return
+
+    try:
+        from apscheduler.schedulers.background import BackgroundScheduler
+    except ImportError:
+        logger.warning("apscheduler not installed — scheduler disabled.")
+        return
+
     if _scheduler and _scheduler.running:
         logger.info("Scheduler already running.")
         return
@@ -46,7 +65,6 @@ def start():
     _scheduler = BackgroundScheduler(timezone="UTC")
     _scheduler.start()
     logger.info("✅ AgentScheduler started.")
-
     _load_all_active_agents()
 
 
@@ -59,6 +77,8 @@ def shutdown():
 
 def _load_all_active_agents():
     """Load all active AgentConfigs from DB and schedule them."""
+    if _IS_SERVERLESS or not _scheduler:
+        return
     try:
         from backend.database import SessionLocal
         from backend.models.agent_models import AgentConfig
@@ -77,17 +97,16 @@ def _load_all_active_agents():
 
 
 def _schedule_agent(agent_id: str, run_time: str, timezone: str, run_days: list):
-    """Add or replace a cron job for an agent."""
-    if not _scheduler:
-        return
-
+    """Add or replace a cron job for an agent. No-op on serverless."""
+    if _IS_SERVERLESS or not _scheduler:
+        return None
     try:
+        from apscheduler.triggers.cron import CronTrigger
+
         hour, minute = map(int, run_time.split(":"))
         day_str = _build_cron_days(run_days)
-
         job_id = f"agent_{agent_id}"
 
-        # Remove existing job if any
         if _scheduler.get_job(job_id):
             _scheduler.remove_job(job_id)
 
@@ -97,17 +116,18 @@ def _schedule_agent(agent_id: str, run_time: str, timezone: str, run_days: list)
             id=job_id,
             args=[agent_id, "scheduled"],
             replace_existing=True,
-            misfire_grace_time=3600,  # Allow up to 1h late if server was down
-            coalesce=True,            # Don't run multiple if missed
+            misfire_grace_time=3600,
+            coalesce=True,
         )
 
-        next_run = _scheduler.get_job(job_id)
-        next_fire = next_run.next_run_time if next_run else None
+        job = _scheduler.get_job(job_id)
+        next_fire = job.next_run_time if job else None
         logger.info(f"✅ Agent {agent_id} scheduled at {run_time} ({timezone}) on [{day_str}]. Next: {next_fire}")
         return next_fire
 
     except Exception as e:
         logger.error(f"Failed to schedule agent {agent_id}: {e}")
+        return None
 
 
 def add_agent(agent_id: str, run_time: str, timezone: str, run_days: list) -> Optional[datetime]:
@@ -117,7 +137,7 @@ def add_agent(agent_id: str, run_time: str, timezone: str, run_days: list) -> Op
 
 def remove_agent(agent_id: str):
     """Public API: remove agent's scheduled job."""
-    if not _scheduler:
+    if _IS_SERVERLESS or not _scheduler:
         return
     job_id = f"agent_{agent_id}"
     if _scheduler.get_job(job_id):
@@ -126,21 +146,28 @@ def remove_agent(agent_id: str):
 
 
 def get_next_run(agent_id: str) -> Optional[datetime]:
-    """Return the next scheduled run datetime for an agent."""
-    if not _scheduler:
+    """Return next scheduled run datetime. Returns None on serverless."""
+    if _IS_SERVERLESS or not _scheduler:
         return None
     job = _scheduler.get_job(f"agent_{agent_id}")
-    if job:
-        return job.next_run_time
-    return None
+    return job.next_run_time if job else None
 
 
 def run_now(agent_id: str):
-    """Trigger an agent run immediately (async, non-blocking)."""
-    if not _scheduler:
-        # Fallback: run directly
-        _run_agent_sync(agent_id, trigger="manual")
+    """
+    Trigger an agent run immediately.
+    On serverless: runs directly in a new thread (fire-and-forget).
+    On persistent server: uses scheduler's add_job.
+    """
+    import threading
+
+    if _IS_SERVERLESS or not _scheduler:
+        # Serverless fallback: run in a daemon thread
+        t = threading.Thread(target=_run_agent_sync, args=(agent_id, "manual"), daemon=True)
+        t.start()
+        logger.info(f"Agent {agent_id} triggered in background thread (serverless mode).")
         return
+
     _scheduler.add_job(
         _run_agent_sync,
         args=[agent_id, "manual"],
