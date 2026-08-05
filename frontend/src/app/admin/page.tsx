@@ -848,6 +848,90 @@ export default function AdminPage() {
               </div>
             </div>
 
+            {/* ── Challenge Resolver Config (IMAP Auto-Code Extraction & Manual Code Fallback) ── */}
+            <div className="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-3">
+              <div>
+                <h4 className="text-xs font-bold text-pink-200 flex items-center gap-1.5">
+                  <Key className="w-3.5 h-3.5 text-amber-300" /> Challenge &amp; Captcha Resolver Settings (Auto IMAP / Manual 6-Digit OTP)
+                </h4>
+                <p className="text-[11px] text-pink-300/80 mt-0.5">
+                  Gunakan email IMAP (Gmail App Password) agar sistem otomatis membaca kode verifikasi 6-digit saat Instagram memicu Challenge/Captcha security.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-semibold text-white block">INSTAGRAM_CHALLENGE_EMAIL</label>
+                  <div className="flex gap-1.5">
+                    <input
+                      type="email"
+                      defaultValue={appSettings["INSTAGRAM_CHALLENGE_EMAIL"] || ""}
+                      id="setting-INSTAGRAM_CHALLENGE_EMAIL"
+                      placeholder="email@gmail.com"
+                      className="flex-1 px-3 py-1.5 rounded-xl border border-white/20 text-xs bg-slate-900/60 text-white placeholder-pink-300/40 focus:outline-none focus:ring-2 focus:ring-pink-400 font-mono"
+                    />
+                    <button
+                      onClick={() => {
+                        const el = document.getElementById("setting-INSTAGRAM_CHALLENGE_EMAIL") as HTMLInputElement;
+                        if (el) saveSetting("INSTAGRAM_CHALLENGE_EMAIL", el.value);
+                      }}
+                      disabled={settingsSaving}
+                      className="px-3 py-1.5 rounded-xl bg-pink-600 hover:bg-pink-500 text-white text-xs font-medium transition-all disabled:opacity-60 shrink-0"
+                    >
+                      <Save className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-semibold text-white block">INSTAGRAM_CHALLENGE_EMAIL_PASSWORD</label>
+                  <div className="flex gap-1.5">
+                    <input
+                      type="password"
+                      defaultValue={appSettings["INSTAGRAM_CHALLENGE_EMAIL_PASSWORD"] || ""}
+                      id="setting-INSTAGRAM_CHALLENGE_EMAIL_PASSWORD"
+                      placeholder="Gmail App Password..."
+                      className="flex-1 px-3 py-1.5 rounded-xl border border-white/20 text-xs bg-slate-900/60 text-white placeholder-pink-300/40 focus:outline-none focus:ring-2 focus:ring-pink-400 font-mono"
+                    />
+                    <button
+                      onClick={() => {
+                        const el = document.getElementById("setting-INSTAGRAM_CHALLENGE_EMAIL_PASSWORD") as HTMLInputElement;
+                        if (el) saveSetting("INSTAGRAM_CHALLENGE_EMAIL_PASSWORD", el.value);
+                      }}
+                      disabled={settingsSaving}
+                      className="px-3 py-1.5 rounded-xl bg-pink-600 hover:bg-pink-500 text-white text-xs font-medium transition-all disabled:opacity-60 shrink-0"
+                    >
+                      <Save className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-semibold text-white block">INSTAGRAM_CHALLENGE_CODE (Manual Code)</label>
+                  <div className="flex gap-1.5">
+                    <input
+                      type="text"
+                      defaultValue={appSettings["INSTAGRAM_CHALLENGE_CODE"] || ""}
+                      id="setting-INSTAGRAM_CHALLENGE_CODE"
+                      placeholder="e.g. 123456"
+                      maxLength={6}
+                      className="flex-1 px-3 py-1.5 rounded-xl border border-amber-500/40 text-xs bg-slate-900/60 text-amber-200 placeholder-pink-300/40 focus:outline-none focus:ring-2 focus:ring-amber-400 font-mono font-bold"
+                    />
+                    <button
+                      onClick={() => {
+                        const el = document.getElementById("setting-INSTAGRAM_CHALLENGE_CODE") as HTMLInputElement;
+                        if (el) saveSetting("INSTAGRAM_CHALLENGE_CODE", el.value);
+                      }}
+                      disabled={settingsSaving}
+                      className="px-3 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-xs font-medium transition-all disabled:opacity-60 shrink-0"
+                    >
+                      <Save className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             {/* Optional Manual Session Cookie Override */}
             <div className="p-3.5 rounded-2xl bg-white/5 border border-white/10 space-y-2">
               <div>

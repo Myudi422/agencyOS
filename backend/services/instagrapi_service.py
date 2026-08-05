@@ -6,6 +6,10 @@ retrieve posts, calculate engagement metrics, and extract top performing content
 
 import json
 import re
+import imaplib
+import email
+import random
+import string
 from typing import Optional, Dict, Any, List
 from collections import Counter
 from datetime import datetime
@@ -75,18 +79,155 @@ class InstagrapiService:
             }
         return None
 
-    def login_with_credentials(
-        self, db: Session, username: Optional[str] = None, password: Optional[str] = None
-    ) -> Any:
-        """
-        Perform login via username & password using instagrapi Client,
-        and automatically persist the generated session settings dump to DB.
-        """
+    def _create_client(self, db: Optional[Session] = None) -> Any:
+        """Create an instagrapi Client preconfigured with Challenge Resolvers."""
         try:
             from instagrapi import Client
         except ImportError:
             raise RuntimeError("instagrapi library is not installed.")
 
+        cl = Client()
+        cl.delay_range = [1, 3]
+
+        if db:
+            cl.change_password_handler = lambda uname: self.custom_change_password_handler(db, uname)
+            cl.challenge_code_handler = lambda uname, choice: self.custom_challenge_code_handler(db, uname, choice)
+
+        return cl
+
+    def get_code_from_email(self, db: Session, username: str) -> Optional[str]:
+        """
+        Connects to IMAP mail server (e.g. Gmail) to automatically search and extract
+        the 6-digit verification code sent by Instagram.
+        """
+        email_row = db.query(Setting).filter(
+            Setting.workspace_id == GLOBAL_WS_ID,
+            Setting.key.in_(["INSTAGRAM_CHALLENGE_EMAIL", "INSTAGRAM_EMAIL"])
+        ).first()
+
+        pass_row = db.query(Setting).filter(
+            Setting.workspace_id == GLOBAL_WS_ID,
+            Setting.key.in_(["INSTAGRAM_CHALLENGE_EMAIL_PASSWORD", "INSTAGRAM_EMAIL_PASSWORD"])
+        ).first()
+
+        imap_host_row = db.query(Setting).filter(
+            Setting.workspace_id == GLOBAL_WS_ID,
+            Setting.key == "INSTAGRAM_IMAP_SERVER"
+        ).first()
+
+        if not email_row or not email_row.value or not pass_row or not pass_row.value:
+            logger.info("IMAP challenge email / password tidak dikonfigurasi di Admin Settings DB.")
+            return None
+
+        email_user = str(email_row.value).strip()
+        email_pass = str(pass_row.value).strip()
+        imap_server = str(imap_host_row.value).strip() if imap_host_row and imap_host_row.value else "imap.gmail.com"
+
+        try:
+            logger.info(f"Koneksi ke IMAP server {imap_server} ({email_user}) untuk mencari kode verifikasi Instagram...")
+            mail = imaplib.IMAP4_SSL(imap_server)
+            mail.login(email_user, email_pass)
+            mail.select("inbox")
+
+            result, data = mail.search(None, "(UNSEEN)")
+            if result != "OK" or not data or not data[0]:
+                result, data = mail.search(None, "ALL")
+
+            if result == "OK" and data and data[0]:
+                ids = data[0].split()
+                for num in reversed(ids[-7:]):
+                    try:
+                        mail.store(num, "+FLAGS", "\\Seen")
+                        res, msg_data = mail.fetch(num, "(RFC822)")
+                        if res != "OK":
+                            continue
+                        msg = email.message_from_bytes(msg_data[0][1])
+
+                        payloads = msg.get_payload()
+                        if not isinstance(payloads, list):
+                            payloads = [msg]
+
+                        for payload in payloads:
+                            try:
+                                body = payload.get_payload(decode=True)
+                                if not body:
+                                    continue
+                                body_text = body.decode("utf-8", errors="ignore")
+
+                                if "instagram" in body_text.lower() or username.lower() in body_text.lower():
+                                    match = re.search(r">\s*(\d{6})\s*<", body_text)
+                                    if not match:
+                                        match = re.search(r"\b(\d{6})\b", body_text)
+                                    if match:
+                                        code = match.group(1)
+                                        logger.info(f"Berhasil menemukan 6-digit challenge code Instagram via Email: {code}")
+                                        return code
+                            except Exception as p_err:
+                                logger.debug(f"Error parsing email payload: {p_err}")
+                    except Exception as e_fetch:
+                        logger.debug(f"Error fetching email {num}: {e_fetch}")
+            mail.logout()
+        except Exception as e_imap:
+            logger.error(f"Pencarian kode verifikasi IMAP email gagal: {e_imap}")
+        return None
+
+    def custom_change_password_handler(self, db: Session, username: str) -> str:
+        """
+        Handler called by instagrapi when Instagram forces a password change during challenge.
+        Generates a new strong random password and automatically persists it to DB settings.
+        """
+        chars = string.ascii_letters + string.digits + "!@#$%^&*"
+        new_password = "".join(random.sample(chars, 12))
+        logger.info(f"Instagram meminta ganti password untuk @{username}. Password baru dibuat otomatis.")
+
+        p_row = db.query(Setting).filter(
+            Setting.workspace_id == GLOBAL_WS_ID,
+            Setting.key == "INSTAGRAM_SCRAPER_PASSWORD"
+        ).first()
+        if p_row:
+            p_row.value = new_password
+            db.commit()
+            logger.info("Password scraper baru berhasil disimpan ke DB settings.")
+
+        return new_password
+
+    def custom_challenge_code_handler(self, db: Session, username: str, choice: Any) -> Any:
+        """
+        Handler called by instagrapi when Instagram requires verification code (EMAIL/SMS).
+        1. Tries automatic IMAP email extraction.
+        2. Checks manual code submitted in Admin Settings ("INSTAGRAM_CHALLENGE_CODE").
+        """
+        logger.info(f"Instagram Challenge Code Handler dipanggil untuk @{username} (Choice: {choice})")
+
+        # 1. Automatic email IMAP extraction
+        code = self.get_code_from_email(db, username)
+        if code:
+            return code
+
+        # 2. Check manual code in DB
+        code_row = db.query(Setting).filter(
+            Setting.workspace_id == GLOBAL_WS_ID,
+            Setting.key == "INSTAGRAM_CHALLENGE_CODE"
+        ).first()
+
+        if code_row and code_row.value:
+            code_val = str(code_row.value).strip()
+            if len(code_val) == 6 and code_val.isdigit():
+                logger.info(f"Menggunakan 6-digit Challenge Code dari DB Admin Settings: {code_val}")
+                code_row.value = ""
+                db.commit()
+                return code_val
+
+        logger.warning("Challenge code tidak ditemukan via IMAP maupun DB Admin Settings.")
+        return False
+
+    def login_with_credentials(
+        self, db: Session, username: Optional[str] = None, password: Optional[str] = None
+    ) -> Any:
+        """
+        Perform login via username & password using instagrapi Client with Challenge Resolvers attached,
+        and automatically persist generated session settings dump to DB.
+        """
         creds = None
         if username and password:
             creds = {"username": username, "password": password}
@@ -96,10 +237,9 @@ class InstagrapiService:
         if not creds:
             raise ValueError("Credential Instagram Scraper (Username & Password) belum dikonfigurasi di Admin Settings.")
 
-        cl = Client()
-        cl.delay_range = [1, 3]
+        cl = self._create_client(db)
 
-        logger.info(f"Mencoba auto-login Instagram untuk @{creds['username']}...")
+        logger.info(f"Mencoba login Instagram untuk @{creds['username']}...")
         cl.login(creds["username"], creds["password"])
 
         # Auto-dump settings and save to DB
@@ -125,15 +265,10 @@ class InstagrapiService:
 
     def get_client(self, db: Optional[Session] = None, override_session: Optional[Any] = None, allow_anonymous: bool = True) -> Any:
         """
-        Initializes an instagrapi Client with Automatic Session Refresh & Auto-Login Fallback.
+        Initializes an instagrapi Client with Automatic Session Refresh, Auto-Login Fallback,
+        and Challenge Resolvers attached.
         """
-        try:
-            from instagrapi import Client
-        except ImportError:
-            raise RuntimeError("instagrapi library is not installed.")
-
-        cl = Client()
-        cl.delay_range = [1, 3]
+        cl = self._create_client(db)
 
         session_data = override_session or (self._load_stored_session(db) if db else None)
 
@@ -374,6 +509,57 @@ class InstagrapiService:
             "engagement_rate": overall_er,
             "top_hashtags": top_hashtags,
             "total_posts_scraped": count
+        }
+
+    async def connect_with_sessionid(self, session_id: str, username: Optional[str] = None, existing_settings: Optional[dict] = None) -> dict:
+        """Connect Instagram using raw sessionid cookie."""
+        cl = self._create_client()
+        if existing_settings and isinstance(existing_settings, dict):
+            cl.set_settings(existing_settings)
+        cl.login_by_sessionid(session_id)
+        acc_info = cl.account_info()
+        return {
+            "pk": str(getattr(acc_info, "pk", "")),
+            "username": getattr(acc_info, "username", username or "user"),
+            "full_name": getattr(acc_info, "full_name", ""),
+            "profile_pic_url": str(getattr(acc_info, "profile_pic_url", "")),
+            "follower_count": getattr(acc_info, "follower_count", 0),
+            "session_settings": cl.get_settings()
+        }
+
+    async def connect_with_credentials(self, username: str, password: str) -> dict:
+        """Connect Instagram using username & password with Challenge Resolvers."""
+        cl = self._create_client()
+        try:
+            cl.login(username, password)
+        except Exception as e:
+            err_msg = str(e)
+            if "challenge_required" in err_msg.lower() or "challenge" in err_msg.lower():
+                raise Exception(f"challenge_required:{username}\n{err_msg}")
+            raise
+        acc_info = cl.account_info()
+        return {
+            "pk": str(getattr(acc_info, "pk", "")),
+            "username": getattr(acc_info, "username", username),
+            "full_name": getattr(acc_info, "full_name", ""),
+            "profile_pic_url": str(getattr(acc_info, "profile_pic_url", "")),
+            "follower_count": getattr(acc_info, "follower_count", 0),
+            "session_settings": cl.get_settings()
+        }
+
+    async def resolve_challenge(self, username: str, code: str) -> dict:
+        """Submit challenge verification code to solve pending challenge."""
+        cl = self._create_client()
+        cl.challenge_code_handler = lambda uname, choice: code
+        cl.login(username, "")
+        acc_info = cl.account_info()
+        return {
+            "pk": str(getattr(acc_info, "pk", "")),
+            "username": getattr(acc_info, "username", username),
+            "full_name": getattr(acc_info, "full_name", ""),
+            "profile_pic_url": str(getattr(acc_info, "profile_pic_url", "")),
+            "follower_count": getattr(acc_info, "follower_count", 0),
+            "session_settings": cl.get_settings()
         }
 
 
