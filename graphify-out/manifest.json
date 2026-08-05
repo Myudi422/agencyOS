@@ -290,8 +290,8 @@
     "semantic_hash": ""
   },
   "frontend/src/app/calendar/page.tsx": {
-    "mtime": 1785388047.9801686,
-    "ast_hash": "57961cedaacaa9c0dc6b0b3240e45e0a",
+    "mtime": 1785913328.419378,
+    "ast_hash": "e74cd33db590e23f733d75a734e7f7c6",
     "semantic_hash": ""
   },
   "frontend/src/app/clients/page.tsx": {
@@ -360,8 +360,8 @@
     "semantic_hash": ""
   },
   "frontend/src/app/queue/page.tsx": {
-    "mtime": 1785392513.2596188,
-    "ast_hash": "d77a9e8611e141cf755fc5d396180322",
+    "mtime": 1785913321.6725478,
+    "ast_hash": "36f24ee601ad3caed16e090099d86334",
     "semantic_hash": ""
   },
   "frontend/src/app/statistics/page.tsx": {
