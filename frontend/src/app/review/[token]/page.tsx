@@ -113,8 +113,8 @@ export default function PublicClientReviewPage() {
       <header className="w-full max-w-3xl mb-6 sm:mb-8 flex items-center justify-between z-10 border-b border-slate-200/80 pb-4">
         <div className="flex items-center gap-3">
           {/* Official Shiera Logo Badge */}
-          <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-purple-600 via-indigo-600 to-pink-500 flex items-center justify-center text-white shadow-md shadow-purple-500/25 shrink-0">
-            <Sparkles className="w-5 h-5 text-white" />
+          <div className="w-10 h-10 rounded-2xl bg-purple-600 p-2 flex items-center justify-center text-white shadow-md shadow-purple-500/25 shrink-0">
+            <img src="/logo.png" alt="Shiera Logo" className="w-full h-full object-contain brightness-0 invert" />
           </div>
           <div>
             <div className="flex items-center gap-2 flex-wrap">
@@ -157,29 +157,29 @@ export default function PublicClientReviewPage() {
           </div>
         </div>
 
-        {/* Media Showcase (Responsive Image & Video Player) */}
+        {/* Media Showcase (Unclipped Responsive Image & Video Player) */}
         {postData.media_urls && postData.media_urls.length > 0 && (
           <div className="space-y-3">
-            <div className="relative w-full rounded-2xl sm:rounded-3xl bg-slate-950 overflow-hidden border border-slate-200 shadow-xs flex items-center justify-center min-h-[220px] max-h-[70vh]">
+            <div className="relative w-full rounded-2xl sm:rounded-3xl bg-slate-100/70 p-1 sm:p-2 overflow-hidden border border-slate-200/90 shadow-xs flex items-center justify-center min-h-[220px]">
               {isCurrentVideo ? (
                 <video
                   src={currentMediaUrl}
                   controls
-                  className="w-full max-h-[70vh] object-contain bg-slate-950"
+                  className="w-full max-h-[75vh] object-contain rounded-xl sm:rounded-2xl"
                   preload="metadata"
                 />
               ) : (
                 <img
                   src={currentMediaUrl}
                   alt="Post Media Preview"
-                  className="w-full max-h-[70vh] object-contain bg-slate-950"
+                  className="w-full max-h-[75vh] object-contain rounded-xl sm:rounded-2xl"
                   onError={(e: any) => {
                     e.target.src = "https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=1200&auto=format&fit=crop";
                   }}
                 />
               )}
               {postData.media_urls.length > 1 && (
-                <div className="absolute bottom-3 right-3 px-3 py-1 rounded-full bg-slate-900/80 backdrop-blur-md text-white text-xs font-bold border border-white/20">
+                <div className="absolute top-3 right-3 px-3 py-1 rounded-full bg-slate-900/80 backdrop-blur-md text-white text-xs font-bold border border-white/20 shadow-md">
                   {activeMediaIdx + 1} / {postData.media_urls.length} Media
                 </div>
               )}
