@@ -261,6 +261,21 @@ export default function AgentPage() {
 
   return (
     <div className="flex flex-col h-screen bg-slate-50">
+      {/* Beta Info Banner */}
+      <div className="shrink-0 px-5 py-2.5 bg-amber-50 border-b border-amber-200 flex items-center gap-2.5">
+        <span className="flex items-center justify-center w-5 h-5 rounded-full bg-amber-400 shrink-0">
+          <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+            <path d="M5 1v4M5 8v.5" stroke="#fff" strokeWidth="1.5" strokeLinecap="round"/>
+          </svg>
+        </span>
+        <p className="text-[11px] text-amber-800 font-medium leading-snug">
+          <span className="font-bold">Info:</span> Menu ini masih dalam tahap pengembangan (Beta). Beberapa fitur mungkin belum berjalan sempurna. Terima kasih atas kesabarannya 🙏
+        </p>
+        <span className="ml-auto shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-200 text-amber-800 border border-amber-300">
+          Beta
+        </span>
+      </div>
+
       {/* Page Header */}
       <div className="shrink-0 px-6 py-4 bg-white border-b border-slate-200">
         <div className="flex items-center justify-between">

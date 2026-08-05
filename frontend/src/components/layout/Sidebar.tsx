@@ -75,7 +75,7 @@ export default function Sidebar({ isMobileOpen = false, onCloseMobile }: Sidebar
     { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
     { name: "Proses", href: "/queue", icon: Cpu, activeDot: true },
     { name: "Statistik", href: "/statistics", icon: BarChart2 },
-    { name: "AI Agent", href: "/agent", icon: Bot, badge: "New" },
+    { name: "AI Agent", href: "/agent", icon: Bot, badge: "Beta" },
     { name: "Account Manager", href: "/accounts", icon: Users2, badge: "10 Platforms" },
     { name: "Competitor Spy", href: "/competitor-spy", icon: Target },
     { name: "KOL Manager", href: "/kol-campaigns", icon: Users2, badge: "New" },

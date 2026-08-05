@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { X, Bot, Sparkles, ChevronRight, ChevronLeft, Check, Clock, Calendar, Users2, Zap, Layers, Video, Image as ImageIcon } from "lucide-react";
+import { X, Bot, Sparkles, ChevronRight, ChevronLeft, Check, Clock, Calendar, Users2, Zap, Layers, Video, Image as ImageIcon, AlertTriangle } from "lucide-react";
 import { fetchApi } from "@/lib/api";
 import { useStore } from "@/store/useStore";
 import { toast } from "@/store/useToastStore";
@@ -40,7 +40,7 @@ const PLATFORM_ICONS: Record<string, string> = {
 };
 
 interface SocialAccountMeta {
-  id: string; platform: string; name: string; username: string; avatar_url?: string;
+  id: string; platform: string; name: string; username: string; avatar_url?: string; briefing?: any;
 }
 
 interface Props {
@@ -200,27 +200,57 @@ export default function AgentCreateModal({ onClose, onSave, editAgent }: Props) 
                 {accounts.length === 0 ? (
                   <p className="text-xs text-slate-400 text-center py-4">Belum ada akun terhubung.</p>
                 ) : (
-                  <div className="space-y-1.5 max-h-52 overflow-y-auto">
-                    {accounts.map((acc) => {
-                      const selected = selectedAccounts.includes(acc.id);
-                      return (
-                        <button
-                          key={acc.id}
-                          onClick={() => toggleAccount(acc.id)}
-                          className={`w-full flex items-center gap-3 p-3 rounded-xl border text-left transition-all ${selected ? "border-purple-300 bg-purple-50" : "border-slate-200 bg-slate-50 hover:bg-slate-100"}`}
-                        >
-                          <span className="text-lg leading-none">{PLATFORM_ICONS[acc.platform] || "🌐"}</span>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-xs font-semibold text-slate-800 truncate">{acc.name}</p>
-                            <p className="text-[10px] text-slate-500">@{acc.username} · {acc.platform}</p>
-                          </div>
-                          <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-all ${selected ? "bg-purple-600 border-purple-600" : "border-slate-300"}`}>
-                            {selected && <Check className="w-3 h-3 text-white" />}
-                          </div>
-                        </button>
-                      );
-                    })}
-                  </div>
+                  <>
+                    <div className="space-y-1.5 max-h-52 overflow-y-auto">
+                      {accounts.map((acc) => {
+                        const selected = selectedAccounts.includes(acc.id);
+                        const hasBriefing = acc.briefing && Object.keys(acc.briefing).some(k => k !== 'updated_at' && Boolean(acc.briefing[k]));
+                        return (
+                          <button
+                            key={acc.id}
+                            onClick={() => toggleAccount(acc.id)}
+                            className={`w-full flex items-center gap-3 p-3 rounded-xl border text-left transition-all ${selected ? "border-purple-300 bg-purple-50" : "border-slate-200 bg-slate-50 hover:bg-slate-100"}`}
+                          >
+                            <span className="text-lg leading-none">{PLATFORM_ICONS[acc.platform] || "🌐"}</span>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2">
+                                <p className="text-xs font-semibold text-slate-800 truncate">{acc.name}</p>
+                                {hasBriefing ? (
+                                  <span className="text-[9px] px-1.5 py-0.2 rounded-md bg-emerald-100 text-emerald-700 font-bold shrink-0">
+                                    Briefing Ready
+                                  </span>
+                                ) : (
+                                  <span className="text-[9px] px-1.5 py-0.2 rounded-md bg-amber-100 text-amber-700 font-bold shrink-0">
+                                    ⚠️ Belum Ada Briefing
+                                  </span>
+                                )}
+                              </div>
+                              <p className="text-[10px] text-slate-500">@{acc.username} · {acc.platform}</p>
+                            </div>
+                            <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-all ${selected ? "bg-purple-600 border-purple-600" : "border-slate-300"}`}>
+                              {selected && <Check className="w-3 h-3 text-white" />}
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    {/* Warning if selected accounts have no briefing */}
+                    {selectedAccounts.some(id => {
+                      const acc = accounts.find(a => a.id === id);
+                      return acc && (!acc.briefing || !Object.keys(acc.briefing).some(k => k !== 'updated_at' && Boolean(acc.briefing[k])));
+                    }) && (
+                      <div className="p-3 rounded-xl bg-amber-50 border border-amber-200 flex items-start gap-2.5 text-xs text-amber-800">
+                        <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                        <div className="flex-1">
+                          <p className="font-bold text-[11px]">Peringatan Briefing Akun</p>
+                          <p className="text-[10px] text-amber-700 mt-0.5 leading-relaxed">
+                            Beberapa akun terpilih belum memiliki data <strong>Briefing Akun</strong>. AI Agent membutuhkan Briefing Akun untuk memahami persona &amp; produk brand Anda. Silakan lengkapi Briefing di menu <a href="/accounts" className="underline font-bold" target="_blank" rel="noreferrer">/accounts</a> agar Agent dapat berjalan.
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             </div>
