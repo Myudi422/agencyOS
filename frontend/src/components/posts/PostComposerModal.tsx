@@ -1309,7 +1309,7 @@ export default function PostComposerModal() {
                     <span className="text-[10px] font-bold text-slate-500">Urutan Media:</span>
                     <span className="text-[10px] text-purple-600 font-bold">Gunakan tombol ◄ / ► untuk menukar posisi</span>
                   </div>
-                  <div className="flex items-center gap-2.5 overflow-x-auto pb-2 pt-1">
+                  <div className="flex items-center gap-2.5 overflow-x-auto pb-2 pt-2 px-1.5">
                     {mediaUrls.map((url, idx) => {
                       const isVid = postType === "video" || isVideoMedia({ url });
                       return (

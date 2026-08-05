@@ -159,27 +159,27 @@ export default function PublicClientReviewPage() {
 
         {/* Media Showcase (Unclipped Responsive Image & Video Player) */}
         {postData.media_urls && postData.media_urls.length > 0 && (
-          <div className="space-y-3">
-            <div className="relative w-full rounded-2xl sm:rounded-3xl bg-slate-100/70 p-1 sm:p-2 overflow-hidden border border-slate-200/90 shadow-xs flex items-center justify-center min-h-[220px]">
+          <div className="space-y-4">
+            <div className="relative w-full rounded-2xl sm:rounded-3xl bg-slate-100/80 p-2 sm:p-4 overflow-hidden border border-slate-200/90 shadow-xs flex items-center justify-center min-h-[220px]">
               {isCurrentVideo ? (
                 <video
                   src={currentMediaUrl}
                   controls
-                  className="w-full max-h-[75vh] object-contain rounded-xl sm:rounded-2xl"
+                  className="max-w-full max-h-[65vh] sm:max-h-[75vh] w-auto h-auto mx-auto object-contain block rounded-xl sm:rounded-2xl shadow-xs"
                   preload="metadata"
                 />
               ) : (
                 <img
                   src={currentMediaUrl}
                   alt="Post Media Preview"
-                  className="w-full max-h-[75vh] object-contain rounded-xl sm:rounded-2xl"
+                  className="max-w-full max-h-[65vh] sm:max-h-[75vh] w-auto h-auto mx-auto object-contain block rounded-xl sm:rounded-2xl shadow-xs"
                   onError={(e: any) => {
                     e.target.src = "https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=1200&auto=format&fit=crop";
                   }}
                 />
               )}
               {postData.media_urls.length > 1 && (
-                <div className="absolute top-3 right-3 px-3 py-1 rounded-full bg-slate-900/80 backdrop-blur-md text-white text-xs font-bold border border-white/20 shadow-md">
+                <div className="absolute top-4 right-4 px-3 py-1 rounded-full bg-slate-900/80 backdrop-blur-md text-white text-xs font-bold border border-white/20 shadow-md">
                   {activeMediaIdx + 1} / {postData.media_urls.length} Media
                 </div>
               )}
@@ -187,7 +187,7 @@ export default function PublicClientReviewPage() {
 
             {/* Thumbnail Selectors for Multi-Media / Carousel */}
             {postData.media_urls.length > 1 && (
-              <div className="flex items-center gap-2 overflow-x-auto pt-1 pb-1">
+              <div className="flex items-center gap-3 overflow-x-auto p-1.5">
                 {postData.media_urls.map((url, idx) => {
                   const isVid = isVideoUrl(url);
                   return (
@@ -195,7 +195,7 @@ export default function PublicClientReviewPage() {
                       key={idx}
                       type="button"
                       onClick={() => setActiveMediaIdx(idx)}
-                      className={`relative w-14 h-14 sm:w-16 sm:h-16 rounded-xl overflow-hidden border-2 shrink-0 transition-all cursor-pointer ${
+                      className={`relative w-14 h-14 sm:w-16 sm:h-16 rounded-xl overflow-hidden border-2 shrink-0 transition-all cursor-pointer shadow-2xs ${
                         activeMediaIdx === idx
                           ? "border-purple-600 ring-2 ring-purple-500/30 opacity-100 scale-105"
                           : "border-slate-200 opacity-60 hover:opacity-100"
