@@ -13,6 +13,7 @@ import { useStore } from "@/store/useStore";
 import { toast } from "@/store/useToastStore";
 import { fetchApi } from "@/lib/api";
 import ShieraMarkdownViewer from "@/components/common/ShieraMarkdownViewer";
+import Portal from "@/components/common/Portal";
 
 const PLATFORM_BADGES: Record<string, { name: string; color: string; bg: string }> = {
   instagram: { name: "Instagram", color: "from-amber-500 via-pink-500 to-purple-600", bg: "bg-pink-100 text-pink-700 border-pink-200" },
@@ -846,7 +847,8 @@ export default function PostComposerModal() {
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-2 sm:p-4 bg-slate-900/60 animate-fadeIn overflow-y-auto">
+    <Portal>
+      <div className="fixed inset-0 w-screen h-screen z-[200] flex items-center justify-center p-2 sm:p-4 bg-slate-900/60 backdrop-blur-md animate-fadeIn overflow-y-auto">
       <div className="bg-white border border-slate-200 rounded-2xl sm:rounded-3xl w-full max-w-5xl my-auto max-h-[96vh] sm:max-h-[90vh] flex flex-col shadow-xl overflow-hidden text-slate-900">
         
         {/* Modal Header */}
@@ -2795,5 +2797,6 @@ export default function PostComposerModal() {
       )}
 
     </div>
+    </Portal>
   );
 }

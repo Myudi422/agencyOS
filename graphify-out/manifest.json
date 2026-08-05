@@ -265,8 +265,8 @@
     "semantic_hash": ""
   },
   "frontend/src/app/accounts/page.tsx": {
-    "mtime": 1785924297.7412262,
-    "ast_hash": "d3a7da2e13ab2848d880488884ef0e7c",
+    "mtime": 1785924582.373946,
+    "ast_hash": "55ef8c56f38995b05b7615e824ecd8a3",
     "semantic_hash": ""
   },
   "frontend/src/app/activity/page.tsx": {
@@ -295,13 +295,13 @@
     "semantic_hash": ""
   },
   "frontend/src/app/clients/page.tsx": {
-    "mtime": 1785924301.4255054,
-    "ast_hash": "de2a3af36aa3fa3d8328907b7d53d5f6",
+    "mtime": 1785924592.8421495,
+    "ast_hash": "89bf523c8f7e0edb97a1a0af043985d4",
     "semantic_hash": ""
   },
   "frontend/src/app/competitor-spy/page.tsx": {
-    "mtime": 1785924293.069477,
-    "ast_hash": "31cb4877c09789fd0534776cdcea159f",
+    "mtime": 1785924575.8379314,
+    "ast_hash": "4cd157dd4319da70052a0b46350b6927",
     "semantic_hash": ""
   },
   "frontend/src/app/dashboard/page.tsx": {
@@ -455,8 +455,8 @@
     "semantic_hash": ""
   },
   "frontend/src/components/kol/KolAddEditModal.tsx": {
-    "mtime": 1785721907.801484,
-    "ast_hash": "b5d002591daf6a4997b268baafd2eb46",
+    "mtime": 1785924598.7094262,
+    "ast_hash": "192710c41063cc26c10441bafb009271",
     "semantic_hash": ""
   },
   "frontend/src/components/kol/KolAddToCampaignModal.tsx": {
@@ -465,8 +465,8 @@
     "semantic_hash": ""
   },
   "frontend/src/components/kol/KolDatabaseDrawer.tsx": {
-    "mtime": 1785924284.8322816,
-    "ast_hash": "dc2b00b68ad2c5acc7d474531202e4ed",
+    "mtime": 1785924568.8411205,
+    "ast_hash": "8fd3b464f354911dbc22fca8f5fe2ce0",
     "semantic_hash": ""
   },
   "frontend/src/components/layout/AppLayout.tsx": {
@@ -490,13 +490,13 @@
     "semantic_hash": ""
   },
   "frontend/src/components/posts/PostComposerModal.tsx": {
-    "mtime": 1785924279.9903293,
-    "ast_hash": "031de88c220c24207ce62d3ff48a4a59",
+    "mtime": 1785924620.307835,
+    "ast_hash": "340f8e458d86d6014f71199fddbd3791",
     "semantic_hash": ""
   },
   "frontend/src/components/profile/AccountSettingsModal.tsx": {
-    "mtime": 1785202396.987116,
-    "ast_hash": "b14e6eb7bbcda4cc0883ff533243740e",
+    "mtime": 1785924626.2910929,
+    "ast_hash": "99793835aa4d41484a97091b45bec6f6",
     "semantic_hash": ""
   },
   "frontend/src/components/providers/AuthProvider.tsx": {
@@ -802,6 +802,11 @@
   ".github/agents/token-efficient.agent.md": {
     "mtime": 1785810992.983114,
     "ast_hash": "58804c598f86af45d97ca22a2c097e8e",
+    "semantic_hash": ""
+  },
+  "frontend/src/components/common/Portal.tsx": {
+    "mtime": 1785924544.6226704,
+    "ast_hash": "d9ecbce3a96f7788a00b73ea8d6d3070",
     "semantic_hash": ""
   }
 }

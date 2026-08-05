@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { X, Loader2, User, Phone, Mail, Instagram, Users2, AlertCircle } from "lucide-react";
 import { fetchApi } from "@/lib/api";
 import RupiahInput from "@/components/common/RupiahInput";
+import Portal from "@/components/common/Portal";
 
 interface KolAddEditModalProps {
   isOpen: boolean;
@@ -135,7 +136,8 @@ export default function KolAddEditModal({
   };
 
   return (
-    <div className="fixed inset-0 z-[110] flex items-center justify-center p-3 sm:p-4">
+    <Portal>
+      <div className="fixed inset-0 w-screen h-screen z-[220] flex items-center justify-center p-3 sm:p-4">
       {/* Backdrop */}
       <div
         onClick={onClose}
@@ -380,5 +382,6 @@ export default function KolAddEditModal({
         </form>
       </div>
     </div>
+    </Portal>
   );
 }

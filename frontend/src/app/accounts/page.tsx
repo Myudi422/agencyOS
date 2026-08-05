@@ -14,6 +14,7 @@ import { fetchApi } from "@/lib/api";
 import GlassConfirmModal from "@/components/common/GlassConfirmModal";
 import AccountBriefingModal from "@/components/accounts/AccountBriefingModal";
 import AccountWatermarkModal from "@/components/accounts/AccountWatermarkModal";
+import Portal from "@/components/common/Portal";
 
 const PLATFORMS_CONFIG = [
   { id: "instagram", name: "Instagram", category: "Meta", icon: Instagram, color: "from-amber-500 via-pink-500 to-purple-600", textColor: "text-pink-600", bgBadge: "bg-pink-100 text-pink-700 border-pink-200" },
@@ -651,7 +652,8 @@ export default function AccountsPage() {
 
       {/* Connect Modal */}
       {isConnectModalOpen && (
-        <div className="fixed inset-0 w-screen h-screen z-[150] bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-4">
+        <Portal>
+          <div className="fixed inset-0 w-screen h-screen z-[200] bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-4">
           <div className="bg-white/95 backdrop-blur-2xl border border-slate-200 rounded-3xl p-6 w-full max-w-xl shadow-2xl space-y-4">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div className="flex items-center gap-3">
@@ -696,6 +698,7 @@ export default function AccountsPage() {
             </form>
           </div>
         </div>
+        </Portal>
       )}
     </div>
   );

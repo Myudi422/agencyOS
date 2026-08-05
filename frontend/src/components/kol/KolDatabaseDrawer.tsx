@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import { fetchApi } from "@/lib/api";
 import KolAddEditModal from "./KolAddEditModal";
+import Portal from "@/components/common/Portal";
 
 interface KolProfileItem {
   id: string;
@@ -108,16 +109,17 @@ export default function KolDatabaseDrawer({ isOpen, onClose }: KolDatabaseDrawer
   };
 
   return (
-    <div className="fixed inset-0 w-screen h-screen z-[200] flex justify-end overflow-hidden">
-      {/* Full Backdrop covering entire viewport */}
-      <div
-        onClick={onClose}
-        className="fixed inset-0 w-full h-full bg-slate-900/60 backdrop-blur-md transition-opacity animate-in fade-in duration-200"
-      />
+    <Portal>
+      <div className="fixed inset-0 w-screen h-screen z-[200] flex justify-end overflow-hidden">
+        {/* Full Backdrop covering entire viewport */}
+        <div
+          onClick={onClose}
+          className="fixed inset-0 w-full h-full bg-slate-900/60 backdrop-blur-md transition-opacity animate-in fade-in duration-200"
+        />
 
-      {/* Drawer Panel */}
-      <div className="relative z-10 w-full sm:max-w-xl bg-white h-full shadow-2xl flex flex-col animate-in slide-in-from-right duration-200">
-        {/* Header */}
+        {/* Drawer Panel */}
+        <div className="relative z-10 w-full sm:max-w-xl bg-white h-full shadow-2xl flex flex-col animate-in slide-in-from-right duration-200">
+          {/* Header */}
         <div className="p-4 sm:p-5 border-b border-slate-200 flex items-center justify-between bg-slate-50/80 shrink-0">
           <div>
             <h2 className="text-base font-extrabold text-slate-900 flex items-center gap-2">
@@ -310,5 +312,6 @@ export default function KolDatabaseDrawer({ isOpen, onClose }: KolDatabaseDrawer
         kolToEdit={profileToEdit}
       />
     </div>
+    </Portal>
   );
 }

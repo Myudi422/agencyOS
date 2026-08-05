@@ -5,6 +5,7 @@ import { useStore } from "@/store/useStore";
 import { useAuthStore } from "@/store/authStore";
 import { X, CreditCard, ShieldCheck, Mail, User, BarChart, Sparkles, AlertCircle } from "lucide-react";
 import { fetchApi } from "@/lib/api";
+import Portal from "@/components/common/Portal";
 
 export default function AccountSettingsModal() {
   const { isSettingsOpen, closeSettings } = useStore();
@@ -24,7 +25,8 @@ export default function AccountSettingsModal() {
     : 0;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs transition-opacity">
+    <Portal>
+      <div className="fixed inset-0 w-screen h-screen z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md transition-opacity">
       <div className="relative w-full max-w-lg bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-100 flex flex-col max-h-[90vh]">
         {/* Header */}
         <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-slate-50 to-white">
@@ -188,5 +190,6 @@ export default function AccountSettingsModal() {
         </div>
       </div>
     </div>
+    </Portal>
   );
 }
