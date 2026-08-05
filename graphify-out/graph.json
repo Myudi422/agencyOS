@@ -12019,7 +12019,7 @@
       "label": "useStore",
       "file_type": "code",
       "source_file": "frontend/src/store/useStore.ts",
-      "source_location": "L55",
+      "source_location": "L58",
       "_origin": "ast",
       "id": "frontend_src_store_usestore_usestore",
       "community": 8,
@@ -48318,7 +48318,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "frontend/src/components/posts/PostComposerModal.tsx",
-      "source_location": "L276",
+      "source_location": "L290",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_src_components_posts_postcomposermodal_postcomposermodal",
@@ -48330,7 +48330,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "frontend/src/components/posts/PostComposerModal.tsx",
-      "source_location": "L76",
+      "source_location": "L86",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_src_components_posts_postcomposermodal_postcomposermodal",
@@ -49085,7 +49085,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/src/store/useStore.ts",
-      "source_location": "L55",
+      "source_location": "L58",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_src_store_usestore",
@@ -52790,5 +52790,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "da62ad4d1e9ed63f1b8650ae40efd7d81e928182"
+  "built_at_commit": "79f26c1113fbec7cf258f61eb18aaaffcaebffb0"
 }

@@ -7,7 +7,7 @@ import {
   Send, Clock, Save, CheckCircle2, Sparkles, Folder, Check, Calendar,
   Youtube, MessageSquare, Instagram as InstagramIcon, Twitter, Facebook as FacebookIcon, Share2, 
   Eye, Edit3, Settings2, Link as LinkIcon, AlertCircle, Plus, Play, RefreshCw, AlertTriangle,
-  ChevronLeft, ChevronRight, UploadCloud, Info, Globe
+  ChevronLeft, ChevronRight, UploadCloud, Info, Globe, Minus
 } from "lucide-react";
 import { useStore } from "@/store/useStore";
 import { toast } from "@/store/useToastStore";
@@ -73,10 +73,24 @@ const FieldTooltip = ({ text }: { text: string }) => (
 
 export default function PostComposerModal() {
   const router = useRouter();
-  const { isComposerOpen, closeComposer, activeWorkspace, composerPreselectedAccounts, composerInitialPost, composerInitialBrief } = useStore();
+  const { 
+    isComposerOpen, 
+    isComposerMinimized, 
+    closeComposer, 
+    minimizeComposer, 
+    maximizeComposer, 
+    activeWorkspace, 
+    composerPreselectedAccounts, 
+    composerInitialPost, 
+    composerInitialBrief 
+  } = useStore();
 
   // Mobile View Switcher (Editor vs Preview)
   const [mobileTab, setMobileTab] = useState<"editor" | "preview">("editor");
+
+  // Account Warning & Close Confirmation Modal States
+  const [showAccountConfirmModal, setShowAccountConfirmModal] = useState(false);
+  const [showCloseConfirmModal, setShowCloseConfirmModal] = useState(false);
 
   const [editingPostId, setEditingPostId] = useState<string | null>(null);
   const [postType, setPostType] = useState<"image" | "carousel" | "video">("image");
@@ -296,7 +310,39 @@ export default function PostComposerModal() {
       });
   }, [activeWorkspace?.id, composerPreselectedAccounts]);
 
-  // Load initial post data or AI brief when opening composer
+  const resetForm = () => {
+    setEditingPostId(null);
+    setCaption("");
+    setHashtags("#Shiera #SocialMedia #Marketing");
+    setAiBriefText("");
+    setShowBriefPanel(false);
+    setMediaUrls([]);
+    setNewMediaInput("");
+    setShowUrlInput(false);
+    setScheduledAt("");
+    setActionType("publish_now");
+    setApplyWatermark(false);
+    setReelsThumbnailUrl("");
+  };
+
+  const clearLocalDraft = () => {
+    try {
+      localStorage.removeItem("shiera_composer_local_draft");
+    } catch (err) {
+      console.error("Error clearing local draft:", err);
+    }
+  };
+
+  const handleCloseAttempt = () => {
+    const hasContent = caption.trim() !== "" || mediaUrls.length > 0 || aiBriefText.trim() !== "";
+    if (hasContent && !editingPostId) {
+      setShowCloseConfirmModal(true);
+    } else {
+      closeComposer();
+    }
+  };
+
+  // Load initial post data, AI brief, or restored Local Draft when opening composer
   useEffect(() => {
     if (isComposerOpen && composerInitialPost) {
       setEditingPostId(composerInitialPost.id);
@@ -352,20 +398,57 @@ export default function PostComposerModal() {
       }
       toast.success("Brief & Teks dari Shiera AI berhasil dimasukkan ke Composer!");
     } else if (isComposerOpen && !composerInitialPost && !composerInitialBrief) {
-      setEditingPostId(null);
-      setCaption("");
-      setHashtags("#Shiera #SocialMedia #Marketing");
-      setAiBriefText("");
-      setShowBriefPanel(false);
-      setMediaUrls([]);
-      setNewMediaInput("");
-      setShowUrlInput(false);
-      setScheduledAt("");
-      setActionType("publish_now");
-      setApplyWatermark(false);
-      setReelsThumbnailUrl("");
+      try {
+        const savedDraft = localStorage.getItem("shiera_composer_local_draft");
+        if (savedDraft) {
+          const d = JSON.parse(savedDraft);
+          setEditingPostId(null);
+          if (d.caption !== undefined) setCaption(d.caption);
+          if (d.hashtags !== undefined) setHashtags(d.hashtags);
+          if (Array.isArray(d.mediaUrls)) setMediaUrls(d.mediaUrls);
+          if (Array.isArray(d.selectedAccountIds) && d.selectedAccountIds.length > 0) setSelectedAccountIds(d.selectedAccountIds);
+          if (d.postType) setPostType(d.postType);
+          if (d.aiBriefText) { setAiBriefText(d.aiBriefText); setShowBriefPanel(true); } else { setAiBriefText(""); setShowBriefPanel(false); }
+          if (d.scheduledAt) setScheduledAt(d.scheduledAt);
+          if (d.actionType) setActionType(d.actionType);
+          if (d.applyWatermark !== undefined) setApplyWatermark(d.applyWatermark);
+          if (d.reelsThumbnailUrl) setReelsThumbnailUrl(d.reelsThumbnailUrl);
+          toast.info("Draft lokal otomatis dimuat!");
+        } else {
+          resetForm();
+        }
+      } catch (err) {
+        resetForm();
+      }
     }
   }, [isComposerOpen, composerInitialPost, composerInitialBrief]);
+
+  // Local Draft Auto-save Effect
+  useEffect(() => {
+    if (isComposerOpen && !editingPostId) {
+      const hasContent = caption.trim() !== "" || mediaUrls.length > 0 || aiBriefText.trim() !== "" || selectedAccountIds.length > 0;
+      if (hasContent) {
+        try {
+          const draftData = {
+            caption,
+            hashtags,
+            mediaUrls,
+            selectedAccountIds,
+            postType,
+            aiBriefText,
+            scheduledAt,
+            actionType,
+            applyWatermark,
+            reelsThumbnailUrl,
+            updatedAt: new Date().toISOString()
+          };
+          localStorage.setItem("shiera_composer_local_draft", JSON.stringify(draftData));
+        } catch (e) {
+          console.error("Auto save draft error:", e);
+        }
+      }
+    }
+  }, [caption, hashtags, mediaUrls, selectedAccountIds, postType, aiBriefText, scheduledAt, actionType, applyWatermark, reelsThumbnailUrl, isComposerOpen, editingPostId]);
 
   const loadMediaLibrary = async () => {
     setIsLoadingLibrary(true);
@@ -536,6 +619,39 @@ export default function PostComposerModal() {
 
   if (!isComposerOpen) return null;
 
+  if (isComposerMinimized) {
+    return (
+      <div className="fixed bottom-5 right-5 z-[110] bg-slate-900 text-white p-3.5 rounded-2xl shadow-2xl border border-purple-500/40 flex items-center gap-3 animate-fadeIn">
+        <div className="w-8 h-8 rounded-xl gradient-brand flex items-center justify-center shrink-0 shadow-md">
+          <Sparkles className="w-4 h-4 text-white" />
+        </div>
+        <div className="flex flex-col max-w-[200px] sm:max-w-[280px]">
+          <span className="text-xs font-extrabold text-white truncate font-['Outfit']">Shiera Composer (Draft Tersimpan)</span>
+          <span className="text-[10px] text-purple-300 truncate">
+            {selectedAccountIds.length} Akun • {caption.trim() ? `"${caption.slice(0, 25)}..."` : "Draft Kosong"}
+          </span>
+        </div>
+        <div className="flex items-center gap-1.5 ml-2">
+          <button
+            type="button"
+            onClick={maximizeComposer}
+            className="px-3 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold transition-all cursor-pointer shadow-md"
+          >
+            Buka
+          </button>
+          <button
+            type="button"
+            onClick={handleCloseAttempt}
+            className="p-1.5 rounded-xl bg-slate-800 hover:bg-rose-600 text-slate-400 hover:text-white transition-colors cursor-pointer"
+            title="Tutup Composer"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   const toggleAccountSelection = (acc: any) => {
     const check = checkPlatformCompatibility(acc.platform);
     if (!check.compatible) {
@@ -573,17 +689,7 @@ export default function PostComposerModal() {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (selectedAccountIds.length === 0) {
-      toast.warning("Please select at least one compatible social channel.");
-      return;
-    }
-    if (!caption.trim() && mediaUrls.length === 0) {
-      toast.warning("Please provide either a caption or at least one media URL.");
-      return;
-    }
-
+  const executeSubmit = async () => {
     setIsSubmitting(true);
 
     // Format hashtags (max 5) and merge directly into caption
@@ -700,12 +806,32 @@ export default function PostComposerModal() {
           : "Post berhasil dikirim ke antrian publishing!"
       );
       setIsSubmitting(false);
+      clearLocalDraft();
+      resetForm();
       closeComposer();
       router.push("/queue");
     } catch (err: any) {
       console.error("Post submit error:", err);
       toast.error(`Gagal membuat post: ${err.message || err}`);
       setIsSubmitting(false);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (selectedAccountIds.length === 0) {
+      toast.warning("Silakan pilih minimal 1 akun sosial media target.");
+      return;
+    }
+    if (!caption.trim() && mediaUrls.length === 0) {
+      toast.warning("Silakan isi caption atau tambahkan minimal 1 media.");
+      return;
+    }
+
+    if (actionType === "publish_now" || actionType === "schedule") {
+      setShowAccountConfirmModal(true);
+    } else {
+      executeSubmit();
     }
   };
 
@@ -753,8 +879,19 @@ export default function PostComposerModal() {
             </div>
 
             <button
-              onClick={closeComposer}
+              type="button"
+              onClick={minimizeComposer}
+              title="Minimize Composer"
               className="p-1.5 sm:p-2 rounded-xl bg-slate-100 hover:bg-purple-50 text-slate-500 hover:text-purple-700 transition-colors cursor-pointer"
+            >
+              <Minus className="w-4 h-4" />
+            </button>
+
+            <button
+              type="button"
+              onClick={handleCloseAttempt}
+              title="Tutup Composer"
+              className="p-1.5 sm:p-2 rounded-xl bg-slate-100 hover:bg-rose-50 text-slate-500 hover:text-rose-600 transition-colors cursor-pointer"
             >
               <X className="w-4 h-4" />
             </button>
@@ -1027,14 +1164,6 @@ export default function PostComposerModal() {
                     {mediaUrls.length} File{mediaUrls.length !== 1 ? "s" : ""}
                   </span>
                 </div>
-                <button
-                  type="button"
-                  onClick={openMediaPicker}
-                  className="py-1.5 px-3 bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 rounded-xl text-[11px] font-bold flex items-center gap-1.5 transition-all cursor-pointer"
-                >
-                  <Folder className="w-3.5 h-3.5" />
-                  Media Vault
-                </button>
               </div>
 
               {/* Ruang Upload Langsung Berukuran Besar (Large Upload Dropzone) */}
@@ -1392,30 +1521,21 @@ export default function PostComposerModal() {
                   className="w-full glass-input rounded-xl px-3 py-2 text-xs font-semibold focus:outline-none border-purple-200 bg-white"
                 />
 
-                {/* UTC Preview */}
+                {/* Simplified WIB Schedule Display */}
                 {scheduledAt && (() => {
                   try {
-                    // Treat the input as WIB (UTC+7) explicitly
                     const wibDt = new Date(`${scheduledAt}:00+07:00`);
-                    const utcStr = wibDt.toLocaleString("en-GB", {
-                      timeZone: "UTC",
-                      day: "2-digit", month: "short", year: "numeric",
-                      hour: "2-digit", minute: "2-digit",
-                    });
-                    // Display back in WIB as user typed
                     const wibStr = wibDt.toLocaleString("id-ID", {
                       timeZone: "Asia/Jakarta",
                       day: "2-digit", month: "short", year: "numeric",
                       hour: "2-digit", minute: "2-digit",
                     });
                     return (
-                      <div className="flex items-start gap-2 p-2.5 rounded-xl bg-blue-50 border border-blue-200">
-                        <Globe className="w-3.5 h-3.5 text-blue-600 shrink-0 mt-0.5" />
-                        <div className="text-[10px] text-blue-800 space-y-0.5">
-                          <p><span className="font-bold">✅ Tayang (WIB):</span> {wibStr}</p>
-                          <p><span className="font-bold">🌐 Dikirim ke API (UTC):</span> {utcStr}</p>
-                          <p className="text-blue-600 opacity-80">Input kamu diperlakukan sebagai WIB (UTC+7). Konversi ke UTC dilakukan otomatis.</p>
-                        </div>
+                      <div className="flex items-center gap-2 p-2.5 rounded-xl bg-purple-50 border border-purple-200">
+                        <Calendar className="w-3.5 h-3.5 text-purple-600 shrink-0" />
+                        <p className="text-xs font-bold text-purple-900">
+                          ✅ Tayang (WIB): {wibStr}
+                        </p>
                       </div>
                     );
                   } catch { return null; }
@@ -2511,6 +2631,155 @@ export default function PostComposerModal() {
               </button>
             </div>
 
+          </div>
+        </div>
+      )}
+
+      {/* Target Account Warning Confirmation Modal */}
+      {showAccountConfirmModal && (
+        <div className="fixed inset-0 z-[150] bg-slate-900/70 backdrop-blur-xs flex items-center justify-center p-4 animate-fadeIn">
+          <div className="bg-white border border-slate-200 rounded-3xl w-full max-w-lg p-6 shadow-2xl space-y-4 text-slate-900">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-amber-100 text-amber-700 flex items-center justify-center shrink-0">
+                <AlertTriangle className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="font-extrabold text-base text-slate-900 font-['Outfit']">
+                  {actionType === "schedule" ? "Konfirmasi Jadwal Post" : "Konfirmasi Target Akun Publishing"}
+                </h3>
+                <p className="text-xs text-slate-500">Pastikan akun sosial media yang dipilih sudah benar sebelum dikirim.</p>
+              </div>
+            </div>
+
+            <div className="p-3 bg-amber-50/70 rounded-2xl border border-amber-200 text-xs text-amber-900 font-medium">
+              <span>Postingan ini akan {actionType === "schedule" ? "dijadwalkan" : "dipublikasikan langsung"} ke <strong>{selectedAccountIds.length} Akun</strong> berikut:</span>
+            </div>
+
+            {/* Selected Accounts List */}
+            <div className="max-h-48 overflow-y-auto space-y-2 p-2 bg-slate-50 rounded-2xl border border-slate-200">
+              {selectedAccountIds.map((accId) => {
+                const acc = availableAccounts.find((a) => a.id === accId);
+                if (!acc) return null;
+                const badgeInfo = PLATFORM_BADGES[acc.platform] || { name: acc.platform, color: "", bg: "bg-purple-100 text-purple-700" };
+                return (
+                  <div key={acc.id} className="flex items-center justify-between p-2 rounded-xl bg-white border border-slate-200 shadow-2xs">
+                    <div className="flex items-center gap-2.5">
+                      <img
+                        src={acc.avatar_url || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150"}
+                        alt={acc.username}
+                        className="w-7 h-7 rounded-full object-cover border border-slate-200"
+                      />
+                      <div className="flex flex-col">
+                        <span className="font-bold text-xs text-slate-900">@{acc.username}</span>
+                        <span className="text-[9px] text-slate-400 uppercase font-semibold">{badgeInfo.name}</span>
+                      </div>
+                    </div>
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${badgeInfo.bg}`}>
+                      {badgeInfo.name}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Schedule time confirmation if scheduled */}
+            {actionType === "schedule" && scheduledAt && (() => {
+              try {
+                const wibDt = new Date(`${scheduledAt}:00+07:00`);
+                const wibStr = wibDt.toLocaleString("id-ID", {
+                  timeZone: "Asia/Jakarta",
+                  day: "2-digit", month: "short", year: "numeric",
+                  hour: "2-digit", minute: "2-digit",
+                });
+                return (
+                  <div className="p-2.5 rounded-xl bg-purple-50 border border-purple-200 text-xs font-bold text-purple-900 flex items-center gap-2">
+                    <Calendar className="w-4 h-4 text-purple-600 shrink-0" />
+                    <span>✅ Tayang (WIB): {wibStr}</span>
+                  </div>
+                );
+              } catch { return null; }
+            })()}
+
+            <div className="flex items-center gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setShowAccountConfirmModal(false)}
+                className="flex-1 py-2.5 px-4 rounded-xl border border-slate-300 text-slate-700 text-xs font-bold hover:bg-slate-100 transition-colors cursor-pointer"
+              >
+                Periksa Kembali Akun
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowAccountConfirmModal(false);
+                  executeSubmit();
+                }}
+                disabled={isSubmitting}
+                className="flex-1 py-2.5 px-4 rounded-xl gradient-brand text-white text-xs font-bold shadow-md shadow-purple-500/25 hover:shadow-lg transition-all cursor-pointer"
+              >
+                {isSubmitting ? "Processing..." : actionType === "schedule" ? "Ya, Jadwalkan" : "Ya, Kirim Sekarang"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Close Draft Confirmation Modal */}
+      {showCloseConfirmModal && (
+        <div className="fixed inset-0 z-[160] bg-slate-900/70 backdrop-blur-xs flex items-center justify-center p-4 animate-fadeIn">
+          <div className="bg-white border border-slate-200 rounded-3xl w-full max-w-md p-6 shadow-2xl space-y-4 text-slate-900">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-purple-100 text-purple-700 flex items-center justify-center shrink-0">
+                <Save className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="font-extrabold text-base text-slate-900 font-['Outfit']">Simpan Draft atau Keluar?</h3>
+                <p className="text-xs text-slate-500">Anda memiliki draf postingan yang belum dipublikasikan.</p>
+              </div>
+            </div>
+
+            <div className="space-y-2 pt-2">
+              <button
+                type="button"
+                onClick={() => {
+                  try {
+                    const draftData = {
+                      caption, hashtags, mediaUrls, selectedAccountIds, postType, aiBriefText, scheduledAt, actionType, applyWatermark, reelsThumbnailUrl, updatedAt: new Date().toISOString()
+                    };
+                    localStorage.setItem("shiera_composer_local_draft", JSON.stringify(draftData));
+                    toast.success("Draft berhasil disimpan secara lokal!");
+                  } catch {}
+                  setShowCloseConfirmModal(false);
+                  closeComposer();
+                }}
+                className="w-full py-2.5 px-4 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold shadow-sm transition-all cursor-pointer flex items-center justify-center gap-2"
+              >
+                <Save className="w-4 h-4" />
+                <span>Simpan Draft Local &amp; Keluar</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  clearLocalDraft();
+                  resetForm();
+                  setShowCloseConfirmModal(false);
+                  closeComposer();
+                }}
+                className="w-full py-2.5 px-4 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-2"
+              >
+                <X className="w-4 h-4" />
+                <span>Hapus Draft &amp; Keluar</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setShowCloseConfirmModal(false)}
+                className="w-full py-2.5 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-all cursor-pointer"
+              >
+                Batal (Lanjutkan Edit)
+              </button>
+            </div>
           </div>
         </div>
       )}
