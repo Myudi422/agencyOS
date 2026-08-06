@@ -603,37 +603,47 @@ Tugas utamanya adalah menganalisis GAMBAR (Slide 1 Konten / Sampul Video Thumbna
 ```
 """
 
-        # Fetch image bytes for multimodal call
-        import httpx
+        # Fetch & compress image bytes for ultra-fast multimodal vision call
+        import httpx, io
+        from PIL import Image
+
         image_bytes = None
         content_type = "image/jpeg"
+        pil_img = None
+
         if image_url:
             try:
-                async with httpx.AsyncClient(timeout=15.0, follow_redirects=True) as client:
+                async with httpx.AsyncClient(timeout=8.0, follow_redirects=True) as client:
                     resp = await client.get(image_url)
                     if resp.status_code == 200:
-                        image_bytes = resp.content
-                        content_type = resp.headers.get("content-type", "image/jpeg").split(";")[0]
+                        raw_bytes = resp.content
+                        try:
+                            img = Image.open(io.BytesIO(raw_bytes))
+                            if img.mode in ("RGBA", "P", "LA"):
+                                img = img.convert("RGB")
+                            # Downscale high-res images to max 1024x1024 for instant processing
+                            img.thumbnail((1024, 1024), Image.Resampling.LANCZOS)
+                            buf = io.BytesIO()
+                            img.save(buf, format="JPEG", quality=80, optimize=True)
+                            image_bytes = buf.getvalue()
+                            pil_img = Image.open(io.BytesIO(image_bytes))
+                        except Exception as e:
+                            logger.warning(f"Image resize optimization notice: {e}")
+                            image_bytes = raw_bytes
             except Exception as e:
                 logger.warning(f"Failed to download image for vision API from {image_url}: {e}")
 
         # 1. Try google-generativeai API Key FIRST if available (Fastest & most reliable for multimodal vision)
         if api_key:
             try:
-                import io
-                from PIL import Image
-
                 content_inputs = [prompt]
-                if image_bytes:
-                    try:
-                        pil_img = Image.open(io.BytesIO(image_bytes))
-                        content_inputs.append(pil_img)
-                    except Exception as e:
-                        logger.warning(f"PIL Image parse warning: {e}")
-                        content_inputs.append({
-                            "mime_type": content_type if "image" in content_type else "image/jpeg",
-                            "data": image_bytes
-                        })
+                if pil_img:
+                    content_inputs.append(pil_img)
+                elif image_bytes:
+                    content_inputs.append({
+                        "mime_type": content_type if "image" in content_type else "image/jpeg",
+                        "data": image_bytes
+                    })
 
                 text_res = self._generate_with_generative_ai(api_key, content_inputs)
                 if text_res:
