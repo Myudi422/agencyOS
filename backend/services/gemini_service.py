@@ -591,7 +591,7 @@ Tugas utamanya adalah menganalisis GAMBAR (Slide 1 Konten / Sampul Video Thumbna
 ### PETUNJUK PENULISAN:
 1. Analisis detail visual pada gambar (objek, suasana, teks pada gambar jika ada, warna, tema).
 2. Tuliskan copywriting caption Bahasa Indonesia yang kuat, memiliki hook pembuka yang memikat, memuat pesan utama dari gambar, dan diakhiri Call to Action (CTA) yang natural.
-3. Sesuaikan gaya bahasa/tone of voice dengan briefing brand jika ada.
+3. Sesuaikan gaya bahasa/tone of voice dengan briefing brand yang terhubung. Jika terdapat lebih dari 1 akun/brand yang dipilih, utamakan briefing dari akun utama/teratas dan selaraskan agar caption tetap konsisten, universal, dan tidak bentrok.
 4. Berikan tepat 5 hashtag yang paling relevan dengan isi gambar dan niche brand.
 
 ### FORMAT OUTPUT WAJIB (HANYA BERIKAN BLOK JSON BERIKUT DENGAN TEREPAT DUA KEY):
