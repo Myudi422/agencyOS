@@ -4,7 +4,8 @@ Manage users, subscription plans, app settings, and API keys.
 """
 from fastapi import APIRouter, Depends, HTTPException, Header
 from pydantic import BaseModel
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
+from sqlalchemy import or_, func, desc, asc
 from typing import Optional, List, Any
 from datetime import datetime, timedelta
 import logging
@@ -59,37 +60,149 @@ class SubscriptionOverrideRequest(BaseModel):
     expires_days: Optional[int] = 30  # None = never
 
 
+class UserSubscriptionUpdatePayload(BaseModel):
+    plan_tier: Optional[str] = None
+    status: Optional[str] = None  # active, expired, cancelled, trial, past_due
+    expires_at: Optional[str] = None  # ISO string or timestamp
+    expires_days: Optional[int] = None  # relative offset in days
+    posts_limit: Optional[int] = None
+    posts_used: Optional[int] = None
+    is_admin: Optional[bool] = None
+
+
 # ─── Users ────────────────────────────────────────────────────────────────────
 
-@router.get("/users")
-def list_users(
-    skip: int = 0,
-    limit: int = 50,
+@router.get("/users/stats")
+def get_user_stats(
     admin: User = Depends(require_admin),
     db: Session = Depends(get_db)
 ):
-    """List all users with subscription info."""
-    users = db.query(User).offset(skip).limit(limit).all()
+    """Admin: get summary statistics for user management dashboard."""
+    total_users = db.query(func.count(User.id)).scalar() or 0
+    total_admins = db.query(func.count(User.id)).filter(User.is_admin == True).scalar() or 0
+    active_subs = db.query(func.count(UserSubscription.id)).filter(UserSubscription.status == SubscriptionStatus.ACTIVE).scalar() or 0
+    
+    # Expired count includes status == EXPIRED/CANCELLED or expires_at < now
+    now = datetime.utcnow()
+    expired_subs = db.query(func.count(UserSubscription.id)).filter(
+        or_(
+            UserSubscription.status == SubscriptionStatus.EXPIRED,
+            UserSubscription.status == SubscriptionStatus.CANCELLED,
+            UserSubscription.expires_at < now
+        )
+    ).scalar() or 0
+
+    return {
+        "total_users": total_users,
+        "total_admins": total_admins,
+        "active_subs": active_subs,
+        "expired_subs": expired_subs,
+    }
+
+
+@router.get("/users")
+def list_users(
+    page: int = 1,
+    limit: int = 20,
+    search: Optional[str] = None,
+    tier: Optional[str] = None,
+    status: Optional[str] = None,
+    is_admin: Optional[bool] = None,
+    sort_by: str = "created_at",
+    sort_order: str = "desc",
+    admin: User = Depends(require_admin),
+    db: Session = Depends(get_db)
+):
+    """List users with server-side pagination, search, and status/tier filtering."""
+    query = db.query(User).options(
+        joinedload(User.subscription).joinedload(UserSubscription.plan)
+    )
+
+    if search:
+        s = f"%{search.strip()}%"
+        query = query.filter(or_(User.email.ilike(s), User.full_name.ilike(s)))
+
+    if is_admin is not None:
+        query = query.filter(User.is_admin == is_admin)
+
+    if tier or status:
+        query = query.outerjoin(User.subscription).outerjoin(UserSubscription.plan)
+        if tier:
+            query = query.filter(SubscriptionPlan.tier == tier)
+        if status:
+            now = datetime.utcnow()
+            if status == "expired":
+                query = query.filter(
+                    or_(
+                        UserSubscription.status == SubscriptionStatus.EXPIRED,
+                        UserSubscription.expires_at < now
+                    )
+                )
+            else:
+                query = query.filter(UserSubscription.status == status)
+
+    total = query.count()
+
+    # Sorting
+    if sort_by == "email":
+        sort_col = User.email
+    elif sort_by == "full_name":
+        sort_col = User.full_name
+    else:
+        sort_col = User.created_at
+
+    if sort_order == "asc":
+        query = query.order_by(asc(sort_col))
+    else:
+        query = query.order_by(desc(sort_col))
+
+    page = max(1, page)
+    limit = max(1, min(limit, 100))
+    offset = (page - 1) * limit
+
+    users = query.offset(offset).limit(limit).all()
+    now = datetime.utcnow()
+
     result = []
     for u in users:
         sub = u.subscription
+        is_sub_expired = False
+        if sub and sub.expires_at and sub.expires_at < now and sub.status == SubscriptionStatus.ACTIVE:
+            is_sub_expired = True
+
+        effective_status = "expired" if is_sub_expired else (
+            sub.status.value if (sub and hasattr(sub.status, "value")) else (sub.status if sub else None)
+        )
+
         result.append({
             "id": u.id,
             "email": u.email,
             "full_name": u.full_name,
             "avatar_url": u.avatar_url,
             "is_admin": u.is_admin,
-            "created_at": u.created_at.isoformat(),
+            "created_at": u.created_at.isoformat() if u.created_at else None,
             "subscription": {
-                "plan_tier": sub.plan.tier if sub else None,
-                "plan_name": sub.plan.name if sub else None,
-                "status": sub.status if sub else None,
+                "id": sub.id if sub else None,
+                "plan_id": sub.plan_id if sub else None,
+                "plan_tier": sub.plan.tier if (sub and sub.plan) else None,
+                "plan_name": sub.plan.name if (sub and sub.plan) else None,
+                "status": effective_status,
                 "posts_used": sub.posts_used if sub else 0,
                 "posts_limit": sub.posts_limit if sub else 0,
-                "expires_at": sub.expires_at.isoformat() if sub and sub.expires_at else None,
+                "expires_at": sub.expires_at.isoformat() if (sub and sub.expires_at) else None,
+                "started_at": sub.started_at.isoformat() if (sub and sub.started_at) else None,
             } if sub else None,
         })
-    return {"users": result, "total": db.query(User).count()}
+
+    total_pages = (total + limit - 1) // limit if total > 0 else 1
+
+    return {
+        "users": result,
+        "total": total,
+        "page": page,
+        "limit": limit,
+        "total_pages": total_pages,
+    }
 
 
 @router.delete("/users/{user_id}")
@@ -112,6 +225,83 @@ def delete_user(
     return {"status": "ok", "message": f"User '{email}' berhasil dihapus."}
 
 
+@router.put("/users/{user_id}/subscription")
+def update_user_subscription(
+    user_id: str,
+    payload: UserSubscriptionUpdatePayload,
+    admin: User = Depends(require_admin),
+    db: Session = Depends(get_db)
+):
+    """Admin: Update user subscription details (tier, status, expiry, limits, and admin role)."""
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found.")
+
+    if payload.is_admin is not None:
+        if user.id == admin.id and not payload.is_admin:
+            raise HTTPException(status_code=400, detail="Anda tidak dapat mencabut akses admin milik sendiri.")
+        user.is_admin = payload.is_admin
+
+    sub = user.subscription
+
+    if payload.plan_tier:
+        plan = db.query(SubscriptionPlan).filter(SubscriptionPlan.tier == payload.plan_tier).first()
+        if not plan:
+            raise HTTPException(status_code=404, detail=f"Plan '{payload.plan_tier}' not found.")
+
+        posts_limit = payload.posts_limit if payload.posts_limit is not None else plan.post_quota
+        
+        if sub:
+            sub.plan_id = plan.id
+            if payload.posts_limit is None:
+                sub.posts_limit = plan.post_quota
+        else:
+            sub = UserSubscription(
+                user_id=user.id,
+                plan_id=plan.id,
+                status=SubscriptionStatus.ACTIVE,
+                posts_used=0,
+                posts_limit=posts_limit,
+            )
+            db.add(sub)
+
+    if sub:
+        if payload.status:
+            try:
+                sub.status = SubscriptionStatus(payload.status)
+            except ValueError:
+                sub.status = payload.status  # fallback string
+
+        if payload.posts_limit is not None:
+            sub.posts_limit = payload.posts_limit
+
+        if payload.posts_used is not None:
+            sub.posts_used = max(0, payload.posts_used)
+
+        if payload.expires_at is not None:
+            if payload.expires_at in ["", "null", "none", "Never", "never"]:
+                sub.expires_at = None
+            else:
+                try:
+                    sub.expires_at = datetime.fromisoformat(payload.expires_at.replace("Z", "+00:00"))
+                except ValueError:
+                    raise HTTPException(status_code=400, detail="Format tanggal expires_at tidak valid.")
+        elif payload.expires_days is not None:
+            if payload.expires_days == 0:
+                sub.expires_at = None
+            else:
+                sub.expires_at = datetime.utcnow() + timedelta(days=payload.expires_days)
+
+    db.commit()
+    db.refresh(user)
+
+    return {
+        "status": "ok",
+        "message": f"Data user '{user.email}' berhasil diperbarui.",
+        "user_id": user.id,
+        "is_admin": user.is_admin,
+    }
+
 
 @router.post("/users/{user_id}/override-subscription")
 def override_user_subscription(
@@ -120,38 +310,18 @@ def override_user_subscription(
     admin: User = Depends(require_admin),
     db: Session = Depends(get_db)
 ):
-    """Admin: manually set a user's subscription plan."""
-    user = db.query(User).filter(User.id == user_id).first()
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found.")
-
-    plan = db.query(SubscriptionPlan).filter(SubscriptionPlan.tier == req.plan_tier).first()
-    if not plan:
-        raise HTTPException(status_code=404, detail=f"Plan '{req.plan_tier}' not found.")
-
-    posts_limit = req.posts_limit or plan.post_quota
-    expires_at = datetime.utcnow() + timedelta(days=req.expires_days) if req.expires_days else None
-
-    sub = user.subscription
-    if sub:
-        sub.plan_id = plan.id
-        sub.status = SubscriptionStatus.ACTIVE
-        sub.posts_used = 0
-        sub.posts_limit = posts_limit
-        sub.expires_at = expires_at
-    else:
-        sub = UserSubscription(
-            user_id=user.id,
-            plan_id=plan.id,
-            status=SubscriptionStatus.ACTIVE,
-            posts_used=0,
-            posts_limit=posts_limit,
-            expires_at=expires_at,
-        )
-        db.add(sub)
-
-    db.commit()
-    return {"status": "ok", "message": f"Subscription overridden to {req.plan_tier} for {user.email}"}
+    """Admin: legacy route to override subscription plan."""
+    return update_user_subscription(
+        user_id=user_id,
+        payload=UserSubscriptionUpdatePayload(
+            plan_tier=req.plan_tier,
+            posts_limit=req.posts_limit,
+            expires_days=req.expires_days,
+            status="active"
+        ),
+        admin=admin,
+        db=db
+    )
 
 
 class AssignPlanByEmailRequest(BaseModel):

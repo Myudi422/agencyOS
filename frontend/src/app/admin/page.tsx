@@ -7,7 +7,8 @@ import {
   Settings, Users, CreditCard, Key, RefreshCw,
   Save, Edit2, ChevronRight, Shield, Trash2, Plus,
   CheckCircle, AlertTriangle, Zap, Crown, Rocket, Building2,
-  Sparkles, Bot, CheckCircle2, XCircle
+  Sparkles, Bot, CheckCircle2, XCircle, Search, Filter, Clock,
+  Calendar, ChevronLeft, X, UserCheck, UserX, SlidersHorizontal, Check
 } from "lucide-react";
 import { fetchApi } from "@/lib/api";
 
@@ -38,9 +39,28 @@ export default function AdminPage() {
   const [planEdits, setPlanEdits] = useState<any>({});
   const [planSaving, setPlanSaving] = useState(false);
 
-  // Users state
+  // Users state with pagination, search & filters
   const [users, setUsers] = useState<any[]>([]);
   const [usersLoading, setUsersLoading] = useState(false);
+  const [userStats, setUserStats] = useState<{ total_users: number; total_admins: number; active_subs: number; expired_subs: number } | null>(null);
+  const [usersPage, setUsersPage] = useState(1);
+  const [usersLimit, setUsersLimit] = useState(20);
+  const [usersSearch, setUsersSearch] = useState("");
+  const [searchInput, setSearchInput] = useState("");
+  const [usersTier, setUsersTier] = useState("");
+  const [usersStatus, setUsersStatus] = useState("");
+  const [totalUsers, setTotalUsers] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+
+  // Edit User Subscription Modal state
+  const [editingUser, setEditingUser] = useState<any | null>(null);
+  const [editTier, setEditTier] = useState("creator");
+  const [editStatus, setEditStatus] = useState("active");
+  const [editExpiresAt, setEditExpiresAt] = useState("");
+  const [editPostsLimit, setEditPostsLimit] = useState<number | "">("");
+  const [editPostsUsed, setEditPostsUsed] = useState<number | "">("");
+  const [editIsAdmin, setEditIsAdmin] = useState(false);
+  const [userSaving, setUserSaving] = useState(false);
 
   // Assign plan state
   const [assignEmail, setAssignEmail] = useState("");
@@ -137,13 +157,90 @@ export default function AdminPage() {
 
   // ── Users ──────────────────────────────────────────────────────────────────
 
+  const loadUserStats = async () => {
+    try {
+      const data: any = await fetchApi("/admin/users/stats");
+      setUserStats(data);
+    } catch { }
+  };
+
   const loadUsers = async () => {
     setUsersLoading(true);
     try {
-      const data: any = await fetchApi("/admin/users");
+      const queryParams = new URLSearchParams({
+        page: String(usersPage),
+        limit: String(usersLimit),
+      });
+      if (usersSearch.trim()) queryParams.set("search", usersSearch.trim());
+      if (usersTier) queryParams.set("tier", usersTier);
+      if (usersStatus) queryParams.set("status", usersStatus);
+
+      const data: any = await fetchApi(`/admin/users?${queryParams.toString()}`);
       setUsers(data.users || []);
-    } catch { } finally {
+      setTotalUsers(data.total || 0);
+      setTotalPages(data.total_pages || 1);
+    } catch (e: any) {
+      flash("err", e.message || "Gagal memuat daftar user.");
+    } finally {
       setUsersLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === "users" && isAdmin) {
+      loadUserStats();
+      loadUsers();
+    }
+    if (activeTab === "settings" && isAdmin) {
+      loadAppSettings();
+    }
+  }, [activeTab, usersPage, usersLimit, usersSearch, usersTier, usersStatus, isAdmin]);
+
+  const handleOpenEditUser = (u: any) => {
+    setEditingUser(u);
+    setEditTier(u.subscription?.plan_tier || "creator");
+    setEditStatus(u.subscription?.status || "active");
+    setEditPostsLimit(u.subscription?.posts_limit ?? 50);
+    setEditPostsUsed(u.subscription?.posts_used ?? 0);
+    setEditIsAdmin(u.is_admin || false);
+
+    if (u.subscription?.expires_at) {
+      const dt = new Date(u.subscription.expires_at);
+      setEditExpiresAt(dt.toISOString().slice(0, 10)); // YYYY-MM-DD
+    } else {
+      setEditExpiresAt("");
+    }
+  };
+
+  const handleSaveUserSubscription = async () => {
+    if (!editingUser) return;
+    setUserSaving(true);
+    try {
+      let expires_at_val: string | null = null;
+      if (editExpiresAt) {
+        expires_at_val = new Date(editExpiresAt + "T23:59:59").toISOString();
+      }
+
+      await fetchApi(`/admin/users/${editingUser.id}/subscription`, {
+        method: "PUT",
+        body: JSON.stringify({
+          plan_tier: editTier,
+          status: editStatus,
+          expires_at: editExpiresAt ? expires_at_val : "null",
+          posts_limit: editPostsLimit === "" ? null : Number(editPostsLimit),
+          posts_used: editPostsUsed === "" ? null : Number(editPostsUsed),
+          is_admin: editIsAdmin,
+        }),
+      });
+
+      flash("ok", `User '${editingUser.email}' berhasil diperbarui!`);
+      setEditingUser(null);
+      loadUsers();
+      loadUserStats();
+    } catch (e: any) {
+      flash("err", e.message || "Gagal menyimpan perubahan user.");
+    } finally {
+      setUserSaving(false);
     }
   };
 
@@ -163,6 +260,7 @@ export default function AdminPage() {
       setAssignResult({ type: "ok", text: data.message || "Plan berhasil di-assign!" });
       setAssignEmail("");
       loadUsers();
+      loadUserStats();
     } catch (e: any) {
       setAssignResult({ type: "err", text: e.message || "Gagal assign plan." });
     } finally {
@@ -178,15 +276,51 @@ export default function AdminPage() {
       await fetchApi(`/admin/users/${userId}`, { method: "DELETE" });
       flash("ok", `User ${userEmail} berhasil dihapus.`);
       loadUsers();
+      loadUserStats();
     } catch (e: any) {
       flash("err", e.message || "Gagal menghapus user.");
     }
   };
 
-  useEffect(() => {
-    if (activeTab === "users" && isAdmin) loadUsers();
-    if (activeTab === "settings" && isAdmin) loadAppSettings();
-  }, [activeTab]);
+  const getExpiryBadge = (expiresAtStr?: string | null) => {
+    if (!expiresAtStr) {
+      return (
+        <span className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-500 text-[10px] font-semibold">
+          Selamanya (Tanpa Expiry)
+        </span>
+      );
+    }
+    const exp = new Date(expiresAtStr);
+    const now = new Date();
+    const diffTime = exp.getTime() - now.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays < 0) {
+      return (
+        <span className="px-2 py-0.5 rounded-md bg-red-100 text-red-700 text-[10px] font-bold">
+          Expired {Math.abs(diffDays)} hr lalu ({exp.toLocaleDateString("id-ID")})
+        </span>
+      );
+    } else if (diffDays === 0) {
+      return (
+        <span className="px-2 py-0.5 rounded-md bg-amber-100 text-amber-800 text-[10px] font-bold">
+          Expired Hari Ini ({exp.toLocaleDateString("id-ID")})
+        </span>
+      );
+    } else if (diffDays <= 7) {
+      return (
+        <span className="px-2 py-0.5 rounded-md bg-amber-100 text-amber-800 text-[10px] font-bold">
+          Exp {diffDays} hr lg ({exp.toLocaleDateString("id-ID")})
+        </span>
+      );
+    } else {
+      return (
+        <span className="px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 text-[10px] font-medium">
+          Exp {diffDays} hr lg ({exp.toLocaleDateString("id-ID")})
+        </span>
+      );
+    }
+  };
 
   // ── App Settings ───────────────────────────────────────────────────────────
 
@@ -522,17 +656,60 @@ export default function AdminPage() {
 
       {/* ── USERS TAB ── */}
       {activeTab === "users" && (
-        <div className="space-y-4">
+        <div className="space-y-6">
 
-          {/* ── Assign Plan by Email ── */}
-          <div className="p-5 rounded-3xl bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-200 space-y-4">
+          {/* ── Summary Stats ── */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-xs flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-purple-100 border border-purple-200 flex items-center justify-center text-purple-600 font-bold">
+                <Users className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Total User</p>
+                <p className="text-xl font-black text-slate-900 font-['Outfit']">{userStats?.total_users ?? totalUsers}</p>
+              </div>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-xs flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-emerald-100 border border-emerald-200 flex items-center justify-center text-emerald-600 font-bold">
+                <UserCheck className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Langganan Aktif</p>
+                <p className="text-xl font-black text-emerald-600 font-['Outfit']">{userStats?.active_subs ?? 0}</p>
+              </div>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-xs flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-red-100 border border-red-200 flex items-center justify-center text-red-600 font-bold">
+                <UserX className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Expired / Batal</p>
+                <p className="text-xl font-black text-red-600 font-['Outfit']">{userStats?.expired_subs ?? 0}</p>
+              </div>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-xs flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-amber-100 border border-amber-200 flex items-center justify-center text-amber-600 font-bold">
+                <Shield className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Total Admin</p>
+                <p className="text-xl font-black text-amber-600 font-['Outfit']">{userStats?.total_admins ?? 0}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* ── Assign Plan by Email Box ── */}
+          <div className="p-5 rounded-3xl bg-gradient-to-br from-emerald-50 via-teal-50 to-slate-50 border border-emerald-200 shadow-sm space-y-4">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-xl bg-emerald-100 border border-emerald-200 flex items-center justify-center">
                 <Plus className="w-4 h-4 text-emerald-700" />
               </div>
               <div>
-                <p className="text-sm font-bold text-emerald-900 font-['Outfit']">Assign Plan ke User</p>
-                <p className="text-[11px] text-emerald-600">Input email → pilih paket → langsung aktif tanpa pembayaran</p>
+                <p className="text-sm font-bold text-emerald-900 font-['Outfit']">Quick Assign Plan ke User</p>
+                <p className="text-[11px] text-emerald-600">Input email &rarr; pilih paket &rarr; langsung aktifkan tanpa transaksi online</p>
               </div>
             </div>
 
@@ -591,63 +768,467 @@ export default function AdminPage() {
               id="assign-plan-submit"
               onClick={handleAssignPlan}
               disabled={assignLoading || !assignEmail.trim()}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-md shadow-emerald-500/20 transition-all disabled:opacity-50"
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-md shadow-emerald-500/20 transition-all disabled:opacity-50 cursor-pointer"
             >
               {assignLoading ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <ChevronRight className="w-3.5 h-3.5" />}
               {assignLoading ? "Memproses..." : "Assign Plan Sekarang"}
             </button>
           </div>
 
-          {/* ── User List ── */}
-          <div className="flex items-center justify-between">
-            <p className="text-xs text-slate-500">{users.length} users registered</p>
-            <button onClick={loadUsers} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 text-slate-700 text-xs font-medium hover:bg-slate-200">
-              <RefreshCw className="w-3 h-3" /> Refresh
-            </button>
-          </div>
-          {usersLoading ? (
-            <div className="flex justify-center py-12"><div className="w-6 h-6 border-2 border-purple-600 border-t-transparent rounded-full animate-spin" /></div>
-          ) : users.map((u) => (
-            <div key={u.id} className="p-4 rounded-2xl bg-white border border-slate-200 shadow-sm flex items-center gap-4">
-              <img src={u.avatar_url || `https://api.dicebear.com/7.x/initials/svg?seed=${u.email}`} className="w-9 h-9 rounded-full border border-slate-200 object-cover" alt="" />
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-slate-900 truncate">{u.full_name}</p>
-                <p className="text-xs text-slate-400 truncate">{u.email}</p>
-              </div>
-              <div className="text-right shrink-0 flex items-center gap-3">
-                <div>
-                  {u.subscription ? (
-                    <>
-                      <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold ${TIER_COLORS[u.subscription.plan_tier]}`}>
-                        {u.subscription.plan_name}
-                      </span>
-                      <p className="text-[10px] text-slate-400 mt-0.5">
-                        {u.subscription.posts_used}/{u.subscription.posts_limit} posts · {u.subscription.status}
-                      </p>
-                    </>
-                  ) : (
-                    <span className="text-[10px] text-slate-400">No subscription</span>
-                  )}
-                  {u.is_admin && (
-                    <span className="ml-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 text-[10px] font-bold">
-                      <Shield className="w-2.5 h-2.5" /> Admin
-                    </span>
-                  )}
-                </div>
-
-                {!u.is_admin && (
+          {/* ── Search & Filter Controls ── */}
+          <div className="p-4 rounded-3xl bg-white border border-slate-200 shadow-xs space-y-3">
+            <div className="flex flex-col md:flex-row gap-3 items-center justify-between">
+              {/* Search Bar */}
+              <div className="w-full md:w-80 relative flex items-center">
+                <Search className="w-4 h-4 text-slate-400 absolute left-3 pointer-events-none" />
+                <input
+                  type="text"
+                  value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      setUsersPage(1);
+                      setUsersSearch(searchInput);
+                    }
+                  }}
+                  placeholder="Cari nama atau email..."
+                  className="w-full pl-9 pr-16 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-purple-400 bg-slate-50/50"
+                />
+                {searchInput && (
                   <button
-                    onClick={() => handleDeleteUser(u.id, u.email)}
-                    title="Hapus User"
-                    className="p-2 rounded-xl bg-red-50 hover:bg-red-100 text-red-600 transition-colors cursor-pointer"
+                    onClick={() => {
+                      setSearchInput("");
+                      setUsersSearch("");
+                      setUsersPage(1);
+                    }}
+                    className="absolute right-12 text-slate-400 hover:text-slate-600"
                   >
-                    <Trash2 className="w-4 h-4" />
+                    <X className="w-3.5 h-3.5" />
                   </button>
                 )}
+                <button
+                  onClick={() => {
+                    setUsersPage(1);
+                    setUsersSearch(searchInput);
+                  }}
+                  className="absolute right-1.5 px-2 py-1 rounded-lg bg-purple-600 text-white text-[10px] font-bold hover:bg-purple-700 transition-colors"
+                >
+                  Cari
+                </button>
               </div>
 
+              {/* Filters & Actions */}
+              <div className="flex flex-wrap items-center gap-2 w-full md:w-auto justify-end">
+                {/* Filter Tier */}
+                <div className="flex items-center gap-1 bg-slate-100 px-3 py-1.5 rounded-xl border border-slate-200">
+                  <Filter className="w-3 h-3 text-slate-500" />
+                  <span className="text-[11px] font-medium text-slate-600">Tier:</span>
+                  <select
+                    value={usersTier}
+                    onChange={(e) => {
+                      setUsersTier(e.target.value);
+                      setUsersPage(1);
+                    }}
+                    className="bg-transparent text-xs font-semibold text-slate-800 focus:outline-none cursor-pointer"
+                  >
+                    <option value="">Semua Tier</option>
+                    <option value="trial">Trial</option>
+                    <option value="creator">Creator</option>
+                    <option value="agency">Agency</option>
+                    <option value="studio">Studio</option>
+                  </select>
+                </div>
+
+                {/* Filter Status */}
+                <div className="flex items-center gap-1 bg-slate-100 px-3 py-1.5 rounded-xl border border-slate-200">
+                  <SlidersHorizontal className="w-3 h-3 text-slate-500" />
+                  <span className="text-[11px] font-medium text-slate-600">Status:</span>
+                  <select
+                    value={usersStatus}
+                    onChange={(e) => {
+                      setUsersStatus(e.target.value);
+                      setUsersPage(1);
+                    }}
+                    className="bg-transparent text-xs font-semibold text-slate-800 focus:outline-none cursor-pointer"
+                  >
+                    <option value="">Semua Status</option>
+                    <option value="active">Active</option>
+                    <option value="trial">Trial</option>
+                    <option value="expired">Expired</option>
+                    <option value="cancelled">Cancelled</option>
+                    <option value="past_due">Past Due</option>
+                  </select>
+                </div>
+
+                {/* Items Per Page */}
+                <div className="flex items-center gap-1 bg-slate-100 px-3 py-1.5 rounded-xl border border-slate-200">
+                  <span className="text-[11px] font-medium text-slate-600">Per Hal:</span>
+                  <select
+                    value={usersLimit}
+                    onChange={(e) => {
+                      setUsersLimit(Number(e.target.value));
+                      setUsersPage(1);
+                    }}
+                    className="bg-transparent text-xs font-semibold text-slate-800 focus:outline-none cursor-pointer"
+                  >
+                    <option value={10}>10</option>
+                    <option value={20}>20</option>
+                    <option value={50}>50</option>
+                    <option value={100}>100</option>
+                  </select>
+                </div>
+
+                {/* Refresh */}
+                <button
+                  onClick={() => {
+                    loadUsers();
+                    loadUserStats();
+                  }}
+                  className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium transition-colors cursor-pointer"
+                  title="Refresh Data"
+                >
+                  <RefreshCw className={`w-3.5 h-3.5 ${usersLoading ? "animate-spin" : ""}`} />
+                </button>
+              </div>
             </div>
-          ))}
+          </div>
+
+          {/* ── User Data Table ── */}
+          <div className="bg-white rounded-3xl border border-slate-200 shadow-xs overflow-hidden">
+            {usersLoading ? (
+              <div className="flex justify-center py-16">
+                <div className="w-8 h-8 border-2 border-purple-600 border-t-transparent rounded-full animate-spin" />
+              </div>
+            ) : users.length === 0 ? (
+              <div className="p-12 text-center text-slate-400 text-xs">
+                Tidak ada user ditemukan yang sesuai dengan pencarian / filter.
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="bg-slate-50/80 border-b border-slate-200 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                      <th className="py-3 px-4">User Details</th>
+                      <th className="py-3 px-4">Paket & Status</th>
+                      <th className="py-3 px-4">Masa Kadaluarsa (Expiry)</th>
+                      <th className="py-3 px-4">Penggunaan Quota</th>
+                      <th className="py-3 px-4 text-right">Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 text-xs">
+                    {users.map((u) => {
+                      const sub = u.subscription;
+                      const tier = sub?.plan_tier || "No Plan";
+                      const status = sub?.status || "inactive";
+
+                      // Status pill color
+                      const statusColor =
+                        status === "active"
+                          ? "bg-emerald-100 text-emerald-800 border-emerald-200"
+                          : status === "trial"
+                          ? "bg-blue-100 text-blue-800 border-blue-200"
+                          : status === "expired"
+                          ? "bg-red-100 text-red-800 border-red-200"
+                          : "bg-slate-100 text-slate-600 border-slate-200";
+
+                      // Progress bar calc
+                      const postsUsed = sub?.posts_used || 0;
+                      const postsLimit = sub?.posts_limit || 0;
+                      const quotaPercent = postsLimit > 0 ? Math.min(100, Math.round((postsUsed / postsLimit) * 100)) : 0;
+
+                      return (
+                        <tr key={u.id} className="hover:bg-purple-50/20 transition-colors">
+                          {/* User Details */}
+                          <td className="py-3.5 px-4">
+                            <div className="flex items-center gap-3">
+                              <img
+                                src={u.avatar_url || `https://api.dicebear.com/7.x/initials/svg?seed=${u.email}`}
+                                className="w-9 h-9 rounded-full border border-slate-200 object-cover shrink-0"
+                                alt=""
+                              />
+                              <div className="min-w-0">
+                                <div className="flex items-center gap-1.5">
+                                  <p className="font-semibold text-slate-900 truncate">{u.full_name}</p>
+                                  {u.is_admin && (
+                                    <span className="px-1.5 py-0.2 bg-purple-100 text-purple-700 rounded text-[9px] font-bold border border-purple-200 flex items-center gap-0.5">
+                                      <Shield className="w-2.5 h-2.5" /> Admin
+                                    </span>
+                                  )}
+                                </div>
+                                <p className="text-slate-400 text-[11px] truncate">{u.email}</p>
+                              </div>
+                            </div>
+                          </td>
+
+                          {/* Paket & Status */}
+                          <td className="py-3.5 px-4">
+                            <div className="space-y-1">
+                              {sub ? (
+                                <div className="flex items-center gap-1.5">
+                                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${TIER_COLORS[tier] || "bg-slate-100 text-slate-600"}`}>
+                                    {sub.plan_name || tier.toUpperCase()}
+                                  </span>
+                                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${statusColor}`}>
+                                    {status.toUpperCase()}
+                                  </span>
+                                </div>
+                              ) : (
+                                <span className="text-[11px] text-slate-400 italic">Belum Ada Paket</span>
+                              )}
+                            </div>
+                          </td>
+
+                          {/* Masa Kadaluarsa */}
+                          <td className="py-3.5 px-4">
+                            {sub ? (
+                              getExpiryBadge(sub.expires_at)
+                            ) : (
+                              <span className="text-[11px] text-slate-400">-</span>
+                            )}
+                          </td>
+
+                          {/* Quota Usage */}
+                          <td className="py-3.5 px-4">
+                            {sub ? (
+                              <div className="w-36 space-y-1">
+                                <div className="flex justify-between text-[10px] font-semibold text-slate-600">
+                                  <span>{postsUsed}/{postsLimit} posts</span>
+                                  <span>{quotaPercent}%</span>
+                                </div>
+                                <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                                  <div
+                                    className={`h-full rounded-full transition-all ${
+                                      quotaPercent >= 90
+                                        ? "bg-red-500"
+                                        : quotaPercent >= 70
+                                        ? "bg-amber-500"
+                                        : "bg-purple-600"
+                                    }`}
+                                    style={{ width: `${quotaPercent}%` }}
+                                  />
+                                </div>
+                              </div>
+                            ) : (
+                              <span className="text-[11px] text-slate-400">-</span>
+                            )}
+                          </td>
+
+                          {/* Aksi */}
+                          <td className="py-3.5 px-4 text-right">
+                            <div className="flex items-center justify-end gap-1.5">
+                              <button
+                                onClick={() => handleOpenEditUser(u)}
+                                className="px-2.5 py-1.5 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-700 text-xs font-semibold transition-colors flex items-center gap-1 cursor-pointer"
+                                title="Edit Status & Subscription User"
+                              >
+                                <Edit2 className="w-3.5 h-3.5" />
+                                <span>Edit</span>
+                              </button>
+
+                              {!u.is_admin && (
+                                <button
+                                  onClick={() => handleDeleteUser(u.id, u.email)}
+                                  title="Hapus User"
+                                  className="p-1.5 rounded-xl bg-red-50 hover:bg-red-100 text-red-600 transition-colors cursor-pointer"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            {/* ── Pagination Footer Bar ── */}
+            <div className="p-4 bg-slate-50 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-600">
+              <div>
+                Menampilkan <span className="font-bold text-slate-900">{users.length}</span> dari <span className="font-bold text-slate-900">{totalUsers}</span> user · Halaman <span className="font-bold text-slate-900">{usersPage}</span> dari <span className="font-bold text-slate-900">{totalPages}</span>
+              </div>
+
+              <div className="flex items-center gap-1.5">
+                <button
+                  onClick={() => setUsersPage((p) => Math.max(1, p - 1))}
+                  disabled={usersPage <= 1 || usersLoading}
+                  className="px-3 py-1.5 rounded-xl bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 font-semibold disabled:opacity-40 transition-all flex items-center gap-1 cursor-pointer"
+                >
+                  <ChevronLeft className="w-3.5 h-3.5" /> Prev
+                </button>
+
+                <div className="flex items-center gap-1 px-2">
+                  <span className="text-slate-400">Hal</span>
+                  <input
+                    type="number"
+                    min={1}
+                    max={totalPages}
+                    value={usersPage}
+                    onChange={(e) => {
+                      const val = Number(e.target.value);
+                      if (val >= 1 && val <= totalPages) setUsersPage(val);
+                    }}
+                    className="w-12 px-2 py-1 rounded-lg border border-slate-200 text-center text-xs font-bold bg-white"
+                  />
+                  <span className="text-slate-400">/ {totalPages}</span>
+                </div>
+
+                <button
+                  onClick={() => setUsersPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={usersPage >= totalPages || usersLoading}
+                  className="px-3 py-1.5 rounded-xl bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 font-semibold disabled:opacity-40 transition-all flex items-center gap-1 cursor-pointer"
+                >
+                  Next <ChevronRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* ── EDIT USER SUBSCRIPTION MODAL ── */}
+          {editingUser && (
+            <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+              <div className="bg-white w-full max-w-lg rounded-3xl shadow-2xl border border-slate-200 overflow-hidden space-y-4 p-6 animate-in fade-in zoom-in duration-200">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                  <div className="flex items-center gap-3">
+                    <img
+                      src={editingUser.avatar_url || `https://api.dicebear.com/7.x/initials/svg?seed=${editingUser.email}`}
+                      className="w-10 h-10 rounded-full border border-slate-200 object-cover"
+                      alt=""
+                    />
+                    <div>
+                      <h3 className="font-bold text-slate-900 text-base font-['Outfit']">{editingUser.full_name}</h3>
+                      <p className="text-xs text-slate-400">{editingUser.email}</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setEditingUser(null)}
+                    className="p-1.5 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+
+                <div className="space-y-4 pt-1">
+                  {/* Tier & Status */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-700 mb-1">Tier Paket</label>
+                      <select
+                        value={editTier}
+                        onChange={(e) => setEditTier(e.target.value)}
+                        className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-semibold bg-slate-50 focus:outline-none focus:ring-2 focus:ring-purple-400 cursor-pointer"
+                      >
+                        <option value="trial">Trial</option>
+                        <option value="creator">Creator</option>
+                        <option value="agency">Agency</option>
+                        <option value="studio">Studio</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-700 mb-1">Status Subscription</label>
+                      <select
+                        value={editStatus}
+                        onChange={(e) => setEditStatus(e.target.value)}
+                        className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-semibold bg-slate-50 focus:outline-none focus:ring-2 focus:ring-purple-400 cursor-pointer"
+                      >
+                        <option value="active">Active (Aktif)</option>
+                        <option value="trial">Trial (Uji Coba)</option>
+                        <option value="expired">Expired (Kadaluarsa)</option>
+                        <option value="cancelled">Cancelled (Dibatalkan)</option>
+                        <option value="past_due">Past Due (Menunggak)</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Expiry Date Picker */}
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                      Tanggal Expiry / Kadaluarsa (Kosongkan = Tanpa Batas / Selamanya)
+                    </label>
+                    <div className="flex gap-2">
+                      <input
+                        type="date"
+                        value={editExpiresAt}
+                        onChange={(e) => setEditExpiresAt(e.target.value)}
+                        className="flex-1 px-3 py-2 rounded-xl border border-slate-200 text-xs font-mono bg-slate-50 focus:outline-none focus:ring-2 focus:ring-purple-400"
+                      />
+                      {editExpiresAt && (
+                        <button
+                          type="button"
+                          onClick={() => setEditExpiresAt("")}
+                          className="px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-medium cursor-pointer"
+                        >
+                          Clear
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Quota Limit & Used */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-700 mb-1">Limit Post (Posts Limit)</label>
+                      <input
+                        type="number"
+                        value={editPostsLimit}
+                        onChange={(e) => setEditPostsLimit(e.target.value === "" ? "" : Number(e.target.value))}
+                        placeholder="e.g. 50"
+                        className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-mono bg-slate-50 focus:outline-none focus:ring-2 focus:ring-purple-400"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-700 mb-1">Post Terpakai (Posts Used)</label>
+                      <input
+                        type="number"
+                        value={editPostsUsed}
+                        onChange={(e) => setEditPostsUsed(e.target.value === "" ? "" : Number(e.target.value))}
+                        placeholder="e.g. 0"
+                        className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-mono bg-slate-50 focus:outline-none focus:ring-2 focus:ring-purple-400"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Admin Toggle */}
+                  <div className="p-3.5 rounded-2xl bg-purple-50 border border-purple-100 flex items-center justify-between">
+                    <div>
+                      <p className="text-xs font-bold text-purple-900">Hak Akses Admin</p>
+                      <p className="text-[10px] text-purple-600">Berikan atau cabut hak akses Admin Control Panel</p>
+                    </div>
+                    <label className="relative flex items-center cursor-pointer select-none">
+                      <input
+                        type="checkbox"
+                        checked={editIsAdmin}
+                        onChange={(e) => setEditIsAdmin(e.target.checked)}
+                        className="w-4 h-4 rounded text-purple-600 focus:ring-purple-500 cursor-pointer"
+                      />
+                    </label>
+                  </div>
+                </div>
+
+                {/* Modal Actions */}
+                <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+                  <button
+                    onClick={() => setEditingUser(null)}
+                    className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition-colors cursor-pointer"
+                  >
+                    Batal
+                  </button>
+                  <button
+                    onClick={handleSaveUserSubscription}
+                    disabled={userSaving}
+                    className="px-5 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold shadow-md shadow-purple-500/20 transition-all flex items-center gap-1.5 disabled:opacity-50 cursor-pointer"
+                  >
+                    {userSaving ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
+                    <span>{userSaving ? "Menyimpan..." : "Simpan Perubahan"}</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
