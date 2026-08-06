@@ -96,11 +96,14 @@ STATUS_DB_TO_ALIAS: Dict[str, str] = {
 
 def _sanitize_post_payload(data: PostCreate | PostUpdate) -> Dict[str, Any]:
     payload = data.dict(exclude_unset=True)
-    sanitized = sanitize_payload(payload, max_length=4000)
+    sanitized = sanitize_payload(payload, max_length=4000, allow_newlines=True)
 
     for field in ("caption", "hashtags", "ai_brief", "first_comment", "location", "alt_text"):
         if field in sanitized and sanitized[field] is not None:
-            sanitized[field] = sanitize_text(sanitized[field], max_length=2200, allow_newlines=True)
+            val = sanitize_text(sanitized[field], max_length=2200, allow_newlines=True)
+            if isinstance(val, str):
+                val = val.replace("\\n", "\n")
+            sanitized[field] = val
 
     if "workspace_id" in sanitized:
         sanitized["workspace_id"] = sanitize_text(sanitized["workspace_id"], max_length=120)

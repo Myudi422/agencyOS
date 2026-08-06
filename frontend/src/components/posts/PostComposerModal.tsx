@@ -2636,10 +2636,14 @@ export default function PostComposerModal() {
                   </div>
                 )}
 
-                <p className="text-xs text-slate-800 leading-relaxed whitespace-pre-wrap">
-                  {caption || "Your post caption preview will appear here in real-time..."}
+                <p className="text-xs text-slate-800 leading-relaxed whitespace-pre-wrap font-sans">
+                  {caption ? caption.replace(/\\n/g, "\n") : "Your post caption preview will appear here in real-time..."}
                 </p>
-                {hashtags && <p className="text-xs text-purple-600 font-semibold">{hashtags}</p>}
+                {hashtags && (
+                  <p className="text-xs text-purple-600 font-semibold whitespace-pre-wrap mt-1.5">
+                    {hashtags.replace(/\\n/g, "\n")}
+                  </p>
+                )}
               </div>
             </div>
 

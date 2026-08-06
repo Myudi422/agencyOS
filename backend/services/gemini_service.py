@@ -700,8 +700,8 @@ Tugas utamanya adalah menganalisis GAMBAR (Slide 1 Konten / Sampul Video Thumbna
         try:
             data = json.loads(blob.strip())
             if isinstance(data, dict):
-                caption = data.get("caption", "").strip()
-                hashtags = data.get("hashtags", "").strip()
+                caption = str(data.get("caption", "")).replace("\\n", "\n").strip()
+                hashtags = str(data.get("hashtags", "")).replace("\\n", " ").strip()
                 if caption:
                     return {"caption": caption, "hashtags": hashtags}
         except Exception:

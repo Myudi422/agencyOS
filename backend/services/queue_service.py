@@ -165,9 +165,10 @@ class QueueService:
 
             try:
                 is_draft_post = (post.status == PostStatus.DRAFT)
+                clean_caption = (post.caption or "").replace("\\n", "\n")
                 logger.info(f"Publishing via PostForMe API targeting account @{account.username} ({account.platform.value})... (is_draft={is_draft_post})")
                 res = await postforme_service.create_post(
-                    caption=post.caption or "",
+                    caption=clean_caption,
                     social_accounts=[target_account_id],
                     media=media_list if media_list else None,
                     platform_configurations=pf_platform_configs if pf_platform_configs else None,
