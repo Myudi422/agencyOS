@@ -594,7 +594,38 @@ Tugas utamanya adalah menganalisis GAMBAR (Slide 1 Konten / Sampul Video Thumbna
             except Exception as e:
                 logger.warning(f"Failed to download image for vision API from {image_url}: {e}")
 
-        # 1. Try gemini-webapi if available
+        # 1. Try google-generativeai API Key FIRST if available (Fastest & most reliable for multimodal vision)
+        if api_key:
+            try:
+                import io
+                from PIL import Image
+                import google.generativeai as genai
+
+                genai.configure(api_key=api_key)
+                model = genai.GenerativeModel("gemini-1.5-flash")
+
+                content_inputs = [prompt]
+                if image_bytes:
+                    try:
+                        pil_img = Image.open(io.BytesIO(image_bytes))
+                        content_inputs.append(pil_img)
+                    except Exception as e:
+                        logger.warning(f"PIL Image parse warning: {e}")
+                        content_inputs.append({
+                            "mime_type": content_type if "image" in content_type else "image/jpeg",
+                            "data": image_bytes
+                        })
+
+                res = model.generate_content(content_inputs)
+                if res.text:
+                    cleaned = self._clean_code_interpreter_artifacts(res.text)
+                    parsed = self._extract_caption_json(cleaned)
+                    if parsed.get("caption"):
+                        return parsed
+            except Exception as exc:
+                logger.warning(f"google-generativeai vision API Key generation failed, trying webapi fallback: {exc}")
+
+        # 2. Try gemini-webapi cookie if available (with 15s timeout to prevent stream hangs)
         if psid and image_bytes:
             import tempfile, os
             temp_path = None
@@ -607,14 +638,17 @@ Tugas utamanya adalah menganalisis GAMBAR (Slide 1 Konten / Sampul Video Thumbna
                 from gemini_webapi import GeminiClient
                 client = GeminiClient(secure_1psid=psid, secure_1psidts=psidts)
                 await client.init()
-                response = await client.generate_content(prompt, images=[temp_path])
+                response = await asyncio.wait_for(
+                    client.generate_content(prompt, images=[temp_path]),
+                    timeout=15.0
+                )
                 text_res = getattr(response, "text", str(response))
                 cleaned = self._clean_code_interpreter_artifacts(text_res)
                 parsed = self._extract_caption_json(cleaned)
                 if parsed.get("caption"):
                     return parsed
             except Exception as exc:
-                logger.warning(f"gemini-webapi vision generation failed, falling back to API key: {exc}")
+                logger.warning(f"gemini-webapi vision generation failed: {exc}")
                 self._notify_owner_cookie_invalid(str(exc))
             finally:
                 if temp_path and os.path.exists(temp_path):
@@ -623,29 +657,7 @@ Tugas utamanya adalah menganalisis GAMBAR (Slide 1 Konten / Sampul Video Thumbna
                     except Exception:
                         pass
 
-        # 2. Try google-generativeai API Key as fallback
-        if api_key:
-            try:
-                import google.generativeai as genai
-                genai.configure(api_key=api_key)
-                model = genai.GenerativeModel("gemini-1.5-flash")
-                
-                content_inputs = [prompt]
-                if image_bytes:
-                    content_inputs.append({
-                        "mime_type": content_type if "image" in content_type else "image/jpeg",
-                        "data": image_bytes
-                    })
-
-                res = model.generate_content(content_inputs)
-                if res.text:
-                    cleaned = self._clean_code_interpreter_artifacts(res.text)
-                    return self._extract_caption_json(cleaned)
-            except Exception as exc:
-                logger.error(f"google-generativeai vision API Key generation failed: {exc}")
-                raise RuntimeError(f"Gagal memproses gambar dengan Gemini AI Vision: {exc}")
-
-        raise RuntimeError("Gagal menghasilkan caption AI dari gambar. Pastikan gambar valid dan Session Cookie Shiera AI atau API Key valid di Admin Panel.")
+        raise RuntimeError("Session Cookie Shiera AI kadaluarsa dan API Key belum dikonfigurasi. Silakan perbarui Cookie/API Key di Admin Panel (/admin).")
 
     def _extract_caption_json(self, text: str) -> Dict[str, str]:
         """Extract caption and hashtags from Gemini JSON output or text response."""
