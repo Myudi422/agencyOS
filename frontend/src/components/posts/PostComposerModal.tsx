@@ -117,6 +117,68 @@ export default function PostComposerModal() {
   const [showBriefPanel, setShowBriefPanel] = useState(false);
   const [briefViewMode, setBriefViewMode] = useState<"preview" | "edit">("preview");
 
+  // AI Auto Caption from Image Slide 1 / Video Cover Thumbnail
+  const [isGeneratingAiCaption, setIsGeneratingAiCaption] = useState<boolean>(false);
+
+  const getTargetImageForAi = () => {
+    const hasVideoMedia = postType === "video" || mediaUrls.some(u => isVideoMedia({ url: u }));
+    if (hasVideoMedia) {
+      if (reelsThumbnailUrl && reelsThumbnailUrl.trim() !== "") {
+        return { url: reelsThumbnailUrl.trim(), type: "thumbnail" as const };
+      }
+      return null;
+    }
+    if (mediaUrls.length > 0 && !isVideoMedia({ url: mediaUrls[0] })) {
+      return { url: mediaUrls[0], type: "image" as const };
+    }
+    return null;
+  };
+
+  const handleGenerateCaptionFromAi = async () => {
+    const target = getTargetImageForAi();
+    if (!target) {
+      const hasVideoMedia = postType === "video" || mediaUrls.some(u => isVideoMedia({ url: u }));
+      if (hasVideoMedia) {
+        toast.warning("Shiera AI hanya bisa membaca format gambar. Silakan upload Cover Thumbnail video terlebih dahulu.");
+      } else {
+        toast.warning("Silakan tambahkan minimal 1 gambar terlebih dahulu untuk menggunakan AI Auto-Caption.");
+      }
+      return;
+    }
+
+    setIsGeneratingAiCaption(true);
+    try {
+      const targetWsId = activeWorkspace?.id || "ws-default";
+      const res = await fetchApi<any>("/posts/generate-ai-caption", {
+        method: "POST",
+        body: JSON.stringify({
+          workspace_id: targetWsId,
+          account_ids: selectedAccountIds,
+          image_url: target.url,
+          post_type: postType
+        })
+      });
+
+      if (res?.caption) {
+        setCaption(res.caption);
+        if (res.hashtags) {
+          setHashtags(res.hashtags);
+        }
+        toast.success(
+          target.type === "thumbnail"
+            ? "✨ Caption & Hashtag berhasil digenerate dari Cover Thumbnail Video!"
+            : "✨ Caption & Hashtag berhasil digenerate dari Gambar Slide ke-1!"
+        );
+      } else {
+        toast.error("AI tidak menghasilkan caption. Silakan coba lagi.");
+      }
+    } catch (err: any) {
+      toast.error(`Gagal generate caption: ${err.message || err}`);
+    } finally {
+      setIsGeneratingAiCaption(false);
+    }
+  };
+
   // Reorder Media Helpers (Move Left / Right)
   const moveMediaLeft = (idx: number) => {
     if (idx <= 0) return;
@@ -1126,7 +1188,44 @@ export default function PostComposerModal() {
             {/* 3. Caption Box */}
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
-                <label className="text-xs font-bold text-slate-800">Post Caption</label>
+                <div className="flex items-center gap-2">
+                  <label className="text-xs font-bold text-slate-800">Post Caption</label>
+                  {(() => {
+                    const aiTarget = getTargetImageForAi();
+                    const hasVideoMedia = postType === "video" || mediaUrls.some(u => isVideoMedia({ url: u }));
+                    return (
+                      <button
+                        type="button"
+                        onClick={handleGenerateCaptionFromAi}
+                        disabled={isGeneratingAiCaption || !aiTarget}
+                        title={
+                          !aiTarget
+                            ? (hasVideoMedia ? "Shiera AI hanya bisa membaca format gambar. Upload cover thumbnail video terlebih dahulu." : "Tambahkan gambar terlebih dahulu untuk membaca visual.")
+                            : `Generate caption & hashtag otomatis dari ${aiTarget.type === "thumbnail" ? "Cover Thumbnail Video" : "Gambar Slide ke-1"} via Shiera AI`
+                        }
+                        className={`px-2.5 py-1 rounded-xl text-[11px] font-extrabold transition-all flex items-center gap-1 cursor-pointer ${
+                          !aiTarget
+                            ? "bg-slate-100 text-slate-400 border border-slate-200 opacity-60 cursor-not-allowed"
+                            : isGeneratingAiCaption
+                            ? "bg-purple-100 text-purple-700 border border-purple-300 animate-pulse"
+                            : "bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white shadow-xs hover:shadow-sm"
+                        }`}
+                      >
+                        {isGeneratingAiCaption ? (
+                          <>
+                            <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                            <span>Membaca Visual...</span>
+                          </>
+                        ) : (
+                          <>
+                            <Sparkles className="w-3.5 h-3.5" />
+                            <span>✨ Generate</span>
+                          </>
+                        )}
+                      </button>
+                    );
+                  })()}
+                </div>
                 <span className="text-[10px] text-slate-400 font-mono">{caption.length} characters</span>
               </div>
               <textarea

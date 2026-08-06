@@ -519,6 +519,167 @@ DILARANG memberikan pembuka, salam, evaluasi, atau basa-basi analisis. Langsung 
 
         raise RuntimeError("Gagal menghasilkan brief AI. Pastikan Session Cookie Shiera AI atau API Key valid di Admin Settings.")
 
+    async def generate_caption_from_image(
+        self,
+        image_url: str,
+        post_type: str = "image",
+        accounts_info: Optional[List[Dict[str, Any]]] = None,
+        custom_instructions: Optional[str] = None,
+        db: Session = None
+    ) -> Dict[str, str]:
+        """
+        Analyze an image (slide ke-1 or video cover thumbnail) using Gemini Multimodal Vision.
+        Incorporates Social Account Briefings (brand, tone of voice, pillars, target audience)
+        and outputs a JSON containing 'caption' and 'hashtags'.
+        """
+        if not db:
+            raise ValueError("Database session required to fetch Gemini settings.")
+
+        psid, psidts, api_key = self._get_gemini_credentials(db)
+
+        if not psid and not api_key:
+            raise ValueError("Admin belum mengatur Session Cookie Shiera AI atau API Key di Control Panel.")
+
+        acc_briefings_str = ""
+        if accounts_info:
+            for acc in accounts_info:
+                b = acc.get("briefing") or {}
+                if isinstance(b, dict) and any(b.values()):
+                    acc_briefings_str += (
+                        f"- **@{acc.get('username')} ({acc.get('platform')})**:\n"
+                        f"  * Brand: {b.get('brand_name') or acc.get('name') or 'N/A'}\n"
+                        f"  * Deskripsi: {b.get('business_description') or 'N/A'}\n"
+                        f"  * Target Audiens: {b.get('target_audience') or 'Umum'}\n"
+                        f"  * Tone of Voice: {b.get('tone_of_voice') or 'Kasual & Profesional'}\n"
+                        f"  * Pilar Konten: {', '.join(b.get('content_pillars') or []) if isinstance(b.get('content_pillars'), list) else 'Umum'}\n"
+                        f"  * Do's & Don'ts: {b.get('dos_and_donts') or 'Bebas'}\n\n"
+                    )
+
+        prompt = f"""
+Kamu adalah Shiera AI Senior Copywriter & Social Media Director.
+Tugas utamanya adalah menganalisis GAMBAR (Slide 1 Konten / Sampul Video Thumbnail) yang diberikan, lalu membuat Copywriting Caption & 5 Hashtags yang sangat menarik, kreatif, relevan dengan visual, dan persuasif.
+
+{f"### BRIEFING BRAND AKUN SOSIAL MEDIA TERHUBUNG:\n{acc_briefings_str}" if acc_briefings_str else ""}
+
+### PARAMETER KONTEN:
+- Format Post: {post_type.upper()}
+{f"- Instruksi Tambahan Pengguna: {custom_instructions}" if custom_instructions else ""}
+
+### PETUNJUK PENULISAN:
+1. Analisis detail visual pada gambar (objek, suasana, teks pada gambar jika ada, warna, tema).
+2. Tuliskan copywriting caption Bahasa Indonesia yang kuat, memiliki hook pembuka yang memikat, memuat pesan utama dari gambar, dan diakhiri Call to Action (CTA) yang natural.
+3. Sesuaikan gaya bahasa/tone of voice dengan briefing brand jika ada.
+4. Berikan tepat 5 hashtag yang paling relevan dengan isi gambar dan niche brand.
+
+### FORMAT OUTPUT WAJIB (HANYA BERIKAN BLOK JSON BERIKUT DENGAN TEREPAT DUA KEY):
+```json
+{{
+  "caption": "Tuliskan caption copywriting lengkap di sini...",
+  "hashtags": "#hashtag1 #hashtag2 #hashtag3 #hashtag4 #hashtag5"
+}}
+```
+"""
+
+        # Fetch image bytes for multimodal call
+        import httpx
+        image_bytes = None
+        content_type = "image/jpeg"
+        if image_url:
+            try:
+                async with httpx.AsyncClient(timeout=15.0, follow_redirects=True) as client:
+                    resp = await client.get(image_url)
+                    if resp.status_code == 200:
+                        image_bytes = resp.content
+                        content_type = resp.headers.get("content-type", "image/jpeg").split(";")[0]
+            except Exception as e:
+                logger.warning(f"Failed to download image for vision API from {image_url}: {e}")
+
+        # 1. Try gemini-webapi if available
+        if psid and image_bytes:
+            import tempfile, os
+            temp_path = None
+            try:
+                ext = ".png" if "png" in content_type else ".webp" if "webp" in content_type else ".jpg"
+                with tempfile.NamedTemporaryFile(delete=False, suffix=ext) as tmp:
+                    tmp.write(image_bytes)
+                    temp_path = tmp.name
+
+                from gemini_webapi import GeminiClient
+                client = GeminiClient(secure_1psid=psid, secure_1psidts=psidts)
+                await client.init()
+                response = await client.generate_content(prompt, images=[temp_path])
+                text_res = getattr(response, "text", str(response))
+                cleaned = self._clean_code_interpreter_artifacts(text_res)
+                parsed = self._extract_caption_json(cleaned)
+                if parsed.get("caption"):
+                    return parsed
+            except Exception as exc:
+                logger.warning(f"gemini-webapi vision generation failed, falling back to API key: {exc}")
+                self._notify_owner_cookie_invalid(str(exc))
+            finally:
+                if temp_path and os.path.exists(temp_path):
+                    try:
+                        os.remove(temp_path)
+                    except Exception:
+                        pass
+
+        # 2. Try google-generativeai API Key as fallback
+        if api_key:
+            try:
+                import google.generativeai as genai
+                genai.configure(api_key=api_key)
+                model = genai.GenerativeModel("gemini-1.5-flash")
+                
+                content_inputs = [prompt]
+                if image_bytes:
+                    content_inputs.append({
+                        "mime_type": content_type if "image" in content_type else "image/jpeg",
+                        "data": image_bytes
+                    })
+
+                res = model.generate_content(content_inputs)
+                if res.text:
+                    cleaned = self._clean_code_interpreter_artifacts(res.text)
+                    return self._extract_caption_json(cleaned)
+            except Exception as exc:
+                logger.error(f"google-generativeai vision API Key generation failed: {exc}")
+                raise RuntimeError(f"Gagal memproses gambar dengan Gemini AI Vision: {exc}")
+
+        raise RuntimeError("Gagal menghasilkan caption AI dari gambar. Pastikan gambar valid dan Session Cookie Shiera AI atau API Key valid di Admin Panel.")
+
+    def _extract_caption_json(self, text: str) -> Dict[str, str]:
+        """Extract caption and hashtags from Gemini JSON output or text response."""
+        import re, json
+        if not text:
+            return {"caption": "", "hashtags": ""}
+        
+        json_match = re.search(r'```(?:json)?\s*([\s\S]*?)\s*```', text)
+        blob = json_match.group(1) if json_match else text
+
+        try:
+            data = json.loads(blob.strip())
+            if isinstance(data, dict):
+                caption = data.get("caption", "").strip()
+                hashtags = data.get("hashtags", "").strip()
+                if caption:
+                    return {"caption": caption, "hashtags": hashtags}
+        except Exception:
+            pass
+
+        lines = text.strip().split("\n")
+        caption_lines = []
+        hashtags_list = []
+        for line in lines:
+            if line.strip().startswith("#"):
+                hashtags_list.append(line.strip())
+            else:
+                caption_lines.append(line)
+
+        return {
+            "caption": "\n".join(caption_lines).strip(),
+            "hashtags": " ".join(hashtags_list).strip()
+        }
+
 
     _last_wa_alert_time: float = 0.0
     OWNER_WA_NUMBER: str = "082125182347"
@@ -564,6 +725,7 @@ DILARANG memberikan pembuka, salam, evaluasi, atau basa-basi analisis. Langsung 
 
 
 gemini_service = GeminiService()
+
 
 
 

@@ -614,6 +614,75 @@ async def approve_public_post_review(
     }
 
 
+# ─── AI CAPTION VISION ENDPOINT ─────────────────────────────────────────────
+
+class GenerateAICaptionRequest(BaseModel):
+    workspace_id: str
+    account_ids: Optional[List[str]] = None
+    image_url: str
+    post_type: Optional[str] = "image"
+    custom_instructions: Optional[str] = None
+
+
+@router.post("/generate-ai-caption")
+async def generate_ai_caption(
+    req: GenerateAICaptionRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_user),
+):
+    """
+    Generate AI Copywriting Caption & 5 Hashtags using Gemini Vision API by analyzing
+    the uploaded image (slide ke-1 or video thumbnail cover).
+    Incorporates Social Account Briefings for selected account_ids.
+    """
+    from backend.services.gemini_service import gemini_service
+
+    if not req.image_url:
+        raise HTTPException(status_code=400, detail="URL gambar tidak ditemukan.")
+
+    accounts_info = []
+    if req.account_ids:
+        accounts = (
+            db.query(SocialAccount)
+            .filter(
+                SocialAccount.workspace_id == req.workspace_id,
+                SocialAccount.id.in_(req.account_ids)
+            )
+            .all()
+        )
+        accounts_info = [
+            {
+                "id": a.id,
+                "name": a.name,
+                "username": a.username,
+                "platform": a.platform.value if a.platform else "social",
+                "briefing": a.briefing or {}
+            }
+            for a in accounts
+        ]
+
+    try:
+        res = await gemini_service.generate_caption_from_image(
+            image_url=req.image_url,
+            post_type=req.post_type or "image",
+            accounts_info=accounts_info,
+            custom_instructions=req.custom_instructions,
+            db=db,
+        )
+        return {
+            "status": "ok",
+            "caption": res.get("caption", ""),
+            "hashtags": res.get("hashtags", ""),
+            "generated_at": datetime.utcnow().isoformat()
+        }
+    except Exception as exc:
+        logger.error(f"AI Caption vision generation error: {exc}")
+        raise HTTPException(
+            status_code=500,
+            detail=str(exc) or "Gagal membuat caption AI dari gambar."
+        )
+
+
 # ─── /v1/social-posts alias ─────────────────────────────────────────────────
 # Mirrors the same CRUD so the frontend can call /v1/social-posts/* or /posts/*
 v1_router = APIRouter(prefix="/v1/social-posts", tags=["Social Posts v1"])
@@ -624,4 +693,6 @@ v1_router.put("/{post_id}")(update_post)
 v1_router.delete("/{post_id}")(delete_post)
 v1_router.get("/public/review/{post_id}")(get_public_post_review)
 v1_router.post("/public/review/{post_id}/approve")(approve_public_post_review)
+v1_router.post("/generate-ai-caption")(generate_ai_caption)
+
 

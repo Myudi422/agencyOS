@@ -76,8 +76,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_fix_stuck_posts",
-      "community": 40,
-      "community_name": "posts.py",
+      "community": 2,
+      "community_name": "models.py",
       "norm_label": "fix_stuck_posts.py"
     },
     {
@@ -87,8 +87,8 @@
       "source_location": "L29",
       "_origin": "ast",
       "id": "backend_fix_stuck_posts_main",
-      "community": 40,
-      "community_name": "posts.py",
+      "community": 2,
+      "community_name": "models.py",
       "norm_label": "main()"
     },
     {
@@ -98,8 +98,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_fix_stuck_posts_rationale_1",
-      "community": 40,
-      "community_name": "posts.py",
+      "community": 2,
+      "community_name": "models.py",
       "norm_label": "script perbaikan langsung: ambil hasil dari postforme api untuk semua post yang..."
     },
     {
@@ -197,8 +197,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_migrate_agents",
-      "community": 33,
-      "community_name": "agents.py",
+      "community": 55,
+      "community_name": "agent_service.py",
       "norm_label": "migrate_agents.py"
     },
     {
@@ -208,8 +208,8 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "backend_migrate_agents_run",
-      "community": 33,
-      "community_name": "agents.py",
+      "community": 55,
+      "community_name": "agent_service.py",
       "norm_label": "run()"
     },
     {
@@ -219,8 +219,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_migrate_agents_rationale_1",
-      "community": 33,
-      "community_name": "agents.py",
+      "community": 55,
+      "community_name": "agent_service.py",
       "norm_label": "migration script: create agent_configs and agent_run_logs tables. run: python..."
     },
     {
@@ -230,8 +230,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_migrate_competitor_accounts",
-      "community": 2,
-      "community_name": "models.py",
+      "community": 63,
+      "community_name": "migrate_competitor_accounts.py",
       "norm_label": "migrate_competitor_accounts.py"
     },
     {
@@ -241,8 +241,8 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "backend_migrate_competitor_accounts_run_migration",
-      "community": 2,
-      "community_name": "models.py",
+      "community": 63,
+      "community_name": "migrate_competitor_accounts.py",
       "norm_label": "run_migration()"
     },
     {
@@ -252,8 +252,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_migrate_competitor_accounts_rationale_1",
-      "community": 2,
-      "community_name": "models.py",
+      "community": 63,
+      "community_name": "migrate_competitor_accounts.py",
       "norm_label": "migration script: add social_account_id column to competitor_accounts table"
     },
     {
@@ -263,8 +263,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_migrate_db",
-      "community": 2,
-      "community_name": "models.py",
+      "community": 79,
+      "community_name": "migrate_db.py",
       "norm_label": "migrate_db.py"
     },
     {
@@ -274,8 +274,8 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "backend_migrate_db_migrate",
-      "community": 2,
-      "community_name": "models.py",
+      "community": 79,
+      "community_name": "migrate_db.py",
       "norm_label": "migrate()"
     },
     {
@@ -285,8 +285,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_migrate_db_rationale_1",
-      "community": 2,
-      "community_name": "models.py",
+      "community": 79,
+      "community_name": "migrate_db.py",
       "norm_label": "database migration script \u2014 migrate database schema from stripe to midtrans...."
     },
     {
@@ -384,8 +384,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_migrate_post_ai_brief",
-      "community": 2,
-      "community_name": "models.py",
+      "community": 80,
+      "community_name": "migrate_post_ai_brief.py",
       "norm_label": "migrate_post_ai_brief.py"
     },
     {
@@ -395,8 +395,8 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "backend_migrate_post_ai_brief_run_migration",
-      "community": 2,
-      "community_name": "models.py",
+      "community": 80,
+      "community_name": "migrate_post_ai_brief.py",
       "norm_label": "run_migration()"
     },
     {
@@ -406,8 +406,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_migrate_post_ai_brief_rationale_1",
-      "community": 2,
-      "community_name": "models.py",
+      "community": 80,
+      "community_name": "migrate_post_ai_brief.py",
       "norm_label": "migration script: add ai_brief column to posts table"
     },
     {
@@ -417,8 +417,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_migrate_publish_results",
-      "community": 2,
-      "community_name": "models.py",
+      "community": 81,
+      "community_name": "migrate_publish_results.py",
       "norm_label": "migrate_publish_results.py"
     },
     {
@@ -428,8 +428,8 @@
       "source_location": "L26",
       "_origin": "ast",
       "id": "backend_migrate_publish_results_run_migration",
-      "community": 2,
-      "community_name": "models.py",
+      "community": 81,
+      "community_name": "migrate_publish_results.py",
       "norm_label": "run_migration()"
     },
     {
@@ -439,8 +439,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_migrate_publish_results_rationale_1",
-      "community": 2,
-      "community_name": "models.py",
+      "community": 81,
+      "community_name": "migrate_publish_results.py",
       "norm_label": "migration: tambah tabel post_publish_results dan kolom baru ke posts. jalankan:..."
     },
     {
@@ -450,8 +450,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_migrate_wa_otp",
-      "community": 2,
-      "community_name": "models.py",
+      "community": 82,
+      "community_name": "migrate_wa_otp.py",
       "norm_label": "migrate_wa_otp.py"
     },
     {
@@ -461,8 +461,8 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "backend_migrate_wa_otp_migrate",
-      "community": 2,
-      "community_name": "models.py",
+      "community": 82,
+      "community_name": "migrate_wa_otp.py",
       "norm_label": "migrate()"
     },
     {
@@ -472,8 +472,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_migrate_wa_otp_rationale_1",
-      "community": 2,
-      "community_name": "models.py",
+      "community": 82,
+      "community_name": "migrate_wa_otp.py",
       "norm_label": "database migration \u2014 wa otp verification menambah kolom phone_number &..."
     },
     {
@@ -483,8 +483,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_models_agent_models",
-      "community": 33,
-      "community_name": "agents.py",
+      "community": 55,
+      "community_name": "agent_service.py",
       "norm_label": "agent_models.py"
     },
     {
@@ -494,8 +494,8 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "backend_models_agent_models_gen_uuid",
-      "community": 33,
-      "community_name": "agents.py",
+      "community": 55,
+      "community_name": "agent_service.py",
       "norm_label": "_gen_uuid()"
     },
     {
@@ -538,8 +538,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_models_agent_models_py_base",
-      "community": 33,
-      "community_name": "agents.py",
+      "community": 55,
+      "community_name": "agent_service.py",
       "norm_label": "base"
     },
     {
@@ -549,8 +549,8 @@
       "source_location": "L64",
       "_origin": "ast",
       "id": "backend_models_agent_models_agentrunlog",
-      "community": 33,
-      "community_name": "agents.py",
+      "community": 55,
+      "community_name": "agent_service.py",
       "norm_label": "agentrunlog"
     },
     {
@@ -560,8 +560,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_models_agent_models_rationale_1",
-      "community": 33,
-      "community_name": "agents.py",
+      "community": 55,
+      "community_name": "agent_service.py",
       "norm_label": "agent models \u2014 shiera ai agent system stores agent configurations and run..."
     },
     {
@@ -582,8 +582,8 @@
       "source_location": "L65",
       "_origin": "ast",
       "id": "backend_models_agent_models_rationale_65",
-      "community": 33,
-      "community_name": "agents.py",
+      "community": 55,
+      "community_name": "agent_service.py",
       "norm_label": "log setiap kali agent dijalankan (manual atau terjadwal). menyimpan hasil brief..."
     },
     {
@@ -648,8 +648,8 @@
       "source_location": "L26",
       "_origin": "ast",
       "id": "backend_models_models_roleenum",
-      "community": 21,
-      "community_name": "ActivityLog",
+      "community": 43,
+      "community_name": "SocialAccount",
       "norm_label": "roleenum"
     },
     {
@@ -659,8 +659,8 @@
       "source_location": "L32",
       "_origin": "ast",
       "id": "backend_models_models_accountplatform",
-      "community": 21,
-      "community_name": "ActivityLog",
+      "community": 43,
+      "community_name": "SocialAccount",
       "norm_label": "accountplatform"
     },
     {
@@ -670,8 +670,8 @@
       "source_location": "L47",
       "_origin": "ast",
       "id": "backend_models_models_accountstatus",
-      "community": 27,
-      "community_name": "User",
+      "community": 43,
+      "community_name": "SocialAccount",
       "norm_label": "accountstatus"
     },
     {
@@ -682,7 +682,7 @@
       "_origin": "ast",
       "id": "backend_models_models_posttype",
       "community": 40,
-      "community_name": "posts.py",
+      "community_name": "ActivityLog",
       "norm_label": "posttype"
     },
     {
@@ -693,7 +693,7 @@
       "_origin": "ast",
       "id": "backend_models_models_poststatus",
       "community": 40,
-      "community_name": "posts.py",
+      "community_name": "ActivityLog",
       "norm_label": "poststatus"
     },
     {
@@ -703,8 +703,8 @@
       "source_location": "L66",
       "_origin": "ast",
       "id": "backend_models_models_jobstatus",
-      "community": 40,
-      "community_name": "posts.py",
+      "community": 2,
+      "community_name": "models.py",
       "norm_label": "jobstatus"
     },
     {
@@ -725,8 +725,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_models_models_py_base",
-      "community": 50,
-      "community_name": "kol.py",
+      "community": 6,
+      "community_name": "admin.py",
       "norm_label": "base"
     },
     {
@@ -748,7 +748,7 @@
       "_origin": "ast",
       "id": "backend_models_models_workspace",
       "community": 43,
-      "community_name": "WorkspaceMember",
+      "community_name": "SocialAccount",
       "norm_label": "workspace"
     },
     {
@@ -759,7 +759,7 @@
       "_origin": "ast",
       "id": "backend_models_models_workspacemember",
       "community": 43,
-      "community_name": "WorkspaceMember",
+      "community_name": "SocialAccount",
       "norm_label": "workspacemember"
     },
     {
@@ -770,7 +770,7 @@
       "_origin": "ast",
       "id": "backend_models_models_client",
       "community": 43,
-      "community_name": "WorkspaceMember",
+      "community_name": "SocialAccount",
       "norm_label": "client"
     },
     {
@@ -780,8 +780,8 @@
       "source_location": "L162",
       "_origin": "ast",
       "id": "backend_models_models_socialaccount",
-      "community": 21,
-      "community_name": "ActivityLog",
+      "community": 43,
+      "community_name": "SocialAccount",
       "norm_label": "socialaccount"
     },
     {
@@ -803,7 +803,7 @@
       "_origin": "ast",
       "id": "backend_models_models_post",
       "community": 40,
-      "community_name": "posts.py",
+      "community_name": "ActivityLog",
       "norm_label": "post"
     },
     {
@@ -814,7 +814,7 @@
       "_origin": "ast",
       "id": "backend_models_models_posttarget",
       "community": 40,
-      "community_name": "posts.py",
+      "community_name": "ActivityLog",
       "norm_label": "posttarget"
     },
     {
@@ -824,8 +824,8 @@
       "source_location": "L257",
       "_origin": "ast",
       "id": "backend_models_models_publishjob",
-      "community": 40,
-      "community_name": "posts.py",
+      "community": 2,
+      "community_name": "models.py",
       "norm_label": "publishjob"
     },
     {
@@ -835,8 +835,8 @@
       "source_location": "L274",
       "_origin": "ast",
       "id": "backend_models_models_postpublishresult",
-      "community": 40,
-      "community_name": "posts.py",
+      "community": 49,
+      "community_name": "QueueService",
       "norm_label": "postpublishresult"
     },
     {
@@ -846,7 +846,7 @@
       "source_location": "L297",
       "_origin": "ast",
       "id": "backend_models_models_activitylog",
-      "community": 21,
+      "community": 40,
       "community_name": "ActivityLog",
       "norm_label": "activitylog"
     },
@@ -1011,8 +1011,8 @@
       "source_location": "L275",
       "_origin": "ast",
       "id": "backend_models_models_rationale_275",
-      "community": 40,
-      "community_name": "posts.py",
+      "community": 49,
+      "community_name": "QueueService",
       "norm_label": "menyimpan hasil aktual publish dari postforme api (/v1/social-post-results)...."
     },
     {
@@ -1055,8 +1055,8 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "backend_reset_competitor_data_reset_competitors",
-      "community": 50,
-      "community_name": "kol.py",
+      "community": 68,
+      "community_name": "competitors.py",
       "norm_label": "reset_competitors()"
     },
     {
@@ -1957,8 +1957,8 @@
       "source_location": "L98",
       "_origin": "ast",
       "id": "backend_routers_agents_serialize_log",
-      "community": 63,
-      "community_name": "_serialize_log",
+      "community": 33,
+      "community_name": "agents.py",
       "norm_label": "_serialize_log()"
     },
     {
@@ -1968,8 +1968,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_routers_agents_py_agentrunlog",
-      "community": 63,
-      "community_name": "_serialize_log",
+      "community": 33,
+      "community_name": "agents.py",
       "norm_label": "agentrunlog"
     },
     {
@@ -2034,8 +2034,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_routers_agents_py_patch",
-      "community": 17,
-      "community_name": "Session",
+      "community": 33,
+      "community_name": "agents.py",
       "norm_label": "patch"
     },
     {
@@ -2045,8 +2045,8 @@
       "source_location": "L193",
       "_origin": "ast",
       "id": "backend_routers_agents_update_agent",
-      "community": 17,
-      "community_name": "Session",
+      "community": 33,
+      "community_name": "agents.py",
       "norm_label": "update_agent()"
     },
     {
@@ -2122,8 +2122,8 @@
       "source_location": "L367",
       "_origin": "ast",
       "id": "backend_routers_agents_delete_agent_log",
-      "community": 27,
-      "community_name": "User",
+      "community": 58,
+      "community_name": "delete_agent",
       "norm_label": "delete_agent_log()"
     },
     {
@@ -2166,8 +2166,8 @@
       "source_location": "L199",
       "_origin": "ast",
       "id": "backend_routers_agents_rationale_199",
-      "community": 17,
-      "community_name": "Session",
+      "community": 33,
+      "community_name": "agents.py",
       "norm_label": "update agent configuration. reschedules if schedule fields change."
     },
     {
@@ -2221,8 +2221,8 @@
       "source_location": "L372",
       "_origin": "ast",
       "id": "backend_routers_agents_rationale_372",
-      "community": 27,
-      "community_name": "User",
+      "community": 58,
+      "community_name": "delete_agent",
       "norm_label": "delete a single agent run log entry."
     },
     {
@@ -2233,7 +2233,7 @@
       "_origin": "ast",
       "id": "backend_routers_auth",
       "community": 21,
-      "community_name": "ActivityLog",
+      "community_name": "auth.py",
       "norm_label": "auth.py"
     },
     {
@@ -2243,8 +2243,8 @@
       "source_location": "L22",
       "_origin": "ast",
       "id": "backend_routers_auth_cookieloginrequest",
-      "community": 21,
-      "community_name": "ActivityLog",
+      "community": 43,
+      "community_name": "SocialAccount",
       "norm_label": "cookieloginrequest"
     },
     {
@@ -2254,8 +2254,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_routers_auth_py_basemodel",
-      "community": 21,
-      "community_name": "ActivityLog",
+      "community": 43,
+      "community_name": "SocialAccount",
       "norm_label": "basemodel"
     },
     {
@@ -2265,8 +2265,8 @@
       "source_location": "L28",
       "_origin": "ast",
       "id": "backend_routers_auth_credentialloginrequest",
-      "community": 21,
-      "community_name": "ActivityLog",
+      "community": 43,
+      "community_name": "SocialAccount",
       "norm_label": "credentialloginrequest"
     },
     {
@@ -2276,8 +2276,8 @@
       "source_location": "L34",
       "_origin": "ast",
       "id": "backend_routers_auth_challengeresolverequest",
-      "community": 21,
-      "community_name": "ActivityLog",
+      "community": 43,
+      "community_name": "SocialAccount",
       "norm_label": "challengeresolverequest"
     },
     {
@@ -2287,8 +2287,8 @@
       "source_location": "L40",
       "_origin": "ast",
       "id": "backend_routers_auth_postformeauthurlrequest",
-      "community": 21,
-      "community_name": "ActivityLog",
+      "community": 43,
+      "community_name": "SocialAccount",
       "norm_label": "postformeauthurlrequest"
     },
     {
@@ -2298,8 +2298,8 @@
       "source_location": "L47",
       "_origin": "ast",
       "id": "backend_routers_auth_blueskyconnectrequest",
-      "community": 21,
-      "community_name": "ActivityLog",
+      "community": 43,
+      "community_name": "SocialAccount",
       "norm_label": "blueskyconnectrequest"
     },
     {
@@ -2310,7 +2310,7 @@
       "_origin": "ast",
       "id": "backend_routers_auth_get_user_target_workspace",
       "community": 21,
-      "community_name": "ActivityLog",
+      "community_name": "auth.py",
       "norm_label": "_get_user_target_workspace()"
     },
     {
@@ -2321,7 +2321,7 @@
       "_origin": "ast",
       "id": "backend_routers_auth_py_session",
       "community": 21,
-      "community_name": "ActivityLog",
+      "community_name": "auth.py",
       "norm_label": "session"
     },
     {
@@ -2332,7 +2332,7 @@
       "_origin": "ast",
       "id": "backend_routers_auth_py_post",
       "community": 21,
-      "community_name": "ActivityLog",
+      "community_name": "auth.py",
       "norm_label": "post"
     },
     {
@@ -2343,7 +2343,7 @@
       "_origin": "ast",
       "id": "backend_routers_auth_postforme_auth_url",
       "community": 21,
-      "community_name": "ActivityLog",
+      "community_name": "auth.py",
       "norm_label": "postforme_auth_url()"
     },
     {
@@ -2353,8 +2353,8 @@
       "source_location": "L188",
       "_origin": "ast",
       "id": "backend_routers_auth_postformesyncrequest",
-      "community": 21,
-      "community_name": "ActivityLog",
+      "community": 43,
+      "community_name": "SocialAccount",
       "norm_label": "postformesyncrequest"
     },
     {
@@ -2365,7 +2365,7 @@
       "_origin": "ast",
       "id": "backend_routers_auth_extract_followers_count",
       "community": 21,
-      "community_name": "ActivityLog",
+      "community_name": "auth.py",
       "norm_label": "extract_followers_count()"
     },
     {
@@ -2376,7 +2376,7 @@
       "_origin": "ast",
       "id": "backend_routers_auth_postforme_sync_accounts",
       "community": 21,
-      "community_name": "ActivityLog",
+      "community_name": "auth.py",
       "norm_label": "postforme_sync_accounts()"
     },
     {
@@ -2387,7 +2387,7 @@
       "_origin": "ast",
       "id": "backend_routers_auth_py_any",
       "community": 21,
-      "community_name": "ActivityLog",
+      "community_name": "auth.py",
       "norm_label": "any"
     },
     {
@@ -2398,7 +2398,7 @@
       "_origin": "ast",
       "id": "backend_routers_auth_postforme_connect_bluesky",
       "community": 21,
-      "community_name": "ActivityLog",
+      "community_name": "auth.py",
       "norm_label": "postforme_connect_bluesky()"
     },
     {
@@ -2409,7 +2409,7 @@
       "_origin": "ast",
       "id": "backend_routers_auth_meta_connect",
       "community": 21,
-      "community_name": "ActivityLog",
+      "community_name": "auth.py",
       "norm_label": "meta_connect()"
     },
     {
@@ -2420,7 +2420,7 @@
       "_origin": "ast",
       "id": "backend_routers_auth_instagram_connect",
       "community": 21,
-      "community_name": "ActivityLog",
+      "community_name": "auth.py",
       "norm_label": "instagram_connect()"
     },
     {
@@ -2431,7 +2431,7 @@
       "_origin": "ast",
       "id": "backend_routers_auth_instagram_cookie_login",
       "community": 21,
-      "community_name": "ActivityLog",
+      "community_name": "auth.py",
       "norm_label": "instagram_cookie_login()"
     },
     {
@@ -2442,7 +2442,7 @@
       "_origin": "ast",
       "id": "backend_routers_auth_instagram_credential_login",
       "community": 21,
-      "community_name": "ActivityLog",
+      "community_name": "auth.py",
       "norm_label": "instagram_credential_login()"
     },
     {
@@ -2453,7 +2453,7 @@
       "_origin": "ast",
       "id": "backend_routers_auth_instagram_challenge_resolve",
       "community": 21,
-      "community_name": "ActivityLog",
+      "community_name": "auth.py",
       "norm_label": "instagram_challenge_resolve()"
     },
     {
@@ -2464,7 +2464,7 @@
       "_origin": "ast",
       "id": "backend_routers_auth_save_instagram_account",
       "community": 21,
-      "community_name": "ActivityLog",
+      "community_name": "auth.py",
       "norm_label": "_save_instagram_account()"
     },
     {
@@ -2475,7 +2475,7 @@
       "_origin": "ast",
       "id": "backend_routers_auth_meta_callback",
       "community": 21,
-      "community_name": "ActivityLog",
+      "community_name": "auth.py",
       "norm_label": "meta_callback()"
     },
     {
@@ -2486,7 +2486,7 @@
       "_origin": "ast",
       "id": "backend_routers_auth_rationale_59",
       "community": 21,
-      "community_name": "ActivityLog",
+      "community_name": "auth.py",
       "norm_label": "returns (workspace, client) for the current user. priority: explicit..."
     },
     {
@@ -2497,7 +2497,7 @@
       "_origin": "ast",
       "id": "backend_routers_auth_rationale_124",
       "community": 21,
-      "community_name": "ActivityLog",
+      "community_name": "auth.py",
       "norm_label": "generates oauth authorization url for any supported platform via postforme api:..."
     },
     {
@@ -2508,7 +2508,7 @@
       "_origin": "ast",
       "id": "backend_routers_auth_rationale_193",
       "community": 21,
-      "community_name": "ActivityLog",
+      "community_name": "auth.py",
       "norm_label": "recursively search for follower / subscriber / fan counts in postforme account..."
     },
     {
@@ -2519,7 +2519,7 @@
       "_origin": "ast",
       "id": "backend_routers_auth_rationale_235",
       "community": 21,
-      "community_name": "ActivityLog",
+      "community_name": "auth.py",
       "norm_label": "fetch all social accounts from postforme api and sync them into local..."
     },
     {
@@ -2530,7 +2530,7 @@
       "_origin": "ast",
       "id": "backend_routers_auth_rationale_384",
       "community": 21,
-      "community_name": "ActivityLog",
+      "community_name": "auth.py",
       "norm_label": "connects bluesky account using handle & app_password in postforme."
     },
     {
@@ -2541,7 +2541,7 @@
       "_origin": "ast",
       "id": "backend_routers_auth_rationale_454",
       "community": 21,
-      "community_name": "ActivityLog",
+      "community_name": "auth.py",
       "norm_label": "generates meta oauth (facebook + instagram business) login redirect url."
     },
     {
@@ -2552,7 +2552,7 @@
       "_origin": "ast",
       "id": "backend_routers_auth_rationale_465",
       "community": 21,
-      "community_name": "ActivityLog",
+      "community_name": "auth.py",
       "norm_label": "generates meta business oauth redirect url for instagram business accounts."
     },
     {
@@ -2563,7 +2563,7 @@
       "_origin": "ast",
       "id": "backend_routers_auth_rationale_480",
       "community": 21,
-      "community_name": "ActivityLog",
+      "community_name": "auth.py",
       "norm_label": "connects instagram account directly using sessionid cookie via instagrapi...."
     },
     {
@@ -2574,7 +2574,7 @@
       "_origin": "ast",
       "id": "backend_routers_auth_rationale_584",
       "community": 21,
-      "community_name": "ActivityLog",
+      "community_name": "auth.py",
       "norm_label": "connects instagram account using username + password via instagrapi mobile..."
     },
     {
@@ -2585,7 +2585,7 @@
       "_origin": "ast",
       "id": "backend_routers_auth_rationale_622",
       "community": 21,
-      "community_name": "ActivityLog",
+      "community_name": "auth.py",
       "norm_label": "completes a pending instagram login challenge by submitting the 6-digit code...."
     },
     {
@@ -2596,7 +2596,7 @@
       "_origin": "ast",
       "id": "backend_routers_auth_rationale_650",
       "community": 21,
-      "community_name": "ActivityLog",
+      "community_name": "auth.py",
       "norm_label": "helper: saves/updates instagram account in db after a successful login. routes..."
     },
     {
@@ -2607,7 +2607,7 @@
       "_origin": "ast",
       "id": "backend_routers_auth_rationale_711",
       "community": 21,
-      "community_name": "ActivityLog",
+      "community_name": "auth.py",
       "norm_label": "processes meta / instagram oauth callback code, exchanges token, and saves..."
     },
     {
@@ -3156,8 +3156,8 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "backend_routers_clients_clientcreate",
-      "community": 49,
-      "community_name": "create_client",
+      "community": 27,
+      "community_name": "User",
       "norm_label": "clientcreate"
     },
     {
@@ -3167,8 +3167,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_routers_clients_py_basemodel",
-      "community": 49,
-      "community_name": "create_client",
+      "community": 27,
+      "community_name": "User",
       "norm_label": "basemodel"
     },
     {
@@ -3178,8 +3178,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_routers_clients_py_get",
-      "community": 49,
-      "community_name": "create_client",
+      "community": 27,
+      "community_name": "User",
       "norm_label": "get"
     },
     {
@@ -3189,8 +3189,8 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "backend_routers_clients_get_clients",
-      "community": 49,
-      "community_name": "create_client",
+      "community": 27,
+      "community_name": "User",
       "norm_label": "get_clients()"
     },
     {
@@ -3200,8 +3200,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_routers_clients_py_session",
-      "community": 49,
-      "community_name": "create_client",
+      "community": 27,
+      "community_name": "User",
       "norm_label": "session"
     },
     {
@@ -3211,8 +3211,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_routers_clients_py_post",
-      "community": 49,
-      "community_name": "create_client",
+      "community": 27,
+      "community_name": "User",
       "norm_label": "post"
     },
     {
@@ -3222,8 +3222,8 @@
       "source_location": "L59",
       "_origin": "ast",
       "id": "backend_routers_clients_create_client",
-      "community": 49,
-      "community_name": "create_client",
+      "community": 27,
+      "community_name": "User",
       "norm_label": "create_client()"
     },
     {
@@ -3233,8 +3233,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_routers_clients_py_delete",
-      "community": 49,
-      "community_name": "create_client",
+      "community": 27,
+      "community_name": "User",
       "norm_label": "delete"
     },
     {
@@ -3244,8 +3244,8 @@
       "source_location": "L81",
       "_origin": "ast",
       "id": "backend_routers_clients_delete_client",
-      "community": 49,
-      "community_name": "create_client",
+      "community": 27,
+      "community_name": "User",
       "norm_label": "delete_client()"
     },
     {
@@ -3255,8 +3255,8 @@
       "source_location": "L25",
       "_origin": "ast",
       "id": "backend_routers_clients_rationale_25",
-      "community": 49,
-      "community_name": "create_client",
+      "community": 27,
+      "community_name": "User",
       "norm_label": "retrieves all clients under a workspace owned by the current user."
     },
     {
@@ -3266,8 +3266,8 @@
       "source_location": "L64",
       "_origin": "ast",
       "id": "backend_routers_clients_rationale_64",
-      "community": 49,
-      "community_name": "create_client",
+      "community": 27,
+      "community_name": "User",
       "norm_label": "creates a new client under a workspace owned by the current user."
     },
     {
@@ -3343,8 +3343,8 @@
       "source_location": "L103",
       "_origin": "ast",
       "id": "backend_routers_competitors_validateusernamerequest",
-      "community": 21,
-      "community_name": "ActivityLog",
+      "community": 43,
+      "community_name": "SocialAccount",
       "norm_label": "validateusernamerequest"
     },
     {
@@ -3354,8 +3354,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_routers_competitors_py_basemodel",
-      "community": 21,
-      "community_name": "ActivityLog",
+      "community": 43,
+      "community_name": "SocialAccount",
       "norm_label": "basemodel"
     },
     {
@@ -3365,8 +3365,8 @@
       "source_location": "L106",
       "_origin": "ast",
       "id": "backend_routers_competitors_addcompetitorrequest",
-      "community": 21,
-      "community_name": "ActivityLog",
+      "community": 43,
+      "community_name": "SocialAccount",
       "norm_label": "addcompetitorrequest"
     },
     {
@@ -3376,8 +3376,8 @@
       "source_location": "L110",
       "_origin": "ast",
       "id": "backend_routers_competitors_competitorresponse",
-      "community": 21,
-      "community_name": "ActivityLog",
+      "community": 43,
+      "community_name": "SocialAccount",
       "norm_label": "competitorresponse"
     },
     {
@@ -3805,8 +3805,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_routers_dashboard_py_get",
-      "community": 57,
-      "community_name": "get_dashboard_overview",
+      "community": 12,
+      "community_name": "statistics.py",
       "norm_label": "get"
     },
     {
@@ -3816,8 +3816,8 @@
       "source_location": "L22",
       "_origin": "ast",
       "id": "backend_routers_dashboard_get_dashboard_overview",
-      "community": 57,
-      "community_name": "get_dashboard_overview",
+      "community": 12,
+      "community_name": "statistics.py",
       "norm_label": "get_dashboard_overview()"
     },
     {
@@ -3827,8 +3827,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_routers_dashboard_py_session",
-      "community": 57,
-      "community_name": "get_dashboard_overview",
+      "community": 12,
+      "community_name": "statistics.py",
       "norm_label": "session"
     },
     {
@@ -3838,8 +3838,8 @@
       "source_location": "L27",
       "_origin": "ast",
       "id": "backend_routers_dashboard_rationale_27",
-      "community": 57,
-      "community_name": "get_dashboard_overview",
+      "community": 12,
+      "community_name": "statistics.py",
       "norm_label": "sub-300ms fast executive dashboard endpoint returning real-time metrics, queue..."
     },
     {
@@ -3861,7 +3861,7 @@
       "_origin": "ast",
       "id": "backend_routers_firebase_auth_firebaseverifyrequest",
       "community": 43,
-      "community_name": "WorkspaceMember",
+      "community_name": "SocialAccount",
       "norm_label": "firebaseverifyrequest"
     },
     {
@@ -3872,7 +3872,7 @@
       "_origin": "ast",
       "id": "backend_routers_firebase_auth_py_basemodel",
       "community": 43,
-      "community_name": "WorkspaceMember",
+      "community_name": "SocialAccount",
       "norm_label": "basemodel"
     },
     {
@@ -3938,7 +3938,7 @@
       "_origin": "ast",
       "id": "backend_routers_firebase_auth_py_post",
       "community": 43,
-      "community_name": "WorkspaceMember",
+      "community_name": "SocialAccount",
       "norm_label": "post"
     },
     {
@@ -3949,7 +3949,7 @@
       "_origin": "ast",
       "id": "backend_routers_firebase_auth_verify_firebase",
       "community": 43,
-      "community_name": "WorkspaceMember",
+      "community_name": "SocialAccount",
       "norm_label": "verify_firebase()"
     },
     {
@@ -3959,8 +3959,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_routers_firebase_auth_py_get",
-      "community": 2,
-      "community_name": "models.py",
+      "community": 6,
+      "community_name": "admin.py",
       "norm_label": "get"
     },
     {
@@ -3970,8 +3970,8 @@
       "source_location": "L216",
       "_origin": "ast",
       "id": "backend_routers_firebase_auth_get_me",
-      "community": 2,
-      "community_name": "models.py",
+      "community": 6,
+      "community_name": "admin.py",
       "norm_label": "get_me()"
     },
     {
@@ -4037,7 +4037,7 @@
       "_origin": "ast",
       "id": "backend_routers_firebase_auth_rationale_102",
       "community": 43,
-      "community_name": "WorkspaceMember",
+      "community_name": "SocialAccount",
       "norm_label": "verifies firebase id token (from google sign-in). creates or updates agencyos..."
     },
     {
@@ -4047,8 +4047,8 @@
       "source_location": "L220",
       "_origin": "ast",
       "id": "backend_routers_firebase_auth_rationale_220",
-      "community": 2,
-      "community_name": "models.py",
+      "community": 6,
+      "community_name": "admin.py",
       "norm_label": "returns current authenticated user info from authorization header."
     },
     {
@@ -4895,7 +4895,7 @@
       "_origin": "ast",
       "id": "backend_routers_posts",
       "community": 40,
-      "community_name": "posts.py",
+      "community_name": "ActivityLog",
       "norm_label": "posts.py"
     },
     {
@@ -4906,7 +4906,7 @@
       "_origin": "ast",
       "id": "backend_routers_posts_uploadurlrequest",
       "community": 40,
-      "community_name": "posts.py",
+      "community_name": "ActivityLog",
       "norm_label": "uploadurlrequest"
     },
     {
@@ -4917,7 +4917,7 @@
       "_origin": "ast",
       "id": "backend_routers_posts_py_basemodel",
       "community": 40,
-      "community_name": "posts.py",
+      "community_name": "ActivityLog",
       "norm_label": "basemodel"
     },
     {
@@ -4928,7 +4928,7 @@
       "_origin": "ast",
       "id": "backend_routers_posts_py_post",
       "community": 40,
-      "community_name": "posts.py",
+      "community_name": "ActivityLog",
       "norm_label": "post"
     },
     {
@@ -4939,7 +4939,7 @@
       "_origin": "ast",
       "id": "backend_routers_posts_create_media_upload_url",
       "community": 40,
-      "community_name": "posts.py",
+      "community_name": "ActivityLog",
       "norm_label": "create_media_upload_url()"
     },
     {
@@ -4950,7 +4950,7 @@
       "_origin": "ast",
       "id": "backend_routers_posts_postcreate",
       "community": 40,
-      "community_name": "posts.py",
+      "community_name": "ActivityLog",
       "norm_label": "postcreate"
     },
     {
@@ -4961,7 +4961,7 @@
       "_origin": "ast",
       "id": "backend_routers_posts_postupdate",
       "community": 40,
-      "community_name": "posts.py",
+      "community_name": "ActivityLog",
       "norm_label": "postupdate"
     },
     {
@@ -4972,7 +4972,7 @@
       "_origin": "ast",
       "id": "backend_routers_posts_postpatch",
       "community": 40,
-      "community_name": "posts.py",
+      "community_name": "ActivityLog",
       "norm_label": "postpatch"
     },
     {
@@ -4983,7 +4983,7 @@
       "_origin": "ast",
       "id": "backend_routers_posts_sanitize_post_payload",
       "community": 40,
-      "community_name": "posts.py",
+      "community_name": "ActivityLog",
       "norm_label": "_sanitize_post_payload()"
     },
     {
@@ -4994,7 +4994,7 @@
       "_origin": "ast",
       "id": "backend_routers_posts_py_any",
       "community": 40,
-      "community_name": "posts.py",
+      "community_name": "ActivityLog",
       "norm_label": "any"
     },
     {
@@ -5005,7 +5005,7 @@
       "_origin": "ast",
       "id": "backend_routers_posts_py_get",
       "community": 40,
-      "community_name": "posts.py",
+      "community_name": "ActivityLog",
       "norm_label": "get"
     },
     {
@@ -5016,7 +5016,7 @@
       "_origin": "ast",
       "id": "backend_routers_posts_get_posts",
       "community": 40,
-      "community_name": "posts.py",
+      "community_name": "ActivityLog",
       "norm_label": "get_posts()"
     },
     {
@@ -5027,7 +5027,7 @@
       "_origin": "ast",
       "id": "backend_routers_posts_py_session",
       "community": 40,
-      "community_name": "posts.py",
+      "community_name": "ActivityLog",
       "norm_label": "session"
     },
     {
@@ -5038,7 +5038,7 @@
       "_origin": "ast",
       "id": "backend_routers_posts_create_post",
       "community": 40,
-      "community_name": "posts.py",
+      "community_name": "ActivityLog",
       "norm_label": "create_post()"
     },
     {
@@ -5049,7 +5049,7 @@
       "_origin": "ast",
       "id": "backend_routers_posts_py_backgroundtasks",
       "community": 40,
-      "community_name": "posts.py",
+      "community_name": "ActivityLog",
       "norm_label": "backgroundtasks"
     },
     {
@@ -5060,7 +5060,7 @@
       "_origin": "ast",
       "id": "backend_routers_posts_py_put",
       "community": 40,
-      "community_name": "posts.py",
+      "community_name": "ActivityLog",
       "norm_label": "put"
     },
     {
@@ -5071,7 +5071,7 @@
       "_origin": "ast",
       "id": "backend_routers_posts_update_post",
       "community": 40,
-      "community_name": "posts.py",
+      "community_name": "ActivityLog",
       "norm_label": "update_post()"
     },
     {
@@ -5082,7 +5082,7 @@
       "_origin": "ast",
       "id": "backend_routers_posts_py_patch",
       "community": 40,
-      "community_name": "posts.py",
+      "community_name": "ActivityLog",
       "norm_label": "patch"
     },
     {
@@ -5093,7 +5093,7 @@
       "_origin": "ast",
       "id": "backend_routers_posts_patch_post",
       "community": 40,
-      "community_name": "posts.py",
+      "community_name": "ActivityLog",
       "norm_label": "patch_post()"
     },
     {
@@ -5104,7 +5104,7 @@
       "_origin": "ast",
       "id": "backend_routers_posts_py_delete",
       "community": 40,
-      "community_name": "posts.py",
+      "community_name": "ActivityLog",
       "norm_label": "delete"
     },
     {
@@ -5115,7 +5115,7 @@
       "_origin": "ast",
       "id": "backend_routers_posts_delete_post",
       "community": 40,
-      "community_name": "posts.py",
+      "community_name": "ActivityLog",
       "norm_label": "delete_post()"
     },
     {
@@ -5126,7 +5126,7 @@
       "_origin": "ast",
       "id": "backend_routers_posts_get_public_post_review",
       "community": 40,
-      "community_name": "posts.py",
+      "community_name": "ActivityLog",
       "norm_label": "get_public_post_review()"
     },
     {
@@ -5137,8 +5137,30 @@
       "_origin": "ast",
       "id": "backend_routers_posts_approve_public_post_review",
       "community": 40,
-      "community_name": "posts.py",
+      "community_name": "ActivityLog",
       "norm_label": "approve_public_post_review()"
+    },
+    {
+      "label": "GenerateAICaptionRequest",
+      "file_type": "code",
+      "source_file": "backend/routers/posts.py",
+      "source_location": "L619",
+      "_origin": "ast",
+      "id": "backend_routers_posts_generateaicaptionrequest",
+      "community": 40,
+      "community_name": "ActivityLog",
+      "norm_label": "generateaicaptionrequest"
+    },
+    {
+      "label": "generate_ai_caption()",
+      "file_type": "code",
+      "source_file": "backend/routers/posts.py",
+      "source_location": "L628",
+      "_origin": "ast",
+      "id": "backend_routers_posts_generate_ai_caption",
+      "community": 40,
+      "community_name": "ActivityLog",
+      "norm_label": "generate_ai_caption()"
     },
     {
       "label": "Requests a signed upload URL from PostForMe API (/v1/media/create-upload-url).\u2026",
@@ -5148,7 +5170,7 @@
       "_origin": "ast",
       "id": "backend_routers_posts_rationale_22",
       "community": 40,
-      "community_name": "posts.py",
+      "community_name": "ActivityLog",
       "norm_label": "requests a signed upload url from postforme api (/v1/media/create-upload-url)...."
     },
     {
@@ -5159,7 +5181,7 @@
       "_origin": "ast",
       "id": "backend_routers_posts_rationale_73",
       "community": 40,
-      "community_name": "posts.py",
+      "community_name": "ActivityLog",
       "norm_label": "partial update payload from frontend queue manager."
     },
     {
@@ -5170,7 +5192,7 @@
       "_origin": "ast",
       "id": "backend_routers_posts_rationale_135",
       "community": 40,
-      "community_name": "posts.py",
+      "community_name": "ActivityLog",
       "norm_label": "hybrid endpoint: - fetches active posts (scheduled/processing/processed)..."
     },
     {
@@ -5181,7 +5203,7 @@
       "_origin": "ast",
       "id": "backend_routers_posts_rationale_251",
       "community": 40,
-      "community_name": "posts.py",
+      "community_name": "ActivityLog",
       "norm_label": "creates a new post and generates publish jobs for each selected account...."
     },
     {
@@ -5192,7 +5214,7 @@
       "_origin": "ast",
       "id": "backend_routers_posts_rationale_450",
       "community": 40,
-      "community_name": "posts.py",
+      "community_name": "ActivityLog",
       "norm_label": "partial update \u2014 used by frontend queue manager for draft edit & schedule."
     },
     {
@@ -5203,7 +5225,7 @@
       "_origin": "ast",
       "id": "backend_routers_posts_rationale_488",
       "community": 40,
-      "community_name": "posts.py",
+      "community_name": "ActivityLog",
       "norm_label": "delete post from local db and from postforme (if postforme_post_id exists)."
     },
     {
@@ -5214,7 +5236,7 @@
       "_origin": "ast",
       "id": "backend_routers_posts_rationale_520",
       "community": 40,
-      "community_name": "posts.py",
+      "community_name": "ActivityLog",
       "norm_label": "public endpoint: returns preview metadata for client review without login...."
     },
     {
@@ -5225,8 +5247,19 @@
       "_origin": "ast",
       "id": "backend_routers_posts_rationale_568",
       "community": 40,
-      "community_name": "posts.py",
+      "community_name": "ActivityLog",
       "norm_label": "public endpoint: one-click acc from client. transitions post status from draft..."
+    },
+    {
+      "label": "Generate AI Copywriting Caption & 5 Hashtags using Gemini Vision API by\u2026",
+      "file_type": "rationale",
+      "source_file": "backend/routers/posts.py",
+      "source_location": "L633",
+      "_origin": "ast",
+      "id": "backend_routers_posts_rationale_633",
+      "community": 40,
+      "community_name": "ActivityLog",
+      "norm_label": "generate ai copywriting caption & 5 hashtags using gemini vision api by..."
     },
     {
       "label": "queue.py",
@@ -5235,8 +5268,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_routers_queue",
-      "community": 18,
-      "community_name": "queue.py",
+      "community": 2,
+      "community_name": "models.py",
       "norm_label": "queue.py"
     },
     {
@@ -5247,7 +5280,7 @@
       "_origin": "ast",
       "id": "backend_routers_queue_py_get",
       "community": 18,
-      "community_name": "queue.py",
+      "community_name": "Session",
       "norm_label": "get"
     },
     {
@@ -5258,7 +5291,7 @@
       "_origin": "ast",
       "id": "backend_routers_queue_get_queue_status",
       "community": 18,
-      "community_name": "queue.py",
+      "community_name": "Session",
       "norm_label": "get_queue_status()"
     },
     {
@@ -5269,7 +5302,7 @@
       "_origin": "ast",
       "id": "backend_routers_queue_py_session",
       "community": 18,
-      "community_name": "queue.py",
+      "community_name": "Session",
       "norm_label": "session"
     },
     {
@@ -5280,7 +5313,7 @@
       "_origin": "ast",
       "id": "backend_routers_queue_get_publish_history",
       "community": 18,
-      "community_name": "queue.py",
+      "community_name": "Session",
       "norm_label": "get_publish_history()"
     },
     {
@@ -5290,8 +5323,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_routers_queue_py_post",
-      "community": 18,
-      "community_name": "queue.py",
+      "community": 57,
+      "community_name": "retry_job",
       "norm_label": "post"
     },
     {
@@ -5301,8 +5334,8 @@
       "source_location": "L221",
       "_origin": "ast",
       "id": "backend_routers_queue_sync_post_results",
-      "community": 18,
-      "community_name": "queue.py",
+      "community": 57,
+      "community_name": "retry_job",
       "norm_label": "sync_post_results()"
     },
     {
@@ -5312,8 +5345,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_routers_queue_py_backgroundtasks",
-      "community": 18,
-      "community_name": "queue.py",
+      "community": 57,
+      "community_name": "retry_job",
       "norm_label": "backgroundtasks"
     },
     {
@@ -5323,8 +5356,8 @@
       "source_location": "L240",
       "_origin": "ast",
       "id": "backend_routers_queue_retry_job",
-      "community": 18,
-      "community_name": "queue.py",
+      "community": 57,
+      "community_name": "retry_job",
       "norm_label": "retry_job()"
     },
     {
@@ -5335,7 +5368,7 @@
       "_origin": "ast",
       "id": "backend_routers_queue_py_delete",
       "community": 18,
-      "community_name": "queue.py",
+      "community_name": "Session",
       "norm_label": "delete"
     },
     {
@@ -5346,7 +5379,7 @@
       "_origin": "ast",
       "id": "backend_routers_queue_delete_queue_job",
       "community": 18,
-      "community_name": "queue.py",
+      "community_name": "Session",
       "norm_label": "delete_queue_job()"
     },
     {
@@ -5356,8 +5389,8 @@
       "source_location": "L274",
       "_origin": "ast",
       "id": "backend_routers_queue_get_postforme_posts",
-      "community": 18,
-      "community_name": "queue.py",
+      "community": 27,
+      "community_name": "User",
       "norm_label": "get_postforme_posts()"
     },
     {
@@ -5368,7 +5401,7 @@
       "_origin": "ast",
       "id": "backend_routers_queue_get_postforme_results",
       "community": 18,
-      "community_name": "queue.py",
+      "community_name": "Session",
       "norm_label": "get_postforme_results()"
     },
     {
@@ -5379,7 +5412,7 @@
       "_origin": "ast",
       "id": "backend_routers_queue_fallback_local_results",
       "community": 18,
-      "community_name": "queue.py",
+      "community_name": "Session",
       "norm_label": "_fallback_local_results()"
     },
     {
@@ -5389,8 +5422,8 @@
       "source_location": "L497",
       "_origin": "ast",
       "id": "backend_routers_queue_cancel_postforme_post",
-      "community": 18,
-      "community_name": "queue.py",
+      "community": 27,
+      "community_name": "User",
       "norm_label": "cancel_postforme_post()"
     },
     {
@@ -5401,7 +5434,7 @@
       "_origin": "ast",
       "id": "backend_routers_queue_rationale_26",
       "community": 18,
-      "community_name": "queue.py",
+      "community_name": "Session",
       "norm_label": "returns queue metrics and job logs for a workspace."
     },
     {
@@ -5412,7 +5445,7 @@
       "_origin": "ast",
       "id": "backend_routers_queue_rationale_89",
       "community": 18,
-      "community_name": "queue.py",
+      "community_name": "Session",
       "norm_label": "riwayat hasil publikasi per workspace/user dari postforme. menampilkan status..."
     },
     {
@@ -5422,8 +5455,8 @@
       "source_location": "L226",
       "_origin": "ast",
       "id": "backend_routers_queue_rationale_226",
-      "community": 18,
-      "community_name": "queue.py",
+      "community": 57,
+      "community_name": "retry_job",
       "norm_label": "sinkronisasi manual: ambil hasil publish dari postforme untuk semua post yang..."
     },
     {
@@ -5433,8 +5466,8 @@
       "source_location": "L245",
       "_origin": "ast",
       "id": "backend_routers_queue_rationale_245",
-      "community": 18,
-      "community_name": "queue.py",
+      "community": 57,
+      "community_name": "retry_job",
       "norm_label": "manually triggers immediate retry for a failed or retrying queue job."
     },
     {
@@ -5445,7 +5478,7 @@
       "_origin": "ast",
       "id": "backend_routers_queue_rationale_260",
       "community": 18,
-      "community_name": "queue.py",
+      "community_name": "Session",
       "norm_label": "deletes/cancels a specific queue job."
     },
     {
@@ -5455,8 +5488,8 @@
       "source_location": "L282",
       "_origin": "ast",
       "id": "backend_routers_queue_rationale_282",
-      "community": 18,
-      "community_name": "queue.py",
+      "community": 27,
+      "community_name": "User",
       "norm_label": "proxy: fetch posts from postforme api for this workspace's connected accounts...."
     },
     {
@@ -5467,7 +5500,7 @@
       "_origin": "ast",
       "id": "backend_routers_queue_rationale_402",
       "community": 18,
-      "community_name": "queue.py",
+      "community_name": "Session",
       "norm_label": "proxy: fetch post results (per-account publish outcomes) from postforme api...."
     },
     {
@@ -5478,7 +5511,7 @@
       "_origin": "ast",
       "id": "backend_routers_queue_rationale_461",
       "community": 18,
-      "community_name": "queue.py",
+      "community_name": "Session",
       "norm_label": "fallback: return local postpublishresult records when postforme api is..."
     },
     {
@@ -5488,8 +5521,8 @@
       "source_location": "L503",
       "_origin": "ast",
       "id": "backend_routers_queue_rationale_503",
-      "community": 18,
-      "community_name": "queue.py",
+      "community": 27,
+      "community_name": "User",
       "norm_label": "cancel/delete a scheduled post from postforme api and update local db status."
     },
     {
@@ -5664,8 +5697,8 @@
       "source_location": "L473",
       "_origin": "ast",
       "id": "backend_routers_statistics_chatitem",
-      "community": 27,
-      "community_name": "User",
+      "community": 43,
+      "community_name": "SocialAccount",
       "norm_label": "chatitem"
     },
     {
@@ -5675,8 +5708,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_routers_statistics_py_basemodel",
-      "community": 27,
-      "community_name": "User",
+      "community": 43,
+      "community_name": "SocialAccount",
       "norm_label": "basemodel"
     },
     {
@@ -5686,8 +5719,8 @@
       "source_location": "L477",
       "_origin": "ast",
       "id": "backend_routers_statistics_aisummaryrequest",
-      "community": 27,
-      "community_name": "User",
+      "community": 43,
+      "community_name": "SocialAccount",
       "norm_label": "aisummaryrequest"
     },
     {
@@ -5719,8 +5752,8 @@
       "source_location": "L535",
       "_origin": "ast",
       "id": "backend_routers_statistics_aibrainstormrequest",
-      "community": 27,
-      "community_name": "User",
+      "community": 43,
+      "community_name": "SocialAccount",
       "norm_label": "aibrainstormrequest"
     },
     {
@@ -5840,8 +5873,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_routers_webhook",
-      "community": 40,
-      "community_name": "posts.py",
+      "community": 2,
+      "community_name": "models.py",
       "norm_label": "webhook.py"
     },
     {
@@ -5851,8 +5884,8 @@
       "source_location": "L27",
       "_origin": "ast",
       "id": "backend_routers_webhook_verify_webhook_secret",
-      "community": 40,
-      "community_name": "posts.py",
+      "community": 49,
+      "community_name": "QueueService",
       "norm_label": "_verify_webhook_secret()"
     },
     {
@@ -5862,8 +5895,8 @@
       "source_location": "L40",
       "_origin": "ast",
       "id": "backend_routers_webhook_process_post_result_event",
-      "community": 40,
-      "community_name": "posts.py",
+      "community": 49,
+      "community_name": "QueueService",
       "norm_label": "_process_post_result_event()"
     },
     {
@@ -5873,8 +5906,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_routers_webhook_py_post",
-      "community": 40,
-      "community_name": "posts.py",
+      "community": 49,
+      "community_name": "QueueService",
       "norm_label": "post"
     },
     {
@@ -5884,8 +5917,8 @@
       "source_location": "L187",
       "_origin": "ast",
       "id": "backend_routers_webhook_postforme_webhook",
-      "community": 40,
-      "community_name": "posts.py",
+      "community": 49,
+      "community_name": "QueueService",
       "norm_label": "postforme_webhook()"
     },
     {
@@ -5895,8 +5928,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_routers_webhook_py_request",
-      "community": 40,
-      "community_name": "posts.py",
+      "community": 49,
+      "community_name": "QueueService",
       "norm_label": "request"
     },
     {
@@ -5906,8 +5939,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_routers_webhook_py_backgroundtasks",
-      "community": 40,
-      "community_name": "posts.py",
+      "community": 49,
+      "community_name": "QueueService",
       "norm_label": "backgroundtasks"
     },
     {
@@ -5917,8 +5950,8 @@
       "source_location": "L226",
       "_origin": "ast",
       "id": "backend_routers_webhook_setup_postforme_webhook",
-      "community": 40,
-      "community_name": "posts.py",
+      "community": 49,
+      "community_name": "QueueService",
       "norm_label": "setup_postforme_webhook()"
     },
     {
@@ -5928,8 +5961,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_routers_webhook_py_get",
-      "community": 40,
-      "community_name": "posts.py",
+      "community": 49,
+      "community_name": "QueueService",
       "norm_label": "get"
     },
     {
@@ -5939,8 +5972,8 @@
       "source_location": "L251",
       "_origin": "ast",
       "id": "backend_routers_webhook_list_postforme_webhooks",
-      "community": 40,
-      "community_name": "posts.py",
+      "community": 49,
+      "community_name": "QueueService",
       "norm_label": "list_postforme_webhooks()"
     },
     {
@@ -5950,8 +5983,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_routers_webhook_rationale_1",
-      "community": 40,
-      "community_name": "posts.py",
+      "community": 2,
+      "community_name": "models.py",
       "norm_label": "webhook handler untuk menerima event dari postforme api. postforme mengirim..."
     },
     {
@@ -5961,8 +5994,8 @@
       "source_location": "L28",
       "_origin": "ast",
       "id": "backend_routers_webhook_rationale_28",
-      "community": 40,
-      "community_name": "posts.py",
+      "community": 49,
+      "community_name": "QueueService",
       "norm_label": "verifikasi bahwa request berasal dari postforme menggunakan secret di header...."
     },
     {
@@ -5972,8 +6005,8 @@
       "source_location": "L41",
       "_origin": "ast",
       "id": "backend_routers_webhook_rationale_41",
-      "community": 40,
-      "community_name": "posts.py",
+      "community": 49,
+      "community_name": "QueueService",
       "norm_label": "background task: proses event social.post.result.created. update status..."
     },
     {
@@ -5983,8 +6016,8 @@
       "source_location": "L191",
       "_origin": "ast",
       "id": "backend_routers_webhook_rationale_191",
-      "community": 40,
-      "community_name": "posts.py",
+      "community": 49,
+      "community_name": "QueueService",
       "norm_label": "menerima event dari postforme api. postforme mengirim post request dengan: -..."
     },
     {
@@ -5994,8 +6027,8 @@
       "source_location": "L227",
       "_origin": "ast",
       "id": "backend_routers_webhook_rationale_227",
-      "community": 40,
-      "community_name": "posts.py",
+      "community": 49,
+      "community_name": "QueueService",
       "norm_label": "setup / daftarkan webhook ke postforme secara otomatis. panggil endpoint ini..."
     },
     {
@@ -6005,8 +6038,8 @@
       "source_location": "L252",
       "_origin": "ast",
       "id": "backend_routers_webhook_rationale_252",
-      "community": 40,
-      "community_name": "posts.py",
+      "community": 49,
+      "community_name": "QueueService",
       "norm_label": "tampilkan semua webhook yang terdaftar di postforme."
     },
     {
@@ -6017,7 +6050,7 @@
       "_origin": "ast",
       "id": "backend_routers_workspaces",
       "community": 43,
-      "community_name": "WorkspaceMember",
+      "community_name": "SocialAccount",
       "norm_label": "workspaces.py"
     },
     {
@@ -6028,7 +6061,7 @@
       "_origin": "ast",
       "id": "backend_routers_workspaces_workspacecreate",
       "community": 43,
-      "community_name": "WorkspaceMember",
+      "community_name": "SocialAccount",
       "norm_label": "workspacecreate"
     },
     {
@@ -6039,7 +6072,7 @@
       "_origin": "ast",
       "id": "backend_routers_workspaces_py_basemodel",
       "community": 43,
-      "community_name": "WorkspaceMember",
+      "community_name": "SocialAccount",
       "norm_label": "basemodel"
     },
     {
@@ -6050,7 +6083,7 @@
       "_origin": "ast",
       "id": "backend_routers_workspaces_py_get",
       "community": 43,
-      "community_name": "WorkspaceMember",
+      "community_name": "SocialAccount",
       "norm_label": "get"
     },
     {
@@ -6061,7 +6094,7 @@
       "_origin": "ast",
       "id": "backend_routers_workspaces_get_workspaces",
       "community": 43,
-      "community_name": "WorkspaceMember",
+      "community_name": "SocialAccount",
       "norm_label": "get_workspaces()"
     },
     {
@@ -6072,7 +6105,7 @@
       "_origin": "ast",
       "id": "backend_routers_workspaces_py_session",
       "community": 43,
-      "community_name": "WorkspaceMember",
+      "community_name": "SocialAccount",
       "norm_label": "session"
     },
     {
@@ -6083,7 +6116,7 @@
       "_origin": "ast",
       "id": "backend_routers_workspaces_py_post",
       "community": 43,
-      "community_name": "WorkspaceMember",
+      "community_name": "SocialAccount",
       "norm_label": "post"
     },
     {
@@ -6094,7 +6127,7 @@
       "_origin": "ast",
       "id": "backend_routers_workspaces_create_workspace",
       "community": 43,
-      "community_name": "WorkspaceMember",
+      "community_name": "SocialAccount",
       "norm_label": "create_workspace()"
     },
     {
@@ -6105,7 +6138,7 @@
       "_origin": "ast",
       "id": "backend_routers_workspaces_onboardingsetuprequest",
       "community": 43,
-      "community_name": "WorkspaceMember",
+      "community_name": "SocialAccount",
       "norm_label": "onboardingsetuprequest"
     },
     {
@@ -6116,7 +6149,7 @@
       "_origin": "ast",
       "id": "backend_routers_workspaces_setup_onboarding_workspace",
       "community": 43,
-      "community_name": "WorkspaceMember",
+      "community_name": "SocialAccount",
       "norm_label": "setup_onboarding_workspace()"
     },
     {
@@ -6127,7 +6160,7 @@
       "_origin": "ast",
       "id": "backend_routers_workspaces_rationale_23",
       "community": 43,
-      "community_name": "WorkspaceMember",
+      "community_name": "SocialAccount",
       "norm_label": "lists workspaces belonging to the authenticated user (via workspacemember)...."
     },
     {
@@ -6138,7 +6171,7 @@
       "_origin": "ast",
       "id": "backend_routers_workspaces_rationale_90",
       "community": 43,
-      "community_name": "WorkspaceMember",
+      "community_name": "SocialAccount",
       "norm_label": "creates a new workspace and adds the creator as owner member."
     },
     {
@@ -6149,7 +6182,7 @@
       "_origin": "ast",
       "id": "backend_routers_workspaces_rationale_139",
       "community": 43,
-      "community_name": "WorkspaceMember",
+      "community_name": "SocialAccount",
       "norm_label": "onboarding endpoint \u2014 creates the first workspace for a new user. validates..."
     },
     {
@@ -6159,8 +6192,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_security",
-      "community": 40,
-      "community_name": "posts.py",
+      "community": 21,
+      "community_name": "auth.py",
       "norm_label": "security.py"
     },
     {
@@ -6291,8 +6324,8 @@
       "source_location": "L89",
       "_origin": "ast",
       "id": "backend_security_sanitize_text",
-      "community": 40,
-      "community_name": "posts.py",
+      "community": 21,
+      "community_name": "auth.py",
       "norm_label": "sanitize_text()"
     },
     {
@@ -6302,8 +6335,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_security_py_any",
-      "community": 40,
-      "community_name": "posts.py",
+      "community": 21,
+      "community_name": "auth.py",
       "norm_label": "any"
     },
     {
@@ -6313,8 +6346,8 @@
       "source_location": "L110",
       "_origin": "ast",
       "id": "backend_security_sanitize_payload",
-      "community": 40,
-      "community_name": "posts.py",
+      "community": 21,
+      "community_name": "auth.py",
       "norm_label": "sanitize_payload()"
     },
     {
@@ -6325,7 +6358,7 @@
       "_origin": "ast",
       "id": "backend_security_normalize_identifier",
       "community": 21,
-      "community_name": "ActivityLog",
+      "community_name": "auth.py",
       "norm_label": "normalize_identifier()"
     },
     {
@@ -6335,8 +6368,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_seed",
-      "community": 43,
-      "community_name": "WorkspaceMember",
+      "community": 40,
+      "community_name": "ActivityLog",
       "norm_label": "seed.py"
     },
     {
@@ -6346,8 +6379,8 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "backend_seed_reset_and_seed_database",
-      "community": 43,
-      "community_name": "WorkspaceMember",
+      "community": 40,
+      "community_name": "ActivityLog",
       "norm_label": "reset_and_seed_database()"
     },
     {
@@ -7000,10 +7033,32 @@
       "norm_label": ".generate_agent_content()"
     },
     {
+      "label": ".generate_caption_from_image()",
+      "file_type": "code",
+      "source_file": "backend/services/gemini_service.py",
+      "source_location": "L522",
+      "_origin": "ast",
+      "id": "backend_services_gemini_service_geminiservice_generate_caption_from_image",
+      "community": 15,
+      "community_name": "GeminiService",
+      "norm_label": ".generate_caption_from_image()"
+    },
+    {
+      "label": "._extract_caption_json()",
+      "file_type": "code",
+      "source_file": "backend/services/gemini_service.py",
+      "source_location": "L650",
+      "_origin": "ast",
+      "id": "backend_services_gemini_service_geminiservice_extract_caption_json",
+      "community": 15,
+      "community_name": "GeminiService",
+      "norm_label": "._extract_caption_json()"
+    },
+    {
       "label": "._notify_owner_cookie_invalid()",
       "file_type": "code",
       "source_file": "backend/services/gemini_service.py",
-      "source_location": "L526",
+      "source_location": "L687",
       "_origin": "ast",
       "id": "backend_services_gemini_service_geminiservice_notify_owner_cookie_invalid",
       "community": 15,
@@ -7014,7 +7069,7 @@
       "label": "._clean_code_interpreter_artifacts()",
       "file_type": "code",
       "source_file": "backend/services/gemini_service.py",
-      "source_location": "L551",
+      "source_location": "L712",
       "_origin": "ast",
       "id": "backend_services_gemini_service_geminiservice_clean_code_interpreter_artifacts",
       "community": 15,
@@ -7088,12 +7143,34 @@
       "norm_label": "generate concise, direct ai agent draft content (no conversational fluff)...."
     },
     {
+      "label": "Analyze an image (slide ke-1 or video cover thumbnail) using Gemini Multimodal\u2026",
+      "file_type": "rationale",
+      "source_file": "backend/services/gemini_service.py",
+      "source_location": "L530",
+      "_origin": "ast",
+      "id": "backend_services_gemini_service_rationale_530",
+      "community": 15,
+      "community_name": "GeminiService",
+      "norm_label": "analyze an image (slide ke-1 or video cover thumbnail) using gemini multimodal..."
+    },
+    {
+      "label": "Extract caption and hashtags from Gemini JSON output or text response.",
+      "file_type": "rationale",
+      "source_file": "backend/services/gemini_service.py",
+      "source_location": "L651",
+      "_origin": "ast",
+      "id": "backend_services_gemini_service_rationale_651",
+      "community": 15,
+      "community_name": "GeminiService",
+      "norm_label": "extract caption and hashtags from gemini json output or text response."
+    },
+    {
       "label": "Kirim notifikasi WA via Fonnte ke owner jika cookie session Shiera AI tidak\u2026",
       "file_type": "rationale",
       "source_file": "backend/services/gemini_service.py",
-      "source_location": "L527",
+      "source_location": "L688",
       "_origin": "ast",
-      "id": "backend_services_gemini_service_rationale_527",
+      "id": "backend_services_gemini_service_rationale_688",
       "community": 15,
       "community_name": "GeminiService",
       "norm_label": "kirim notifikasi wa via fonnte ke owner jika cookie session shiera ai tidak..."
@@ -7102,9 +7179,9 @@
       "label": "Strip out python/text code interpreter blocks generated by Gemini WebAPI.",
       "file_type": "rationale",
       "source_file": "backend/services/gemini_service.py",
-      "source_location": "L552",
+      "source_location": "L713",
       "_origin": "ast",
-      "id": "backend_services_gemini_service_rationale_552",
+      "id": "backend_services_gemini_service_rationale_713",
       "community": 15,
       "community_name": "GeminiService",
       "norm_label": "strip out python/text code interpreter blocks generated by gemini webapi."
@@ -7116,8 +7193,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_services_instagrapi_service",
-      "community": 2,
-      "community_name": "models.py",
+      "community": 21,
+      "community_name": "auth.py",
       "norm_label": "instagrapi_service.py"
     },
     {
@@ -7369,8 +7446,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_services_instagrapi_service_rationale_1",
-      "community": 2,
-      "community_name": "models.py",
+      "community": 21,
+      "community_name": "auth.py",
       "norm_label": "instagrapi service \u2014 instagram private api integration for competitor spy uses..."
     },
     {
@@ -7908,8 +7985,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_services_postforme_service",
-      "community": 40,
-      "community_name": "posts.py",
+      "community": 2,
+      "community_name": "models.py",
       "norm_label": "postforme_service.py"
     },
     {
@@ -8392,8 +8469,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_services_queue_service",
-      "community": 40,
-      "community_name": "posts.py",
+      "community": 2,
+      "community_name": "models.py",
       "norm_label": "queue_service.py"
     },
     {
@@ -8403,8 +8480,8 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "backend_services_queue_service_queueservice",
-      "community": 40,
-      "community_name": "posts.py",
+      "community": 49,
+      "community_name": "QueueService",
       "norm_label": "queueservice"
     },
     {
@@ -8414,8 +8491,8 @@
       "source_location": "L21",
       "_origin": "ast",
       "id": "backend_services_queue_service_queueservice_enqueue_post_publishing",
-      "community": 40,
-      "community_name": "posts.py",
+      "community": 49,
+      "community_name": "QueueService",
       "norm_label": ".enqueue_post_publishing()"
     },
     {
@@ -8425,8 +8502,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_services_queue_service_py_session",
-      "community": 40,
-      "community_name": "posts.py",
+      "community": 49,
+      "community_name": "QueueService",
       "norm_label": "session"
     },
     {
@@ -8436,8 +8513,8 @@
       "source_location": "L58",
       "_origin": "ast",
       "id": "backend_services_queue_service_queueservice_process_publish_job",
-      "community": 40,
-      "community_name": "posts.py",
+      "community": 49,
+      "community_name": "QueueService",
       "norm_label": ".process_publish_job()"
     },
     {
@@ -8447,8 +8524,8 @@
       "source_location": "L229",
       "_origin": "ast",
       "id": "backend_services_queue_service_queueservice_sync_post_result_for_target",
-      "community": 40,
-      "community_name": "posts.py",
+      "community": 49,
+      "community_name": "QueueService",
       "norm_label": ".sync_post_result_for_target()"
     },
     {
@@ -8458,8 +8535,8 @@
       "source_location": "L325",
       "_origin": "ast",
       "id": "backend_services_queue_service_queueservice_deduct_user_credit",
-      "community": 40,
-      "community_name": "posts.py",
+      "community": 49,
+      "community_name": "QueueService",
       "norm_label": "._deduct_user_credit()"
     },
     {
@@ -8469,8 +8546,8 @@
       "source_location": "L357",
       "_origin": "ast",
       "id": "backend_services_queue_service_queueservice_sync_all_publishing_posts",
-      "community": 40,
-      "community_name": "posts.py",
+      "community": 49,
+      "community_name": "QueueService",
       "norm_label": ".sync_all_publishing_posts()"
     },
     {
@@ -8480,8 +8557,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_services_queue_service_py_any",
-      "community": 40,
-      "community_name": "posts.py",
+      "community": 49,
+      "community_name": "QueueService",
       "norm_label": "any"
     },
     {
@@ -8491,8 +8568,8 @@
       "source_location": "L436",
       "_origin": "ast",
       "id": "backend_services_queue_service_queueservice_apply_result_to_target",
-      "community": 40,
-      "community_name": "posts.py",
+      "community": 49,
+      "community_name": "QueueService",
       "norm_label": "._apply_result_to_target()"
     },
     {
@@ -8502,8 +8579,8 @@
       "source_location": "L501",
       "_origin": "ast",
       "id": "backend_services_queue_service_queueservice_update_parent_post_status",
-      "community": 40,
-      "community_name": "posts.py",
+      "community": 49,
+      "community_name": "QueueService",
       "norm_label": "._update_parent_post_status()"
     },
     {
@@ -8513,8 +8590,8 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "backend_services_queue_service_rationale_15",
-      "community": 40,
-      "community_name": "posts.py",
+      "community": 49,
+      "community_name": "QueueService",
       "norm_label": "queue engine menggunakan background tasks fastapi. mengelola publish job per..."
     },
     {
@@ -8524,8 +8601,8 @@
       "source_location": "L22",
       "_origin": "ast",
       "id": "backend_services_queue_service_rationale_22",
-      "community": 40,
-      "community_name": "posts.py",
+      "community": 49,
+      "community_name": "QueueService",
       "norm_label": "creates publishjob records and executes them immediately."
     },
     {
@@ -8535,8 +8612,8 @@
       "source_location": "L59",
       "_origin": "ast",
       "id": "backend_services_queue_service_rationale_59",
-      "community": 40,
-      "community_name": "posts.py",
+      "community": 49,
+      "community_name": "QueueService",
       "norm_label": "executes publish job for a specific target with retry & exponential backoff."
     },
     {
@@ -8546,8 +8623,8 @@
       "source_location": "L230",
       "_origin": "ast",
       "id": "backend_services_queue_service_rationale_230",
-      "community": 40,
-      "community_name": "posts.py",
+      "community": 49,
+      "community_name": "QueueService",
       "norm_label": "sinkronisasi hasil publish dari postforme untuk satu target. mengambil data..."
     },
     {
@@ -8557,8 +8634,8 @@
       "source_location": "L326",
       "_origin": "ast",
       "id": "backend_services_queue_service_rationale_326",
-      "community": 40,
-      "community_name": "posts.py",
+      "community": 49,
+      "community_name": "QueueService",
       "norm_label": "kurangi 1 kredit dari user yang membuat post setelah postforme konfirmasi..."
     },
     {
@@ -8568,8 +8645,8 @@
       "source_location": "L358",
       "_origin": "ast",
       "id": "backend_services_queue_service_rationale_358",
-      "community": 40,
-      "community_name": "posts.py",
+      "community": 49,
+      "community_name": "QueueService",
       "norm_label": "sinkronisasi manual komprehensif: ambil 100 hasil publikasi terbaru dari..."
     },
     {
@@ -8579,8 +8656,8 @@
       "source_location": "L437",
       "_origin": "ast",
       "id": "backend_services_queue_service_rationale_437",
-      "community": 40,
-      "community_name": "posts.py",
+      "community": 49,
+      "community_name": "QueueService",
       "norm_label": "applies a single postforme result to a posttarget and creates postpublishresult."
     },
     {
@@ -8656,8 +8733,8 @@
       "source_location": "L101",
       "_origin": "ast",
       "id": "backend_services_redis_service_cache_delete_prefix",
-      "community": 50,
-      "community_name": "kol.py",
+      "community": 68,
+      "community_name": "competitors.py",
       "norm_label": "cache_delete_prefix()"
     },
     {
@@ -8788,8 +8865,8 @@
       "source_location": "L102",
       "_origin": "ast",
       "id": "backend_services_redis_service_rationale_102",
-      "community": 50,
-      "community_name": "kol.py",
+      "community": 68,
+      "community_name": "competitors.py",
       "norm_label": "delete all keys matching a prefix pattern."
     },
     {
@@ -20175,6 +20252,17 @@
       "source_location": "L8",
       "weight": 0.8,
       "_origin": "ast",
+      "source": "backend_routers_posts_generateaicaptionrequest",
+      "target": "backend_models_models_posttype",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/routers/posts.py",
+      "source_location": "L8",
+      "weight": 0.8,
+      "_origin": "ast",
       "source": "backend_routers_posts_postcreate",
       "target": "backend_models_models_posttype",
       "confidence_score": 0.5
@@ -20270,6 +20358,17 @@
       "source": "backend_routers_posts",
       "target": "backend_models_models_poststatus",
       "confidence_score": 1.0
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/routers/posts.py",
+      "source_location": "L8",
+      "weight": 0.8,
+      "_origin": "ast",
+      "source": "backend_routers_posts_generateaicaptionrequest",
+      "target": "backend_models_models_poststatus",
+      "confidence_score": 0.5
     },
     {
       "relation": "calls",
@@ -22073,6 +22172,29 @@
       "source": "backend_routers_posts_create_post",
       "target": "backend_models_models_user",
       "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/routers/posts.py",
+      "source_location": "L628",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "backend_routers_posts_generate_ai_caption",
+      "target": "backend_models_models_user",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/routers/posts.py",
+      "source_location": "L242",
+      "weight": 0.8,
+      "_origin": "ast",
+      "source": "backend_routers_posts_generateaicaptionrequest",
+      "target": "backend_models_models_user",
+      "confidence_score": 0.5
     },
     {
       "relation": "uses",
@@ -24350,6 +24472,17 @@
       "source_location": "L8",
       "weight": 0.8,
       "_origin": "ast",
+      "source": "backend_routers_posts_generateaicaptionrequest",
+      "target": "backend_models_models_socialaccount",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/routers/posts.py",
+      "source_location": "L8",
+      "weight": 0.8,
+      "_origin": "ast",
       "source": "backend_routers_posts_postcreate",
       "target": "backend_models_models_socialaccount",
       "confidence_score": 0.5
@@ -24673,6 +24806,17 @@
       "source_location": "L8",
       "weight": 0.8,
       "_origin": "ast",
+      "source": "backend_routers_posts_generateaicaptionrequest",
+      "target": "backend_models_models_post",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/routers/posts.py",
+      "source_location": "L8",
+      "weight": 0.8,
+      "_origin": "ast",
       "source": "backend_routers_posts_postcreate",
       "target": "backend_models_models_post",
       "confidence_score": 0.5
@@ -24828,6 +24972,17 @@
       "_origin": "ast",
       "source": "backend_routers_posts_create_post",
       "target": "backend_models_models_posttarget"
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/routers/posts.py",
+      "source_location": "L8",
+      "weight": 0.8,
+      "_origin": "ast",
+      "source": "backend_routers_posts_generateaicaptionrequest",
+      "target": "backend_models_models_posttarget",
+      "confidence_score": 0.5
     },
     {
       "relation": "uses",
@@ -25772,6 +25927,17 @@
       "source_location": "L8",
       "weight": 0.8,
       "_origin": "ast",
+      "source": "backend_routers_posts_generateaicaptionrequest",
+      "target": "backend_models_models_activitylog",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/routers/posts.py",
+      "source_location": "L8",
+      "weight": 0.8,
+      "_origin": "ast",
       "source": "backend_routers_posts_postcreate",
       "target": "backend_models_models_activitylog",
       "confidence_score": 0.5
@@ -26403,6 +26569,17 @@
       "source": "backend_routers_posts",
       "target": "backend_models_models_usersubscription",
       "confidence_score": 1.0
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/routers/posts.py",
+      "source_location": "L242",
+      "weight": 0.8,
+      "_origin": "ast",
+      "source": "backend_routers_posts_generateaicaptionrequest",
+      "target": "backend_models_models_usersubscription",
+      "confidence_score": 0.5
     },
     {
       "relation": "uses",
@@ -37363,6 +37540,28 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "backend/routers/posts.py",
+      "source_location": "L628",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "backend_routers_posts",
+      "target": "backend_routers_posts_generate_ai_caption",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/routers/posts.py",
+      "source_location": "L619",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "backend_routers_posts",
+      "target": "backend_routers_posts_generateaicaptionrequest",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/routers/posts.py",
       "source_location": "L126",
       "weight": 1.0,
       "_origin": "ast",
@@ -37545,6 +37744,17 @@
       "relation": "inherits",
       "confidence": "EXTRACTED",
       "source_file": "backend/routers/posts.py",
+      "source_location": "L619",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "backend_routers_posts_generateaicaptionrequest",
+      "target": "backend_routers_posts_py_basemodel",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "inherits",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/routers/posts.py",
       "source_location": "L36",
       "weight": 1.0,
       "_origin": "ast",
@@ -37607,6 +37817,18 @@
       "context": "decorator",
       "_origin": "ast",
       "source": "backend_routers_posts_create_post",
+      "target": "backend_routers_posts_py_post",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/routers/posts.py",
+      "source_location": "L627",
+      "weight": 1.0,
+      "context": "decorator",
+      "_origin": "ast",
+      "source": "backend_routers_posts_generate_ai_caption",
       "target": "backend_routers_posts_py_post",
       "confidence_score": 1.0
     },
@@ -37777,6 +37999,18 @@
       "confidence_score": 1.0
     },
     {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/routers/posts.py",
+      "source_location": "L674",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "backend_routers_posts_generate_ai_caption",
+      "target": "backend_routers_posts_py_get",
+      "confidence_score": 1.0
+    },
+    {
       "relation": "references",
       "context": "decorator",
       "confidence": "EXTRACTED",
@@ -37868,6 +38102,18 @@
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_routers_posts_delete_post",
+      "target": "backend_routers_posts_py_session",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/routers/posts.py",
+      "source_location": "L628",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "backend_routers_posts_generate_ai_caption",
       "target": "backend_routers_posts_py_session",
       "confidence_score": 1.0
     },
@@ -38080,6 +38326,29 @@
       "_origin": "ast",
       "source": "backend_routers_posts_rationale_568",
       "target": "backend_routers_posts_approve_public_post_review",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/routers/posts.py",
+      "source_location": "L628",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "backend_routers_posts_generate_ai_caption",
+      "target": "backend_routers_posts_generateaicaptionrequest",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/routers/posts.py",
+      "source_location": "L633",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "backend_routers_posts_rationale_633",
+      "target": "backend_routers_posts_generate_ai_caption",
       "confidence_score": 1.0
     },
     {
@@ -40740,7 +41009,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "backend/services/gemini_service.py",
-      "source_location": "L537",
+      "source_location": "L698",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_services_gemini_service",
@@ -40753,7 +41022,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "backend/services/gemini_service.py",
-      "source_location": "L546",
+      "source_location": "L707",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_services_gemini_service_geminiservice_notify_owner_cookie_invalid",
@@ -40785,11 +41054,22 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "backend/services/gemini_service.py",
-      "source_location": "L551",
+      "source_location": "L712",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_services_gemini_service_geminiservice",
       "target": "backend_services_gemini_service_geminiservice_clean_code_interpreter_artifacts",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/services/gemini_service.py",
+      "source_location": "L650",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "backend_services_gemini_service_geminiservice",
+      "target": "backend_services_gemini_service_geminiservice_extract_caption_json",
       "confidence_score": 1.0
     },
     {
@@ -40801,6 +41081,17 @@
       "_origin": "ast",
       "source": "backend_services_gemini_service_geminiservice",
       "target": "backend_services_gemini_service_geminiservice_generate_agent_content",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/services/gemini_service.py",
+      "source_location": "L522",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "backend_services_gemini_service_geminiservice",
+      "target": "backend_services_gemini_service_geminiservice_generate_caption_from_image",
       "confidence_score": 1.0
     },
     {
@@ -40840,7 +41131,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "backend/services/gemini_service.py",
-      "source_location": "L526",
+      "source_location": "L687",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_services_gemini_service_geminiservice",
@@ -40867,6 +41158,18 @@
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_services_gemini_service_geminiservice_generate_agent_content",
+      "target": "backend_services_gemini_service_geminiservice_get_gemini_credentials",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/services/gemini_service.py",
+      "source_location": "L538",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "backend_services_gemini_service_geminiservice_generate_caption_from_image",
       "target": "backend_services_gemini_service_geminiservice_get_gemini_credentials",
       "confidence_score": 1.0
     },
@@ -40938,6 +41241,18 @@
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_services_gemini_service_geminiservice_generate_agent_content",
+      "target": "backend_services_gemini_service_py_session",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/services/gemini_service.py",
+      "source_location": "L522",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "backend_services_gemini_service_geminiservice_generate_caption_from_image",
       "target": "backend_services_gemini_service_py_session",
       "confidence_score": 1.0
     },
@@ -41021,6 +41336,18 @@
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_services_gemini_service_geminiservice_generate_agent_content",
+      "target": "backend_services_gemini_service_py_any",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "generic_arg",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/services/gemini_service.py",
+      "source_location": "L522",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "backend_services_gemini_service_geminiservice_generate_caption_from_image",
       "target": "backend_services_gemini_service_py_any",
       "confidence_score": 1.0
     },
@@ -41154,13 +41481,38 @@
       "confidence_score": 1.0
     },
     {
-      "relation": "rationale_for",
+      "relation": "calls",
+      "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "backend/services/gemini_service.py",
-      "source_location": "L527",
+      "source_location": "L612",
       "weight": 1.0,
       "_origin": "ast",
-      "source": "backend_services_gemini_service_rationale_527",
+      "source": "backend_services_gemini_service_geminiservice_generate_caption_from_image",
+      "target": "backend_services_gemini_service_geminiservice_clean_code_interpreter_artifacts",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/services/gemini_service.py",
+      "source_location": "L613",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "backend_services_gemini_service_geminiservice_generate_caption_from_image",
+      "target": "backend_services_gemini_service_geminiservice_extract_caption_json",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/services/gemini_service.py",
+      "source_location": "L618",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "backend_services_gemini_service_geminiservice_generate_caption_from_image",
       "target": "backend_services_gemini_service_geminiservice_notify_owner_cookie_invalid",
       "confidence_score": 1.0
     },
@@ -41168,10 +41520,43 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "backend/services/gemini_service.py",
-      "source_location": "L552",
+      "source_location": "L530",
       "weight": 1.0,
       "_origin": "ast",
-      "source": "backend_services_gemini_service_rationale_552",
+      "source": "backend_services_gemini_service_rationale_530",
+      "target": "backend_services_gemini_service_geminiservice_generate_caption_from_image",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/services/gemini_service.py",
+      "source_location": "L651",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "backend_services_gemini_service_rationale_651",
+      "target": "backend_services_gemini_service_geminiservice_extract_caption_json",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/services/gemini_service.py",
+      "source_location": "L688",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "backend_services_gemini_service_rationale_688",
+      "target": "backend_services_gemini_service_geminiservice_notify_owner_cookie_invalid",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/services/gemini_service.py",
+      "source_location": "L713",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "backend_services_gemini_service_rationale_713",
       "target": "backend_services_gemini_service_geminiservice_clean_code_interpreter_artifacts",
       "confidence_score": 1.0
     },
@@ -52525,7 +52910,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "frontend/src/components/posts/PostComposerModal.tsx",
-      "source_location": "L294",
+      "source_location": "L356",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_src_components_posts_postcomposermodal_postcomposermodal",
@@ -57076,5 +57461,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "be049cf5666fa2b35b3bf01ad8efa7bef0863deb"
+  "built_at_commit": "c7f70c8393cd672ddcea822f7870d4d0e117c847"
 }
