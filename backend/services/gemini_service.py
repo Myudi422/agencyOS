@@ -87,15 +87,12 @@ class GeminiService:
         # Fallback to google-generativeai API key if available
         if api_key:
             try:
-                import google.generativeai as genai
-                genai.configure(api_key=api_key)
-                model = genai.GenerativeModel("gemini-1.5-flash")
-                res = model.generate_content("Ping test. Respond with 'OK'.")
+                text = self._generate_with_generative_ai(api_key, "Ping test. Respond with 'OK'.")
                 return {
                     "success": True,
                     "provider": "Google Generative AI (API Key)",
                     "message": "Koneksi Gemini API Key berhasil!",
-                    "sample": res.text[:100]
+                    "sample": text[:100]
                 }
             except Exception as exc:
                 return {
@@ -232,12 +229,9 @@ Shiera AI: Berikan jawaban kelanjutan yang membantu, spesifik, dan ramah berdasa
         # 2. Try google-generativeai API Key as fallback
         if api_key:
             try:
-                import google.generativeai as genai
-                genai.configure(api_key=api_key)
-                model = genai.GenerativeModel("gemini-1.5-flash")
-                res = model.generate_content(prompt)
-                if res.text:
-                    return self._clean_code_interpreter_artifacts(res.text)
+                text_res = self._generate_with_generative_ai(api_key, prompt)
+                if text_res:
+                    return self._clean_code_interpreter_artifacts(text_res)
             except Exception as exc:
                 logger.error(f"google-generativeai API Key generation failed: {exc}")
                 raise RuntimeError(f"Gagal memproses dengan Shiera AI Engine: {exc}")
@@ -373,12 +367,9 @@ CONTOH BLOK JSON TERSEMBUNYI DI AKHIR JAWABAN:
         # 2. Try google-generativeai API Key as fallback
         if api_key:
             try:
-                import google.generativeai as genai
-                genai.configure(api_key=api_key)
-                model = genai.GenerativeModel("gemini-1.5-flash")
-                res = model.generate_content(prompt)
-                if res.text:
-                    return self._clean_code_interpreter_artifacts(res.text)
+                text_res = self._generate_with_generative_ai(api_key, prompt)
+                if text_res:
+                    return self._clean_code_interpreter_artifacts(text_res)
             except Exception as exc:
                 logger.error(f"google-generativeai API Key generation failed: {exc}")
                 raise RuntimeError(f"Gagal memproses dengan Shiera AI Engine: {exc}")
@@ -507,17 +498,49 @@ DILARANG memberikan pembuka, salam, evaluasi, atau basa-basi analisis. Langsung 
         # 2. Try google-generativeai API Key as fallback
         if api_key:
             try:
-                import google.generativeai as genai
-                genai.configure(api_key=api_key)
-                model = genai.GenerativeModel("gemini-1.5-flash")
-                res = model.generate_content(prompt)
-                if res.text:
-                    return self._clean_code_interpreter_artifacts(res.text)
+                text_res = self._generate_with_generative_ai(api_key, prompt)
+                if text_res:
+                    return self._clean_code_interpreter_artifacts(text_res)
             except Exception as exc:
                 logger.error(f"google-generativeai API Key generation failed: {exc}")
                 raise RuntimeError(f"Gagal memproses dengan Shiera AI Engine: {exc}")
 
         raise RuntimeError("Gagal menghasilkan brief AI. Pastikan Session Cookie Shiera AI atau API Key valid di Admin Settings.")
+
+    def _generate_with_generative_ai(self, api_key: str, content_inputs: Any) -> str:
+        """Helper to invoke google.generativeai with model fallback candidates (1.5-flash, 1.5-flash-latest, 2.0-flash, 1.5-pro, etc.)."""
+        import google.generativeai as genai
+        genai.configure(api_key=api_key)
+
+        is_vision = isinstance(content_inputs, list) and len(content_inputs) > 1
+        model_candidates = [
+            "gemini-2.5-flash",
+            "gemini-2.0-flash",
+            "gemini-flash-latest",
+            "gemini-1.5-flash-latest",
+            "gemini-1.5-flash",
+            "gemini-2.5-flash-lite",
+            "gemini-2.0-flash-lite",
+            "gemini-2.5-pro",
+            "gemini-1.5-pro-latest",
+            "gemini-1.5-pro",
+            "gemini-pro-vision" if is_vision else "gemini-pro",
+        ]
+
+        last_error = None
+        for m_name in model_candidates:
+            try:
+                model = genai.GenerativeModel(m_name)
+                res = model.generate_content(content_inputs)
+                if res and hasattr(res, "text") and res.text:
+                    logger.info(f"google-generativeai call succeeded using model: {m_name}")
+                    return res.text
+            except Exception as e:
+                last_error = e
+                logger.debug(f"Model candidate '{m_name}' failed: {e}")
+                continue
+
+        raise RuntimeError(f"All Generative AI model candidates failed. Last error: {last_error}")
 
     async def generate_caption_from_image(
         self,
@@ -599,10 +622,6 @@ Tugas utamanya adalah menganalisis GAMBAR (Slide 1 Konten / Sampul Video Thumbna
             try:
                 import io
                 from PIL import Image
-                import google.generativeai as genai
-
-                genai.configure(api_key=api_key)
-                model = genai.GenerativeModel("gemini-1.5-flash")
 
                 content_inputs = [prompt]
                 if image_bytes:
@@ -616,9 +635,9 @@ Tugas utamanya adalah menganalisis GAMBAR (Slide 1 Konten / Sampul Video Thumbna
                             "data": image_bytes
                         })
 
-                res = model.generate_content(content_inputs)
-                if res.text:
-                    cleaned = self._clean_code_interpreter_artifacts(res.text)
+                text_res = self._generate_with_generative_ai(api_key, content_inputs)
+                if text_res:
+                    cleaned = self._clean_code_interpreter_artifacts(text_res)
                     parsed = self._extract_caption_json(cleaned)
                     if parsed.get("caption"):
                         return parsed
