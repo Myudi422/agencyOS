@@ -1591,8 +1591,8 @@ export default function AdminPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {[
               { key: "POSTFORME_API_KEY", label: "PostForMe API Key", hint: "Dari dashboard postforme.dev" },
-              { key: "MIDTRANS_SERVER_KEY", label: "Midtrans Server Key", hint: "SB-Mid-server-... (sandbox/production)" },
-              { key: "MIDTRANS_CLIENT_KEY", label: "Midtrans Client Key", hint: "SB-Mid-client-..." },
+              { key: "MIDTRANS_SERVER_KEY", label: "Midtrans Server Key", hint: "Mid-server-... (Production / Sandbox)" },
+              { key: "MIDTRANS_CLIENT_KEY", label: "Midtrans Client Key", hint: "Mid-client-..." },
               { key: "FONNTE_API_TOKEN", label: "Fonnte WhatsApp Token", hint: "Token dari fonnte.com untuk OTP WhatsApp" },
             ].map((s) => (
               <div key={s.key} className="p-4 rounded-2xl bg-white border border-slate-200 space-y-2">

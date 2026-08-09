@@ -76,9 +76,9 @@ class Settings:
 
     # Midtrans (Payment Gateway - Sandbox / Production)
     MIDTRANS_MERCHANT_ID: str = os.getenv("MIDTRANS_MERCHANT_ID", "G631089821")
-    MIDTRANS_CLIENT_KEY: str = os.getenv("MIDTRANS_CLIENT_KEY", "SB-Mid-client-Hq-oZXhBhWzOSZzD")
-    MIDTRANS_SERVER_KEY: str = os.getenv("MIDTRANS_SERVER_KEY", "SB-Mid-server-GmF6kILCY0UcSnUAXnHP3Y6-")
-    MIDTRANS_IS_PRODUCTION: bool = os.getenv("MIDTRANS_IS_PRODUCTION", "false").lower() == "true"
+    MIDTRANS_CLIENT_KEY: str = os.getenv("MIDTRANS_CLIENT_KEY", "Mid-client-AKjwFXj4m2JUjU7w")
+    MIDTRANS_SERVER_KEY: str = os.getenv("MIDTRANS_SERVER_KEY", "")
+    MIDTRANS_IS_PRODUCTION: bool = os.getenv("MIDTRANS_IS_PRODUCTION", "true").lower() == "true"
 
     # Fonnte WhatsApp OTP API
     FONNTE_TOKEN: str = os.getenv("FONNTE_TOKEN", "9Ptcpu9PDJ9RpWgYKxSY")

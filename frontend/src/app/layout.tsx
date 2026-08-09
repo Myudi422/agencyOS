@@ -140,11 +140,20 @@ export default function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
-        <Script
-          src="https://app.sandbox.midtrans.com/snap/snap.js"
-          data-client-key={process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY || "SB-Mid-client-Hq-oZXhBhWzOSZzD"}
-          strategy="lazyOnload"
-        />
+        {(() => {
+          const clientKey = process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY || "Mid-client-AKjwFXj4m2JUjU7w";
+          const isProd = process.env.NEXT_PUBLIC_MIDTRANS_IS_PRODUCTION === "true" || !clientKey.startsWith("SB-");
+          const snapUrl = isProd
+            ? "https://app.midtrans.com/snap/snap.js"
+            : "https://app.sandbox.midtrans.com/snap/snap.js";
+          return (
+            <Script
+              src={snapUrl}
+              data-client-key={clientKey}
+              strategy="lazyOnload"
+            />
+          );
+        })()}
       </head>
       <body className="bg-slate-50 text-slate-900 antialiased min-h-screen">
         <Providers>
