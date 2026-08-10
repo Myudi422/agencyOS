@@ -329,6 +329,7 @@ class AssignPlanByEmailRequest(BaseModel):
     plan_tier: str
     posts_limit: Optional[int] = None
     expires_days: Optional[int] = 30  # None = never expires
+    is_admin: Optional[bool] = None
 
 
 @router.post("/assign-plan-by-email")
@@ -351,10 +352,13 @@ def assign_plan_by_email(
             full_name=req.email.split("@")[0].replace(".", " ").title(),
             avatar_url=None,
             firebase_uid=None,
-            is_admin=False,
+            is_admin=bool(req.is_admin) if req.is_admin is not None else False,
         )
         db.add(user)
         db.flush()
+    else:
+        if req.is_admin is not None:
+            user.is_admin = req.is_admin
 
     # Note: We do NOT auto-create a workspace here for new users.
     # By keeping workspace=None, when the user logs in for the first time with Google,
@@ -393,6 +397,7 @@ def assign_plan_by_email(
         "status": "ok",
         "message": f"Plan '{plan.name}' assigned to {user.email}",
         "user_id": user.id,
+        "is_admin": user.is_admin,
         "is_new_user": not user.firebase_uid,
     }
 
