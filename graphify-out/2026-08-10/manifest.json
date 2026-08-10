@@ -480,8 +480,8 @@
     "semantic_hash": "d882b899234eb67caa44aa4711652fb7"
   },
   "frontend/src/components/layout/Sidebar.tsx": {
-    "mtime": 1786019670.497883,
-    "ast_hash": "e527dc75ca79705556cbece78cc4ee98",
+    "mtime": 1786363062.211015,
+    "ast_hash": "baa340dc808ac4fb0fc8d4745339cd40",
     "semantic_hash": ""
   },
   "frontend/src/components/media/MoveToFolderModal.tsx": {
