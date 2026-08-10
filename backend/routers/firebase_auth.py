@@ -110,7 +110,7 @@ async def verify_firebase(req: FirebaseVerifyRequest, db: Session = Depends(get_
 
     email = firebase_user["email"]
     firebase_uid = firebase_user["firebase_uid"]
-    is_admin = (email == settings.ADMIN_EMAIL)
+    is_admin_default = (email == settings.ADMIN_EMAIL)
 
     # Upsert user
     user = db.query(User).filter(User.firebase_uid == firebase_uid).first()
@@ -123,13 +123,13 @@ async def verify_firebase(req: FirebaseVerifyRequest, db: Session = Depends(get_
             full_name=firebase_user["full_name"],
             avatar_url=firebase_user["avatar_url"],
             firebase_uid=firebase_uid,
-            is_admin=is_admin,
+            is_admin=is_admin_default,
         )
         db.add(user)
         db.flush()
 
         # Admin gets unlimited plan + auto workspace
-        if is_admin:
+        if user.is_admin:
             ws = Workspace(
                 name=f"{firebase_user['full_name'].split()[0]}'s Workspace",
                 slug=f"ws-{firebase_uid[:8]}",
@@ -155,9 +155,10 @@ async def verify_firebase(req: FirebaseVerifyRequest, db: Session = Depends(get_
                 db.add(sub)
         # Non-admin: no auto-workspace, they will go through onboarding
     else:
-        # Update existing user
+        # Update existing user (PRESERVE user.is_admin if set by Super Admin)
         user.firebase_uid = firebase_uid
-        user.is_admin = is_admin
+        if is_admin_default:
+            user.is_admin = True
         if firebase_user["avatar_url"]:
             user.avatar_url = firebase_user["avatar_url"]
         if firebase_user["full_name"]:
@@ -186,11 +187,10 @@ async def verify_firebase(req: FirebaseVerifyRequest, db: Session = Depends(get_
             "is_expired": is_expired,
         }
 
-
     # Get user's workspace
     membership = user.memberships[0] if user.memberships else None
     workspace = membership.workspace if membership else None
-    needs_onboarding = workspace is None and not is_admin
+    needs_onboarding = workspace is None and not user.is_admin
 
     return {
         "user": {
@@ -207,7 +207,7 @@ async def verify_firebase(req: FirebaseVerifyRequest, db: Session = Depends(get_
             "timezone": workspace.timezone,
         } if workspace else None,
         "subscription": subscription_data,
-        "is_admin": is_admin,
+        "is_admin": user.is_admin,
         "needs_onboarding": needs_onboarding,
     }
 
