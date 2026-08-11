@@ -1,9 +1,10 @@
 """
 FaustRen Scraper Service — Instagram Scraper using instagram-posts-scraper library (InstaPeriodScraper).
 No login required for fetching public user profiles and recent posts.
-Supports optional Residential Proxy routing and headless profile enrichment.
+Supports optional Residential Proxy routing and Vercel serverless read-only filesystem protection.
 """
 
+import os
 import json
 import re
 import random
@@ -14,6 +15,17 @@ from datetime import datetime
 import requests
 from sqlalchemy.orm import Session
 
+# Vercel / Serverless Sandbox Protection: Ensure HOME points to writable /tmp
+try:
+    home_dir = os.path.expanduser("~")
+    test_path = os.path.join(home_dir, ".write_test")
+    with open(test_path, "w") as f:
+        f.write("1")
+    os.remove(test_path)
+except (OSError, IOError, PermissionError):
+    os.environ["HOME"] = "/tmp"
+    os.environ["TMPDIR"] = "/tmp"
+
 from backend.models.models import Setting
 
 logger = logging.getLogger("FaustRenScraper")
@@ -23,6 +35,7 @@ GLOBAL_WS_ID = "global"
 USER_AGENTS = [
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
 ]
 
 class FaustRenScraperService:
@@ -86,18 +99,17 @@ class FaustRenScraperService:
     def fetch_competitor_data(self, db: Session, username: str, amount: int = 20, override_proxy: Optional[str] = None) -> Dict[str, Any]:
         """
         Fetch profile & recent posts using FaustRen InstaPeriodScraper module
-        with fallback to web profile API.
+        with fallback to direct web profile API.
         """
         clean_user = username.strip().lstrip("@").lower()
 
         # 1. Try importing official InstaPeriodScraper class from instagram_posts_scraper
         try:
             from instagram_posts_scraper.instagram_posts_scraper import InstaPeriodScraper
-            # use_profile_scraper=False runs light HTML request without Selenium binary overhead
             scraper = InstaPeriodScraper(use_profile_scraper=False)
             res = scraper.get_posts(target_info={"username": clean_user, "days_limit": 30})
 
-            if res and isinstance(res, dict) and "profile" in res:
+            if res and isinstance(res, dict) and "profile" in res and res.get("profile"):
                 prof = res.get("profile", {})
                 raw_posts = res.get("posts", [])[:amount]
 
@@ -189,8 +201,10 @@ class FaustRenScraperService:
         resp = requests.get(url, headers=headers, proxies=proxies, timeout=12)
         if resp.status_code == 404:
             raise ValueError(f"Akun @{clean_user} tidak ditemukan di Instagram.")
+        if resp.status_code == 429:
+            raise RuntimeError("Instagram Rate Limit (HTTP 429). Silakan aktifkan 'PROXY_ENABLED' & isi 'PROXY_URL' di Admin Settings (/admin).")
         if resp.status_code != 200:
-            raise RuntimeError(f"Instagram HTTP {resp.status_code}")
+            raise RuntimeError(f"Instagram merespon dengan status HTTP {resp.status_code}")
 
         data = resp.json()
         user_data = data.get("data", {}).get("user") or {}
