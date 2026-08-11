@@ -840,13 +840,13 @@
     "semantic_hash": ""
   },
   "frontend/src/app/agent/page.tsx": {
-    "mtime": 1786415639.9120722,
-    "ast_hash": "be38ac84549b0d63977ef2791de8970b",
+    "mtime": 1786416494.045274,
+    "ast_hash": "a3d1b2b2414f17af0e87a4217aeed069",
     "semantic_hash": ""
   },
   "frontend/src/components/agent/AgentCreateModal.tsx": {
-    "mtime": 1786416071.2763183,
-    "ast_hash": "6bee3bcaac704081b38d3799e1507e54",
+    "mtime": 1786416480.7110224,
+    "ast_hash": "c443ec51558bdb12ee5831d2ea42a954",
     "semantic_hash": ""
   },
   "frontend/src/store/useAgentStore.ts": {

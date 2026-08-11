@@ -1,7 +1,7 @@
 # Graph Report - agencyOS  (2026-08-11)
 
 ## Corpus Check
-- 148 files · ~778,639 words
+- 148 files · ~778,787 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
@@ -10,7 +10,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `1a8fe128`
+- Built from commit: `0f097ecd`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -64,7 +64,7 @@
 - rules/graphify.md
 - workflows/graphify.md
 - [token]/page.tsx
-- SubscriptionPlan
+- UserSubscription
 - migrate_db.py
 - reset_subscriptions.py
 - next.config.js
@@ -106,16 +106,16 @@
 10. `UserSubscription` - 32 edges
 
 ## Surprising Connections (you probably didn't know these)
-- `AssignPlanByEmailRequest` --uses--> `PlanTier`  [INFERRED]
-  backend/routers/admin.py → backend/models/models.py
-- `InstagramTestRequest` --uses--> `PlanTier`  [INFERRED]
-  backend/routers/admin.py → backend/models/models.py
-- `PlanUpdateRequest` --uses--> `PlanTier`  [INFERRED]
-  backend/routers/admin.py → backend/models/models.py
-- `SettingUpsertRequest` --uses--> `PlanTier`  [INFERRED]
-  backend/routers/admin.py → backend/models/models.py
-- `SubscriptionOverrideRequest` --uses--> `PlanTier`  [INFERRED]
-  backend/routers/admin.py → backend/models/models.py
+- `CheckoutRequest` --uses--> `PlanTier`  [INFERRED]
+  backend/routers/billing.py → backend/models/models.py
+- `OtpSendRequest` --uses--> `PlanTier`  [INFERRED]
+  backend/routers/billing.py → backend/models/models.py
+- `OtpVerifyRequest` --uses--> `PlanTier`  [INFERRED]
+  backend/routers/billing.py → backend/models/models.py
+- `SyncCheckoutRequest` --uses--> `PlanTier`  [INFERRED]
+  backend/routers/billing.py → backend/models/models.py
+- `FirebaseVerifyRequest` --uses--> `PlanTier`  [INFERRED]
+  backend/routers/firebase_auth.py → backend/models/models.py
 
 ## Import Cycles
 - None detected.
@@ -147,8 +147,8 @@ Cohesion: 0.09
 Nodes (22): PostForMeService, Any, Get connected social accounts from PostForMe. Endpoint: GET /v1/social-accounts, Manually register or update a social account in PostForMe. Endpoint: POST…, Disconnect a social account in PostForMe. Endpoint: POST /v1/social-…, Delete a social account in PostForMe. Endpoint: DELETE /v1/social-accounts/{id}, Create a post across multi-platform social accounts in PostForMe. Endpoint:…, Delete a post from PostForMe. Endpoint: DELETE /v1/social-posts/{id} (+14 more)
 
 ### Community 6 - "admin.py"
-Cohesion: 0.17
-Nodes (29): Subscription aktif milik satu user., RoleEnum, Setting, SubscriptionStatus, UserSubscription, assign_plan_by_email(), AssignPlanByEmailRequest, InstagramTestRequest (+21 more)
+Cohesion: 0.26
+Nodes (21): PlanTier, RoleEnum, Setting, SubscriptionStatus, AssignPlanByEmailRequest, InstagramTestRequest, override_user_subscription(), PlanUpdateRequest (+13 more)
 
 ### Community 7 - "media.py"
 Cohesion: 0.14
@@ -207,8 +207,8 @@ Cohesion: 0.09
 Nodes (22): InstagrapiService, Any, Session, Instagrapi Service — Instagram Private API Integration for Competitor Spy Uses…, Handler called by instagrapi when Instagram forces a password change during…, Handler called by instagrapi when Instagram requires verification code…, Fetch saved Instagram 2FA Secret Key (TOTP Seed) from settings table., Generates a 6-digit TOTP verification code from 2FA Secret Key. (+14 more)
 
 ### Community 21 - "Session"
-Cohesion: 0.17
-Nodes (15): delete_setting(), delete_user(), get_plans(), get_settings(), get_user_stats(), list_users(), delete, get (+7 more)
+Cohesion: 0.12
+Nodes (22): assign_plan_by_email(), delete_setting(), delete_user(), get_plans(), get_settings(), get_user_stats(), list_users(), delete (+14 more)
 
 ### Community 22 - "Component: Firebase Auth (Backend)"
 Cohesion: 0.06
@@ -302,9 +302,9 @@ Nodes (12): 🚀 1. Overview & Arsitektur Sistem, 🛠️ 2. Komponen Teknis Ter
 Cohesion: 0.20
 Nodes (9): 1. Run Backend (FastAPI), 2. Run Frontend (Next.js 15), AgencyOS - Enterprise Digital Agency Social Management Platform, Backend, Default Configured Credentials, Frontend, Getting Started, Key Features MVP 1.0 (+1 more)
 
-### Community 49 - "SubscriptionPlan"
-Cohesion: 0.29
-Nodes (12): PlanTier, Paket langganan — semua plan unlimited akun sosmed, beda di quota post., Menyimpan OTP WhatsApp sementara untuk verifikasi sebelum claim trial., SubscriptionPlan, WaOtpVerification, CheckoutRequest, OtpSendRequest, OtpVerifyRequest (+4 more)
+### Community 49 - "UserSubscription"
+Cohesion: 0.25
+Nodes (13): Paket langganan — semua plan unlimited akun sosmed, beda di quota post., Subscription aktif milik satu user., Menyimpan OTP WhatsApp sementara untuk verifikasi sebelum claim trial., SubscriptionPlan, UserSubscription, WaOtpVerification, CheckoutRequest, OtpSendRequest (+5 more)
 
 ### Community 54 - "Sidebar.tsx"
 Cohesion: 0.11
@@ -346,7 +346,7 @@ Nodes (7): Any, Deletes a single file object permanently from Backblaze B2 bucke
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `User` connect `User` to `get_user_workspace`, `models.py`, `competitors.py`, `admin.py`, `QueueService`, `posts.py`, `billing.py`, `statistics.py`, `SubscriptionPlan`, `Session`, `reset_subscriptions.py`, `Session`, `firebase_auth.py`?**
+- **Why does `User` connect `User` to `get_user_workspace`, `models.py`, `competitors.py`, `admin.py`, `QueueService`, `posts.py`, `billing.py`, `statistics.py`, `UserSubscription`, `Session`, `reset_subscriptions.py`, `Session`, `firebase_auth.py`?**
   _High betweenness centrality (0.106) - this node is a cross-community bridge._
 - **Why does `PostForMeService` connect `PostForMeService` to `models.py`?**
   _High betweenness centrality (0.046) - this node is a cross-community bridge._

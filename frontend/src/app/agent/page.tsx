@@ -231,6 +231,8 @@ export default function AgentPage() {
   const [pollingMap, setPollingMap] = useState<Record<string, NodeJS.Timeout>>({});
   const [selectedLogIds, setSelectedLogIds] = useState<string[]>([]);
   const [isBulkDeleting, setIsBulkDeleting] = useState(false);
+  const [subTier, setSubTier] = useState<string>("creator");
+  const [isAdmin, setIsAdmin] = useState<boolean>(false);
 
   const selectedAgent = agents.find((a) => a.id === selectedAgentId) || null;
 
@@ -239,6 +241,22 @@ export default function AgentPage() {
       fetchAgents(activeWorkspace.id);
     }
   }, [activeWorkspace?.id]);
+
+  useEffect(() => {
+    fetchApi<any>("/auth/firebase/me")
+      .then((res) => {
+        if (res) {
+          setIsAdmin(!!res.is_admin);
+          if (res.subscription?.plan_tier) {
+            setSubTier(String(res.subscription.plan_tier).toLowerCase());
+          }
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const maxAgents = isAdmin ? 999 : (subTier === "studio" ? 10 : subTier === "agency" ? 5 : 3);
+  const agentUsagePercentage = isAdmin ? 0 : Math.min(100, Math.round((agents.length / maxAgents) * 100));
 
   // Clear log selection when selected agent changes
   useEffect(() => {
@@ -405,10 +423,35 @@ export default function AgentPage() {
       <div className="flex flex-col md:flex-row flex-1 min-h-0 min-w-0 max-w-full">
         {/* Left Panel: Agent List */}
         <div className={`w-full md:w-72 shrink-0 border-r border-slate-200 bg-white flex flex-col ${selectedAgentId ? "hidden md:flex" : "flex"}`}>
-          <div className="p-4 border-b border-slate-100">
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-              {agents.length} Agent Terkonfigurasi
-            </p>
+          <div className="p-4 border-b border-slate-100 bg-slate-50/50">
+            <div className="flex items-center justify-between gap-2 mb-1.5">
+              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                Kapasitas Agent
+              </span>
+              <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-purple-100 text-purple-700">
+                {isAdmin ? "SUPER ADMIN" : subTier.toUpperCase()}
+              </span>
+            </div>
+            <div className="flex items-center justify-between text-xs font-semibold text-slate-700 mb-1">
+              <span>{agents.length} dari {isAdmin ? "∞" : maxAgents} Agent</span>
+              <span className="text-[10px] text-slate-400 font-mono">
+                {isAdmin ? "Unlimited" : `${agentUsagePercentage}%`}
+              </span>
+            </div>
+            {!isAdmin && (
+              <div className="w-full h-1.5 bg-slate-200 rounded-full overflow-hidden">
+                <div
+                  className={`h-full transition-all duration-300 ${
+                    agentUsagePercentage >= 100
+                      ? "bg-red-500"
+                      : agentUsagePercentage >= 80
+                      ? "bg-amber-500"
+                      : "bg-purple-600"
+                  }`}
+                  style={{ width: `${agentUsagePercentage}%` }}
+                />
+              </div>
+            )}
           </div>
           <div className="flex-1 overflow-y-auto p-3 space-y-2">
             {loadingAgents ? (

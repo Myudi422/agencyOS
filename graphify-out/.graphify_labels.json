@@ -48,7 +48,7 @@
   "46": "rules/graphify.md",
   "47": "workflows/graphify.md",
   "48": "[token]/page.tsx",
-  "49": "SubscriptionPlan",
+  "49": "UserSubscription",
   "50": "migrate_db.py",
   "51": "reset_subscriptions.py",
   "52": "next.config.js",

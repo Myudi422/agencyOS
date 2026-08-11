@@ -615,8 +615,8 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "backend_models_models_plantier",
-      "community": 49,
-      "community_name": "SubscriptionPlan",
+      "community": 6,
+      "community_name": "admin.py",
       "norm_label": "plantier"
     },
     {
@@ -737,7 +737,7 @@
       "_origin": "ast",
       "id": "backend_models_models_waotpverification",
       "community": 49,
-      "community_name": "SubscriptionPlan",
+      "community_name": "UserSubscription",
       "norm_label": "waotpverification"
     },
     {
@@ -869,7 +869,7 @@
       "_origin": "ast",
       "id": "backend_models_models_subscriptionplan",
       "community": 49,
-      "community_name": "SubscriptionPlan",
+      "community_name": "UserSubscription",
       "norm_label": "subscriptionplan"
     },
     {
@@ -879,8 +879,8 @@
       "source_location": "L343",
       "_origin": "ast",
       "id": "backend_models_models_usersubscription",
-      "community": 6,
-      "community_name": "admin.py",
+      "community": 49,
+      "community_name": "UserSubscription",
       "norm_label": "usersubscription"
     },
     {
@@ -1001,7 +1001,7 @@
       "_origin": "ast",
       "id": "backend_models_models_rationale_95",
       "community": 49,
-      "community_name": "SubscriptionPlan",
+      "community_name": "UserSubscription",
       "norm_label": "menyimpan otp whatsapp sementara untuk verifikasi sebelum claim trial."
     },
     {
@@ -1023,7 +1023,7 @@
       "_origin": "ast",
       "id": "backend_models_models_rationale_323",
       "community": 49,
-      "community_name": "SubscriptionPlan",
+      "community_name": "UserSubscription",
       "norm_label": "paket langganan \u2014 semua plan unlimited akun sosmed, beda di quota post."
     },
     {
@@ -1033,8 +1033,8 @@
       "source_location": "L344",
       "_origin": "ast",
       "id": "backend_models_models_rationale_344",
-      "community": 6,
-      "community_name": "admin.py",
+      "community": 49,
+      "community_name": "UserSubscription",
       "norm_label": "subscription aktif milik satu user."
     },
     {
@@ -1649,8 +1649,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_routers_admin_py_post",
-      "community": 6,
-      "community_name": "admin.py",
+      "community": 21,
+      "community_name": "Session",
       "norm_label": "post"
     },
     {
@@ -1682,8 +1682,8 @@
       "source_location": "L336",
       "_origin": "ast",
       "id": "backend_routers_admin_assign_plan_by_email",
-      "community": 6,
-      "community_name": "admin.py",
+      "community": 21,
+      "community_name": "Session",
       "norm_label": "assign_plan_by_email()"
     },
     {
@@ -1748,8 +1748,8 @@
       "source_location": "L522",
       "_origin": "ast",
       "id": "backend_routers_admin_test_gemini",
-      "community": 6,
-      "community_name": "admin.py",
+      "community": 21,
+      "community_name": "Session",
       "norm_label": "test_gemini()"
     },
     {
@@ -1770,8 +1770,8 @@
       "source_location": "L539",
       "_origin": "ast",
       "id": "backend_routers_admin_test_instagram",
-      "community": 6,
-      "community_name": "admin.py",
+      "community": 21,
+      "community_name": "Session",
       "norm_label": "test_instagram()"
     },
     {
@@ -1847,8 +1847,8 @@
       "source_location": "L341",
       "_origin": "ast",
       "id": "backend_routers_admin_rationale_341",
-      "community": 6,
-      "community_name": "admin.py",
+      "community": 21,
+      "community_name": "Session",
       "norm_label": "admin: cari user by email, buat akun + workspace jika belum ada, lalu assign..."
     },
     {
@@ -1913,8 +1913,8 @@
       "source_location": "L526",
       "_origin": "ast",
       "id": "backend_routers_admin_rationale_526",
-      "community": 6,
-      "community_name": "admin.py",
+      "community": 21,
+      "community_name": "Session",
       "norm_label": "test gemini webapi cookie or api key connection."
     },
     {
@@ -1924,8 +1924,8 @@
       "source_location": "L544",
       "_origin": "ast",
       "id": "backend_routers_admin_rationale_544",
-      "community": 6,
-      "community_name": "admin.py",
+      "community": 21,
+      "community_name": "Session",
       "norm_label": "test stored instagram session cookie / credentials using instagrapi."
     },
     {
@@ -2783,7 +2783,7 @@
       "_origin": "ast",
       "id": "backend_routers_billing_checkoutrequest",
       "community": 49,
-      "community_name": "SubscriptionPlan",
+      "community_name": "UserSubscription",
       "norm_label": "checkoutrequest"
     },
     {
@@ -2794,7 +2794,7 @@
       "_origin": "ast",
       "id": "backend_routers_billing_py_basemodel",
       "community": 49,
-      "community_name": "SubscriptionPlan",
+      "community_name": "UserSubscription",
       "norm_label": "basemodel"
     },
     {
@@ -2849,7 +2849,7 @@
       "_origin": "ast",
       "id": "backend_routers_billing_otpsendrequest",
       "community": 49,
-      "community_name": "SubscriptionPlan",
+      "community_name": "UserSubscription",
       "norm_label": "otpsendrequest"
     },
     {
@@ -2860,7 +2860,7 @@
       "_origin": "ast",
       "id": "backend_routers_billing_otpverifyrequest",
       "community": 49,
-      "community_name": "SubscriptionPlan",
+      "community_name": "UserSubscription",
       "norm_label": "otpverifyrequest"
     },
     {
@@ -2915,7 +2915,7 @@
       "_origin": "ast",
       "id": "backend_routers_billing_synccheckoutrequest",
       "community": 49,
-      "community_name": "SubscriptionPlan",
+      "community_name": "UserSubscription",
       "norm_label": "synccheckoutrequest"
     },
     {
@@ -6523,7 +6523,7 @@
       "_origin": "ast",
       "id": "backend_seed_plans",
       "community": 49,
-      "community_name": "SubscriptionPlan",
+      "community_name": "UserSubscription",
       "norm_label": "seed_plans.py"
     },
     {
@@ -6534,7 +6534,7 @@
       "_origin": "ast",
       "id": "backend_seed_plans_seed_plans",
       "community": 49,
-      "community_name": "SubscriptionPlan",
+      "community_name": "UserSubscription",
       "norm_label": "seed_plans()"
     },
     {
@@ -6545,7 +6545,7 @@
       "_origin": "ast",
       "id": "backend_seed_plans_rationale_1",
       "community": 49,
-      "community_name": "SubscriptionPlan",
+      "community_name": "UserSubscription",
       "norm_label": "seed script \u2014 creates 4 subscription plans in db with midtrans idr pricing. all..."
     },
     {
@@ -47287,7 +47287,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "frontend/src/app/agent/page.tsx",
-      "source_location": "L542",
+      "source_location": "L585",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_src_app_agent_page_agentpage",
@@ -47324,7 +47324,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "frontend/src/app/agent/page.tsx",
-      "source_location": "L269",
+      "source_location": "L246",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_src_app_agent_page_agentpage",
@@ -58268,5 +58268,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "1a8fe12833ed8e3dde1823bb3a407abe427d404f"
+  "built_at_commit": "0f097ecd8318c1f03f7eaf3b1c599aa536d5775d"
 }

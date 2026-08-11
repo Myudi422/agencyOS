@@ -316,7 +316,7 @@ export default function AgentCreateModal({ onClose, onSave, editAgent }: Props) 
                           : "border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100"
                       }`}
                     >
-                      {num} Draft (Maks 2)
+                      {num} Draft
                     </button>
                   ))}
                 </div>
