@@ -60,9 +60,16 @@ interface AgentStore {
   loadingLogs: boolean;
   runningAgentIds: Set<string>;
 
+  // Pagination
+  logsPage: number;
+  logsLimit: number;
+  totalLogs: number;
+  totalPages: number;
+
   fetchAgents: (workspaceId: string) => Promise<void>;
-  fetchLogs: (agentId: string) => Promise<void>;
+  fetchLogs: (agentId: string, page?: number, limit?: number) => Promise<void>;
   deleteLog: (logId: string) => Promise<void>;
+  bulkDeleteLogs: (logIds: string[]) => Promise<number>;
   selectAgent: (id: string | null) => void;
   setAgents: (agents: AgentConfig[]) => void;
   upsertAgent: (agent: AgentConfig) => void;
@@ -78,6 +85,11 @@ export const useAgentStore = create<AgentStore>((set, get) => ({
   loadingLogs: false,
   runningAgentIds: new Set(),
 
+  logsPage: 1,
+  logsLimit: 10,
+  totalLogs: 0,
+  totalPages: 1,
+
   fetchAgents: async (workspaceId) => {
     set({ loadingAgents: true });
     try {
@@ -90,11 +102,27 @@ export const useAgentStore = create<AgentStore>((set, get) => ({
     }
   },
 
-  fetchLogs: async (agentId) => {
+  fetchLogs: async (agentId, page = 1, limit = 10) => {
     set({ loadingLogs: true });
     try {
-      const data = await fetchApi<AgentRunLog[]>(`/agents/${agentId}/logs?limit=20`);
-      set({ logs: data || [] });
+      const res = await fetchApi<any>(`/agents/${agentId}/logs?page=${page}&limit=${limit}`);
+      if (res && Array.isArray(res.items)) {
+        set({
+          logs: res.items,
+          totalLogs: res.total || 0,
+          logsPage: res.page || page,
+          logsLimit: res.limit || limit,
+          totalPages: res.total_pages || 1,
+        });
+      } else if (Array.isArray(res)) {
+        // Fallback for array response
+        set({
+          logs: res,
+          totalLogs: res.length,
+          logsPage: 1,
+          totalPages: 1,
+        });
+      }
     } catch (e) {
       console.error("Failed to fetch agent logs:", e);
     } finally {
@@ -104,19 +132,50 @@ export const useAgentStore = create<AgentStore>((set, get) => ({
 
   deleteLog: async (logId) => {
     try {
-      await fetchApi(`/agents/logs/${logId}`, { method: "DELETE" });
+      const res = await fetchApi<any>(`/agents/logs/${logId}`, { method: "DELETE" });
       set((state) => ({
         logs: state.logs.filter((l) => l.id !== logId),
+        totalLogs: Math.max(0, state.totalLogs - 1),
       }));
+
+      // Update agent stats in store if returned
+      if (res && res.agent) {
+        get().upsertAgent(res.agent);
+      }
     } catch (e) {
       console.error("Failed to delete agent log:", e);
       throw e;
     }
   },
 
+  bulkDeleteLogs: async (logIds) => {
+    try {
+      const res = await fetchApi<any>(`/agents/logs/bulk-delete`, {
+        method: "POST",
+        body: JSON.stringify({ log_ids: logIds }),
+      });
+      const deletedCount = res?.deleted_count || logIds.length;
+      set((state) => ({
+        logs: state.logs.filter((l) => !logIds.includes(l.id)),
+        totalLogs: Math.max(0, state.totalLogs - deletedCount),
+      }));
+
+      // Update affected agents in store
+      if (res && Array.isArray(res.updated_agents)) {
+        res.updated_agents.forEach((ag: AgentConfig) => {
+          get().upsertAgent(ag);
+        });
+      }
+      return deletedCount;
+    } catch (e) {
+      console.error("Failed to bulk delete logs:", e);
+      throw e;
+    }
+  },
+
   selectAgent: (id) => {
-    set({ selectedAgentId: id, logs: [] });
-    if (id) get().fetchLogs(id);
+    set({ selectedAgentId: id, logs: [], logsPage: 1, totalLogs: 0, totalPages: 1 });
+    if (id) get().fetchLogs(id, 1, get().logsLimit);
   },
 
   setAgents: (agents) => set({ agents }),
@@ -144,3 +203,4 @@ export const useAgentStore = create<AgentStore>((set, get) => ({
       return { runningAgentIds: next };
     }),
 }));
+

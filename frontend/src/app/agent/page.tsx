@@ -83,10 +83,14 @@ function AgentCard({ agent, selected, onSelect }: { agent: AgentConfig; selected
 // ─── Log Card ─────────────────────────────────────────────────────────────────
 function LogCard({
   log,
+  selected,
+  onToggleSelect,
   onTransfer,
   onDeleteLog,
 }: {
   log: AgentRunLog;
+  selected: boolean;
+  onToggleSelect: (logId: string) => void;
   onTransfer: (draft: any, log: AgentRunLog) => void;
   onDeleteLog: (logId: string) => void;
 }) {
@@ -106,12 +110,19 @@ function LogCard({
   };
 
   return (
-    <div className="border border-slate-200 rounded-2xl overflow-hidden bg-white">
+    <div className={`border rounded-2xl overflow-hidden bg-white transition-all ${selected ? "border-purple-300 ring-2 ring-purple-100" : "border-slate-200"}`}>
       <div
         onClick={() => setExpanded((e) => !e)}
-        className="w-full flex items-center justify-between p-3.5 hover:bg-slate-50 transition-colors cursor-pointer"
+        className="w-full flex items-center justify-between p-3.5 hover:bg-slate-50 transition-colors cursor-pointer gap-2"
       >
-        <div className="flex items-center gap-2 flex-wrap">
+        <div className="flex items-center gap-3 flex-wrap min-w-0">
+          <input
+            type="checkbox"
+            checked={selected}
+            onChange={() => onToggleSelect(log.id)}
+            onClick={(e) => e.stopPropagation()}
+            className="w-4 h-4 rounded text-purple-600 focus:ring-purple-500 border-slate-300 cursor-pointer shrink-0"
+          />
           <span className={`text-[10px] px-2 py-0.5 rounded-full border font-semibold ${cfg.color}`}>
             {cfg.label}
           </span>
@@ -211,12 +222,15 @@ export default function AgentPage() {
   const { activeWorkspace, openComposerWithBrief } = useStore();
   const {
     agents, selectedAgentId, logs, loadingAgents, loadingLogs,
-    fetchAgents, selectAgent, upsertAgent, removeAgent, deleteLog, setRunning, runningAgentIds
+    logsPage, logsLimit, totalLogs, totalPages,
+    fetchAgents, fetchLogs, selectAgent, upsertAgent, removeAgent, deleteLog, bulkDeleteLogs, setRunning, runningAgentIds
   } = useAgentStore();
 
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingAgent, setEditingAgent] = useState<AgentConfig | null>(null);
   const [pollingMap, setPollingMap] = useState<Record<string, NodeJS.Timeout>>({});
+  const [selectedLogIds, setSelectedLogIds] = useState<string[]>([]);
+  const [isBulkDeleting, setIsBulkDeleting] = useState(false);
 
   const selectedAgent = agents.find((a) => a.id === selectedAgentId) || null;
 
@@ -226,12 +240,17 @@ export default function AgentPage() {
     }
   }, [activeWorkspace?.id]);
 
+  // Clear log selection when selected agent changes
+  useEffect(() => {
+    setSelectedLogIds([]);
+  }, [selectedAgentId]);
+
   const pollLogs = useCallback((agentId: string) => {
     const interval = setInterval(async () => {
       try {
-        const data = await fetchApi<AgentRunLog[]>(`/agents/${agentId}/logs?limit=20`);
-        const hasRunning = (data || []).some((l) => l.status === "running" || l.status === "pending");
-        useAgentStore.setState({ logs: data || [] });
+        await fetchLogs(agentId, logsPage, logsLimit);
+        const currentLogs = useAgentStore.getState().logs;
+        const hasRunning = (currentLogs || []).some((l) => l.status === "running" || l.status === "pending");
         if (!hasRunning) {
           clearInterval(interval);
           setPollingMap((p) => { const n = { ...p }; delete n[agentId]; return n; });
@@ -242,7 +261,7 @@ export default function AgentPage() {
       } catch { clearInterval(interval); }
     }, 3000);
     return interval;
-  }, [activeWorkspace?.id]);
+  }, [activeWorkspace?.id, logsPage, logsLimit]);
 
   const handleRunNow = async (agent: AgentConfig) => {
     setRunning(agent.id, true);
@@ -283,9 +302,47 @@ export default function AgentPage() {
   const handleDeleteLog = async (logId: string) => {
     try {
       await deleteLog(logId);
+      setSelectedLogIds((prev) => prev.filter((id) => id !== logId));
       toast.success("Log hasil agent dihapus.");
     } catch (e: any) {
       toast.error(e.message || "Gagal menghapus log.");
+    }
+  };
+
+  const handleToggleLogSelect = (logId: string) => {
+    setSelectedLogIds((prev) =>
+      prev.includes(logId) ? prev.filter((id) => id !== logId) : [...prev, logId]
+    );
+  };
+
+  const handleSelectAllLogs = () => {
+    if (selectedLogIds.length === logs.length) {
+      setSelectedLogIds([]);
+    } else {
+      setSelectedLogIds(logs.map((l) => l.id));
+    }
+  };
+
+  const handleBulkDeleteLogs = async () => {
+    if (!selectedLogIds.length) return;
+    if (!confirm(`Hapus ${selectedLogIds.length} log hasil agent terpilih? Stat run/draft akan berkurang otomatis.`)) return;
+
+    setIsBulkDeleting(true);
+    try {
+      const count = await bulkDeleteLogs(selectedLogIds);
+      toast.success(`${count} log berhasil dihapus.`);
+      setSelectedLogIds([]);
+    } catch (e: any) {
+      toast.error(e.message || "Gagal menghapus log terpilih.");
+    } finally {
+      setIsBulkDeleting(false);
+    }
+  };
+
+  const handlePageChange = (newPage: number) => {
+    if (selectedAgentId && newPage >= 1 && newPage <= totalPages) {
+      fetchLogs(selectedAgentId, newPage, logsLimit);
+      setSelectedLogIds([]);
     }
   };
 
@@ -489,40 +546,97 @@ export default function AgentPage() {
               </div>
 
               {/* Logs */}
-              <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-4">
-                <div className="flex items-center justify-between mb-3">
-                  <p className="text-xs font-bold text-slate-700">Riwayat Run</p>
-                  <button
-                    onClick={() => selectedAgentId && useAgentStore.getState().fetchLogs(selectedAgentId)}
-                    className="p-1.5 rounded-lg text-slate-400 hover:text-purple-600 hover:bg-purple-50 transition-colors"
-                    title="Refresh"
-                  >
-                    <RefreshCw className="w-3.5 h-3.5" />
-                  </button>
+              <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+                    <div className="flex items-center gap-2">
+                      {logs.length > 0 && (
+                        <label className="flex items-center gap-1.5 text-xs text-slate-600 font-semibold cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={logs.length > 0 && selectedLogIds.length === logs.length}
+                            onChange={handleSelectAllLogs}
+                            className="w-4 h-4 rounded text-purple-600 focus:ring-purple-500 border-slate-300 cursor-pointer"
+                          />
+                          Pilih Semua ({logs.length})
+                        </label>
+                      )}
+                      <p className="text-xs font-bold text-slate-700">
+                        {totalLogs > 0 ? `Riwayat Run (${totalLogs})` : "Riwayat Run"}
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      {selectedLogIds.length > 0 && (
+                        <button
+                          onClick={handleBulkDeleteLogs}
+                          disabled={isBulkDeleting}
+                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold transition-all shadow-sm disabled:opacity-50"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                          Hapus {selectedLogIds.length} Terpilih
+                        </button>
+                      )}
+                      <button
+                        onClick={() => selectedAgentId && fetchLogs(selectedAgentId, logsPage, logsLimit)}
+                        className="p-1.5 rounded-lg text-slate-400 hover:text-purple-600 hover:bg-purple-50 transition-colors"
+                        title="Refresh"
+                      >
+                        <RefreshCw className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+
+                  {loadingLogs ? (
+                    <div className="flex items-center justify-center py-12">
+                      <RefreshCw className="w-5 h-5 text-purple-400 animate-spin" />
+                    </div>
+                  ) : logs.length === 0 ? (
+                    <div className="text-center py-10">
+                      <div className="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center mx-auto mb-3">
+                        <Eye className="w-6 h-6 text-slate-300" />
+                      </div>
+                      <p className="text-xs text-slate-500 font-medium">Belum ada riwayat run.</p>
+                      <p className="text-[11px] text-slate-400 mt-1">Klik "Run Sekarang" untuk mencoba agent ini.</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {logs.map((log) => (
+                        <LogCard
+                          key={log.id}
+                          log={log}
+                          selected={selectedLogIds.includes(log.id)}
+                          onToggleSelect={handleToggleLogSelect}
+                          onTransfer={handleTransferToComposer}
+                          onDeleteLog={handleDeleteLog}
+                        />
+                      ))}
+                    </div>
+                  )}
                 </div>
 
-                {loadingLogs ? (
-                  <div className="flex items-center justify-center py-12">
-                    <RefreshCw className="w-5 h-5 text-purple-400 animate-spin" />
-                  </div>
-                ) : logs.length === 0 ? (
-                  <div className="text-center py-10">
-                    <div className="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center mx-auto mb-3">
-                      <Eye className="w-6 h-6 text-slate-300" />
+                {/* Pagination bar */}
+                {totalPages > 1 && (
+                  <div className="mt-4 pt-3 border-t border-slate-200 flex items-center justify-between text-xs text-slate-600">
+                    <p className="text-[11px] font-medium text-slate-500">
+                      Halaman <span className="font-bold text-slate-800">{logsPage}</span> dari <span className="font-bold text-slate-800">{totalPages}</span> ({totalLogs} total log)
+                    </p>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => handlePageChange(logsPage - 1)}
+                        disabled={logsPage <= 1}
+                        className="px-3 py-1.5 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-100 disabled:opacity-40 font-semibold transition-all"
+                      >
+                        ← Prev
+                      </button>
+                      <button
+                        onClick={() => handlePageChange(logsPage + 1)}
+                        disabled={logsPage >= totalPages}
+                        className="px-3 py-1.5 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-100 disabled:opacity-40 font-semibold transition-all"
+                      >
+                        Next →
+                      </button>
                     </div>
-                    <p className="text-xs text-slate-500 font-medium">Belum ada riwayat run.</p>
-                    <p className="text-[11px] text-slate-400 mt-1">Klik "Run Sekarang" untuk mencoba agent ini.</p>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {logs.map((log) => (
-                      <LogCard
-                        key={log.id}
-                        log={log}
-                        onTransfer={handleTransferToComposer}
-                        onDeleteLog={handleDeleteLog}
-                      />
-                    ))}
                   </div>
                 )}
               </div>

@@ -1,7 +1,7 @@
 # Graph Report - agencyOS  (2026-08-11)
 
 ## Corpus Check
-- 148 files · ~776,903 words
+- 148 files · ~777,542 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
@@ -10,7 +10,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `3612d01f`
+- Built from commit: `6de154d7`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -94,7 +94,7 @@
 - pricing/page.tsx
 - migrate_wa_otp.py
 - update_agent
-- clsx
+- react
 
 ## God Nodes (most connected - your core abstractions)
 1. `User` - 167 edges
@@ -162,16 +162,16 @@ Cohesion: 0.17
 Nodes (12): ActiveTab, AddJobState, Competitor, CompetitorPost, CompetitorProfilePreview, CompetitorSpyPage(), ConnectedIgAccount, CompetitorProgressWidget() (+4 more)
 
 ### Community 9 - "create_checkout"
-Cohesion: 0.17
-Nodes (21): _activate_user_subscription(), create_checkout(), get_frontend_url(), get_subscription(), _get_user_from_auth(), list_plans(), midtrans_notification(), get (+13 more)
+Cohesion: 0.15
+Nodes (23): _activate_user_subscription(), create_checkout(), get_frontend_url(), get_subscription(), _get_user_from_auth(), list_plans(), midtrans_notification(), get (+15 more)
 
 ### Community 10 - "Session"
 Cohesion: 0.16
 Nodes (16): delete_setting(), delete_user(), get_plans(), get_settings(), get_user_stats(), list_users(), delete, get (+8 more)
 
 ### Community 11 - "billing.py"
-Cohesion: 0.33
-Nodes (14): PlanTier, Paket langganan — semua plan unlimited akun sosmed, beda di quota post., Menyimpan OTP WhatsApp sementara untuk verifikasi sebelum claim trial., SubscriptionPlan, SubscriptionStatus, WaOtpVerification, CheckoutRequest, OtpSendRequest (+6 more)
+Cohesion: 0.40
+Nodes (12): PlanTier, Paket langganan — semua plan unlimited akun sosmed, beda di quota post., Menyimpan OTP WhatsApp sementara untuk verifikasi sebelum claim trial., SubscriptionPlan, SubscriptionStatus, WaOtpVerification, CheckoutRequest, OtpSendRequest (+4 more)
 
 ### Community 12 - "statistics.py"
 Cohesion: 0.08
@@ -231,7 +231,7 @@ Nodes (14): create_snap_transaction(), get_core_api_client(), get_snap_client(),
 
 ### Community 26 - "dependencies"
 Cohesion: 0.13
-Nodes (15): dependencies, jspdf, lucide-react, react, react-dom, react-is, recharts, @tanstack/react-query (+7 more)
+Nodes (15): clsx, dependencies, clsx, jspdf, lucide-react, react-dom, react-is, recharts (+7 more)
 
 ### Community 28 - "KolDatabaseDrawer.tsx"
 Cohesion: 0.18

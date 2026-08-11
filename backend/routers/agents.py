@@ -437,24 +437,94 @@ def run_agent_now(
 @router.get("/{agent_id}/logs")
 def get_agent_logs(
     agent_id: str,
-    limit: int = 20,
+    page: int = 1,
+    limit: int = 10,
     db: Session = Depends(get_db),
     current_user: User = Depends(require_user),
 ):
-    """Get run history for an agent."""
+    """Get paginated run history for an agent."""
     agent = db.query(AgentConfig).filter(AgentConfig.id == agent_id).first()
     if not agent:
         raise HTTPException(status_code=404, detail="Agent tidak ditemukan.")
     get_user_workspace(current_user, agent.workspace_id, db)
 
+    page = max(1, page)
+    limit = max(1, min(limit, 50))
+
+    total_count = db.query(AgentRunLog).filter(AgentRunLog.agent_id == agent_id).count()
+    offset = (page - 1) * limit
+
     logs = (
         db.query(AgentRunLog)
         .filter(AgentRunLog.agent_id == agent_id)
         .order_by(AgentRunLog.started_at.desc())
-        .limit(min(limit, 50))
+        .offset(offset)
+        .limit(limit)
         .all()
     )
-    return [_serialize_log(log) for log in logs]
+
+    total_pages = max(1, (total_count + limit - 1) // limit)
+
+    return {
+        "items": [_serialize_log(log) for log in logs],
+        "total": total_count,
+        "page": page,
+        "limit": limit,
+        "total_pages": total_pages,
+    }
+
+
+class BulkDeleteLogsRequest(BaseModel):
+    log_ids: List[str]
+
+
+@router.post("/logs/bulk-delete")
+def bulk_delete_agent_logs(
+    req: BulkDeleteLogsRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_user),
+):
+    """Delete multiple agent run logs and auto-decrement affected agent statistics."""
+    if not req.log_ids:
+        return {"status": "success", "deleted_count": 0, "updated_agents": []}
+
+    logs = db.query(AgentRunLog).filter(AgentRunLog.id.in_(req.log_ids)).all()
+    if not logs:
+        return {"status": "success", "deleted_count": 0, "updated_agents": []}
+
+    workspace_ids = {l.workspace_id for l in logs if l.workspace_id}
+    for ws_id in workspace_ids:
+        get_user_workspace(current_user, ws_id, db)
+
+    agent_updates = {}
+    for log in logs:
+        agent_id = log.agent_id
+        if agent_id not in agent_updates:
+            agent_updates[agent_id] = {"drafts_to_deduct": 0, "runs_to_deduct": 0}
+
+        drafts_cnt = log.drafts_count or (len(log.drafts) if log.drafts else 0)
+        agent_updates[agent_id]["drafts_to_deduct"] += drafts_cnt
+        if log.status in [AgentRunStatus.DONE, AgentRunStatus.FAILED]:
+            agent_updates[agent_id]["runs_to_deduct"] += 1
+
+        db.delete(log)
+
+    updated_agents_serialized = []
+    for agent_id, del_info in agent_updates.items():
+        agent = db.query(AgentConfig).filter(AgentConfig.id == agent_id).first()
+        if agent:
+            agent.total_drafts_generated = max(0, (agent.total_drafts_generated or 0) - del_info["drafts_to_deduct"])
+            agent.total_runs = max(0, (agent.total_runs or 0) - del_info["runs_to_deduct"])
+            db.flush()
+            updated_agents_serialized.append(_serialize_agent(agent, db))
+
+    db.commit()
+
+    return {
+        "status": "success",
+        "deleted_count": len(logs),
+        "updated_agents": updated_agents_serialized,
+    }
 
 
 @router.delete("/logs/{log_id}")
@@ -463,14 +533,23 @@ def delete_agent_log(
     db: Session = Depends(get_db),
     current_user: User = Depends(require_user),
 ):
-    """Delete a single agent run log entry."""
+    """Delete a single agent run log entry and auto-decrement agent statistics."""
     log = db.query(AgentRunLog).filter(AgentRunLog.id == log_id).first()
     if not log:
         raise HTTPException(status_code=404, detail="Log hasil agent tidak ditemukan.")
     get_user_workspace(current_user, log.workspace_id, db)
 
+    agent = db.query(AgentConfig).filter(AgentConfig.id == log.agent_id).first()
+    if agent:
+        drafts_cnt = log.drafts_count or (len(log.drafts) if log.drafts else 0)
+        agent.total_drafts_generated = max(0, (agent.total_drafts_generated or 0) - drafts_cnt)
+        if log.status in [AgentRunStatus.DONE, AgentRunStatus.FAILED]:
+            agent.total_runs = max(0, (agent.total_runs or 0) - 1)
+
     db.delete(log)
     db.commit()
 
-    return {"status": "deleted", "log_id": log_id}
+    updated_agent = _serialize_agent(agent, db) if agent else None
+    return {"status": "deleted", "log_id": log_id, "agent": updated_agent}
+
 
