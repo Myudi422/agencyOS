@@ -521,14 +521,15 @@ export default function AdminPage() {
     key: string,
     label: string,
     hint: string,
-    accentColor: "purple" | "pink" | "amber" = "purple"
+    accentColor: "purple" | "pink" | "amber" | "indigo" = "purple"
   ) => {
     const isShow = !!showPasswordMap[key];
     const currentValue = appSettings[key] || "";
     const isConfigured = !!currentValue;
 
-    const focusRing = accentColor === "pink" ? "focus:ring-pink-400" : accentColor === "amber" ? "focus:ring-amber-400" : "focus:ring-purple-400";
-    const btnBg = accentColor === "pink" ? "bg-pink-600 hover:bg-pink-500" : accentColor === "amber" ? "bg-amber-600 hover:bg-amber-500 font-bold" : "bg-purple-600 hover:bg-purple-500";
+    const focusRing = accentColor === "pink" ? "focus:ring-pink-400" : accentColor === "amber" ? "focus:ring-amber-400" : accentColor === "indigo" ? "focus:ring-indigo-400" : "focus:ring-purple-400";
+    const btnBg = accentColor === "pink" ? "bg-pink-600 hover:bg-pink-500" : accentColor === "amber" ? "bg-amber-600 hover:bg-amber-500 font-bold" : accentColor === "indigo" ? "bg-indigo-600 hover:bg-indigo-500" : "bg-purple-600 hover:bg-purple-500";
+
 
     return (
       <div key={key} className="p-3.5 rounded-2xl bg-white/10 border border-white/10 space-y-2 backdrop-blur-xs">
