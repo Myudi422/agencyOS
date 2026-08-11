@@ -79,8 +79,87 @@ class InstagrapiService:
             }
         return None
 
-    def _create_client(self, db: Optional[Session] = None) -> Any:
-        """Create an instagrapi Client preconfigured with Challenge Resolvers."""
+    @staticmethod
+    def normalize_proxy_url(raw_proxy: str) -> str:
+        """
+        Normalizes various proxy input formats to a valid URL string.
+        Supports:
+        - HOST:PORT:USERNAME:PASSWORD  -> http://USERNAME:PASSWORD@HOST:PORT
+        - HOST:PORT                    -> http://HOST:PORT
+        - http://USERNAME:PASSWORD@HOST:PORT
+        """
+        if not raw_proxy:
+            return ""
+        clean = raw_proxy.strip()
+        if not clean.startswith("http://") and not clean.startswith("https://") and not clean.startswith("socks5://"):
+            parts = clean.split(":")
+            if len(parts) == 4:
+                host, port, user, password = parts
+                return f"http://{user}:{password}@{host}:{port}"
+            elif len(parts) == 2:
+                host, port = parts
+                return f"http://{host}:{port}"
+            else:
+                return f"http://{clean}"
+        return clean
+
+    def get_proxy_url(self, db: Optional[Session] = None, override_proxy_url: Optional[str] = None) -> Optional[str]:
+        """Fetch configured Residential Proxy setting from DB or parameters."""
+        if override_proxy_url:
+            p_url = self.normalize_proxy_url(override_proxy_url)
+            if p_url:
+                return p_url
+
+        if db:
+            enabled_row = db.query(Setting).filter(
+                Setting.workspace_id == GLOBAL_WS_ID,
+                Setting.key == "PROXY_ENABLED"
+            ).first()
+
+            url_row = db.query(Setting).filter(
+                Setting.workspace_id == GLOBAL_WS_ID,
+                Setting.key.in_(["PROXY_URL", "PROXY_CONNECTION_STRING"])
+            ).first()
+
+            if enabled_row and str(enabled_row.value).lower() in ["true", "1", "yes"]:
+                if url_row and url_row.value:
+                    p_url = self.normalize_proxy_url(str(url_row.value))
+                    if p_url:
+                        return p_url
+
+        return None
+
+    def test_proxy_connection(self, proxy_url: str) -> Dict[str, Any]:
+        """Test proxy connectivity by querying public IP checkers."""
+        import requests
+        clean_proxy = self.normalize_proxy_url(proxy_url)
+        if not clean_proxy:
+            return {"success": False, "message": "URL Proxy tidak boleh kosong."}
+
+        proxies = {"http": clean_proxy, "https": clean_proxy}
+        try:
+            resp = requests.get("http://api.ipify.org?format=json", proxies=proxies, timeout=20)
+            if resp.status_code == 200:
+                ip_data = resp.json()
+                return {
+                    "success": True,
+                    "ip": ip_data.get("ip", "Unknown"),
+                    "message": f"Proxy Aktif! IP terdeteksi: {ip_data.get('ip')}"
+                }
+            else:
+                return {
+                    "success": False,
+                    "message": f"Proxy merespon dengan status code HTTP {resp.status_code}"
+                }
+        except Exception as e:
+            logger.error(f"Test proxy error: {e}")
+            return {
+                "success": False,
+                "message": f"Gagal terhubung ke Proxy: {str(e)}"
+            }
+
+    def _create_client(self, db: Optional[Session] = None, override_proxy_url: Optional[str] = None) -> Any:
+        """Create an instagrapi Client preconfigured with Proxy, Bandwidth Optimizations & Challenge Resolvers."""
         try:
             from instagrapi import Client
         except ImportError:
@@ -89,11 +168,21 @@ class InstagrapiService:
         cl = Client()
         cl.delay_range = [1, 3]
 
+        # Attach Residential Proxy if configured
+        proxy_url = self.get_proxy_url(db, override_proxy_url=override_proxy_url)
+        if proxy_url:
+            try:
+                cl.set_proxy(proxy_url)
+                logger.info(f"Instagrapi proxy set successfully: {proxy_url.split('@')[-1]}")
+            except Exception as e_p:
+                logger.warning(f"Failed setting instagrapi proxy ({e_p})")
+
         if db:
             cl.change_password_handler = lambda uname: self.custom_change_password_handler(db, uname)
             cl.challenge_code_handler = lambda uname, choice: self.custom_challenge_code_handler(db, uname, choice)
 
         return cl
+
 
     def get_code_from_email(self, db: Session, username: str) -> Optional[str]:
         """

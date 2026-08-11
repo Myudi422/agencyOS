@@ -30,33 +30,16 @@ from backend.models.models import (
     SocialAccount, AccountPlatform
 )
 from backend.services.firebase_service import verify_firebase_token
+from backend.services.firebase_service import verify_firebase_token
 from backend.services.instagrapi_service import instagrapi_service
-from backend.services.faustren_scraper_service import faustren_scraper_service
 from backend.models.models import Setting
 
-def _get_active_engine_name(db: Session) -> str:
-    row = db.query(Setting).filter(Setting.workspace_id == "global", Setting.key == "SCRAPER_ENGINE").first()
-    if row and row.value:
-        return str(row.value).lower().strip()
-    return "faustren"
-
 def _fetch_profile(db: Session, username: str) -> dict:
-    engine = _get_active_engine_name(db)
-    if engine == "instagrapi":
-        try:
-            return instagrapi_service.fetch_competitor_profile(db, username)
-        except Exception as e:
-            logger.warning(f"instagrapi profile fetch failed for @{username}: {e}. Falling back to FaustRen scraper...")
-    return faustren_scraper_service.fetch_competitor_profile(db, username)
+    return instagrapi_service.fetch_competitor_profile(db, username)
 
 def _fetch_posts(db: Session, username: str, amount: int = 20) -> dict:
-    engine = _get_active_engine_name(db)
-    if engine == "instagrapi":
-        try:
-            return instagrapi_service.fetch_competitor_posts(db, username, amount=amount)
-        except Exception as e:
-            logger.warning(f"instagrapi posts fetch failed for @{username}: {e}. Falling back to FaustRen scraper...")
-    return faustren_scraper_service.fetch_competitor_posts(db, username, amount=amount)
+    return instagrapi_service.fetch_competitor_posts(db, username, amount=amount)
+
 
 from backend.services.redis_service import (
     cache_get, cache_set, cache_delete_prefix,

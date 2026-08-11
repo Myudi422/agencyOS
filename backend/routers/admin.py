@@ -561,11 +561,10 @@ def test_proxy(
     db: Session = Depends(get_db)
 ):
     """Test proxy connectivity by querying public IP checkers."""
-    from backend.services.faustren_scraper_service import faustren_scraper_service
+    from backend.services.instagrapi_service import instagrapi_service
     p_url = req.proxy_url if req and req.proxy_url else None
 
     if not p_url:
-        # Check DB setting if not provided in payload
         url_row = db.query(Setting).filter(
             Setting.workspace_id == GLOBAL_WS_ID,
             Setting.key.in_(["PROXY_URL", "PROXY_CONNECTION_STRING"])
@@ -576,25 +575,44 @@ def test_proxy(
     if not p_url:
         return {"success": False, "message": "URL Proxy belum diisi di form atau Admin Settings."}
 
-    return faustren_scraper_service.test_proxy_connection(p_url)
+    return instagrapi_service.test_proxy_connection(p_url)
 
 
-class FaustRenTestRequest(BaseModel):
+class InstagrapiScraperTestRequest(BaseModel):
     username: Optional[str] = "instagram"
     proxy_url: Optional[str] = None
 
 
 @router.post("/test-faustren")
-def test_faustren(
-    req: Optional[FaustRenTestRequest] = None,
+@router.post("/test-instagrapi")
+def test_instagrapi_scraper(
+    req: Optional[InstagrapiScraperTestRequest] = None,
     admin: User = Depends(require_admin),
     db: Session = Depends(get_db)
 ):
-    """Test FaustRen Instagram scraper with optional proxy override."""
-    from backend.services.faustren_scraper_service import faustren_scraper_service
+    """Test Instagrapi Instagram scraper engine with optional proxy override."""
+    from backend.services.instagrapi_service import instagrapi_service
     sample_uname = (req.username if req and req.username else "instagram").strip()
     p_url = req.proxy_url if req and req.proxy_url else None
-    return faustren_scraper_service.test_faustren_scraper(db, sample_username=sample_uname, override_proxy=p_url)
+    
+    try:
+        prof = instagrapi_service.fetch_competitor_profile(db, sample_uname)
+        posts_data = instagrapi_service.fetch_competitor_posts(db, sample_uname, amount=6)
+        posts_count = posts_data.get("total_posts_scraped", 0)
+        return {
+            "success": True,
+            "username": prof["username"],
+            "full_name": prof["full_name"],
+            "followers_count": prof["followers_count"],
+            "posts_count": posts_count,
+            "message": f"Instagrapi Engine Berhasil! Profil @{prof['username']} ({prof['followers_count']:,} followers) & {posts_count} posts berhasil ditarik."
+        }
+    except Exception as e:
+        return {
+            "success": False,
+            "message": f"Instagrapi Scraper gagal: {str(e)}"
+        }
+
 
 
 

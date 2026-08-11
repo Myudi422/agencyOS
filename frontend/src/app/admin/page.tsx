@@ -1737,7 +1737,7 @@ export default function AdminPage() {
                   className="flex items-center gap-2 px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-semibold shadow-lg shadow-purple-500/30 transition-all disabled:opacity-60 cursor-pointer"
                 >
                   {faustrenTesting ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5 text-amber-300" />}
-                  {faustrenTesting ? "Menguji Scraper..." : "Test FaustRen Scraper"}
+                  {faustrenTesting ? "Menguji Scraper..." : "Test Instagrapi Scraper"}
                 </button>
               </div>
             </div>
@@ -1756,13 +1756,13 @@ export default function AdminPage() {
                 <div className="flex gap-2">
                   <select
                     id="setting-SCRAPER_ENGINE"
-                    defaultValue={appSettings["SCRAPER_ENGINE"] || "faustren"}
+                    defaultValue={appSettings["SCRAPER_ENGINE"] || "instagrapi"}
                     className="w-full px-3 py-2 rounded-xl border border-white/20 text-xs bg-slate-900 text-white focus:outline-none focus:ring-2 focus:ring-purple-400 font-sans"
                   >
-                    <option value="faustren">FaustRen Scraper (No Login + Proxy)</option>
-                    <option value="instagrapi">Instagrapi (Login Session)</option>
+                    <option value="instagrapi">Instagrapi Engine (With Proxy & Session)</option>
                     <option value="apify">Apify Managed API</option>
                   </select>
+
                   <button
                     type="button"
                     onClick={() => {
