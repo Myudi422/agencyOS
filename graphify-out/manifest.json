@@ -105,8 +105,8 @@
     "semantic_hash": ""
   },
   "backend/routers/admin.py": {
-    "mtime": 1786088443.2305813,
-    "ast_hash": "5f9d1abe700dd31df1be0a430fd65e7e",
+    "mtime": 1786414913.00745,
+    "ast_hash": "fe71e0fcb5e2aa4660a6c88d672bedd2",
     "semantic_hash": ""
   },
   "backend/routers/auth.py": {
@@ -140,8 +140,8 @@
     "semantic_hash": ""
   },
   "backend/routers/firebase_auth.py": {
-    "mtime": 1785911028.1297417,
-    "ast_hash": "c7d5aedbb9b874f3713ceca2fa82b068",
+    "mtime": 1786414913.00745,
+    "ast_hash": "3681af7920fdbd2f47818f5766f271e4",
     "semantic_hash": ""
   },
   "backend/routers/kol.py": {
@@ -275,8 +275,8 @@
     "semantic_hash": ""
   },
   "frontend/src/app/admin/page.tsx": {
-    "mtime": 1786326889.682473,
-    "ast_hash": "a2b32e3666330f00037cce940c5add83",
+    "mtime": 1786414913.00745,
+    "ast_hash": "19c5b038bb3053765fc6629632f81fd1",
     "semantic_hash": ""
   },
   "frontend/src/app/auth/callback/page.tsx": {
@@ -480,8 +480,8 @@
     "semantic_hash": "d882b899234eb67caa44aa4711652fb7"
   },
   "frontend/src/components/layout/Sidebar.tsx": {
-    "mtime": 1785940359.0330627,
-    "ast_hash": "e527dc75ca79705556cbece78cc4ee98",
+    "mtime": 1786414913.00745,
+    "ast_hash": "baa340dc808ac4fb0fc8d4745339cd40",
     "semantic_hash": ""
   },
   "frontend/src/components/media/MoveToFolderModal.tsx": {
