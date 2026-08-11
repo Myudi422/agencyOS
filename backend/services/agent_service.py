@@ -178,37 +178,37 @@ async def run_agent(agent_id: str, trigger: str = "scheduled") -> dict:
                     except Exception as draft_err:
                         logger.warning(f"Error generating variation {i} for agent {agent_id}: {draft_err}")
 
-        if not drafts:
-            _fail_run(db, run_log, agent, "Gagal menghasilkan draft konten dari Shiera AI Engine.")
-            return {"status": "failed", "error": "AI generation failed"}
+            if not drafts:
+                _fail_run(db, run_log, agent, "Gagal menghasilkan draft konten dari Shiera AI Engine.")
+                return {"status": "failed", "error": "AI generation failed"}
 
-        # Update run log → DONE
-        run_log.drafts = drafts
-        run_log.drafts_count = len(drafts)
-        run_log.status = AgentRunStatus.DONE
-        run_log.completed_at = datetime.utcnow()
-        db.commit()
+            # Update run log → DONE
+            run_log.drafts = drafts
+            run_log.drafts_count = len(drafts)
+            run_log.status = AgentRunStatus.DONE
+            run_log.completed_at = datetime.utcnow()
+            db.commit()
 
-        # Update agent stats
-        agent.last_run_at = datetime.utcnow()
-        agent.total_runs = (agent.total_runs or 0) + 1
-        agent.total_drafts_generated = (agent.total_drafts_generated or 0) + len(drafts)
-        db.commit()
+            # Update agent stats
+            agent.last_run_at = datetime.utcnow()
+            agent.total_runs = (agent.total_runs or 0) + 1
+            agent.total_drafts_generated = (agent.total_drafts_generated or 0) + len(drafts)
+            db.commit()
 
-        logger.info(f"✅ Agent '{agent.name}' run complete. {len(drafts)} draft(s) generated.")
-        return {
-            "status": "done",
-            "drafts_count": len(drafts),
-            "run_log_id": run_log.id,
-        }
+            logger.info(f"✅ Agent '{agent.name}' run complete. {len(drafts)} draft(s) generated.")
+            return {
+                "status": "done",
+                "drafts_count": len(drafts),
+                "run_log_id": run_log.id,
+            }
 
-    except Exception as e:
-        logger.error(f"Agent {agent_id} run error: {e}", exc_info=True)
-        if run_log:
-            _fail_run(db, run_log, None, str(e))
-        return {"status": "failed", "error": str(e)}
-    finally:
-        db.close()
+        except Exception as e:
+            logger.error(f"Agent {agent_id} run error: {e}", exc_info=True)
+            if run_log:
+                _fail_run(db, run_log, None, str(e))
+            return {"status": "failed", "error": str(e)}
+        finally:
+            db.close()
 
 
 def _fail_run(db: Session, run_log: AgentRunLog, agent: Optional[AgentConfig], error: str):
