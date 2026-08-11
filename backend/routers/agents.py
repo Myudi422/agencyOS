@@ -175,6 +175,100 @@ def create_agent(
     return _serialize_agent(agent, db)
 
 
+@router.get("/cron-trigger")
+def cron_trigger(
+    secret: str,
+    db: Session = Depends(get_db),
+):
+    """
+    Public endpoint for external cron services (Cron-job.org / QStash)
+    to trigger scheduled agents on Serverless environments (Vercel).
+    """
+    import os
+    import pytz
+
+    expected_secret = os.getenv("CRON_SECRET", "my-agencyos-cron-secret-123")
+    if secret != expected_secret:
+        raise HTTPException(status_code=401, detail="Invalid cron secret key")
+
+    active_agents = db.query(AgentConfig).filter(AgentConfig.is_active == True).all()
+    triggered_agents = []
+
+    for agent in active_agents:
+        try:
+            tz = pytz.timezone(agent.timezone or "Asia/Jakarta")
+        except Exception:
+            tz = pytz.timezone("Asia/Jakarta")
+
+        agent_now = datetime.now(tz)
+        current_day = agent_now.weekday()  # 0=Mon..6=Sun
+        run_days = agent.run_days or [0, 1, 2, 3, 4]
+
+        if current_day not in run_days:
+            continue
+
+        try:
+            target_h, target_m = map(int, agent.run_time.split(":"))
+        except Exception:
+            target_h, target_m = 8, 0
+
+        target_minutes = target_h * 60 + target_m
+        current_minutes = agent_now.hour * 60 + agent_now.minute
+
+        # Only trigger if current time >= target run_time
+        if current_minutes < target_minutes:
+            continue
+
+        # Check if already ran today in agent's local timezone
+        already_ran_today = False
+        if agent.last_run_at:
+            last_run_utc = agent.last_run_at.replace(tzinfo=pytz.utc) if agent.last_run_at.tzinfo is None else agent.last_run_at
+            last_run_local = last_run_utc.astimezone(tz)
+            if last_run_local.date() == agent_now.date():
+                already_ran_today = True
+
+        if not already_ran_today:
+            # Check if agent is currently running
+            running_log = (
+                db.query(AgentRunLog)
+                .filter(
+                    AgentRunLog.agent_id == agent.id,
+                    AgentRunLog.status == AgentRunStatus.RUNNING,
+                )
+                .first()
+            )
+            if not running_log:
+                if agent_scheduler:
+                    agent_scheduler.run_now(agent.id)
+                else:
+                    import threading
+                    from backend.services.agent_service import run_agent
+                    import asyncio
+
+                    def _run(aid=agent.id):
+                        loop = asyncio.new_event_loop()
+                        try:
+                            loop.run_until_complete(run_agent(aid, trigger="scheduled"))
+                        finally:
+                            loop.close()
+
+                    threading.Thread(target=_run, daemon=True).start()
+
+                triggered_agents.append({
+                    "id": agent.id,
+                    "name": agent.name,
+                    "run_time": agent.run_time,
+                    "timezone": agent.timezone,
+                })
+
+    return {
+        "status": "success",
+        "timestamp": datetime.utcnow().isoformat(),
+        "triggered_count": len(triggered_agents),
+        "triggered_agents": triggered_agents,
+    }
+
+
 @router.get("/{agent_id}")
 def get_agent(
     agent_id: str,
