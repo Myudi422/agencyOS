@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { 
   Users2, CalendarDays, CheckCircle2, AlertTriangle, 
-  Cpu, Briefcase, ArrowUpRight, Plus, RefreshCw, Activity, Zap, HardDrive, Database, Server, Gauge, Clock, Image as ImageIcon, Calendar, TrendingUp, BarChart2, Sparkles, Folder, Award, Heart, MessageCircle, Share2
+  Cpu, Briefcase, ArrowUpRight, Plus, RefreshCw, Activity, Zap, HardDrive, Database, Server, Gauge, Clock, Image as ImageIcon, Calendar, TrendingUp, BarChart2, Sparkles, Folder, Award, Heart, MessageCircle, Share2, Bot
 } from "lucide-react";
 // @ts-ignore
 import { 
@@ -65,6 +65,7 @@ export default function DashboardPage() {
   const { activeWorkspace, openComposer } = useStore();
   const { isAdmin, workspaceId: authWorkspaceId } = useAuthStore();
   const [data, setData] = useState<any>(null);
+  const [dashboardAgents, setDashboardAgents] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isMounted, setIsMounted] = useState(false);
   const [lastFetchedAt, setLastFetchedAt] = useState<number>(0);
@@ -90,6 +91,12 @@ export default function DashboardPage() {
       return;
     }
     setIsLoading(true);
+
+    // Fetch agents for AI Agent Monitor widget
+    fetchApi<any[]>(`/agents/?workspace_id=${resolvedWorkspaceId}`)
+      .then((res) => setDashboardAgents(res || []))
+      .catch(() => setDashboardAgents([]));
+
     fetchApi<any>(`/dashboard/?workspace_id=${resolvedWorkspaceId}`)
       .then((res) => {
         console.log("[Dashboard API] Response:", res?.metrics);
@@ -350,28 +357,59 @@ export default function DashboardPage() {
 
         {/* Intelligence & Quick Actions Side Widget (4 cols) */}
         <div className="lg:col-span-4 space-y-4">
-          {/* Smart Recommendation Banner */}
-          <div className="p-5 rounded-3xl bg-gradient-to-br from-purple-900 via-indigo-900 to-slate-900 text-white space-y-3 shadow-lg relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-4 opacity-10">
-              <Sparkles className="w-24 h-24" />
+          {/* AI Agent Monitor Widget */}
+          <div className="p-5 rounded-3xl bg-gradient-to-br from-purple-950 via-slate-900 to-indigo-950 text-white space-y-3.5 shadow-lg relative overflow-hidden border border-purple-500/20">
+            <div className="absolute top-0 right-0 p-4 opacity-10 pointer-events-none">
+              <Bot className="w-24 h-24 text-amber-300" />
             </div>
-            <div className="flex items-center gap-2">
-              <span className="px-2.5 py-0.5 rounded-full bg-amber-400/20 text-amber-300 text-[10px] font-bold tracking-wider uppercase border border-amber-400/30 flex items-center gap-1">
-                <Sparkles className="w-3 h-3" />
-                AI Recommendation
+            
+            <div className="flex items-center justify-between relative z-10">
+              <span className="px-2.5 py-0.5 rounded-full bg-purple-500/20 text-purple-300 text-[10px] font-bold tracking-wider uppercase border border-purple-400/30 flex items-center gap-1.5">
+                <Bot className="w-3.5 h-3.5 text-amber-300" />
+                AI Agent Monitor
               </span>
+              {dashboardAgents.length > 0 && (
+                <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  {dashboardAgents.filter((a: any) => a.is_active).length} / {dashboardAgents.length} Aktif
+                </span>
+              )}
             </div>
-            <h4 className="text-sm font-bold font-['Outfit']">Waktu Terbaik Posting Hari Ini</h4>
-            <p className="text-xs text-purple-200/90 leading-relaxed">
-              Berdasarkan analisis audiens sosial media Anda, waktu dengan tingkat engagement tertinggi adalah pukul <strong className="text-white">18:30 - 20:00 WIB</strong>.
-            </p>
-            <button
-              onClick={() => openComposer()}
-              className="w-full py-2.5 px-4 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold text-xs border border-white/20 transition-all flex items-center justify-center gap-1.5 backdrop-blur-xs"
+
+            {dashboardAgents.length > 0 ? (
+              <div className="space-y-2 relative z-10">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-sm font-extrabold font-['Outfit'] text-white truncate max-w-[200px]">
+                    🤖 {dashboardAgents[0].name}
+                  </h4>
+                  <span className="text-[10px] px-2 py-0.5 rounded-md bg-purple-900/80 text-purple-200 border border-purple-700/50 font-mono font-semibold">
+                    {dashboardAgents[0].run_time} WIB
+                  </span>
+                </div>
+                <p className="text-xs text-purple-200/90 leading-relaxed">
+                  Pilar: <strong className="text-amber-300">{dashboardAgents[0].content_pillar}</strong> · Format: <span className="text-indigo-200 font-semibold">{dashboardAgents[0].content_format}</span>
+                </p>
+                <div className="flex items-center gap-3 text-[11px] text-purple-300/80 pt-1 border-t border-purple-800/40">
+                  <span>🏃 {dashboardAgents[0].total_runs || 0} Run</span>
+                  <span>📄 {dashboardAgents[0].total_drafts_generated || 0} Draft Generated</span>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-1.5 relative z-10">
+                <h4 className="text-sm font-bold font-['Outfit']">Belum Ada AI Agent Terkonfigurasi</h4>
+                <p className="text-xs text-purple-200/80 leading-relaxed">
+                  Otomatiskan brief konten harian Anda. Buat AI Agent pertama untuk mulai memantau draf otomatis.
+                </p>
+              </div>
+            )}
+
+            <a
+              href="/agent"
+              className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs transition-all flex items-center justify-center gap-2 shadow-md shadow-purple-600/30 relative z-10"
             >
-              <Plus className="w-3.5 h-3.5" />
-              <span>Jadwalkan Post Jam Ini</span>
-            </button>
+              <Bot className="w-4 h-4 text-amber-300" />
+              <span>{dashboardAgents.length > 0 ? "Kelola AI Agent →" : "+ Buat AI Agent Sekarang"}</span>
+            </a>
           </div>
 
           {/* Top Content Showcase Card */}
