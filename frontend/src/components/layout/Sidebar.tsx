@@ -71,6 +71,8 @@ export default function Sidebar({ isMobileOpen = false, onCloseMobile }: Sidebar
     router.push("/pricing");
   };
 
+  const isUserAdmin = Boolean(user?.is_admin || isAdmin);
+
   const navItems = [
     { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
     { name: "Proses", href: "/queue", icon: Cpu, activeDot: true },
@@ -84,7 +86,7 @@ export default function Sidebar({ isMobileOpen = false, onCloseMobile }: Sidebar
     { name: "Content Calendar", href: "/calendar", icon: CalendarDays },
     { name: "Activity Log", href: "/activity", icon: History },
     // { name: "Tools", href: "/yt-clipper", icon: Wrench, badge: "Local AI" },  // Hidden per owner request
-    ...(isAdmin ? [{ name: "Admin Settings", href: "/admin", icon: Settings, isAdmin: true }] : []),
+    ...(isUserAdmin ? [{ name: "Admin Settings", href: "/admin", icon: Settings, isAdmin: true }] : []),
   ];
 
 
@@ -214,7 +216,7 @@ export default function Sidebar({ isMobileOpen = false, onCloseMobile }: Sidebar
             </button>
 
             {/* Billing */}
-            {!isAdmin && subscription && (
+            {!isUserAdmin && subscription && (
               <button
                 onClick={handleOpenBillingPortal}
                 disabled={loadingPortal}
@@ -235,7 +237,7 @@ export default function Sidebar({ isMobileOpen = false, onCloseMobile }: Sidebar
             )}
 
             {/* Pricing (admin only) */}
-            {isAdmin && (
+            {isUserAdmin && (
               <Link
                 href="/pricing"
                 onClick={() => { if (onCloseMobile) onCloseMobile(); }}
@@ -255,7 +257,7 @@ export default function Sidebar({ isMobileOpen = false, onCloseMobile }: Sidebar
         {/* Footer — User Info + Quota */}
         <div className="shrink-0 border-t border-slate-200/80 bg-slate-50/50">
           {/* Quota Bar (only for non-admin with subscription) */}
-          {!isAdmin && subscription && (
+          {!isUserAdmin && subscription && (
             <div className="px-4 pt-3 pb-1">
               <div className="flex items-center justify-between mb-1">
                 <span className="text-[10px] text-slate-500 font-medium">Post Quota</span>
@@ -282,12 +284,12 @@ export default function Sidebar({ isMobileOpen = false, onCloseMobile }: Sidebar
             <div className="px-4 py-2">
               <button
                 onClick={handleOpenBillingPortal}
-                disabled={loadingPortal || isAdmin}
+                disabled={loadingPortal || isUserAdmin}
                 className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[10px] font-bold ${TIER_COLORS[subscription.plan_tier]} hover:opacity-80 transition-opacity disabled:cursor-default`}
               >
                 <TierIcon className="w-3 h-3" />
                 {subscription.plan_name}
-                {isAdmin && " (Admin)"}
+                {isUserAdmin && " (Admin)"}
               </button>
             </div>
           )}
@@ -306,13 +308,13 @@ export default function Sidebar({ isMobileOpen = false, onCloseMobile }: Sidebar
                 <div className="min-w-0">
                   <p className="text-xs font-semibold text-slate-800 truncate">{user?.full_name || "User"}</p>
                   <div className="flex items-center gap-1">
-                    {isAdmin ? (
+                    {isUserAdmin ? (
                       <ShieldCheck className="w-3 h-3 text-purple-600" />
                     ) : (
                       <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                     )}
                     <span className="text-[10px] text-slate-500 font-medium truncate">
-                      {isAdmin ? "Admin" : user?.email?.split("@")[0] || "Shiera"}
+                      {isUserAdmin ? "Admin" : user?.email?.split("@")[0] || "Shiera"}
                     </span>
                   </div>
                 </div>

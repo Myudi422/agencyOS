@@ -64,7 +64,7 @@
   "62": "SecurityMiddleware",
   "63": "database.py",
   "64": "Token-efficient agent",
-  "65": "date-fns",
+  "65": "clsx",
   "66": "firebase",
   "67": "rules/token-efficient.md",
   "68": "competitors.py",

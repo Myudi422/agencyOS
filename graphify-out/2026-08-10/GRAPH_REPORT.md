@@ -1,7 +1,7 @@
 # Graph Report - agencyOS  (2026-08-10)
 
 ## Corpus Check
-- 148 files · ~776,663 words
+- 148 files · ~777,302 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
@@ -10,7 +10,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `3604714a`
+- Built from commit: `d03e219e`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -77,7 +77,7 @@
 - SecurityMiddleware
 - database.py
 - Token-efficient agent
-- date-fns
+- clsx
 - firebase
 - rules/token-efficient.md
 - competitors.py
@@ -226,7 +226,7 @@ Nodes (14): create_snap_transaction(), get_core_api_client(), get_snap_client(),
 
 ### Community 26 - "dependencies"
 Cohesion: 0.13
-Nodes (15): clsx, dependencies, clsx, jspdf, lucide-react, react-dom, react-is, recharts (+7 more)
+Nodes (15): date-fns, dependencies, date-fns, jspdf, lucide-react, react-dom, react-is, recharts (+7 more)
 
 ### Community 27 - "User"
 Cohesion: 0.15
