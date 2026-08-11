@@ -304,8 +304,8 @@ export default function AgentCreateModal({ onClose, onSave, editAgent }: Props) 
                 <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                   Jumlah Draft Dihasilkan per Run
                 </label>
-                <div className="grid grid-cols-4 gap-2">
-                  {[1, 2, 3, 5].map((num) => (
+                <div className="grid grid-cols-2 gap-2">
+                  {[1, 2].map((num) => (
                     <button
                       key={num}
                       type="button"
@@ -316,7 +316,7 @@ export default function AgentCreateModal({ onClose, onSave, editAgent }: Props) 
                           : "border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100"
                       }`}
                     >
-                      {num} Draft
+                      {num} Draft (Maks 2)
                     </button>
                   ))}
                 </div>

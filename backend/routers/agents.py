@@ -39,7 +39,7 @@ class AgentCreateRequest(BaseModel):
     content_pillar: str
     content_format: str
     topic_hint: Optional[str] = None
-    drafts_per_run: int = Field(default=1, ge=1, le=5)
+    drafts_per_run: int = Field(default=1, ge=1, le=2)
     run_time: str = "08:00"      # HH:MM
     timezone: str = "Asia/Jakarta"
     run_days: List[int] = Field(default=[0, 1, 2, 3, 4])  # 0=Mon..6=Sun
@@ -53,7 +53,7 @@ class AgentUpdateRequest(BaseModel):
     content_pillar: Optional[str] = None
     content_format: Optional[str] = None
     topic_hint: Optional[str] = None
-    drafts_per_run: Optional[int] = Field(default=None, ge=1, le=5)
+    drafts_per_run: Optional[int] = Field(default=None, ge=1, le=2)
     run_time: Optional[str] = None
     timezone: Optional[str] = None
     run_days: Optional[List[int]] = None
@@ -61,6 +61,43 @@ class AgentUpdateRequest(BaseModel):
 
 
 # ─── Helpers ──────────────────────────────────────────────────────────────────
+
+def get_workspace_agent_limit(workspace_id: str, user: User, db: Session) -> int:
+    """
+    Determine maximum allowed agents for a workspace based on subscription tier.
+    - creator / trial: 3 agents
+    - agency: 5 agents
+    - studio: 10 agents
+    """
+    if user.is_admin:
+        return 999  # Unlimited for super admins
+
+    sub = user.subscription
+    if not sub:
+        from backend.models.models import WorkspaceMember, RoleEnum
+        owner_member = (
+            db.query(WorkspaceMember)
+            .filter(WorkspaceMember.workspace_id == workspace_id, WorkspaceMember.role == RoleEnum.OWNER)
+            .first()
+        )
+        if owner_member:
+            owner_user = db.query(User).filter(User.id == owner_member.user_id).first()
+            if owner_user:
+                sub = owner_user.subscription
+
+    plan_tier = "creator"
+    if sub and sub.plan:
+        tier_val = getattr(sub.plan.tier, "value", str(sub.plan.tier)).lower()
+        plan_tier = tier_val
+
+    if plan_tier in ["studio"]:
+        return 10
+    elif plan_tier in ["agency"]:
+        return 5
+    else:
+        # creator, trial, or default fallback
+        return 3
+
 
 def _serialize_agent(agent: AgentConfig, db: Session) -> dict:
     last_log = (
@@ -80,7 +117,7 @@ def _serialize_agent(agent: AgentConfig, db: Session) -> dict:
         "content_pillar": agent.content_pillar,
         "content_format": agent.content_format,
         "topic_hint": agent.topic_hint,
-        "drafts_per_run": getattr(agent, "drafts_per_run", 1) or 1,
+        "drafts_per_run": min(getattr(agent, "drafts_per_run", 1) or 1, 2),
         "run_time": agent.run_time,
         "timezone": agent.timezone,
         "run_days": agent.run_days or [0, 1, 2, 3, 4],
@@ -141,6 +178,16 @@ def create_agent(
     """Create a new agent configuration."""
     get_user_workspace(current_user, req.workspace_id, db)
 
+    # Check workspace agent count limit based on tier (creator=3, agency=5, studio=10)
+    limit = get_workspace_agent_limit(req.workspace_id, current_user, db)
+    existing_count = db.query(AgentConfig).filter(AgentConfig.workspace_id == req.workspace_id).count()
+
+    if existing_count >= limit:
+        raise HTTPException(
+            status_code=403,
+            detail=f"Batas maksimal Agent untuk paket Anda adalah {limit} agent (saat ini sudah ada {existing_count} agent). Silakan upgrade paket Anda di /billing."
+        )
+
     # Validate run_time format HH:MM
     try:
         h, m = map(int, req.run_time.split(":"))
@@ -157,7 +204,7 @@ def create_agent(
         content_pillar=req.content_pillar,
         content_format=req.content_format,
         topic_hint=req.topic_hint,
-        drafts_per_run=req.drafts_per_run,
+        drafts_per_run=max(1, min(req.drafts_per_run, 2)),
         run_time=req.run_time,
         timezone=req.timezone,
         run_days=req.run_days,
@@ -313,7 +360,7 @@ def update_agent(
     if req.topic_hint == "":
         agent.topic_hint = None
     if req.drafts_per_run is not None:
-        agent.drafts_per_run = req.drafts_per_run
+        agent.drafts_per_run = max(1, min(req.drafts_per_run, 2))
     if req.run_time is not None:
         agent.run_time = req.run_time
         schedule_changed = True

@@ -151,7 +151,7 @@ async def run_agent(agent_id: str, trigger: str = "scheduled") -> dict:
             from backend.services.gemini_service import gemini_service
 
             topic = agent.topic_hint or "konten harian yang relevan dan engaging"
-            num_drafts = max(1, min(getattr(agent, "drafts_per_run", 1) or 1, 5))
+            num_drafts = max(1, min(getattr(agent, "drafts_per_run", 1) or 1, 2))
 
             drafts = []
             async with _CONCURRENCY_SEMAPHORE:
