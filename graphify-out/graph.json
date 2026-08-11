@@ -384,8 +384,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_migrate_post_ai_brief",
-      "community": 2,
-      "community_name": "database.py",
+      "community": 57,
+      "community_name": "migrate_post_ai_brief.py",
       "norm_label": "migrate_post_ai_brief.py"
     },
     {
@@ -395,8 +395,8 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "backend_migrate_post_ai_brief_run_migration",
-      "community": 2,
-      "community_name": "database.py",
+      "community": 57,
+      "community_name": "migrate_post_ai_brief.py",
       "norm_label": "run_migration()"
     },
     {
@@ -406,8 +406,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_migrate_post_ai_brief_rationale_1",
-      "community": 2,
-      "community_name": "database.py",
+      "community": 57,
+      "community_name": "migrate_post_ai_brief.py",
       "norm_label": "migration script: add ai_brief column to posts table"
     },
     {
@@ -835,8 +835,8 @@
       "source_location": "L274",
       "_origin": "ast",
       "id": "backend_models_models_postpublishresult",
-      "community": 50,
-      "community_name": "QueueService",
+      "community": 27,
+      "community_name": "models.py",
       "norm_label": "postpublishresult"
     },
     {
@@ -1011,8 +1011,8 @@
       "source_location": "L275",
       "_origin": "ast",
       "id": "backend_models_models_rationale_275",
-      "community": 50,
-      "community_name": "QueueService",
+      "community": 27,
+      "community_name": "models.py",
       "norm_label": "menyimpan hasil aktual publish dari postforme api (/v1/social-post-results)...."
     },
     {
@@ -5499,8 +5499,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_routers_queue",
-      "community": 18,
-      "community_name": "queue.py",
+      "community": 27,
+      "community_name": "models.py",
       "norm_label": "queue.py"
     },
     {
@@ -5511,7 +5511,7 @@
       "_origin": "ast",
       "id": "backend_routers_queue_py_get",
       "community": 18,
-      "community_name": "queue.py",
+      "community_name": "Session",
       "norm_label": "get"
     },
     {
@@ -5522,7 +5522,7 @@
       "_origin": "ast",
       "id": "backend_routers_queue_get_queue_status",
       "community": 18,
-      "community_name": "queue.py",
+      "community_name": "Session",
       "norm_label": "get_queue_status()"
     },
     {
@@ -5533,7 +5533,7 @@
       "_origin": "ast",
       "id": "backend_routers_queue_py_session",
       "community": 18,
-      "community_name": "queue.py",
+      "community_name": "Session",
       "norm_label": "session"
     },
     {
@@ -5544,7 +5544,7 @@
       "_origin": "ast",
       "id": "backend_routers_queue_get_publish_history",
       "community": 18,
-      "community_name": "queue.py",
+      "community_name": "Session",
       "norm_label": "get_publish_history()"
     },
     {
@@ -5555,7 +5555,7 @@
       "_origin": "ast",
       "id": "backend_routers_queue_py_post",
       "community": 18,
-      "community_name": "queue.py",
+      "community_name": "Session",
       "norm_label": "post"
     },
     {
@@ -5566,7 +5566,7 @@
       "_origin": "ast",
       "id": "backend_routers_queue_sync_post_results",
       "community": 18,
-      "community_name": "queue.py",
+      "community_name": "Session",
       "norm_label": "sync_post_results()"
     },
     {
@@ -5577,7 +5577,7 @@
       "_origin": "ast",
       "id": "backend_routers_queue_py_backgroundtasks",
       "community": 18,
-      "community_name": "queue.py",
+      "community_name": "Session",
       "norm_label": "backgroundtasks"
     },
     {
@@ -5588,7 +5588,7 @@
       "_origin": "ast",
       "id": "backend_routers_queue_retry_job",
       "community": 18,
-      "community_name": "queue.py",
+      "community_name": "Session",
       "norm_label": "retry_job()"
     },
     {
@@ -5599,7 +5599,7 @@
       "_origin": "ast",
       "id": "backend_routers_queue_py_delete",
       "community": 18,
-      "community_name": "queue.py",
+      "community_name": "Session",
       "norm_label": "delete"
     },
     {
@@ -5610,7 +5610,7 @@
       "_origin": "ast",
       "id": "backend_routers_queue_delete_queue_job",
       "community": 18,
-      "community_name": "queue.py",
+      "community_name": "Session",
       "norm_label": "delete_queue_job()"
     },
     {
@@ -5621,7 +5621,7 @@
       "_origin": "ast",
       "id": "backend_routers_queue_get_postforme_posts",
       "community": 18,
-      "community_name": "queue.py",
+      "community_name": "Session",
       "norm_label": "get_postforme_posts()"
     },
     {
@@ -5632,7 +5632,7 @@
       "_origin": "ast",
       "id": "backend_routers_queue_get_postforme_results",
       "community": 18,
-      "community_name": "queue.py",
+      "community_name": "Session",
       "norm_label": "get_postforme_results()"
     },
     {
@@ -5643,7 +5643,7 @@
       "_origin": "ast",
       "id": "backend_routers_queue_fallback_local_results",
       "community": 18,
-      "community_name": "queue.py",
+      "community_name": "Session",
       "norm_label": "_fallback_local_results()"
     },
     {
@@ -5654,7 +5654,7 @@
       "_origin": "ast",
       "id": "backend_routers_queue_cancel_postforme_post",
       "community": 18,
-      "community_name": "queue.py",
+      "community_name": "Session",
       "norm_label": "cancel_postforme_post()"
     },
     {
@@ -5665,7 +5665,7 @@
       "_origin": "ast",
       "id": "backend_routers_queue_rationale_26",
       "community": 18,
-      "community_name": "queue.py",
+      "community_name": "Session",
       "norm_label": "returns queue metrics and job logs for a workspace."
     },
     {
@@ -5676,7 +5676,7 @@
       "_origin": "ast",
       "id": "backend_routers_queue_rationale_89",
       "community": 18,
-      "community_name": "queue.py",
+      "community_name": "Session",
       "norm_label": "riwayat hasil publikasi per workspace/user dari postforme. menampilkan status..."
     },
     {
@@ -5687,7 +5687,7 @@
       "_origin": "ast",
       "id": "backend_routers_queue_rationale_226",
       "community": 18,
-      "community_name": "queue.py",
+      "community_name": "Session",
       "norm_label": "sinkronisasi manual: ambil hasil publish dari postforme untuk semua post yang..."
     },
     {
@@ -5698,7 +5698,7 @@
       "_origin": "ast",
       "id": "backend_routers_queue_rationale_245",
       "community": 18,
-      "community_name": "queue.py",
+      "community_name": "Session",
       "norm_label": "manually triggers immediate retry for a failed or retrying queue job."
     },
     {
@@ -5709,7 +5709,7 @@
       "_origin": "ast",
       "id": "backend_routers_queue_rationale_260",
       "community": 18,
-      "community_name": "queue.py",
+      "community_name": "Session",
       "norm_label": "deletes/cancels a specific queue job."
     },
     {
@@ -5720,7 +5720,7 @@
       "_origin": "ast",
       "id": "backend_routers_queue_rationale_282",
       "community": 18,
-      "community_name": "queue.py",
+      "community_name": "Session",
       "norm_label": "proxy: fetch posts from postforme api for this workspace's connected accounts...."
     },
     {
@@ -5731,7 +5731,7 @@
       "_origin": "ast",
       "id": "backend_routers_queue_rationale_402",
       "community": 18,
-      "community_name": "queue.py",
+      "community_name": "Session",
       "norm_label": "proxy: fetch post results (per-account publish outcomes) from postforme api...."
     },
     {
@@ -5742,7 +5742,7 @@
       "_origin": "ast",
       "id": "backend_routers_queue_rationale_461",
       "community": 18,
-      "community_name": "queue.py",
+      "community_name": "Session",
       "norm_label": "fallback: return local postpublishresult records when postforme api is..."
     },
     {
@@ -5753,7 +5753,7 @@
       "_origin": "ast",
       "id": "backend_routers_queue_rationale_503",
       "community": 18,
-      "community_name": "queue.py",
+      "community_name": "Session",
       "norm_label": "cancel/delete a scheduled post from postforme api and update local db status."
     },
     {
@@ -7135,7 +7135,7 @@
       "label": ".fetch_competitor_profile()",
       "file_type": "code",
       "source_file": "backend/services/faustren_scraper_service.py",
-      "source_location": "L250",
+      "source_location": "L321",
       "_origin": "ast",
       "id": "backend_services_faustren_scraper_service_faustrenscraperservice_fetch_competitor_profile",
       "community": 9,
@@ -7146,7 +7146,7 @@
       "label": ".fetch_competitor_posts()",
       "file_type": "code",
       "source_file": "backend/services/faustren_scraper_service.py",
-      "source_location": "L255",
+      "source_location": "L326",
       "_origin": "ast",
       "id": "backend_services_faustren_scraper_service_faustrenscraperservice_fetch_competitor_posts",
       "community": 9,
@@ -7157,7 +7157,7 @@
       "label": ".test_faustren_scraper()",
       "file_type": "code",
       "source_file": "backend/services/faustren_scraper_service.py",
-      "source_location": "L267",
+      "source_location": "L338",
       "_origin": "ast",
       "id": "backend_services_faustren_scraper_service_faustrenscraperservice_test_faustren_scraper",
       "community": 9,
@@ -7234,9 +7234,9 @@
       "label": "Fetch competitor profile.",
       "file_type": "rationale",
       "source_file": "backend/services/faustren_scraper_service.py",
-      "source_location": "L251",
+      "source_location": "L322",
       "_origin": "ast",
-      "id": "backend_services_faustren_scraper_service_rationale_251",
+      "id": "backend_services_faustren_scraper_service_rationale_322",
       "community": 9,
       "community_name": "FaustRenScraperService",
       "norm_label": "fetch competitor profile."
@@ -7245,9 +7245,9 @@
       "label": "Fetch competitor posts.",
       "file_type": "rationale",
       "source_file": "backend/services/faustren_scraper_service.py",
-      "source_location": "L256",
+      "source_location": "L327",
       "_origin": "ast",
-      "id": "backend_services_faustren_scraper_service_rationale_256",
+      "id": "backend_services_faustren_scraper_service_rationale_327",
       "community": 9,
       "community_name": "FaustRenScraperService",
       "norm_label": "fetch competitor posts."
@@ -7256,9 +7256,9 @@
       "label": "Run end-to-end test of FaustRen Embed Scraper Engine.",
       "file_type": "rationale",
       "source_file": "backend/services/faustren_scraper_service.py",
-      "source_location": "L268",
+      "source_location": "L339",
       "_origin": "ast",
-      "id": "backend_services_faustren_scraper_service_rationale_268",
+      "id": "backend_services_faustren_scraper_service_rationale_339",
       "community": 9,
       "community_name": "FaustRenScraperService",
       "norm_label": "run end-to-end test of faustren embed scraper engine."
@@ -42727,7 +42727,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "backend/services/faustren_scraper_service.py",
-      "source_location": "L255",
+      "source_location": "L326",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_services_faustren_scraper_service_faustrenscraperservice",
@@ -42738,7 +42738,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "backend/services/faustren_scraper_service.py",
-      "source_location": "L250",
+      "source_location": "L321",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_services_faustren_scraper_service_faustrenscraperservice",
@@ -42793,7 +42793,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "backend/services/faustren_scraper_service.py",
-      "source_location": "L267",
+      "source_location": "L338",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_services_faustren_scraper_service_faustrenscraperservice",
@@ -42898,7 +42898,7 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "backend/services/faustren_scraper_service.py",
-      "source_location": "L255",
+      "source_location": "L326",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_services_faustren_scraper_service_faustrenscraperservice_fetch_competitor_posts",
@@ -42910,7 +42910,7 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "backend/services/faustren_scraper_service.py",
-      "source_location": "L250",
+      "source_location": "L321",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_services_faustren_scraper_service_faustrenscraperservice_fetch_competitor_profile",
@@ -42934,7 +42934,7 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "backend/services/faustren_scraper_service.py",
-      "source_location": "L267",
+      "source_location": "L338",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_services_faustren_scraper_service_faustrenscraperservice_test_faustren_scraper",
@@ -42981,7 +42981,7 @@
       "context": "generic_arg",
       "confidence": "EXTRACTED",
       "source_file": "backend/services/faustren_scraper_service.py",
-      "source_location": "L255",
+      "source_location": "L326",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_services_faustren_scraper_service_faustrenscraperservice_fetch_competitor_posts",
@@ -42993,7 +42993,7 @@
       "context": "generic_arg",
       "confidence": "EXTRACTED",
       "source_file": "backend/services/faustren_scraper_service.py",
-      "source_location": "L250",
+      "source_location": "L321",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_services_faustren_scraper_service_faustrenscraperservice_fetch_competitor_profile",
@@ -43017,7 +43017,7 @@
       "context": "generic_arg",
       "confidence": "EXTRACTED",
       "source_file": "backend/services/faustren_scraper_service.py",
-      "source_location": "L267",
+      "source_location": "L338",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_services_faustren_scraper_service_faustrenscraperservice_test_faustren_scraper",
@@ -43041,7 +43041,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "backend/services/faustren_scraper_service.py",
-      "source_location": "L257",
+      "source_location": "L328",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_services_faustren_scraper_service_faustrenscraperservice_fetch_competitor_posts",
@@ -43053,7 +43053,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "backend/services/faustren_scraper_service.py",
-      "source_location": "L252",
+      "source_location": "L323",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_services_faustren_scraper_service_faustrenscraperservice_fetch_competitor_profile",
@@ -43065,7 +43065,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "backend/services/faustren_scraper_service.py",
-      "source_location": "L270",
+      "source_location": "L341",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_services_faustren_scraper_service_faustrenscraperservice_test_faustren_scraper",
@@ -43098,10 +43098,10 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "backend/services/faustren_scraper_service.py",
-      "source_location": "L251",
+      "source_location": "L322",
       "weight": 1.0,
       "_origin": "ast",
-      "source": "backend_services_faustren_scraper_service_rationale_251",
+      "source": "backend_services_faustren_scraper_service_rationale_322",
       "target": "backend_services_faustren_scraper_service_faustrenscraperservice_fetch_competitor_profile",
       "confidence_score": 1.0
     },
@@ -43109,10 +43109,10 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "backend/services/faustren_scraper_service.py",
-      "source_location": "L256",
+      "source_location": "L327",
       "weight": 1.0,
       "_origin": "ast",
-      "source": "backend_services_faustren_scraper_service_rationale_256",
+      "source": "backend_services_faustren_scraper_service_rationale_327",
       "target": "backend_services_faustren_scraper_service_faustrenscraperservice_fetch_competitor_posts",
       "confidence_score": 1.0
     },
@@ -43120,10 +43120,10 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "backend/services/faustren_scraper_service.py",
-      "source_location": "L268",
+      "source_location": "L339",
       "weight": 1.0,
       "_origin": "ast",
-      "source": "backend_services_faustren_scraper_service_rationale_268",
+      "source": "backend_services_faustren_scraper_service_rationale_339",
       "target": "backend_services_faustren_scraper_service_faustrenscraperservice_test_faustren_scraper",
       "confidence_score": 1.0
     },
@@ -59846,5 +59846,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "e969ce27c6ac08edb86468d50d10b5c45f12925d"
+  "built_at_commit": "9277513a5900c14a60f36d6ce637e2d70deca10a"
 }

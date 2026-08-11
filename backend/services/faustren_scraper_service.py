@@ -244,8 +244,79 @@ class FaustRenScraperService:
                 "total_posts_scraped": count
             }
         except Exception as e:
-            logger.error(f"Embed scraper error for @{clean_user}: {e}")
+            logger.warning(f"Embed scraper error for @{clean_user}: {e}. Trying Pixwox/Picnob fallback...")
+            try:
+                from instagram_posts_scraper.instagram_posts_scraper import InstaPeriodScraper
+                scraper = InstaPeriodScraper(use_profile_scraper=False)
+                res = scraper.get_posts(target_info={"username": clean_user, "days_limit": 30})
+                if res and isinstance(res, dict) and "profile" in res and res.get("profile"):
+                    prof = res.get("profile", {})
+                    raw_posts = res.get("posts", [])[:amount]
+
+                    followers_count = prof.get("followers", 0) or 0
+                    parsed_posts = []
+                    total_likes = 0
+                    total_comments = 0
+                    hashtags_list = []
+
+                    for p in raw_posts:
+                        code = p.get("shortcode", "")
+                        caption = p.get("caption", "") or ""
+                        found_hashtags = re.findall(r"#(\w+)", caption)
+                        hashtags_list.extend([h.lower() for h in found_hashtags])
+
+                        thumb = p.get("thumbnail") or p.get("image_url") or ""
+                        likes = p.get("like_count", 0) or 0
+                        comments = p.get("comment_count", 0) or 0
+                        total_likes += likes
+                        total_comments += comments
+
+                        post_er = round(((likes + comments) / max(followers_count, 1)) * 100, 2)
+                        ts = p.get("timestamp")
+                        posted_at = datetime.utcfromtimestamp(ts).strftime("%Y-%m-%dT%H:%M:%SZ") if ts else None
+
+                        parsed_posts.append({
+                            "instagram_media_id": code,
+                            "code": code,
+                            "post_type": "video" if p.get("is_video") else "image",
+                            "caption": caption,
+                            "thumbnail_url": thumb,
+                            "media_urls": [thumb] if thumb else [],
+                            "like_count": likes,
+                            "comment_count": comments,
+                            "engagement_rate": post_er,
+                            "posted_at": posted_at,
+                        })
+
+                    count = len(parsed_posts)
+                    avg_likes = round(total_likes / count, 1) if count > 0 else 0.0
+                    avg_comments = round(total_comments / count, 1) if count > 0 else 0.0
+                    overall_er = round(((avg_likes + avg_comments) / max(followers_count, 1)) * 100, 2)
+
+                    return {
+                        "profile": {
+                            "username": clean_user,
+                            "instagram_pk": str(prof.get("userid") or ""),
+                            "full_name": prof.get("full_name") or clean_user,
+                            "profile_pic_url": prof.get("profile_picture") or "",
+                            "biography": prof.get("biography", ""),
+                            "followers_count": followers_count,
+                            "following_count": prof.get("following", 0) or 0,
+                            "media_count": prof.get("posts_count", 0) or 0,
+                            "is_verified": False,
+                            "category_name": "",
+                        },
+                        "posts": parsed_posts,
+                        "avg_likes": avg_likes,
+                        "avg_comments": avg_comments,
+                        "engagement_rate": overall_er,
+                        "top_hashtags": [item[0] for item in Counter(hashtags_list).most_common(10)],
+                        "total_posts_scraped": count
+                    }
+            except Exception as e_fb:
+                logger.error(f"Pixwox fallback failed for @{clean_user}: {e_fb}")
             raise e
+
 
     def fetch_competitor_profile(self, db: Session, username: str, override_proxy: Optional[str] = None) -> Dict[str, Any]:
         """Fetch competitor profile."""

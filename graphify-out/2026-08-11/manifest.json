@@ -105,8 +105,8 @@
     "semantic_hash": ""
   },
   "backend/routers/admin.py": {
-    "mtime": 1786414913.00745,
-    "ast_hash": "fe71e0fcb5e2aa4660a6c88d672bedd2",
+    "mtime": 1786451357.7636423,
+    "ast_hash": "80da15f1667875882b9771ac3500414c",
     "semantic_hash": ""
   },
   "backend/routers/auth.py": {
@@ -130,8 +130,8 @@
     "semantic_hash": ""
   },
   "backend/routers/competitors.py": {
-    "mtime": 1785749155.5348818,
-    "ast_hash": "20457001b6df103d51b3f422ef6ca3dd",
+    "mtime": 1786451376.055892,
+    "ast_hash": "da28ae6ef591925e784ae0b97f014e12",
     "semantic_hash": ""
   },
   "backend/routers/dashboard.py": {
@@ -275,8 +275,8 @@
     "semantic_hash": ""
   },
   "frontend/src/app/admin/page.tsx": {
-    "mtime": 1786414913.00745,
-    "ast_hash": "19c5b038bb3053765fc6629632f81fd1",
+    "mtime": 1786452249.0483918,
+    "ast_hash": "815ef54406fcadda8c0cadd163647e97",
     "semantic_hash": ""
   },
   "frontend/src/app/auth/callback/page.tsx": {
@@ -640,8 +640,8 @@
     "semantic_hash": ""
   },
   "backend/requirements.txt": {
-    "mtime": 1785462663.8132203,
-    "ast_hash": "e494a706f2ca32817228964ddca308b4",
+    "mtime": 1786451802.5987034,
+    "ast_hash": "cae4f344e1e5df6b0660490d162267a4",
     "semantic_hash": ""
   },
   "implementation_plan.md": {
@@ -670,8 +670,8 @@
     "semantic_hash": ""
   },
   "requirements.txt": {
-    "mtime": 1785939805.5795226,
-    "ast_hash": "a6c1b7ba6640159f1733a4b22e4af968",
+    "mtime": 1786451806.5761156,
+    "ast_hash": "947130bc067aa078f61d449e22f829bd",
     "semantic_hash": ""
   },
   "favicon/android-chrome-192x192.png": {
@@ -852,6 +852,11 @@
   "frontend/src/store/useAgentStore.ts": {
     "mtime": 1786415619.0410287,
     "ast_hash": "56003495574b765054617817bb23336a",
+    "semantic_hash": ""
+  },
+  "backend/services/faustren_scraper_service.py": {
+    "mtime": 1786454399.0268161,
+    "ast_hash": "978877c60d21b3ee0c13be41decd999c",
     "semantic_hash": ""
   }
 }

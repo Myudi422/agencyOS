@@ -1,16 +1,16 @@
 # Graph Report - agencyOS  (2026-08-11)
 
 ## Corpus Check
-- 149 files · ~781,059 words
+- 149 files · ~781,315 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1561 nodes · 3707 edges · 76 communities (61 shown, 15 thin omitted)
+- 1561 nodes · 3707 edges · 77 communities (61 shown, 16 thin omitted)
 - Extraction: 87% EXTRACTED · 13% INFERRED · 0% AMBIGUOUS · INFERRED: 477 edges (avg confidence: 0.5)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `e969ce27`
+- Built from commit: `9277513a`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -33,7 +33,7 @@
 - GeminiService
 - compilerOptions
 - ShieraAiReportWidget.tsx
-- queue.py
+- Session
 - fetchApi
 - InstagrapiService
 - User
@@ -72,6 +72,7 @@
 - Sidebar.tsx
 - competitors.py
 - update_agent
+- migrate_post_ai_brief.py
 - main.py
 - SecurityMiddleware
 - Token-efficient agent
@@ -115,7 +116,7 @@
 ## Import Cycles
 - None detected.
 
-## Communities (76 total, 15 thin omitted)
+## Communities (77 total, 16 thin omitted)
 
 ### Community 0 - "agent/page.tsx"
 Cohesion: 0.13
@@ -127,7 +128,7 @@ Nodes (13): CalendarImageThumbnail(), CalendarPage(), getProxiedImageUrl(), PLAT
 
 ### Community 2 - "database.py"
 Cohesion: 0.06
-Nodes (23): Settings, get_db(), Migration Script: Add briefing column to social_accounts table, Migration Script: Add social_account_id column to competitor_accounts table, Database Migration Script — Migrate database schema from Stripe to Midtrans.…, Migration Script: Create KOL Campaign & Deliverable Tracker tables, Migration Script: Add ai_brief column to posts table, Migration: Tambah tabel post_publish_results dan kolom baru ke posts. Jalankan:… (+15 more)
+Nodes (22): Settings, get_db(), Migration Script: Add briefing column to social_accounts table, Migration Script: Add social_account_id column to competitor_accounts table, Database Migration Script — Migrate database schema from Stripe to Midtrans.…, Migration Script: Create KOL Campaign & Deliverable Tracker tables, Migration: Tambah tabel post_publish_results dan kolom baru ke posts. Jalankan:…, Database Migration — WA OTP Verification Menambah kolom phone_number &… (+14 more)
 
 ### Community 3 - "yt_clipper_agent.py"
 Cohesion: 0.06
@@ -189,8 +190,8 @@ Nodes (26): compilerOptions, allowJs, esModuleInterop, incremental, isolatedModu
 Cohesion: 0.15
 Nodes (13): ChatArea(), CONTENT_FORMATS, CONTENT_PILLARS, extractComposerPayload(), getDateRange(), PanelView, PERIOD_OPTIONS, PeriodKey (+5 more)
 
-### Community 18 - "queue.py"
-Cohesion: 0.14
+### Community 18 - "Session"
+Cohesion: 0.11
 Nodes (23): cancel_postforme_post(), delete_queue_job(), _fallback_local_results(), get_postforme_posts(), get_postforme_results(), get_publish_history(), get_queue_status(), BackgroundTasks (+15 more)
 
 ### Community 19 - "fetchApi"
@@ -226,8 +227,8 @@ Cohesion: 0.13
 Nodes (15): clsx, dependencies, clsx, jspdf, lucide-react, react-dom, react-is, recharts (+7 more)
 
 ### Community 27 - "models.py"
-Cohesion: 0.27
-Nodes (9): Script perbaikan langsung: Ambil hasil dari PostForMe API untuk semua post yang…, JobStatus, Post, PostTarget, PublishJob, Webhook handler untuk menerima event dari PostForMe API. PostForMe mengirim…, Seed script — creates 4 subscription plans in DB with Midtrans IDR pricing. All…, seed_plans() (+1 more)
+Cohesion: 0.26
+Nodes (11): Script perbaikan langsung: Ambil hasil dari PostForMe API untuk semua post yang…, JobStatus, Post, PostPublishResult, PostTarget, PublishJob, Menyimpan hasil aktual publish dari PostForMe API (/v1/social-post-results).…, Webhook handler untuk menerima event dari PostForMe API. PostForMe mengirim… (+3 more)
 
 ### Community 28 - "useStore"
 Cohesion: 0.15
@@ -306,8 +307,8 @@ Cohesion: 0.08
 Nodes (72): AccountStatus, Client, SocialAccount, Workspace, WorkspaceMember, AccountBriefingSchema, BulkActionRequest, BaseModel (+64 more)
 
 ### Community 50 - "QueueService"
-Cohesion: 0.20
-Nodes (12): PostPublishResult, Menyimpan hasil aktual publish dari PostForMe API (/v1/social-post-results).…, Any, Session, QueueService, Queue Engine menggunakan background tasks FastAPI. Mengelola publish job per…, Creates PublishJob records and executes them immediately., Sinkronisasi hasil publish dari PostForMe untuk satu target. Mengambil data… (+4 more)
+Cohesion: 0.21
+Nodes (10): Any, Session, QueueService, Queue Engine menggunakan background tasks FastAPI. Mengelola publish job per…, Creates PublishJob records and executes them immediately., Sinkronisasi hasil publish dari PostForMe untuk satu target. Mengambil data…, Kurangi 1 kredit dari user yang membuat post setelah PostForMe konfirmasi…, Sinkronisasi manual komprehensif: Ambil 100 hasil publikasi terbaru dari… (+2 more)
 
 ### Community 51 - "get_clients"
 Cohesion: 0.33
@@ -348,12 +349,12 @@ Nodes (11): _extract_composer_payload(), _fail_run(), _get_agent_lock(), AgentCo
 ## Knowledge Gaps
 - **312 isolated node(s):** `Settings`, `nextConfig`, `name`, `version`, `private` (+307 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **15 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **16 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `User` connect `User` to `agents.py`, `database.py`, `get_user_workspace`, `posts.py`, `ActivityLog`, `statistics.py`, `SocialAccount`, `queue.py`, `get_clients`, `QueueService`, `competitors.py`, `update_agent`, `main.py`, `models.py`?**
+- **Why does `User` connect `User` to `agents.py`, `database.py`, `get_user_workspace`, `posts.py`, `ActivityLog`, `statistics.py`, `SocialAccount`, `Session`, `get_clients`, `QueueService`, `competitors.py`, `update_agent`, `main.py`, `models.py`?**
   _High betweenness centrality (0.100) - this node is a cross-community bridge._
 - **Why does `Setting` connect `User` to `FaustRenScraperService`, `GeminiService`, `InstagrapiService`, `competitors.py`, `models.py`?**
   _High betweenness centrality (0.032) - this node is a cross-community bridge._
