@@ -31,6 +31,33 @@ from backend.models.models import (
 )
 from backend.services.firebase_service import verify_firebase_token
 from backend.services.instagrapi_service import instagrapi_service
+from backend.services.faustren_scraper_service import faustren_scraper_service
+from backend.models.models import Setting
+
+def _get_active_engine_name(db: Session) -> str:
+    row = db.query(Setting).filter(Setting.workspace_id == "global", Setting.key == "SCRAPER_ENGINE").first()
+    if row and row.value:
+        return str(row.value).lower().strip()
+    return "faustren"
+
+def _fetch_profile(db: Session, username: str) -> dict:
+    engine = _get_active_engine_name(db)
+    if engine == "instagrapi":
+        try:
+            return instagrapi_service.fetch_competitor_profile(db, username)
+        except Exception as e:
+            logger.warning(f"instagrapi profile fetch failed for @{username}: {e}. Falling back to FaustRen scraper...")
+    return faustren_scraper_service.fetch_competitor_profile(db, username)
+
+def _fetch_posts(db: Session, username: str, amount: int = 20) -> dict:
+    engine = _get_active_engine_name(db)
+    if engine == "instagrapi":
+        try:
+            return instagrapi_service.fetch_competitor_posts(db, username, amount=amount)
+        except Exception as e:
+            logger.warning(f"instagrapi posts fetch failed for @{username}: {e}. Falling back to FaustRen scraper...")
+    return faustren_scraper_service.fetch_competitor_posts(db, username, amount=amount)
+
 from backend.services.redis_service import (
     cache_get, cache_set, cache_delete_prefix,
     sync_status_get, sync_status_set, sync_status_increment_done,
@@ -192,10 +219,16 @@ def validate_competitor_username(
             "message": f"Akun @{cached.username} ditemukan (Global Cache)."
         }
 
-    res = instagrapi_service.validate_username(db, clean_username)
-    if not res["valid"]:
-        raise HTTPException(status_code=400, detail=res["message"])
-    return res
+    try:
+        profile_data = _fetch_profile(db, clean_username)
+        return {
+            "valid": True,
+            "profile": profile_data,
+            "message": f"Akun @{profile_data['username']} ditemukan."
+        }
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Akun @{clean_username} tidak ditemukan atau gagal diakses: {str(e)}")
+
 
 
 @router.get("/")
@@ -285,7 +318,8 @@ def _run_add_competitor_bg(job_id: str, competitor_id: str, username: str, works
                 account.top_hashtags = cached_source.top_hashtags
                 db.commit()
             else:
-                posts_data = instagrapi_service.fetch_competitor_posts(db, username, amount=20)
+                posts_data = _fetch_posts(db, username, amount=20)
+
                 account.avg_likes = posts_data["avg_likes"]
                 account.avg_comments = posts_data["avg_comments"]
                 account.engagement_rate = posts_data["engagement_rate"]
@@ -390,10 +424,11 @@ def add_competitor(
         }
     else:
         try:
-            profile_data = instagrapi_service.fetch_competitor_profile(db, clean_username)
+            profile_data = _fetch_profile(db, clean_username)
         except Exception as e:
             logger.error(f"Failed to fetch profile for @{clean_username}: {e}")
             raise HTTPException(status_code=400, detail=f"Gagal mengambil profil Instagram @{clean_username}: {str(e)}")
+
 
     account = CompetitorAccount(
         workspace_id=workspace.id,
@@ -487,9 +522,9 @@ def sync_competitor(
             "retry_after_seconds": remaining
         }
 
-    # Re-fetch profile
+    # Re-fetch profile & posts
     try:
-        profile_data = instagrapi_service.fetch_competitor_profile(db, account.username)
+        profile_data = _fetch_profile(db, account.username)
         account.full_name = profile_data["full_name"]
         account.profile_pic_url = profile_data["profile_pic_url"]
         account.biography = profile_data["biography"]
@@ -503,8 +538,9 @@ def sync_competitor(
 
     # Re-fetch posts
     try:
-        profile_data = instagrapi_service.fetch_competitor_profile(db, account.username)
-        posts_data = instagrapi_service.fetch_competitor_posts(db, account.username, amount=25)
+        profile_data = _fetch_profile(db, account.username)
+        posts_data = _fetch_posts(db, account.username, amount=25)
+
 
         primary_acc = _get_primary_competitor_account(db, account.username) or account
         target_comp_id = primary_acc.id

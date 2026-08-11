@@ -550,3 +550,51 @@ def test_instagram(
     return res
 
 
+class ProxyTestRequest(BaseModel):
+    proxy_url: Optional[str] = None
+
+
+@router.post("/test-proxy")
+def test_proxy(
+    req: Optional[ProxyTestRequest] = None,
+    admin: User = Depends(require_admin),
+    db: Session = Depends(get_db)
+):
+    """Test proxy connectivity by querying public IP checkers."""
+    from backend.services.faustren_scraper_service import faustren_scraper_service
+    p_url = req.proxy_url if req and req.proxy_url else None
+
+    if not p_url:
+        # Check DB setting if not provided in payload
+        url_row = db.query(Setting).filter(
+            Setting.workspace_id == GLOBAL_WS_ID,
+            Setting.key.in_(["PROXY_URL", "PROXY_CONNECTION_STRING"])
+        ).first()
+        if url_row and url_row.value:
+            p_url = str(url_row.value).strip()
+
+    if not p_url:
+        return {"success": False, "message": "URL Proxy belum diisi di form atau Admin Settings."}
+
+    return faustren_scraper_service.test_proxy_connection(p_url)
+
+
+class FaustRenTestRequest(BaseModel):
+    username: Optional[str] = "instagram"
+    proxy_url: Optional[str] = None
+
+
+@router.post("/test-faustren")
+def test_faustren(
+    req: Optional[FaustRenTestRequest] = None,
+    admin: User = Depends(require_admin),
+    db: Session = Depends(get_db)
+):
+    """Test FaustRen Instagram scraper with optional proxy override."""
+    from backend.services.faustren_scraper_service import faustren_scraper_service
+    sample_uname = (req.username if req and req.username else "instagram").strip()
+    p_url = req.proxy_url if req and req.proxy_url else None
+    return faustren_scraper_service.test_faustren_scraper(db, sample_username=sample_uname, override_proxy=p_url)
+
+
+
