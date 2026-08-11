@@ -1,16 +1,16 @@
 # Graph Report - agencyOS  (2026-08-11)
 
 ## Corpus Check
-- 149 files · ~781,315 words
+- 149 files · ~781,195 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1561 nodes · 3707 edges · 77 communities (61 shown, 16 thin omitted)
+- 1561 nodes · 3705 edges · 77 communities (61 shown, 16 thin omitted)
 - Extraction: 87% EXTRACTED · 13% INFERRED · 0% AMBIGUOUS · INFERRED: 477 edges (avg confidence: 0.5)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `9277513a`
+- Built from commit: `a270db89`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -156,7 +156,7 @@ Nodes (12): ActiveTab, AddJobState, Competitor, CompetitorPost, CompetitorProfil
 
 ### Community 9 - "FaustRenScraperService"
 Cohesion: 0.16
-Nodes (12): FaustRenScraperService, Any, Session, FaustRen Scraper Service — Serverless-Optimized Instagram Embed Scraper with…, Fetch profile & recent posts metadata using Instagram Embed Anti-Block API &…, Scrape profile & posts using Instagram Embed endpoint (Status 200 anti-block) +…, Fetch competitor profile., Fetch competitor posts. (+4 more)
+Nodes (12): FaustRenScraperService, Any, Session, FaustRen Scraper Service — Ultra-Robust Serverless Instagram OpenGraph & Embed…, Test proxy connectivity by querying public IP checkers., Fetch profile & recent posts using Pure HTTP OpenGraph & Embed JSON Scraper.…, Fetch competitor profile., Fetch competitor posts. (+4 more)
 
 ### Community 10 - "ActivityLog"
 Cohesion: 0.14
