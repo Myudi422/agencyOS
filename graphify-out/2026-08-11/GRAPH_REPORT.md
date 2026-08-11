@@ -1,7 +1,7 @@
 # Graph Report - agencyOS  (2026-08-11)
 
 ## Corpus Check
-- 148 files · ~778,787 words
+- 148 files · ~778,944 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
@@ -10,7 +10,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `287dd0a0`
+- Built from commit: `b6c6faa2`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -94,7 +94,7 @@
 - agent_service.py
 - migrate_wa_otp.py
 - verify_firebase
-- clsx
+- react
 
 ## God Nodes (most connected - your core abstractions)
 1. `User` - 170 edges
@@ -231,7 +231,7 @@ Nodes (14): create_snap_transaction(), get_core_api_client(), get_snap_client(),
 
 ### Community 26 - "dependencies"
 Cohesion: 0.13
-Nodes (15): dependencies, jspdf, lucide-react, react, react-dom, react-is, recharts, @tanstack/react-query (+7 more)
+Nodes (15): clsx, dependencies, clsx, jspdf, lucide-react, react-dom, react-is, recharts (+7 more)
 
 ### Community 28 - "useStore"
 Cohesion: 0.15

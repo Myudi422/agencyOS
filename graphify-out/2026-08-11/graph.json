@@ -9613,8 +9613,8 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "frontend_package_dependencies_clsx",
-      "community": 83,
-      "community_name": "clsx",
+      "community": 26,
+      "community_name": "dependencies",
       "norm_label": "clsx"
     },
     {
@@ -9624,8 +9624,8 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "clsx",
-      "community": 83,
-      "community_name": "clsx",
+      "community": 26,
+      "community_name": "dependencies",
       "norm_label": "clsx"
     },
     {
@@ -9767,8 +9767,8 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "frontend_package_dependencies_react",
-      "community": 26,
-      "community_name": "dependencies",
+      "community": 83,
+      "community_name": "react",
       "norm_label": "react"
     },
     {
@@ -9778,8 +9778,8 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "react",
-      "community": 26,
-      "community_name": "dependencies",
+      "community": 83,
+      "community_name": "react",
       "norm_label": "react"
     },
     {
@@ -48459,7 +48459,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "frontend/src/app/dashboard/page.tsx",
-      "source_location": "L93",
+      "source_location": "L96",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_src_app_dashboard_page_dashboardpage",
@@ -58441,5 +58441,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "287dd0a0e79be5b52821df72c1104ec5869a7ef7"
+  "built_at_commit": "b6c6faa2a9cf33dbe8cf5e2c0c86e7ace7857ef1"
 }

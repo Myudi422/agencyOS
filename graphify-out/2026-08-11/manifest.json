@@ -305,8 +305,8 @@
     "semantic_hash": ""
   },
   "frontend/src/app/dashboard/page.tsx": {
-    "mtime": 1785759765.1804566,
-    "ast_hash": "f7724cd779f358b28a23f55387b80a26",
+    "mtime": 1786418217.0349107,
+    "ast_hash": "46695c5333aea7f51b4516fb84b0e4b1",
     "semantic_hash": ""
   },
   "frontend/src/app/kol-campaigns/[campaignId]/page.tsx": {

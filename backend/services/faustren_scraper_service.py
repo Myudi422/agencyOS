@@ -1,6 +1,6 @@
 """
-FaustRen Scraper Service — Serverless-Optimized Instagram Web API Scraper with Proxy Support.
-No login required for fetching public user profiles and recent posts.
+FaustRen Scraper Service — Serverless-Optimized Instagram Embed Scraper with Proxy Support.
+Uses Instagram Embed endpoints (Status 200 Anti-Block) + Residential Proxy + FaustRen contextJSON parser.
 Bypasses Selenium browser dependencies for 100% Vercel compatibility and zero read-only filesystem errors.
 """
 
@@ -93,15 +93,15 @@ class FaustRenScraperService:
         return None
 
     def test_proxy_connection(self, proxy_url: str) -> Dict[str, Any]:
-        """Test proxy connectivity by querying public IP checkers."""
+        """Test proxy connectivity by querying public IP checkers (HTTP endpoint for fast response)."""
         clean_proxy = self.normalize_proxy_url(proxy_url)
         if not clean_proxy:
             return {"success": False, "message": "URL Proxy tidak boleh kosong."}
 
         proxies = {"http": clean_proxy, "https": clean_proxy}
-
         try:
-            resp = requests.get("https://api.ipify.org?format=json", proxies=proxies, timeout=10)
+            # Query http://api.ipify.org (HTTP port avoids HTTPS CONNECT timeout issues on proxy ports)
+            resp = requests.get("http://api.ipify.org?format=json", proxies=proxies, timeout=12)
             if resp.status_code == 200:
                 ip_data = resp.json()
                 return {
@@ -123,75 +123,93 @@ class FaustRenScraperService:
 
     def fetch_competitor_data(self, db: Session, username: str, amount: int = 20, override_proxy: Optional[str] = None) -> Dict[str, Any]:
         """
-        Fetch profile & recent posts metadata using pure HTTP requests & Residential Proxy.
+        Fetch profile & recent posts metadata using Instagram Embed Anti-Block API & Residential Proxy.
         Completely avoids Selenium browser binary calls to ensure zero Vercel read-only filesystem errors.
         """
         clean_user = username.strip().lstrip("@").lower()
-        return self._fetch_via_web_api(db, clean_user, amount=amount, override_proxy=override_proxy)
+        return self._fetch_via_embed_api(db, clean_user, amount=amount, override_proxy=override_proxy)
 
-    def _fetch_via_web_api(self, db: Session, clean_user: str, amount: int = 20, override_proxy: Optional[str] = None) -> Dict[str, Any]:
-        """Direct web API scraper engine with Residential Proxy support."""
+    def _fetch_via_embed_api(self, db: Session, clean_user: str, amount: int = 20, override_proxy: Optional[str] = None) -> Dict[str, Any]:
+        """Scrape profile & posts using Instagram Embed endpoint (Status 200 anti-block) + Residential Proxy."""
+        from instagram_posts_scraper.profile_scraper import InstagramProfileScraper
+
         proxies = self.get_proxy_config(db, override_proxy_url=override_proxy)
         headers = {
             "User-Agent": random.choice(USER_AGENTS),
-            "Accept": "application/json, text/plain, */*",
-            "X-IG-App-ID": "936619743392459",
-            "Referer": "https://www.instagram.com/",
+            "Accept-Language": "en-US,en;q=0.9",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
         }
 
-        # 1. Primary endpoint: Instagram Web Profile Info API
-        url = f"https://www.instagram.com/api/v1/users/web_profile_info/?username={clean_user}"
+        embed_url = f"https://www.instagram.com/{clean_user}/embed/?cr=1&v=12&wp=558&rd=file%3A%2F%2F&rp=%2Fprivate%2Fvar%2Fcontainers%2F"
         try:
-            resp = requests.get(url, headers=headers, proxies=proxies, timeout=12)
+            resp = requests.get(embed_url, headers=headers, proxies=proxies, timeout=15)
             if resp.status_code == 404:
                 raise ValueError(f"Akun @{clean_user} tidak ditemukan di Instagram.")
             if resp.status_code == 429:
-                raise RuntimeError("Instagram Rate Limit (HTTP 429). Silakan aktifkan 'PROXY_ENABLED' & isi 'PROXY_URL' di Admin Settings (/admin).")
+                raise RuntimeError("Instagram Rate Limit (HTTP 429). Pastikan Proxy Aktif & IP Residential Valid di Admin Settings.")
             if resp.status_code != 200:
-                raise RuntimeError(f"Instagram merespon dengan status HTTP {resp.status_code}")
+                raise RuntimeError(f"Instagram Embed merespon status HTTP {resp.status_code}")
 
-            data = resp.json()
-            user_data = data.get("data", {}).get("user") or {}
-            followers_count = user_data.get("edge_followed_by", {}).get("count", 1) or 1
-            edges = user_data.get("edge_owner_to_timeline_media", {}).get("edges", [])[:amount]
+            json_str_escaped = InstagramProfileScraper.extract_contextJSON(resp.text)
+            if not json_str_escaped:
+                start_str = 'contextJSON":"'
+                if start_str in resp.text:
+                    idx = resp.text.find(start_str) + len(start_str)
+                    end_idx = resp.text.find('","', idx)
+                    if end_idx != -1:
+                        json_str_escaped = resp.text[idx:end_idx]
 
+            if not json_str_escaped:
+                raise ValueError(f"Gagal mengambil metadata profil untuk @{clean_user}")
+
+
+            parsed_res = InstagramProfileScraper.extract_parsed_res(json_str_escaped)
+            context = InstagramProfileScraper.get_context(parsed_res)
+
+            followers_count = context.get("followers_count", 0) or 0
+            full_name = context.get("full_name") or clean_user
+            biography = context.get("biography") or ""
+            profile_pic_url = context.get("profile_pic_url") or ""
+            media_count = context.get("posts_count", 0) or 0
+
+            graphql_media = context.get("graphql_media", []) or []
             parsed_posts = []
             total_likes = 0
             total_comments = 0
             hashtags_list = []
 
-            for edge in edges:
-                node = edge.get("node", {})
-                media_id = str(node.get("id", ""))
-                code = str(node.get("shortcode", ""))
-                is_video = node.get("is_video", False)
-
+            for item in graphql_media[:amount]:
+                node = item.get("shortcode_media") or item.get("node") or item
+                code = node.get("shortcode", "")
+                caption = ""
                 caption_edges = node.get("edge_media_to_caption", {}).get("edges", [])
-                caption_text = caption_edges[0].get("node", {}).get("text", "") if caption_edges else ""
+                if caption_edges and isinstance(caption_edges, list):
+                    caption = caption_edges[0].get("node", {}).get("text", "")
+                elif isinstance(node.get("caption"), str):
+                    caption = node.get("caption", "")
 
-                found_hashtags = re.findall(r"#(\w+)", caption_text)
+                found_hashtags = re.findall(r"#(\w+)", caption)
                 hashtags_list.extend([h.lower() for h in found_hashtags])
 
-                thumbnail_url = node.get("display_url") or node.get("thumbnail_src") or ""
-                like_count = node.get("edge_liked_by", {}).get("count", 0) or 0
-                comment_count = node.get("edge_media_to_comment", {}).get("count", 0) or 0
+                likes = node.get("edge_liked_by", {}).get("count", 0) or node.get("like_count", 0) or 0
+                comments = node.get("edge_media_to_comment", {}).get("count", 0) or node.get("comment_count", 0) or 0
+                total_likes += likes
+                total_comments += comments
 
-                total_likes += like_count
-                total_comments += comment_count
-                post_er = round(((like_count + comment_count) / max(followers_count, 1)) * 100, 2)
-
-                ts = node.get("taken_at_timestamp")
+                post_er = round(((likes + comments) / max(followers_count, 1)) * 100, 2)
+                ts = node.get("taken_at_timestamp") or node.get("timestamp")
                 posted_at = datetime.utcfromtimestamp(ts).strftime("%Y-%m-%dT%H:%M:%SZ") if ts else None
+                thumb = node.get("display_url") or node.get("thumbnail_src") or ""
 
                 parsed_posts.append({
-                    "instagram_media_id": media_id,
+                    "instagram_media_id": code,
                     "code": code,
-                    "post_type": "video" if is_video else "image",
-                    "caption": caption_text,
-                    "thumbnail_url": thumbnail_url,
-                    "media_urls": [thumbnail_url] if thumbnail_url else [],
-                    "like_count": like_count,
-                    "comment_count": comment_count,
+                    "post_type": "video" if node.get("is_video") else "image",
+                    "caption": caption,
+                    "thumbnail_url": thumb,
+                    "media_urls": [thumb] if thumb else [],
+                    "like_count": likes,
+                    "comment_count": comments,
                     "engagement_rate": post_er,
                     "posted_at": posted_at,
                 })
@@ -208,15 +226,15 @@ class FaustRenScraperService:
             return {
                 "profile": {
                     "username": clean_user,
-                    "instagram_pk": str(user_data.get("id", "")),
-                    "full_name": user_data.get("full_name") or clean_user,
-                    "profile_pic_url": str(user_data.get("profile_pic_url") or ""),
-                    "biography": user_data.get("biography", ""),
-                    "followers_count": user_data.get("edge_followed_by", {}).get("count", 0) or 0,
-                    "following_count": user_data.get("edge_follow", {}).get("count", 0) or 0,
-                    "media_count": user_data.get("edge_owner_to_timeline_media", {}).get("count", 0) or 0,
-                    "is_verified": user_data.get("is_verified", False),
-                    "category_name": user_data.get("category_name", ""),
+                    "instagram_pk": str(context.get("id") or ""),
+                    "full_name": full_name,
+                    "profile_pic_url": profile_pic_url,
+                    "biography": biography,
+                    "followers_count": followers_count,
+                    "following_count": context.get("following_count", 0) or 0,
+                    "media_count": media_count,
+                    "is_verified": False,
+                    "category_name": "",
                 },
                 "posts": parsed_posts,
                 "avg_likes": avg_likes,
@@ -226,7 +244,7 @@ class FaustRenScraperService:
                 "total_posts_scraped": count
             }
         except Exception as e:
-            logger.error(f"FaustRen fetch via web API @{clean_user} error: {e}")
+            logger.error(f"Embed scraper error for @{clean_user}: {e}")
             raise e
 
     def fetch_competitor_profile(self, db: Session, username: str, override_proxy: Optional[str] = None) -> Dict[str, Any]:
@@ -247,7 +265,7 @@ class FaustRenScraperService:
         }
 
     def test_faustren_scraper(self, db: Session, sample_username: str = "instagram", override_proxy: Optional[str] = None) -> Dict[str, Any]:
-        """Run end-to-end test of FaustRen Scraper Engine."""
+        """Run end-to-end test of FaustRen Embed Scraper Engine."""
         try:
             data = self.fetch_competitor_data(db, sample_username, amount=6, override_proxy=override_proxy)
             prof = data["profile"]
@@ -258,7 +276,7 @@ class FaustRenScraperService:
                 "full_name": prof["full_name"],
                 "followers_count": prof["followers_count"],
                 "posts_count": posts_count,
-                "message": f"FaustRen Scraper Berhasil! Profil @{prof['username']} ({prof['followers_count']:,} followers) & {posts_count} posts berhasil ditarik."
+                "message": f"FaustRen Embed Scraper Berhasil! Profil @{prof['username']} ({prof['followers_count']:,} followers) & {posts_count} posts berhasil ditarik."
             }
         except Exception as e:
             return {
