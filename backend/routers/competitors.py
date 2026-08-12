@@ -118,15 +118,18 @@ def get_current_user_and_workspace(
 
 class ValidateUsernameRequest(BaseModel):
     username: str
+    platform: Optional[str] = "instagram"
 
 class AddCompetitorRequest(BaseModel):
-    social_account_id: str
+    social_account_id: Optional[str] = None
     username: str
+    platform: Optional[str] = "instagram"
 
 class CompetitorResponse(BaseModel):
     id: str
     workspace_id: str
     social_account_id: Optional[str] = None
+    platform: str = "instagram"
     username: str
     full_name: Optional[str] = None
     instagram_pk: Optional[str] = None
@@ -162,7 +165,8 @@ def list_connected_ig_accounts(
     result = []
     for a in accounts:
         comp_count = db.query(CompetitorAccount).filter(
-            CompetitorAccount.social_account_id == a.id
+            CompetitorAccount.social_account_id == a.id,
+            CompetitorAccount.platform == "instagram"
         ).count()
         result.append({
             "id": a.id,
@@ -183,64 +187,69 @@ def validate_competitor_username(
     ctx: tuple[User, Workspace] = Depends(get_current_user_and_workspace),
     db: Session = Depends(get_db)
 ):
-    """Step 1 of adding competitor: check if Instagram username exists and preview profile."""
+    """Step 1 of adding competitor: check if username exists on target platform and preview profile."""
     clean_username = req.username.strip().lstrip("@").lower()
+    plat = (req.platform or "instagram").strip().lower()
     if not clean_username:
-        raise HTTPException(status_code=400, detail="Username Instagram tidak boleh kosong.")
+        raise HTTPException(status_code=400, detail="Username tidak boleh kosong.")
     
-    # 1. Check Global DB Cache first (< 6 hours old) to save Instagram requests
-    cached = _get_cached_competitor_profile(db, clean_username)
-    if cached:
-        return {
-            "valid": True,
-            "profile": {
-                "username": cached.username,
-                "instagram_pk": cached.instagram_pk,
-                "full_name": cached.full_name or cached.username,
-                "profile_pic_url": cached.profile_pic_url,
-                "biography": cached.biography,
-                "followers_count": cached.followers_count,
-                "following_count": cached.following_count,
-                "media_count": cached.media_count,
-                "is_verified": cached.is_verified,
-                "category_name": cached.category_name,
-            },
-            "message": f"Akun @{cached.username} ditemukan (Global Cache)."
-        }
+    if plat == "instagram":
+        cached = _get_cached_competitor_profile(db, clean_username)
+        if cached:
+            return {
+                "valid": True,
+                "profile": {
+                    "platform": "instagram",
+                    "username": cached.username,
+                    "instagram_pk": cached.instagram_pk,
+                    "full_name": cached.full_name or cached.username,
+                    "profile_pic_url": cached.profile_pic_url,
+                    "biography": cached.biography,
+                    "followers_count": cached.followers_count,
+                    "following_count": cached.following_count,
+                    "media_count": cached.media_count,
+                    "is_verified": cached.is_verified,
+                    "category_name": cached.category_name,
+                },
+                "message": f"Akun @{cached.username} ditemukan (Global Cache)."
+            }
 
     try:
-        profile_data = _fetch_profile(db, clean_username)
+        profile_data = _fetch_profile(db, clean_username, platform=plat)
         return {
             "valid": True,
             "profile": profile_data,
-            "message": f"Akun @{profile_data['username']} ditemukan."
+            "message": f"Akun {plat.upper()} @{profile_data['username']} ditemukan."
         }
     except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Akun @{clean_username} tidak ditemukan atau gagal diakses: {str(e)}")
-
+        raise HTTPException(status_code=400, detail=f"Akun {plat.upper()} @{clean_username} tidak ditemukan: {str(e)}")
 
 
 @router.get("/")
 def list_competitors(
     social_account_id: Optional[str] = Query(None),
+    platform: Optional[str] = Query("instagram"),
     ctx: tuple[User, Workspace] = Depends(get_current_user_and_workspace),
     db: Session = Depends(get_db)
 ):
-    """List tracked competitors for active workspace and selected IG account. Cached 3 min in Redis."""
+    """List tracked competitors for active workspace & target platform. Cached 3 min in Redis."""
     _, workspace = ctx
-    cache_key = f"competitors:list:{workspace.id}:{social_account_id or 'all'}"
+    plat = (platform or "instagram").strip().lower()
+    cache_key = f"competitors:list:{workspace.id}:{plat}:{social_account_id or 'all'}"
     cached = cache_get(cache_key)
     if cached:
         return cached
 
     from sqlalchemy import func
     query = db.query(CompetitorAccount).filter(
-        CompetitorAccount.workspace_id == workspace.id
+        CompetitorAccount.workspace_id == workspace.id,
+        CompetitorAccount.platform == plat
     )
-    if social_account_id:
+    if social_account_id and plat == "instagram":
         query = query.filter(CompetitorAccount.social_account_id == social_account_id)
 
     competitors = query.order_by(CompetitorAccount.followers_count.desc()).all()
+
 
     competitor_ids = [c.id for c in competitors]
     post_counts = {}
@@ -365,78 +374,91 @@ def add_competitor(
     """Step 2: Save competitor profile immediately and trigger non-blocking background post fetching."""
     user, workspace = ctx
     clean_username = req.username.strip().lstrip("@").lower()
+    plat = (req.platform or "instagram").strip().lower()
 
     if not clean_username:
-        raise HTTPException(status_code=400, detail="Username Instagram tidak boleh kosong.")
+        raise HTTPException(status_code=400, detail="Username tidak boleh kosong.")
 
-    # Validate social_account_id
-    social_account = db.query(SocialAccount).filter(
-        SocialAccount.id == req.social_account_id,
-        SocialAccount.workspace_id == workspace.id
-    ).first()
-    if not social_account:
-        raise HTTPException(status_code=404, detail="Akun Instagram terhubung tidak ditemukan.")
+    social_account = None
+    if plat == "instagram":
+        if not req.social_account_id:
+            raise HTTPException(status_code=400, detail="social_account_id wajib diisi untuk kompetitor Instagram.")
+        social_account = db.query(SocialAccount).filter(
+            SocialAccount.id == req.social_account_id,
+            SocialAccount.workspace_id == workspace.id
+        ).first()
+        if not social_account:
+            raise HTTPException(status_code=404, detail="Akun Instagram terhubung tidak ditemukan.")
 
-    # Check max 5 competitors limit for this IG account
-    existing_count = db.query(CompetitorAccount).filter(
-        CompetitorAccount.social_account_id == social_account.id
-    ).count()
-    if existing_count >= 5:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Maksimal 5 akun kompetitor per akun Instagram terhubung. Akun @{social_account.username} sudah memantau {existing_count} kompetitor."
-        )
+        existing_count = db.query(CompetitorAccount).filter(
+            CompetitorAccount.social_account_id == social_account.id,
+            CompetitorAccount.platform == "instagram"
+        ).count()
+        if existing_count >= 5:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Maksimal 5 akun kompetitor per akun Instagram terhubung."
+            )
 
-    # Check duplicate for this specific IG account
-    existing = db.query(CompetitorAccount).filter(
-        CompetitorAccount.social_account_id == social_account.id,
-        CompetitorAccount.username == clean_username
-    ).first()
-
-    if existing:
-        raise HTTPException(status_code=400, detail=f"Kompetitor @{clean_username} sudah ada dalam daftar pantau akun @{social_account.username}.")
-
-    # Fetch profile via Global DB Cache or instagrapi
-    cached = _get_cached_competitor_profile(db, clean_username)
-    if cached:
-        profile_data = {
-            "username": cached.username,
-            "full_name": cached.full_name,
-            "instagram_pk": cached.instagram_pk,
-            "profile_pic_url": cached.profile_pic_url,
-            "biography": cached.biography,
-            "followers_count": cached.followers_count,
-            "following_count": cached.following_count,
-            "media_count": cached.media_count,
-            "is_verified": cached.is_verified,
-            "category_name": cached.category_name,
-        }
+        existing = db.query(CompetitorAccount).filter(
+            CompetitorAccount.social_account_id == social_account.id,
+            CompetitorAccount.username == clean_username,
+            CompetitorAccount.platform == "instagram"
+        ).first()
+        if existing:
+            raise HTTPException(status_code=400, detail=f"Kompetitor @{clean_username} sudah ada dalam daftar pantau.")
     else:
-        try:
-            profile_data = _fetch_profile(db, clean_username)
-        except Exception as e:
-            logger.error(f"Failed to fetch profile for @{clean_username}: {e}")
-            raise HTTPException(status_code=400, detail=f"Gagal mengambil profil Instagram @{clean_username}: {str(e)}")
+        existing = db.query(CompetitorAccount).filter(
+            CompetitorAccount.workspace_id == workspace.id,
+            CompetitorAccount.username == clean_username,
+            CompetitorAccount.platform == "tiktok"
+        ).first()
+        if existing:
+            raise HTTPException(status_code=400, detail=f"Kompetitor TikTok @{clean_username} sudah ada dalam daftar pantau.")
 
+    try:
+        profile_data = _fetch_profile(db, clean_username, platform=plat)
+    except Exception as e:
+        logger.error(f"Failed to fetch profile for @{clean_username} ({plat}): {e}")
+        raise HTTPException(status_code=400, detail=f"Gagal mengambil profil @{clean_username}: {str(e)}")
 
     account = CompetitorAccount(
         workspace_id=workspace.id,
-        social_account_id=social_account.id,
+        social_account_id=social_account.id if social_account else None,
+        platform=plat,
         username=profile_data["username"],
-        full_name=profile_data["full_name"],
-        instagram_pk=profile_data["instagram_pk"],
-        profile_pic_url=profile_data["profile_pic_url"],
-        biography=profile_data["biography"],
-        followers_count=profile_data["followers_count"],
-        following_count=profile_data["following_count"],
-        media_count=profile_data["media_count"],
-        is_verified=profile_data["is_verified"],
-        category_name=profile_data["category_name"],
-        last_synced_at=datetime.utcnow()
+        full_name=profile_data.get("full_name") or profile_data.get("nickname"),
+        instagram_pk=profile_data.get("instagram_pk"),
+        profile_pic_url=profile_data.get("profile_pic_url"),
+        biography=profile_data.get("biography"),
+        followers_count=profile_data.get("followers_count", 0),
+        following_count=profile_data.get("following_count", 0),
+        media_count=profile_data.get("media_count", 0),
+        is_verified=profile_data.get("is_verified", False),
+        category_name=profile_data.get("category_name"),
     )
     db.add(account)
     db.commit()
     db.refresh(account)
+
+    # Invalidate list cache
+    cache_delete_prefix(f"competitors:list:{workspace.id}")
+
+    job_id = generate_uuid()
+    background_tasks.add_task(
+        _run_add_competitor_bg, job_id, account.id, clean_username, workspace.id, social_account.id if social_account else None
+    )
+
+    return {
+        "job_id": job_id,
+        "message": f"Kompetitor @{clean_username} ({plat.upper()}) berhasil ditambahkan!",
+        "competitor": {
+            "id": account.id,
+            "username": account.username,
+            "platform": account.platform,
+            "followers_count": account.followers_count,
+    }
+
 
     # Activity log
     log = ActivityLog(

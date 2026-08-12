@@ -80,8 +80,8 @@
     "semantic_hash": ""
   },
   "backend/models/models.py": {
-    "mtime": 1785752620.586935,
-    "ast_hash": "141959d773c5f582e20ac63680b819e3",
+    "mtime": 1786501005.092511,
+    "ast_hash": "cfd8a0f2ab8dff17af45862f9bad6893",
     "semantic_hash": ""
   },
   "backend/reset_competitor_data.py": {
@@ -105,8 +105,8 @@
     "semantic_hash": ""
   },
   "backend/routers/admin.py": {
-    "mtime": 1786490779.6841986,
-    "ast_hash": "42ec1e1e574a5402e0fd054e8230ae02",
+    "mtime": 1786500196.5334291,
+    "ast_hash": "c45e848090800ea8dfc17e77eff7a81c",
     "semantic_hash": ""
   },
   "backend/routers/auth.py": {
@@ -130,8 +130,8 @@
     "semantic_hash": ""
   },
   "backend/routers/competitors.py": {
-    "mtime": 1786490769.2409093,
-    "ast_hash": "150661c3da94972e4f98a8a01c730af0",
+    "mtime": 1786501029.6709423,
+    "ast_hash": "7fd650d64b5ab18d7121dea905138dcc",
     "semantic_hash": ""
   },
   "backend/routers/dashboard.py": {
@@ -275,8 +275,8 @@
     "semantic_hash": ""
   },
   "frontend/src/app/admin/page.tsx": {
-    "mtime": 1786490791.926692,
-    "ast_hash": "83ee816e5e681751bd30f3f03a6eb5d4",
+    "mtime": 1786500228.9769325,
+    "ast_hash": "12439f0037bf128f21afa8056c82dcea",
     "semantic_hash": ""
   },
   "frontend/src/app/auth/callback/page.tsx": {
@@ -300,8 +300,8 @@
     "semantic_hash": ""
   },
   "frontend/src/app/competitor-spy/page.tsx": {
-    "mtime": 1785924575.8379314,
-    "ast_hash": "4cd157dd4319da70052a0b46350b6927",
+    "mtime": 1786501125.4158144,
+    "ast_hash": "0580e122e346c1ae10fd98b3aa328832",
     "semantic_hash": ""
   },
   "frontend/src/app/dashboard/page.tsx": {
@@ -640,8 +640,8 @@
     "semantic_hash": ""
   },
   "backend/requirements.txt": {
-    "mtime": 1786490798.6833105,
-    "ast_hash": "5c53aafe9438bb78cc970e63430a3e66",
+    "mtime": 1786500589.3146012,
+    "ast_hash": "a3b285581da2bf943438c08f8331ea09",
     "semantic_hash": ""
   },
   "implementation_plan.md": {
@@ -670,8 +670,8 @@
     "semantic_hash": ""
   },
   "requirements.txt": {
-    "mtime": 1786490805.181103,
-    "ast_hash": "b59e0f6a32d78cc675e921ef0d4373e7",
+    "mtime": 1786500581.143118,
+    "ast_hash": "a68dede99f2ef87f16df5814bfec1981",
     "semantic_hash": ""
   },
   "favicon/android-chrome-192x192.png": {
@@ -855,8 +855,23 @@
     "semantic_hash": ""
   },
   "backend/services/ensta_scraper_service.py": {
-    "mtime": 1786490759.306456,
-    "ast_hash": "5cd526c16f20a460b60cc537c6873ba3",
+    "mtime": 1786491239.6614492,
+    "ast_hash": "5472759725d9279485431ca4f04cd855",
+    "semantic_hash": ""
+  },
+  "backend/services/tiktok_scraper_service.py": {
+    "mtime": 1786500321.718067,
+    "ast_hash": "9dc62d9f8aacabbd68a873333ccf9aa3",
+    "semantic_hash": ""
+  },
+  "backend/test_tiktok_posts.py": {
+    "mtime": 1786500074.686883,
+    "ast_hash": "5cf31fe4ff2fb20e60b1fbac87b06439",
+    "semantic_hash": ""
+  },
+  "backend/migrate_competitor_platform.py": {
+    "mtime": 1786500995.2139895,
+    "ast_hash": "439f1a4c7912ccc5bc2153649777a862",
     "semantic_hash": ""
   }
 }

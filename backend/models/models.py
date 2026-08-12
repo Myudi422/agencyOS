@@ -367,7 +367,9 @@ class CompetitorAccount(Base):
     id = Column(String(36), primary_key=True, default=generate_uuid)
     workspace_id = Column(String(36), ForeignKey("workspaces.id", ondelete="CASCADE"), nullable=False, index=True)
     social_account_id = Column(String(36), ForeignKey("social_accounts.id", ondelete="CASCADE"), nullable=True, index=True)
+    platform = Column(String(50), default="instagram", nullable=False, index=True)
     username = Column(String(255), nullable=False, index=True)
+
     full_name = Column(String(255), nullable=True)
     instagram_pk = Column(String(255), nullable=True)
     profile_pic_url = Column(Text, nullable=True)

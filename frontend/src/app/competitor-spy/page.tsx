@@ -42,6 +42,7 @@ interface Competitor {
   id: string;
   workspace_id: string;
   social_account_id?: string;
+  platform?: string;
   username: string;
   full_name?: string;
   profile_pic_url?: string;
@@ -49,6 +50,7 @@ interface Competitor {
   followers_count: number;
   following_count: number;
   media_count: number;
+  heart_count?: number;
   is_verified: boolean;
   category_name?: string;
 
@@ -60,6 +62,7 @@ interface Competitor {
   created_at: string;
   posts_count: number;
 }
+
 
 interface CompetitorPost {
   id: string;
@@ -157,20 +160,23 @@ export default function CompetitorSpyPage() {
     }
   }, [activeWorkspace]);
 
-  // Load data whenever active IG account changes
+  // Load data whenever active IG account or selected platform changes
   useEffect(() => {
-    if (selectedIgAccount) {
-      loadCompetitors(selectedIgAccount.id);
+    if (selectedPlatform === "tiktok") {
+      loadCompetitors(undefined, "tiktok");
+    } else if (selectedIgAccount) {
+      loadCompetitors(selectedIgAccount.id, "instagram");
       if (activeTab === "benchmark") {
         loadBenchmark(selectedIgAccount.id);
       } else if (activeTab === "daily") {
         loadDailyFeed(selectedIgAccount.id, dailyDays);
       }
     }
-  }, [selectedIgAccount]);
+  }, [selectedIgAccount, selectedPlatform]);
 
   // Load tab specific data
   useEffect(() => {
+    if (selectedPlatform === "tiktok") return;
     if (!selectedIgAccount) return;
     if (activeTab === "benchmark") {
       loadBenchmark(selectedIgAccount.id);
@@ -178,8 +184,6 @@ export default function CompetitorSpyPage() {
       loadDailyFeed(selectedIgAccount.id, dailyDays);
     }
   }, [activeTab, dailyDays]);
-
-
 
   const showToast = (type: "ok" | "err", text: string) => {
     setToast({ type, text });
@@ -193,7 +197,6 @@ export default function CompetitorSpyPage() {
       const list: ConnectedIgAccount[] = data.accounts || [];
       setIgAccounts(list);
       if (list.length > 0) {
-        // Keep active selection if valid, or default to first
         setSelectedIgAccount((prev) => {
           if (prev && list.some(a => a.id === prev.id)) {
             return list.find(a => a.id === prev.id) || list[0];
@@ -210,12 +213,14 @@ export default function CompetitorSpyPage() {
     }
   };
 
-  const loadCompetitors = async (socialAccountId?: string) => {
-    const accId = socialAccountId || selectedIgAccount?.id;
-    if (!accId) return;
+  const loadCompetitors = async (socialAccountId?: string, platform = selectedPlatform) => {
     setLoading(true);
     try {
-      const data: any = await fetchApi(`/competitors/?social_account_id=${accId}`);
+      let endpoint = `/competitors/?platform=${platform}`;
+      if (platform === "instagram" && socialAccountId) {
+        endpoint += `&social_account_id=${socialAccountId}`;
+      }
+      const data: any = await fetchApi(endpoint);
       setCompetitors(data.competitors || []);
     } catch (e: any) {
       showToast("err", "Gagal memuat daftar kompetitor.");
@@ -259,28 +264,16 @@ export default function CompetitorSpyPage() {
   };
 
   const handleSyncAllCompetitors = async () => {
-    if (!selectedIgAccount || !activeWorkspace) return;
+    if (selectedPlatform === "instagram" && !selectedIgAccount) return;
     setSyncingAll(true);
     try {
-      const res: any = await fetchApi(`/competitors/sync-all?social_account_id=${selectedIgAccount.id}`, { method: "POST" });
+      const accId = selectedIgAccount ? selectedIgAccount.id : "";
+      const res: any = await fetchApi(`/competitors/sync-all?social_account_id=${accId}&platform=${selectedPlatform}`, { method: "POST" });
       if (res.status === "cooldown") {
         showToast("err", res.message || "Sync baru saja dilakukan. Mohon tunggu 3 menit.");
       } else {
         showToast("ok", res.message || "Sync semua brand dimulai di background!");
-        setSyncAllJob({
-          workspaceId: activeWorkspace.id,
-          socialAccountId: selectedIgAccount.id,
-          running: true,
-          done: 0,
-          total: res.total || competitors.length,
-          percent: 10,
-          message: `Menyinkronisasi brand kompetitor di background...`,
-          errors: []
-        });
-        loadCompetitors(selectedIgAccount.id);
-        if (activeTab === "daily") {
-          loadDailyFeed(selectedIgAccount.id, dailyDays);
-        }
+        loadCompetitors(selectedIgAccount?.id, selectedPlatform);
       }
     } catch (e: any) {
       showToast("err", `Sync All gagal: ${e.message}`);
@@ -299,7 +292,10 @@ export default function CompetitorSpyPage() {
     try {
       const res: any = await fetchApi("/competitors/validate", {
         method: "POST",
-        body: JSON.stringify({ username: inputUsername.trim() }),
+        body: JSON.stringify({
+          username: inputUsername.trim(),
+          platform: selectedPlatform
+        }),
       });
       if (res.valid && res.profile) {
         setValidatedProfile(res.profile);
@@ -308,7 +304,7 @@ export default function CompetitorSpyPage() {
         setAddError(res.message || "Akun tidak ditemukan.");
       }
     } catch (e: any) {
-      setAddError(e.message || "Gagal memverifikasi akun Instagram.");
+      setAddError(e.message || `Gagal memverifikasi akun ${selectedPlatform === "tiktok" ? "TikTok" : "Instagram"}.`);
     } finally {
       setValidating(false);
     }
@@ -316,19 +312,20 @@ export default function CompetitorSpyPage() {
 
   // Step 2: Confirm Add Competitor (Background execution)
   const handleConfirmAddCompetitor = async () => {
-    if (!selectedIgAccount || !validatedProfile) return;
+    if (!validatedProfile) return;
+    if (selectedPlatform === "instagram" && !selectedIgAccount) return;
 
     setAddError(null);
     try {
       const res: any = await fetchApi("/competitors/", {
         method: "POST",
         body: JSON.stringify({
-          social_account_id: selectedIgAccount.id,
+          social_account_id: selectedPlatform === "instagram" ? selectedIgAccount?.id : null,
           username: validatedProfile.username,
+          platform: selectedPlatform
         }),
       });
 
-      // Close modal immediately and set global add job in store
       setIsAddModalOpen(false);
       setInputUsername("");
       setValidatedProfile(null);
@@ -342,13 +339,13 @@ export default function CompetitorSpyPage() {
         status: "running"
       });
 
-      // Immediately refresh list so empty state transitions to card
-      loadCompetitors(selectedIgAccount.id);
-      loadIgAccounts();
+      loadCompetitors(selectedIgAccount?.id, selectedPlatform);
+      if (selectedPlatform === "instagram") loadIgAccounts();
     } catch (e: any) {
       setAddError(e.message || "Gagal menambahkan kompetitor.");
     }
   };
+
 
   const handleSyncCompetitor = async (id: string, username: string) => {
     setSyncingMap((prev) => ({ ...prev, [id]: true }));
@@ -417,10 +414,12 @@ export default function CompetitorSpyPage() {
   };
 
   const openAddModal = () => {
-    if (!selectedIgAccount) return;
-    if (selectedIgAccount.competitors_count >= selectedIgAccount.max_competitors) {
-      showToast("err", `Batas maksimal 5 kompetitor per akun IG tercapai untuk @${selectedIgAccount.username}.`);
-      return;
+    if (selectedPlatform === "instagram") {
+      if (!selectedIgAccount) return;
+      if (selectedIgAccount.competitors_count >= selectedIgAccount.max_competitors) {
+        showToast("err", `Batas maksimal 5 kompetitor per akun IG tercapai untuk @${selectedIgAccount.username}.`);
+        return;
+      }
     }
     setModalStep("input");
     setInputUsername("");
@@ -428,6 +427,7 @@ export default function CompetitorSpyPage() {
     setAddError(null);
     setIsAddModalOpen(true);
   };
+
 
   const filteredCompetitors = competitors.filter(
     (c) =>
@@ -451,39 +451,9 @@ export default function CompetitorSpyPage() {
     );
   }
 
-  // Zero-state if no Instagram accounts connected at all
-  if (igAccounts.length === 0) {
-    return (
-      <div className="max-w-3xl mx-auto py-12 px-4 space-y-6">
-        <div className="p-8 md:p-12 rounded-3xl bg-white border border-slate-200 shadow-xl text-center space-y-5">
-          <div className="w-16 h-16 rounded-3xl bg-gradient-to-tr from-purple-500 to-pink-500 text-white flex items-center justify-center mx-auto shadow-lg shadow-purple-500/20">
-            <Instagram className="w-8 h-8" />
-          </div>
-          <div className="space-y-2">
-            <h2 className="text-xl md:text-2xl font-extrabold text-slate-900 font-['Outfit']">
-              Belum Ada Akun Instagram Terhubung
-            </h2>
-            <p className="text-xs md:text-sm text-slate-500 max-w-md mx-auto leading-relaxed">
-              Untuk menggunakan fitur Competitor Spy, hubungkan setidaknya 1 akun Instagram brand Anda terlebih dahulu di menu Social Accounts.
-            </p>
-          </div>
-
-          <div className="pt-2">
-            <Link
-              href="/accounts"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl gradient-brand text-white font-bold text-xs shadow-lg shadow-purple-500/25 hover:scale-105 transition-all"
-            >
-              <span>Hubungkan Akun Instagram</span>
-              <ArrowRight className="w-4 h-4" />
-            </Link>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-6 pb-20">
+
       {/* Toast Notification */}
       {toast && (
         <div
@@ -541,7 +511,7 @@ export default function CompetitorSpyPage() {
               </div>
             </div>
 
-            <h1 className="text-2xl md:text-3xl font-extrabold font-['Outfit'] tracking-tight">
+            <h1 className="text-2xl md:text-3xl font-extrabold font-bold tracking-tight">
               Competitor Spy &amp; Analytics {selectedPlatform === "tiktok" ? "(TikTok)" : "(Instagram)"}
             </h1>
             <p className="text-xs md:text-sm text-slate-300 max-w-2xl leading-relaxed">
@@ -572,48 +542,66 @@ export default function CompetitorSpyPage() {
         </div>
       </div>
 
-      {/* Connected Instagram Account Selector Bar */}
-      <div className="p-4 rounded-3xl bg-white border border-slate-200/80 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
-          <span className="text-xs font-bold text-slate-500 shrink-0 mr-1 flex items-center gap-1.5">
-            <Instagram className="w-4 h-4 text-pink-600" /> Pantau Untuk Akun:
-          </span>
-          {igAccounts.map((acc) => {
-            const isSelected = selectedIgAccount?.id === acc.id;
-            return (
-              <button
-                key={acc.id}
-                onClick={() => setSelectedIgAccount(acc)}
-                className={`flex items-center gap-2 px-3.5 py-2 rounded-2xl text-xs font-bold transition-all shrink-0 border ${
-                  isSelected
-                    ? "bg-purple-50 text-purple-900 border-purple-300 shadow-xs"
-                    : "bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100"
-                }`}
-              >
-                <img
-                  src={acc.avatar_url || `https://api.dicebear.com/7.x/initials/svg?seed=${acc.username}`}
-                  alt=""
-                  className="w-5 h-5 rounded-full object-cover border border-slate-300"
-                />
-                <span>@{acc.username}</span>
-                <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${
-                  acc.competitors_count >= acc.max_competitors
-                    ? "bg-amber-100 text-amber-800"
-                    : "bg-purple-100 text-purple-700"
-                }`}>
-                  {acc.competitors_count}/{acc.max_competitors}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-
-        {selectedIgAccount && (
-          <div className="text-[11px] text-slate-400 font-semibold shrink-0">
-            Maksimal <strong className="text-slate-700">5 kompetitor</strong> per akun Instagram terhubung
+      {/* Connected Account Bar (IG vs TikTok) */}
+      {selectedPlatform === "instagram" ? (
+        <div className="p-4 rounded-3xl bg-white border border-slate-200/80 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
+            <span className="text-xs font-bold text-slate-500 shrink-0 mr-1 flex items-center gap-1.5">
+              <Instagram className="w-4 h-4 text-pink-600" /> Pantau Untuk Akun:
+            </span>
+            {igAccounts.map((acc) => {
+              const isSelected = selectedIgAccount?.id === acc.id;
+              return (
+                <button
+                  key={acc.id}
+                  onClick={() => setSelectedIgAccount(acc)}
+                  className={`flex items-center gap-2 px-3.5 py-2 rounded-2xl text-xs font-bold transition-all shrink-0 border ${
+                    isSelected
+                      ? "bg-purple-50 text-purple-900 border-purple-300 shadow-xs"
+                      : "bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100"
+                  }`}
+                >
+                  <img
+                    src={acc.avatar_url || `https://api.dicebear.com/7.x/initials/svg?seed=${acc.username}`}
+                    alt=""
+                    className="w-5 h-5 rounded-full object-cover border border-slate-300"
+                  />
+                  <span>@{acc.username}</span>
+                  <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${
+                    acc.competitors_count >= acc.max_competitors
+                      ? "bg-amber-100 text-amber-800"
+                      : "bg-purple-100 text-purple-700"
+                  }`}>
+                    {acc.competitors_count}/{acc.max_competitors}
+                  </span>
+                </button>
+              );
+            })}
           </div>
-        )}
-      </div>
+
+          {selectedIgAccount && (
+            <div className="text-[11px] text-slate-400 font-semibold shrink-0">
+              Maksimal <strong className="text-slate-700">5 kompetitor</strong> per akun Instagram terhubung
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="p-4 rounded-3xl bg-slate-900 border border-slate-800 text-white shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-2xl bg-cyan-500/20 border border-cyan-400/30 flex items-center justify-center text-cyan-300">
+              <Sparkles className="w-4.5 h-4.5 text-cyan-300" />
+            </div>
+            <div>
+              <p className="text-xs font-bold text-white">TikTok Public Scraper Engine</p>
+              <p className="text-[11px] text-cyan-200 opacity-80">Pantau akun TikTok publik mana saja tanpa memerlukan login atau akun terhubung — Didukung Residential Proxy</p>
+            </div>
+          </div>
+          <span className="px-3 py-1 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-400/30 text-[10px] font-extrabold uppercase shrink-0">
+            No Login Required
+          </span>
+        </div>
+      )}
+
 
       {/* Tabs & Search Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-3">
@@ -1111,7 +1099,7 @@ export default function CompetitorSpyPage() {
               {/* Table Matrix */}
               <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
                 <div className="p-5 border-b border-slate-100 flex items-center justify-between">
-                  <h3 className="font-bold text-slate-900 text-sm font-['Outfit']">Comparison Benchmark Ranking</h3>
+                  <h3 className="font-bold text-slate-900 text-sm font-bold">Comparison Benchmark Ranking</h3>
                   <span className="text-xs text-slate-400">Urutan berdasarkan Engagement Rate (%)</span>
                 </div>
 
@@ -1205,12 +1193,20 @@ export default function CompetitorSpyPage() {
           <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4 border border-slate-200 animate-in fade-in zoom-in-95">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center font-bold">
-                  <Instagram className="w-4 h-4" />
+                <div className={`w-8 h-8 rounded-xl flex items-center justify-center font-bold ${
+                  selectedPlatform === "tiktok" ? "bg-cyan-100 text-cyan-700" : "bg-purple-100 text-purple-600"
+                }`}>
+                  {selectedPlatform === "tiktok" ? <Sparkles className="w-4 h-4 text-cyan-600" /> : <Instagram className="w-4 h-4" />}
                 </div>
                 <div>
-                  <h3 className="font-extrabold text-slate-900 text-base font-['Outfit']">Tambah Kompetitor Baru</h3>
-                  <p className="text-[10px] text-slate-400">Dipantau dari akun @{selectedIgAccount?.username}</p>
+                  <h3 className="font-extrabold text-slate-900 text-base font-bold">
+                    Tambah Kompetitor {selectedPlatform === "tiktok" ? "TikTok" : "Instagram"} Baru
+                  </h3>
+                  <p className="text-[10px] text-slate-400">
+                    {selectedPlatform === "tiktok"
+                      ? "Dipantau via TikTok Web SSR Engine (Tanpa Login)"
+                      : `Dipantau dari akun @${selectedIgAccount?.username}`}
+                  </p>
                 </div>
               </div>
               <button
@@ -1226,21 +1222,23 @@ export default function CompetitorSpyPage() {
               <form onSubmit={handleValidateUsername} className="space-y-4">
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">
-                    Username Instagram Kompetitor
+                    Username {selectedPlatform === "tiktok" ? "TikTok" : "Instagram"} Kompetitor
                   </label>
                   <div className="relative">
                     <span className="absolute left-3.5 top-2.5 text-slate-400 text-xs font-bold">@</span>
                     <input
                       type="text"
                       required
-                      placeholder="contoh: indomie, nike, brand_x"
+                      placeholder={selectedPlatform === "tiktok" ? "contoh: khaby.lame, tiktok, gopro" : "contoh: indomie, nike, brand_x"}
                       value={inputUsername}
                       onChange={(e) => setInputUsername(e.target.value)}
-                      className="w-full pl-8 pr-4 py-2.5 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-purple-400 font-semibold"
+                      className={`w-full pl-8 pr-4 py-2.5 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 font-semibold ${
+                        selectedPlatform === "tiktok" ? "focus:ring-cyan-400" : "focus:ring-purple-400"
+                      }`}
                     />
                   </div>
                   <p className="text-[10px] text-slate-400 mt-1">
-                    Sistem akan memverifikasi keberadaan akun Instagram publik kompetitor.
+                    Sistem akan memverifikasi keberadaan akun {selectedPlatform === "tiktok" ? "TikTok" : "Instagram"} publik kompetitor.
                   </p>
                 </div>
 
@@ -1261,17 +1259,19 @@ export default function CompetitorSpyPage() {
                   </button>
                   <button
                     type="submit"
-                    disabled={validating}
-                    className="px-5 py-2 rounded-xl gradient-brand text-white text-xs font-bold hover:opacity-90 flex items-center gap-2 shadow-md shadow-purple-500/20 disabled:opacity-60"
+                    disabled={validating || !inputUsername.trim()}
+                    className={`px-5 py-2 rounded-xl text-white text-xs font-bold transition-all flex items-center gap-1.5 shadow-md disabled:opacity-50 ${
+                      selectedPlatform === "tiktok" ? "bg-cyan-600 hover:bg-cyan-500 shadow-cyan-500/20" : "gradient-brand shadow-purple-500/20"
+                    }`}
                   >
-                    {validating && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
-                    <span>{validating ? "Memeriksa Akun..." : "Cek Akun"}</span>
+                    {validating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Search className="w-3.5 h-3.5" />}
+                    <span>{validating ? "Memeriksa..." : "Cari Akun"}</span>
                   </button>
                 </div>
               </form>
             )}
 
-            {/* STAGE 2: PREVIEW & CONFIRM */}
+            {/* STAGE 2: PREVIEW PROFILE & CONFIRM */}
             {modalStep === "preview" && validatedProfile && (
               <div className="space-y-4">
                 <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-3">
@@ -1304,13 +1304,17 @@ export default function CompetitorSpyPage() {
                       </p>
                     </div>
                     <div>
-                      <p className="text-[9px] text-slate-400 uppercase font-bold">Following</p>
+                      <p className="text-[9px] text-slate-400 uppercase font-bold">
+                        {selectedPlatform === "tiktok" ? "Total Hearts" : "Following"}
+                      </p>
                       <p className="text-xs font-extrabold text-slate-800">
-                        {validatedProfile.following_count.toLocaleString()}
+                        {selectedPlatform === "tiktok"
+                          ? (validatedProfile as any).heart_count?.toLocaleString() || "-"
+                          : validatedProfile.following_count.toLocaleString()}
                       </p>
                     </div>
                     <div>
-                      <p className="text-[9px] text-slate-400 uppercase font-bold">Media</p>
+                      <p className="text-[9px] text-slate-400 uppercase font-bold">Media/Videos</p>
                       <p className="text-xs font-extrabold text-slate-800">
                         {validatedProfile.media_count.toLocaleString()}
                       </p>
@@ -1319,7 +1323,7 @@ export default function CompetitorSpyPage() {
                 </div>
 
                 <p className="text-[11px] text-slate-500 leading-relaxed">
-                  Tekan <strong className="text-slate-800">Mulai Pantau</strong> untuk menambahkan kompetitor ini. Pengambilan postingan &amp; analisis engagement akan diproses di background.
+                  Tekan <strong className="text-slate-800">Mulai Pantau</strong> untuk menambahkan kompetitor ini. Pengambilan profil &amp; feed postingan akan diproses secara real-time.
                 </p>
 
                 {addError && (
@@ -1340,7 +1344,9 @@ export default function CompetitorSpyPage() {
                   <button
                     type="button"
                     onClick={handleConfirmAddCompetitor}
-                    className="px-5 py-2 rounded-xl gradient-brand text-white text-xs font-bold hover:opacity-90 flex items-center gap-1.5 shadow-md shadow-purple-500/20"
+                    className={`px-5 py-2 rounded-xl text-white text-xs font-bold hover:opacity-90 flex items-center gap-1.5 shadow-md ${
+                      selectedPlatform === "tiktok" ? "bg-cyan-600 shadow-cyan-500/20" : "gradient-brand shadow-purple-500/20"
+                    }`}
                   >
                     <Plus className="w-4 h-4" />
                     <span>Mulai Pantau</span>
@@ -1367,10 +1373,12 @@ export default function CompetitorSpyPage() {
                   className="w-10 h-10 rounded-2xl object-cover border border-slate-200 shrink-0"
                 />
                 <div className="min-w-0">
-                  <h3 className="font-bold text-slate-900 text-sm font-['Outfit'] flex items-center gap-1.5 truncate">
+                  <h3 className="font-bold text-slate-900 text-sm font-bold flex items-center gap-1.5 truncate">
                     @{selectedCompetitor.username}
-                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 font-normal shrink-0">
-                      ER {selectedCompetitor.engagement_rate}%
+                    <span className={`text-[10px] px-2 py-0.5 rounded-full font-normal shrink-0 ${
+                      selectedPlatform === "tiktok" ? "bg-cyan-100 text-cyan-800" : "bg-purple-100 text-purple-700"
+                    }`}>
+                      {selectedPlatform === "tiktok" ? "TikTok Creator" : `ER ${selectedCompetitor.engagement_rate}%`}
                     </span>
                   </h3>
                   <p className="text-xs text-slate-500 truncate">{selectedCompetitor.followers_count.toLocaleString()} Followers</p>
@@ -1378,21 +1386,23 @@ export default function CompetitorSpyPage() {
               </div>
 
               <div className="flex items-center gap-2">
-                <button
-                  onClick={() => {
-                    const newTop = !filterTopOnly;
-                    setFilterTopOnly(newTop);
-                    loadCompetitorPosts(selectedCompetitor.id, newTop);
-                  }}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 border ${
-                    filterTopOnly
-                      ? "bg-amber-500 text-white border-amber-500 shadow-sm"
-                      : "bg-white text-slate-700 border-slate-200 hover:bg-slate-100"
-                  }`}
-                >
-                  <Flame className={`w-3.5 h-3.5 ${filterTopOnly ? "text-white" : "text-amber-500"}`} />
-                  <span>Top Performers Only</span>
-                </button>
+                {selectedPlatform === "instagram" && (
+                  <button
+                    onClick={() => {
+                      const newTop = !filterTopOnly;
+                      setFilterTopOnly(newTop);
+                      loadCompetitorPosts(selectedCompetitor.id, newTop);
+                    }}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 border ${
+                      filterTopOnly
+                        ? "bg-amber-500 text-white border-amber-500 shadow-sm"
+                        : "bg-white text-slate-700 border-slate-200 hover:bg-slate-100"
+                    }`}
+                  >
+                    <Flame className={`w-3.5 h-3.5 ${filterTopOnly ? "text-white" : "text-amber-500"}`} />
+                    <span>Top Performers Only</span>
+                  </button>
+                )}
 
                 <button
                   onClick={() => setSelectedCompetitor(null)}
@@ -1403,96 +1413,123 @@ export default function CompetitorSpyPage() {
               </div>
             </div>
 
-            {/* Posts Grid */}
-            <div className="p-6 overflow-y-auto flex-1">
-              {postsLoading ? (
-                <div className="flex justify-center py-16">
-                  <Loader2 className="w-8 h-8 text-purple-600 animate-spin" />
-                </div>
-              ) : competitorPosts.length === 0 ? (
-                <div className="text-center py-12 space-y-2">
-                  <Flame className="w-8 h-8 text-amber-400 mx-auto" />
-                  <p className="text-xs font-bold text-slate-700">Belum Ada Postingan Yang Tersimpan</p>
-                  <p className="text-xs text-slate-400">Klik tombol Sync di daftar kompetitor untuk menyegarkan feed.</p>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                  {competitorPosts.map((post) => (
-                    <div
-                      key={post.id}
-                      className="rounded-2xl border border-slate-200 bg-white overflow-hidden shadow-xs hover:shadow-md transition-all flex flex-col justify-between group"
+            {/* Posts Feed Area (TikTok Feed Embed vs IG Posts Grid) */}
+
+            {selectedPlatform === "tiktok" || selectedCompetitor.platform === "tiktok" ? (
+              <div className="p-6 overflow-y-auto flex-1 flex justify-center bg-slate-950">
+                <div className="w-full max-w-[780px] bg-slate-900 p-5 rounded-3xl border border-slate-800 text-center space-y-4">
+                  <div className="flex items-center justify-between flex-wrap gap-2">
+                    <span className="px-3 py-1 rounded-full bg-cyan-500/20 text-cyan-300 text-xs font-bold border border-cyan-400/30 flex items-center gap-1.5">
+                      <Sparkles className="w-3.5 h-3.5" /> 12+ Postingan Video Terbaru TikTok @{selectedCompetitor.username}
+                    </span>
+                    <a
+                      href={`https://www.tiktok.com/@${selectedCompetitor.username}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-xs text-cyan-400 hover:underline flex items-center gap-1 font-bold"
                     >
-                      <div>
-                        {/* Media Thumbnail Container */}
-                        <div className="relative aspect-square bg-slate-900 overflow-hidden">
-                          <img
-                            src={post.thumbnail_url || post.media_urls[0] || "/placeholder.jpg"}
-                            alt=""
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                            onError={(e: any) => {
-                              e.target.src = "https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=500&auto=format&fit=crop";
-                            }}
-                          />
-                          {post.is_top_performer && (
-                            <span className="absolute top-2.5 left-2.5 px-2 py-1 rounded-full bg-amber-500 text-white font-extrabold text-[10px] flex items-center gap-1 shadow-md">
-                              <Flame className="w-3 h-3 text-white fill-white" /> Top Performer
-                            </span>
-                          )}
+                      <span>Buka Profil di App TikTok</span>
+                      <ExternalLink className="w-3.5 h-3.5" />
+                    </a>
+                  </div>
 
-                          <span className="absolute top-2.5 right-2.5 px-2 py-0.5 rounded-full bg-black/60 backdrop-blur-xs text-white text-[10px] font-bold capitalize">
-                            {post.post_type}
-                          </span>
-                        </div>
-
-                        {/* Caption & Stats */}
-                        <div className="p-3.5 space-y-2">
-                          <p className="text-xs text-slate-700 line-clamp-3 leading-relaxed">
-                            {post.caption || "(Tanpa caption)"}
-                          </p>
-
-                          <div className="flex items-center justify-between text-xs text-slate-500 font-semibold pt-2 border-t border-slate-100">
-                            <span className="flex items-center gap-1 text-pink-600">
-                              <Heart className="w-3.5 h-3.5 fill-pink-600" />
-                              {post.like_count.toLocaleString()}
-                            </span>
-                            <span className="flex items-center gap-1 text-blue-600">
-                              <MessageSquare className="w-3.5 h-3.5" />
-                              {post.comment_count.toLocaleString()}
-                            </span>
-                            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-purple-100 text-purple-700">
-                              ER {post.engagement_rate}%
+                  {/* Interactive TikTok Embed Grid */}
+                  <div className="w-full flex justify-center pt-2">
+                    <iframe
+                      src={`https://www.tiktok.com/embed/v2/creator?uniqueId=${selectedCompetitor.username}`}
+                      className="w-full h-[650px] rounded-2xl border-0 bg-slate-950"
+                      title={`TikTok Feed @${selectedCompetitor.username}`}
+                    />
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="p-6 overflow-y-auto flex-1">
+                {postsLoading ? (
+                  <div className="flex justify-center py-16">
+                    <Loader2 className="w-8 h-8 text-purple-600 animate-spin" />
+                  </div>
+                ) : competitorPosts.length === 0 ? (
+                  <div className="text-center py-12 space-y-2">
+                    <Flame className="w-8 h-8 text-amber-400 mx-auto" />
+                    <p className="text-xs font-bold text-slate-700">Belum Ada Postingan Yang Tersimpan</p>
+                    <p className="text-xs text-slate-400">Klik tombol Sync di daftar kompetitor untuk menyegarkan feed.</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                    {competitorPosts.map((post) => (
+                      <div
+                        key={post.id}
+                        className="rounded-2xl border border-slate-200 bg-white overflow-hidden shadow-xs hover:shadow-md transition-all flex flex-col justify-between group"
+                      >
+                        <div>
+                          <div className="relative aspect-square bg-slate-900 overflow-hidden">
+                            <img
+                              src={post.thumbnail_url || post.media_urls[0] || "/placeholder.jpg"}
+                              alt=""
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                              onError={(e: any) => {
+                                e.target.src = "https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=500&auto=format&fit=crop";
+                              }}
+                            />
+                            {post.is_top_performer && (
+                              <span className="absolute top-2.5 left-2.5 px-2 py-1 rounded-full bg-amber-500 text-white font-extrabold text-[10px] flex items-center gap-1 shadow-md">
+                                <Flame className="w-3 h-3 text-white fill-white" /> Top Performer
+                              </span>
+                            )}
+                            <span className="absolute top-2.5 right-2.5 px-2 py-0.5 rounded-full bg-black/60 backdrop-blur-xs text-white text-[10px] font-bold capitalize">
+                              {post.post_type}
                             </span>
                           </div>
+
+                          <div className="p-3.5 space-y-2">
+                            <p className="text-xs text-slate-700 line-clamp-3 leading-relaxed">
+                              {post.caption || "(Tanpa caption)"}
+                            </p>
+
+                            <div className="flex items-center justify-between text-xs text-slate-500 font-semibold pt-2 border-t border-slate-100">
+                              <span className="flex items-center gap-1 text-pink-600">
+                                <Heart className="w-3.5 h-3.5 fill-pink-600" />
+                                {post.like_count.toLocaleString()}
+                              </span>
+                              <span className="flex items-center gap-1 text-blue-600">
+                                <MessageSquare className="w-3.5 h-3.5" />
+                                {post.comment_count.toLocaleString()}
+                              </span>
+                              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-purple-100 text-purple-700">
+                                ER {post.engagement_rate}%
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="p-3 bg-slate-50 border-t border-slate-100 flex items-center gap-2">
+                          {(post.instagram_url || post.code) && (
+                            <a
+                              href={post.instagram_url || `https://www.instagram.com/p/${post.code}/`}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="py-2 px-2.5 rounded-xl bg-white hover:bg-purple-50 hover:text-purple-600 text-slate-600 font-bold text-[11px] flex items-center justify-center gap-1 transition-all border border-slate-200/80 shadow-2xs shrink-0"
+                              title="Lihat Postingan di Instagram"
+                            >
+                              <ExternalLink className="w-3.5 h-3.5" />
+                              <span className="text-[11px]">IG</span>
+                            </a>
+                          )}
+                          <button
+                            onClick={() => handleUseAsInspiration(post, selectedCompetitor?.username)}
+                            className="flex-1 py-2 px-3 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-[11px] flex items-center justify-center gap-1.5 transition-all shadow-xs min-w-0"
+                          >
+                            <Sparkles className="w-3.5 h-3.5 text-amber-300 shrink-0" />
+                            <span className="truncate">Gunakan Sebagai Inspirasi</span>
+                          </button>
                         </div>
                       </div>
-
-                      {/* Action */}
-                      <div className="p-3 bg-slate-50 border-t border-slate-100 flex items-center gap-2">
-                        {(post.instagram_url || post.code) && (
-                          <a
-                            href={post.instagram_url || `https://www.instagram.com/p/${post.code}/`}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="py-2 px-2.5 rounded-xl bg-white hover:bg-purple-50 hover:text-purple-600 text-slate-600 font-bold text-[11px] flex items-center justify-center gap-1 transition-all border border-slate-200/80 shadow-2xs shrink-0"
-                            title="Lihat Postingan di Instagram"
-                          >
-                            <ExternalLink className="w-3.5 h-3.5" />
-                            <span className="text-[11px]">IG</span>
-                          </a>
-                        )}
-                        <button
-                          onClick={() => handleUseAsInspiration(post, selectedCompetitor?.username)}
-                          className="flex-1 py-2 px-3 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-[11px] flex items-center justify-center gap-1.5 transition-all shadow-xs min-w-0"
-                        >
-                          <Sparkles className="w-3.5 h-3.5 text-amber-300 shrink-0" />
-                          <span className="truncate">Gunakan Sebagai Inspirasi</span>
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
         </Portal>
@@ -1500,3 +1537,4 @@ export default function CompetitorSpyPage() {
     </div>
   );
 }
+
