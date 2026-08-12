@@ -111,7 +111,7 @@ export default function Sidebar({ isMobileOpen = false, onCloseMobile }: Sidebar
       `}>
         <div className="flex-1 flex flex-col overflow-hidden">
           {/* Brand Header */}
-          <div className="p-4 border-b border-slate-200/80 flex items-center justify-between shrink-0">
+          <div className="p-4 border-b border-slate-200/80 flex items-center justify-between shrink-0" data-tour="sidebar-brand">
             <div className="flex items-center gap-2.5">
               <div className="w-8 h-8 rounded-xl bg-purple-600 p-1.5 flex items-center justify-center shrink-0 shadow-md shadow-purple-500/25">
                 <img src="/logo.png" alt="Shiera Logo" className="w-full h-full object-contain brightness-0 invert" />
@@ -164,7 +164,7 @@ export default function Sidebar({ isMobileOpen = false, onCloseMobile }: Sidebar
           </div>
 
           {/* Navigation List */}
-          <nav className="px-3 space-y-0.5 overflow-y-auto flex-1">
+          <nav className="px-3 space-y-0.5 overflow-y-auto flex-1" data-tour="sidebar-nav">
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = pathname === item.href;
@@ -204,6 +204,19 @@ export default function Sidebar({ isMobileOpen = false, onCloseMobile }: Sidebar
             <p className="px-3 pt-2 pb-1 text-[9px] font-bold text-slate-400 uppercase tracking-widest">
               Account
             </p>
+
+            {/* Panduan Tutorial */}
+            <button
+              onClick={() => {
+                const { startAppTour } = require("@/components/tour/AppTour");
+                startAppTour();
+                if (onCloseMobile) onCloseMobile();
+              }}
+              className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-purple-700 bg-purple-50 hover:bg-purple-100 transition-all text-left border border-purple-200/80 mb-1"
+            >
+              <Sparkles className="w-4 h-4 text-purple-600" />
+              <span>Panduan App / Tutorial</span>
+            </button>
 
             {/* Profile */}
             <button

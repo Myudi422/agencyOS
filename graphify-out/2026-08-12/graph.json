@@ -9118,8 +9118,8 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "frontend_package_dependencies_clsx",
-      "community": 75,
-      "community_name": "clsx",
+      "community": 26,
+      "community_name": "dependencies",
       "norm_label": "clsx"
     },
     {
@@ -9129,8 +9129,8 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "clsx",
-      "community": 75,
-      "community_name": "clsx",
+      "community": 26,
+      "community_name": "dependencies",
       "norm_label": "clsx"
     },
     {
@@ -9272,8 +9272,8 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "frontend_package_dependencies_react",
-      "community": 26,
-      "community_name": "dependencies",
+      "community": 75,
+      "community_name": "react",
       "norm_label": "react"
     },
     {
@@ -9283,8 +9283,8 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "react",
-      "community": 26,
-      "community_name": "dependencies",
+      "community": 75,
+      "community_name": "react",
       "norm_label": "react"
     },
     {
@@ -50549,7 +50549,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "frontend/src/components/posts/PostComposerModal.tsx",
-      "source_location": "L395",
+      "source_location": "L434",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_src_components_posts_postcomposermodal_postcomposermodal",
@@ -55056,5 +55056,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "a076ae810e0febae0e7fdfed9226e5565c483c3a"
+  "built_at_commit": "f07dd4d2642f57f9e91e2dff7545a84c0749c1ab"
 }

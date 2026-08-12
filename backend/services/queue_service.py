@@ -61,7 +61,8 @@ class QueueService:
         db = SessionLocal()
         try:
             job = db.query(PublishJob).filter(PublishJob.id == job_id).first()
-            if not job:
+            if not job or job.status == JobStatus.SUCCESS:
+                logger.info(f"Job {job_id} already succeeded or does not exist. Skipping.")
                 return
 
             target = job.post_target

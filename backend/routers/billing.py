@@ -542,7 +542,7 @@ def _activate_user_subscription(
     transaction_id: Optional[str],
     db: Session
 ):
-    """Helper to activate user subscription after Midtrans payment settlement."""
+    """Helper to activate user subscription after Midtrans payment settlement (Idempotent)."""
     user = db.query(User).filter(User.email == email).first()
     if not user:
         logger.warning(f"Activation failed: user with email {email} not found.")
@@ -553,9 +553,14 @@ def _activate_user_subscription(
         logger.warning(f"Activation failed: plan tier '{plan_tier}' not found.")
         return
 
+    sub = user.subscription
+    # Idempotency check: prevent duplicate activation/quota reset for the same order_id
+    if sub and sub.midtrans_order_id == order_id and sub.status == SubscriptionStatus.ACTIVE:
+        logger.info(f"Order {order_id} already activated for {email}. Skipping duplicate activation.")
+        return
+
     expires_at = datetime.utcnow() + timedelta(days=plan.duration_days)
 
-    sub = user.subscription
     if sub:
         sub.plan_id = plan.id
         sub.status = SubscriptionStatus.ACTIVE

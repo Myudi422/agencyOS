@@ -1,25 +1,50 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { History, Search, Filter, Sparkles, User, Clock, Trash2, ShieldCheck, Zap } from "lucide-react";
+import { History, Search, Filter, Sparkles, User, Clock, Trash2, ShieldCheck, Zap, ChevronLeft, ChevronRight, Database } from "lucide-react";
 import { useStore } from "@/store/useStore";
 import { toast } from "@/store/useToastStore";
 import { confirmModal } from "@/store/useConfirmStore";
 import { fetchApi } from "@/lib/api";
 
+interface PaginatedActivityResponse {
+  items: any[];
+  total: number;
+  page: number;
+  page_size: number;
+  total_pages: number;
+  max_limit: number;
+}
+
 export default function ActivityPage() {
   const { activeWorkspace } = useStore();
   const [logs, setLogs] = useState<any[]>([]);
   const [entityFilter, setEntityFilter] = useState<string>("All");
+  const [page, setPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(10);
+  const [totalItems, setTotalItems] = useState<number>(0);
+  const [totalPages, setTotalPages] = useState<number>(1);
   const [isLoading, setIsLoading] = useState(true);
 
   const loadLogs = () => {
     if (!activeWorkspace?.id) return;
     setIsLoading(true);
     const entityParam = entityFilter === "All" ? "" : `&entity_type=${entityFilter}`;
-    fetchApi<any[]>(`/activity/?workspace_id=${activeWorkspace.id}${entityParam}`)
-      .then((data) => {
-        setLogs(data || []);
+    fetchApi<any>(`/activity/?workspace_id=${activeWorkspace.id}&page=${page}&page_size=${pageSize}${entityParam}`)
+      .then((res) => {
+        if (res && Array.isArray(res.items)) {
+          setLogs(res.items);
+          setTotalItems(res.total || res.items.length);
+          setTotalPages(res.total_pages || 1);
+        } else if (Array.isArray(res)) {
+          setLogs(res);
+          setTotalItems(res.length);
+          setTotalPages(1);
+        } else {
+          setLogs([]);
+          setTotalItems(0);
+          setTotalPages(1);
+        }
         setIsLoading(false);
       })
       .catch((err) => {
@@ -27,19 +52,25 @@ export default function ActivityPage() {
           { id: "log-1", user_name: "Admin User", action: "PUBLISH_POST", details: "Published post to Instagram & Facebook", entity_type: "Post", created_at: new Date().toISOString() },
           { id: "log-2", user_name: "System", action: "UPLOAD_MEDIA", details: "Uploaded hero_banner.png to Backblaze B2", entity_type: "Media", created_at: new Date().toISOString() }
         ]);
+        setTotalItems(2);
+        setTotalPages(1);
         setIsLoading(false);
       });
   };
 
   useEffect(() => {
+    setPage(1);
+  }, [entityFilter, pageSize]);
+
+  useEffect(() => {
     loadLogs();
-  }, [activeWorkspace?.id, entityFilter]);
+  }, [activeWorkspace?.id, entityFilter, page, pageSize]);
 
   const handleDeleteLog = async (logId: string) => {
     try {
       await fetchApi(`/activity/${logId}`, { method: "DELETE" });
       toast.success("Activity log entry removed.");
-      setLogs((prev) => prev.filter((l) => l.id !== logId));
+      loadLogs();
     } catch (err) {
       toast.success("Activity log entry removed.");
       setLogs((prev) => prev.filter((l) => l.id !== logId));
@@ -57,22 +88,30 @@ export default function ActivityPage() {
           await fetchApi(`/activity/clear/all?workspace_id=${activeWorkspace?.id || "ws-default"}`, { method: "DELETE" });
           toast.success("All activity audit logs cleared.");
           setLogs([]);
+          setTotalItems(0);
+          setTotalPages(1);
         } catch (err) {
           toast.success("All activity audit logs cleared.");
           setLogs([]);
+          setTotalItems(0);
+          setTotalPages(1);
         }
       },
     });
   };
 
   return (
-    <div className="space-y-6 pb-12">
+    <div className="space-y-6 pb-12" data-tour="activity-menu">
       {/* Top Banner - White Clean Glassmorphism */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 sm:p-8 rounded-3xl glass-panel relative overflow-hidden shadow-sm">
         <div className="space-y-1.5 z-10">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <span className="px-3 py-1 rounded-full bg-purple-100 text-purple-700 text-[11px] font-bold tracking-wide uppercase border border-purple-200">
               Audit Stream
+            </span>
+            <span className="px-3 py-1 rounded-full bg-amber-50 text-amber-700 text-[11px] font-bold tracking-wide border border-amber-200/80 flex items-center gap-1">
+              <Database className="w-3 h-3 text-amber-600" />
+              Capped @ 50 Max Logs (Optimal DB)
             </span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight font-['Outfit'] gradient-text">
@@ -101,7 +140,7 @@ export default function ActivityPage() {
               onChange={(e) => setEntityFilter(e.target.value)}
               className="bg-transparent text-slate-900 font-semibold focus:outline-none cursor-pointer"
             >
-              <option value="all">All Actions</option>
+              <option value="All">All Actions</option>
               <option value="Account">Account Actions</option>
               <option value="Post">Post Actions</option>
               <option value="System">System Actions</option>
@@ -112,10 +151,33 @@ export default function ActivityPage() {
 
       {/* Activity Log Cards List */}
       <div className="p-6 rounded-3xl glass-card space-y-4">
-        {logs.length === 0 ? (
+        <div className="flex items-center justify-between px-1">
+          <div className="text-xs font-semibold text-slate-500">
+            Menampilkan <span className="text-purple-600 font-bold">{logs.length}</span> dari total <span className="text-slate-900 font-bold">{totalItems}</span> log audit
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-slate-400 font-medium">Page Size:</span>
+            <select
+              value={pageSize}
+              onChange={(e) => setPageSize(Number(e.target.value))}
+              className="bg-white border border-slate-200 text-slate-700 text-xs rounded-xl px-2.5 py-1 focus:outline-none cursor-pointer"
+            >
+              <option value={5}>5</option>
+              <option value={10}>10</option>
+              <option value={20}>20</option>
+            </select>
+          </div>
+        </div>
+
+        {isLoading ? (
+          <div className="p-12 text-center text-slate-400 space-y-3">
+            <div className="w-6 h-6 border-2 border-purple-600 border-t-transparent rounded-full animate-spin mx-auto" />
+            <p className="text-xs font-medium text-slate-500">Memuat log aktivitas...</p>
+          </div>
+        ) : logs.length === 0 ? (
           <div className="p-8 text-center text-slate-400 space-y-2">
             <History className="w-8 h-8 mx-auto text-slate-300" />
-            <p className="text-xs font-semibold text-slate-600">No activity logs recorded yet.</p>
+            <p className="text-xs font-semibold text-slate-600">Belum ada log aktivitas yang tercatat.</p>
           </div>
         ) : (
           <div className="space-y-3">
@@ -155,6 +217,33 @@ export default function ActivityPage() {
                 </button>
               </div>
             ))}
+          </div>
+        )}
+
+        {/* Server-side Pagination Bar */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between pt-4 border-t border-slate-100">
+            <button
+              disabled={page <= 1}
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              className="px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1 shadow-xs"
+            >
+              <ChevronLeft className="w-4 h-4" />
+              <span>Sebelumnya</span>
+            </button>
+
+            <span className="text-xs font-medium text-slate-600">
+              Halaman <span className="font-bold text-slate-900">{page}</span> dari <span className="font-bold text-slate-900">{totalPages}</span>
+            </span>
+
+            <button
+              disabled={page >= totalPages}
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              className="px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1 shadow-xs"
+            >
+              <span>Berikutnya</span>
+              <ChevronRight className="w-4 h-4" />
+            </button>
           </div>
         )}
       </div>

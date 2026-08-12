@@ -14,6 +14,7 @@ import AccountSettingsModal from "@/components/profile/AccountSettingsModal";
 
 import ShieraAiReportWidget from "@/components/common/ShieraAiReportWidget";
 import SplashScreen from "@/components/common/SplashScreen";
+import AppTour from "@/components/tour/AppTour";
 
 const PUBLIC_PATHS = ["/landing", "/login", "/pricing", "/billing/success", "/onboarding", "/kol-portal", "/review"];
 
@@ -82,6 +83,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       <GlassToastManager />
       <GlobalGlassConfirmModal />
       <ShieraAiReportWidget />
+      <AppTour />
     </div>
   );
 }

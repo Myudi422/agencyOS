@@ -205,7 +205,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Metrics Overview Row (Ringkasan Statistik Hari Ini) */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4" data-tour="dashboard-metrics">
         {[
           { title: "Akun Terkoneksi", value: metrics.connected_accounts, total: metrics.total_accounts, icon: Users2, color: "text-purple-600", bg: "bg-purple-100/80 border-purple-200/60" },
           { title: "Dijadwalkan Hari Ini", value: metrics.scheduled_today, icon: CalendarDays, color: "text-sky-600", bg: "bg-sky-100/80 border-sky-200/60" },
@@ -488,7 +488,7 @@ export default function DashboardPage() {
         
         {/* Left Column: Content Calendar Overview (7 cols) */}
         <div className="lg:col-span-7 space-y-6">
-          <div className="p-6 rounded-3xl glass-card space-y-5">
+          <div className="p-6 rounded-3xl glass-card space-y-5" data-tour="dashboard-content">
             <div className="flex items-center justify-between border-b border-slate-200/80 pb-4">
               <div className="flex items-center gap-2.5">
                 <div className="w-8 h-8 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center">
@@ -578,7 +578,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Right Column: Activity Audit Feed (5 cols) */}
-        <div className="lg:col-span-5 p-6 rounded-3xl glass-card space-y-5">
+        <div className="lg:col-span-5 p-6 rounded-3xl glass-card space-y-5" data-tour="dashboard-activity">
           <div className="flex items-center justify-between border-b border-slate-200/80 pb-4">
             <div className="flex items-center gap-2.5">
               <div className="w-8 h-8 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center">

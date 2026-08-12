@@ -1,7 +1,7 @@
 import asyncio
 from fastapi import APIRouter, Depends, Query, Header
 # pyrefly: ignore [missing-import]
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import func
 from datetime import datetime, time
 from backend.database import get_db
@@ -78,9 +78,10 @@ async def get_dashboard_overview(
         .all()
     )
 
-    # 6. Upcoming Scheduled & Recent Posts for Content Calendar Overview
+    # 6. Upcoming Scheduled & Recent Posts for Content Calendar Overview (Optimized joinedload)
     upcoming_posts = (
         db.query(Post)
+        .options(joinedload(Post.targets))
         .filter(Post.workspace_id == workspace_id)
         .order_by(Post.created_at.desc())
         .limit(6)
@@ -152,18 +153,23 @@ async def get_dashboard_overview(
             "scheduled": sched_map.get(d_str, 0)
         })
 
-    # 8. Platform Channel Breakdown Data
-    accounts_list = db.query(SocialAccount).filter(SocialAccount.workspace_id == workspace_id).all()
-    plat_counts: dict = {}
-    total_acc_count = len(accounts_list)
-    for acc in accounts_list:
-        p = acc.platform.value if hasattr(acc.platform, "value") else str(acc.platform)
-        plat_counts[p] = plat_counts.get(p, 0) + 1
+    # 8. Platform Channel Breakdown Data (Optimized SQL Aggregation)
+    plat_rows = (
+        db.query(
+            SocialAccount.platform,
+            func.count(SocialAccount.id).label("cnt")
+        )
+        .filter(SocialAccount.workspace_id == workspace_id)
+        .group_by(SocialAccount.platform)
+        .all()
+    )
+    total_acc_count = sum(r.cnt for r in plat_rows)
 
     platform_breakdown = []
-    for k, v in plat_counts.items():
-        pct = round((v / max(1, total_acc_count)) * 100)
-        platform_breakdown.append({"platform": k, "count": v, "percentage": pct})
+    for r in plat_rows:
+        p_name = r.platform.value if hasattr(r.platform, "value") else str(r.platform)
+        pct = round((r.cnt / max(1, total_acc_count)) * 100)
+        platform_breakdown.append({"platform": p_name, "count": r.cnt, "percentage": pct})
 
     # 9. Top Post Showcase (Best Performing Post with 10-minute TTL Cache)
     now_ts = datetime.utcnow().timestamp()
