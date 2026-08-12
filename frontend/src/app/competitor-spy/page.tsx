@@ -97,7 +97,44 @@ interface AddJobState {
   status: "running" | "done" | "error";
 }
 
+function TikTokCreatorEmbed({ username }: { username: string }) {
+  const containerRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    if (!username) return;
+
+    if (containerRef.current) {
+      containerRef.current.innerHTML = `
+        <blockquote class="tiktok-embed" cite="https://www.tiktok.com/@${username}" data-unique-id="${username}" data-embed-from="oembed" data-embed-type="creator" style="max-width:780px; min-width:288px; width:100%;">
+          <section>
+            <a target="_blank" href="https://www.tiktok.com/@${username}?refer=creator_embed">@${username}</a>
+          </section>
+        </blockquote>
+      `;
+    }
+
+    const scriptId = "tiktok-embed-script-tag";
+    const existingScript = document.getElementById(scriptId);
+    if (existingScript) {
+      existingScript.remove();
+    }
+
+    const script = document.createElement("script");
+    script.id = scriptId;
+    script.src = "https://www.tiktok.com/embed.js";
+    script.async = true;
+    document.body.appendChild(script);
+  }, [username]);
+
+  return (
+    <div className="w-full flex justify-center py-2 overflow-x-auto min-h-[550px]">
+      <div ref={containerRef} className="w-full max-w-[780px] flex justify-center" />
+    </div>
+  );
+}
+
 export default function CompetitorSpyPage() {
+
   const { activeWorkspace, openComposer } = useStore();
   const { showSplash } = useSplashStore();
   const { setAddJob, setSyncAllJob } = useCompetitorSpyStore();
@@ -1434,15 +1471,10 @@ export default function CompetitorSpyPage() {
                   </div>
 
                   {/* Interactive TikTok Embed Grid */}
-                  <div className="w-full flex justify-center pt-2">
-                    <iframe
-                      src={`https://www.tiktok.com/embed/v2/creator?uniqueId=${selectedCompetitor.username}`}
-                      className="w-full h-[650px] rounded-2xl border-0 bg-slate-950"
-                      title={`TikTok Feed @${selectedCompetitor.username}`}
-                    />
-                  </div>
+                  <TikTokCreatorEmbed username={selectedCompetitor.username} />
                 </div>
               </div>
+
             ) : (
               <div className="p-6 overflow-y-auto flex-1">
                 {postsLoading ? (
