@@ -79,19 +79,11 @@ export default function AdminPage() {
   const [settingsSaving, setSettingsSaving] = useState(false);
   const [showPasswordMap, setShowPasswordMap] = useState<Record<string, boolean>>({});
   const [showGeminiGuide, setShowGeminiGuide] = useState(false);
-  const [showIgGuide, setShowIgGuide] = useState(false);
   const [settingsSearch, setSettingsSearch] = useState("");
 
   // Gemini Test State
   const [geminiTesting, setGeminiTesting] = useState(false);
   const [geminiTestResult, setGeminiTestResult] = useState<any>(null);
-
-  // Instagram Test State
-  const [igTesting, setIgTesting] = useState(false);
-  const [igTestResult, setIgTestResult] = useState<any>(null);
-
-
-
 
   const [msg, setMsg] = useState<{ type: "ok" | "err"; text: string } | null>(null);
 
@@ -119,33 +111,6 @@ export default function AdminPage() {
   const copyToClipboard = (text: string, label: string) => {
     navigator.clipboard.writeText(text);
     flash("ok", `${label} tersalin ke clipboard!`);
-  };
-
-  const testInstagramConnection = async () => {
-    setIgTesting(true);
-    setIgTestResult(null);
-    try {
-      const uEl = document.getElementById("setting-INSTAGRAM_SCRAPER_USERNAME") as HTMLInputElement;
-      const pEl = document.getElementById("setting-INSTAGRAM_SCRAPER_PASSWORD") as HTMLInputElement;
-      const username = uEl?.value || appSettings["INSTAGRAM_SCRAPER_USERNAME"] || "";
-      const password = pEl?.value || appSettings["INSTAGRAM_SCRAPER_PASSWORD"] || "";
-
-      const res: any = await fetchApi("/admin/test-instagram", {
-        method: "POST",
-        body: JSON.stringify({ username, password })
-      });
-      setIgTestResult(res);
-      if (res.success) {
-        flash("ok", res.message || "Koneksi Instagram berhasil!");
-      } else {
-        flash("err", res.message || "Gagal menghubungkan Instagram.");
-      }
-    } catch (e: any) {
-      setIgTestResult({ success: false, message: e.message || "Terjadi kesalahan saat menguji Instagram." });
-      flash("err", "Test Instagram gagal");
-    } finally {
-      setIgTesting(false);
-    }
   };
 
   // ── Plans ──────────────────────────────────────────────────────────────────
@@ -1553,104 +1518,6 @@ export default function AdminPage() {
             )}
           </div>
 
-          {/* ── SECTION 2: INSTAGRAPI COMPETITOR SPY ENGINE ── */}
-          <div className="p-6 rounded-3xl bg-gradient-to-br from-pink-950 via-purple-950 to-slate-950 text-white shadow-xl space-y-4 border border-pink-500/20">
-            <div className="flex items-center justify-between flex-wrap gap-3">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-pink-500/20 border border-pink-400/30 flex items-center justify-center text-pink-300">
-                  <Bot className="w-5 h-5 text-pink-300" />
-                </div>
-                <div>
-                  <h3 className="text-base font-bold font-['Outfit'] text-white">Instagram Competitor Spy Engine</h3>
-                  <p className="text-xs text-pink-200">Auto-Refresh Session &amp; Scraper credentials khusus fitur analisa kompetitor</p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => setShowIgGuide(!showIgGuide)}
-                  className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-pink-200 text-xs font-medium transition-all flex items-center gap-1 cursor-pointer"
-                >
-                  <HelpCircle className="w-3.5 h-3.5" />
-                  <span>{showIgGuide ? "Tutup Info" : "Info Login Direct"}</span>
-                  {showIgGuide ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-                </button>
-
-                <button
-                  onClick={testInstagramConnection}
-                  disabled={igTesting}
-                  className="flex items-center gap-2 px-4 py-2 rounded-xl bg-pink-600 hover:bg-pink-500 text-white text-xs font-semibold shadow-lg shadow-pink-500/30 transition-all disabled:opacity-60 cursor-pointer"
-                >
-                  {igTesting ? (
-                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                  ) : (
-                    <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-                  )}
-                  {igTesting ? "Mengecek Session..." : "Test Koneksi Instagram"}
-                </button>
-              </div>
-            </div>
-
-            {/* Collapsible Instruction box */}
-            {showIgGuide && (
-              <div className="p-4 rounded-2xl bg-white/5 border border-white/10 text-xs text-pink-100 space-y-1 animate-in fade-in duration-200">
-                <p className="font-bold text-pink-200">💡 Bebas Input Cookie Manual:</p>
-                <p className="text-[11px] text-pink-300/90">
-                  Cukup masukkan Username &amp; Password akun Instagram scraper (akun sekunder), lalu klik <strong>Test Koneksi Instagram</strong>. Backend akan otomatis melakukan login &amp; me-refresh session cookie secara mandiri!
-                </p>
-              </div>
-            )}
-
-            {/* Credentials Fields */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2">
-              {renderDarkApiKeyInput("INSTAGRAM_SCRAPER_USERNAME", "INSTAGRAM_SCRAPER_USERNAME", "Username akun IG scraper", "pink")}
-              {renderDarkApiKeyInput("INSTAGRAM_SCRAPER_PASSWORD", "INSTAGRAM_SCRAPER_PASSWORD", "Password akun IG scraper", "pink")}
-            </div>
-
-            {/* Challenge Resolver Box */}
-            <div className="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-3">
-              <div>
-                <h4 className="text-xs font-bold text-amber-300 flex items-center gap-1.5">
-                  <Key className="w-3.5 h-3.5 text-amber-300" /> Challenge &amp; Captcha Resolver (Auto IMAP / 2FA TOTP)
-                </h4>
-                <p className="text-[11px] text-pink-300/80 mt-0.5">
-                  Terapkan 2FA Secret Key atau IMAP Email agar sistem otomatis membaca OTP saat Instagram meminta verifikasi.
-                </p>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-                {renderDarkApiKeyInput("INSTAGRAM_2FA_SEED", "INSTAGRAM_2FA_SEED", "2FA Secret Key (TOTP)", "amber")}
-                {renderDarkApiKeyInput("INSTAGRAM_CHALLENGE_EMAIL", "CHALLENGE_EMAIL", "Email akun IG", "pink")}
-                {renderDarkApiKeyInput("INSTAGRAM_CHALLENGE_EMAIL_PASSWORD", "EMAIL_PASSWORD", "Gmail App Password", "pink")}
-                {renderDarkApiKeyInput("INSTAGRAM_CHALLENGE_CODE", "CHALLENGE_CODE", "Kode OTP Manual 6-digit", "amber")}
-              </div>
-            </div>
-
-            {/* Session Dump Cookie Input */}
-            {renderDarkApiKeyInput("INSTAGRAM_SESSION_COOKIE", "INSTAGRAM_SESSION_COOKIE (Auto-Dump)", "Terisi otomatis saat auto-login berhasil", "pink")}
-
-            {/* Test Connection Result Box */}
-            {igTestResult && (
-              <div className={`p-4 rounded-2xl border text-xs flex items-start gap-3 transition-all ${
-                igTestResult.success
-                  ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-200"
-                  : "bg-red-500/10 border-red-500/30 text-red-200"
-              }`}>
-                {igTestResult.success ? (
-                  <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
-                ) : (
-                  <XCircle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
-                )}
-                <div>
-                  <p className="font-bold">{igTestResult.message}</p>
-                  {igTestResult.username && (
-                    <p className="text-[11px] opacity-80 mt-0.5">Logged in as: <strong>@{igTestResult.username}</strong> ({igTestResult.full_name})</p>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
 
           {/* ── SECTION 3: THIRD-PARTY INTEGRATIONS (PAYMENTS & MESSAGING) ── */}
           <div className="space-y-3">

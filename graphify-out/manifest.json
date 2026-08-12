@@ -75,8 +75,8 @@
     "semantic_hash": ""
   },
   "backend/models/models.py": {
-    "mtime": 1786501005.092511,
-    "ast_hash": "cfd8a0f2ab8dff17af45862f9bad6893",
+    "mtime": 1786505486.0793686,
+    "ast_hash": "0662bdc76f7f40db2319c2059fc85d00",
     "semantic_hash": ""
   },
   "backend/reset_subscriptions.py": {

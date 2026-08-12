@@ -529,25 +529,6 @@ async def test_gemini(
     return res
 
 
-class InstagramTestRequest(BaseModel):
-    username: Optional[str] = None
-    password: Optional[str] = None
-    session_cookie: Optional[str] = None
-
-
-@router.post("/test-instagram")
-def test_instagram(
-    req: Optional[InstagramTestRequest] = None,
-    admin: User = Depends(require_admin),
-    db: Session = Depends(get_db)
-):
-    """Test stored Instagram session cookie / credentials using instagrapi."""
-    from backend.services.instagrapi_service import instagrapi_service
-    u = req.username if req else None
-    p = req.password if req else None
-    s = req.session_cookie if req else None
-    res = instagrapi_service.test_connection(db, test_session=s, username=u, password=p)
-    return res
 
 
 
