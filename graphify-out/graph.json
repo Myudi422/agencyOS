@@ -32,8 +32,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_config",
-      "community": 78,
-      "community_name": "config.py",
+      "community": 6,
+      "community_name": "User",
       "norm_label": "config.py"
     },
     {
@@ -43,8 +43,8 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "backend_config_settings",
-      "community": 78,
-      "community_name": "config.py",
+      "community": 6,
+      "community_name": "User",
       "norm_label": "settings"
     },
     {
@@ -230,7 +230,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_migrate_db",
-      "community": 50,
+      "community": 73,
       "community_name": "migrate_db.py",
       "norm_label": "migrate_db.py"
     },
@@ -241,7 +241,7 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "backend_migrate_db_migrate",
-      "community": 50,
+      "community": 73,
       "community_name": "migrate_db.py",
       "norm_label": "migrate()"
     },
@@ -252,7 +252,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_migrate_db_rationale_1",
-      "community": 50,
+      "community": 73,
       "community_name": "migrate_db.py",
       "norm_label": "database migration script \u2014 migrate database schema from stripe to midtrans...."
     },
@@ -263,7 +263,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_migrate_kol",
-      "community": 57,
+      "community": 74,
       "community_name": "migrate_kol.py",
       "norm_label": "migrate_kol.py"
     },
@@ -274,7 +274,7 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "backend_migrate_kol_run_migration",
-      "community": 57,
+      "community": 74,
       "community_name": "migrate_kol.py",
       "norm_label": "run_migration()"
     },
@@ -285,7 +285,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_migrate_kol_rationale_1",
-      "community": 57,
+      "community": 74,
       "community_name": "migrate_kol.py",
       "norm_label": "migration script: create kol campaign & deliverable tracker tables"
     },
@@ -384,7 +384,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_migrate_publish_results",
-      "community": 73,
+      "community": 77,
       "community_name": "migrate_publish_results.py",
       "norm_label": "migrate_publish_results.py"
     },
@@ -395,7 +395,7 @@
       "source_location": "L26",
       "_origin": "ast",
       "id": "backend_migrate_publish_results_run_migration",
-      "community": 73,
+      "community": 77,
       "community_name": "migrate_publish_results.py",
       "norm_label": "run_migration()"
     },
@@ -406,7 +406,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_migrate_publish_results_rationale_1",
-      "community": 73,
+      "community": 77,
       "community_name": "migrate_publish_results.py",
       "norm_label": "migration: tambah tabel post_publish_results dan kolom baru ke posts. jalankan:..."
     },
@@ -417,7 +417,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_migrate_wa_otp",
-      "community": 74,
+      "community": 78,
       "community_name": "migrate_wa_otp.py",
       "norm_label": "migrate_wa_otp.py"
     },
@@ -428,7 +428,7 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "backend_migrate_wa_otp_migrate",
-      "community": 74,
+      "community": 78,
       "community_name": "migrate_wa_otp.py",
       "norm_label": "migrate()"
     },
@@ -439,7 +439,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_migrate_wa_otp_rationale_1",
-      "community": 74,
+      "community": 78,
       "community_name": "migrate_wa_otp.py",
       "norm_label": "database migration \u2014 wa otp verification menambah kolom phone_number &..."
     },
@@ -472,8 +472,8 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "backend_models_agent_models_agentrunstatus",
-      "community": 56,
-      "community_name": "WorkspaceMember",
+      "community": 58,
+      "community_name": "AgentCreateRequest",
       "norm_label": "agentrunstatus"
     },
     {
@@ -483,8 +483,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_models_agent_models_py_str",
-      "community": 56,
-      "community_name": "WorkspaceMember",
+      "community": 58,
+      "community_name": "AgentCreateRequest",
       "norm_label": "str"
     },
     {
@@ -615,8 +615,8 @@
       "source_location": "L26",
       "_origin": "ast",
       "id": "backend_models_models_roleenum",
-      "community": 56,
-      "community_name": "WorkspaceMember",
+      "community": 8,
+      "community_name": "admin.py",
       "norm_label": "roleenum"
     },
     {
@@ -715,7 +715,7 @@
       "_origin": "ast",
       "id": "backend_models_models_workspace",
       "community": 56,
-      "community_name": "WorkspaceMember",
+      "community_name": "Workspace",
       "norm_label": "workspace"
     },
     {
@@ -725,8 +725,8 @@
       "source_location": "L132",
       "_origin": "ast",
       "id": "backend_models_models_workspacemember",
-      "community": 56,
-      "community_name": "WorkspaceMember",
+      "community": 2,
+      "community_name": "models.py",
       "norm_label": "workspacemember"
     },
     {
@@ -737,7 +737,7 @@
       "_origin": "ast",
       "id": "backend_models_models_client",
       "community": 56,
-      "community_name": "WorkspaceMember",
+      "community_name": "Workspace",
       "norm_label": "client"
     },
     {
@@ -747,8 +747,8 @@
       "source_location": "L161",
       "_origin": "ast",
       "id": "backend_models_models_socialaccount",
-      "community": 2,
-      "community_name": "models.py",
+      "community": 51,
+      "community_name": "SocialAccount",
       "norm_label": "socialaccount"
     },
     {
@@ -758,7 +758,7 @@
       "source_location": "L190",
       "_origin": "ast",
       "id": "backend_models_models_media",
-      "community": 28,
+      "community": 50,
       "community_name": "ActivityLog",
       "norm_label": "media"
     },
@@ -813,7 +813,7 @@
       "source_location": "L295",
       "_origin": "ast",
       "id": "backend_models_models_activitylog",
-      "community": 28,
+      "community": 50,
       "community_name": "ActivityLog",
       "norm_label": "activitylog"
     },
@@ -1847,8 +1847,8 @@
       "source_location": "L34",
       "_origin": "ast",
       "id": "backend_routers_agents_agentcreaterequest",
-      "community": 56,
-      "community_name": "WorkspaceMember",
+      "community": 58,
+      "community_name": "AgentCreateRequest",
       "norm_label": "agentcreaterequest"
     },
     {
@@ -1858,8 +1858,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_routers_agents_py_basemodel",
-      "community": 56,
-      "community_name": "WorkspaceMember",
+      "community": 58,
+      "community_name": "AgentCreateRequest",
       "norm_label": "basemodel"
     },
     {
@@ -1869,8 +1869,8 @@
       "source_location": "L49",
       "_origin": "ast",
       "id": "backend_routers_agents_agentupdaterequest",
-      "community": 56,
-      "community_name": "WorkspaceMember",
+      "community": 58,
+      "community_name": "AgentCreateRequest",
       "norm_label": "agentupdaterequest"
     },
     {
@@ -2100,8 +2100,8 @@
       "source_location": "L524",
       "_origin": "ast",
       "id": "backend_routers_agents_bulkdeletelogsrequest",
-      "community": 56,
-      "community_name": "WorkspaceMember",
+      "community": 58,
+      "community_name": "AgentCreateRequest",
       "norm_label": "bulkdeletelogsrequest"
     },
     {
@@ -2266,7 +2266,7 @@
       "_origin": "ast",
       "id": "backend_routers_auth",
       "community": 51,
-      "community_name": "auth.py",
+      "community_name": "SocialAccount",
       "norm_label": "auth.py"
     },
     {
@@ -2276,8 +2276,8 @@
       "source_location": "L22",
       "_origin": "ast",
       "id": "backend_routers_auth_cookieloginrequest",
-      "community": 56,
-      "community_name": "WorkspaceMember",
+      "community": 51,
+      "community_name": "SocialAccount",
       "norm_label": "cookieloginrequest"
     },
     {
@@ -2287,8 +2287,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_routers_auth_py_basemodel",
-      "community": 56,
-      "community_name": "WorkspaceMember",
+      "community": 51,
+      "community_name": "SocialAccount",
       "norm_label": "basemodel"
     },
     {
@@ -2298,8 +2298,8 @@
       "source_location": "L28",
       "_origin": "ast",
       "id": "backend_routers_auth_credentialloginrequest",
-      "community": 56,
-      "community_name": "WorkspaceMember",
+      "community": 51,
+      "community_name": "SocialAccount",
       "norm_label": "credentialloginrequest"
     },
     {
@@ -2309,8 +2309,8 @@
       "source_location": "L34",
       "_origin": "ast",
       "id": "backend_routers_auth_challengeresolverequest",
-      "community": 56,
-      "community_name": "WorkspaceMember",
+      "community": 51,
+      "community_name": "SocialAccount",
       "norm_label": "challengeresolverequest"
     },
     {
@@ -2320,8 +2320,8 @@
       "source_location": "L40",
       "_origin": "ast",
       "id": "backend_routers_auth_postformeauthurlrequest",
-      "community": 56,
-      "community_name": "WorkspaceMember",
+      "community": 51,
+      "community_name": "SocialAccount",
       "norm_label": "postformeauthurlrequest"
     },
     {
@@ -2331,8 +2331,8 @@
       "source_location": "L47",
       "_origin": "ast",
       "id": "backend_routers_auth_blueskyconnectrequest",
-      "community": 56,
-      "community_name": "WorkspaceMember",
+      "community": 51,
+      "community_name": "SocialAccount",
       "norm_label": "blueskyconnectrequest"
     },
     {
@@ -2343,7 +2343,7 @@
       "_origin": "ast",
       "id": "backend_routers_auth_get_user_target_workspace",
       "community": 51,
-      "community_name": "auth.py",
+      "community_name": "SocialAccount",
       "norm_label": "_get_user_target_workspace()"
     },
     {
@@ -2354,7 +2354,7 @@
       "_origin": "ast",
       "id": "backend_routers_auth_py_session",
       "community": 51,
-      "community_name": "auth.py",
+      "community_name": "SocialAccount",
       "norm_label": "session"
     },
     {
@@ -2365,7 +2365,7 @@
       "_origin": "ast",
       "id": "backend_routers_auth_py_post",
       "community": 51,
-      "community_name": "auth.py",
+      "community_name": "SocialAccount",
       "norm_label": "post"
     },
     {
@@ -2376,7 +2376,7 @@
       "_origin": "ast",
       "id": "backend_routers_auth_postforme_auth_url",
       "community": 51,
-      "community_name": "auth.py",
+      "community_name": "SocialAccount",
       "norm_label": "postforme_auth_url()"
     },
     {
@@ -2386,8 +2386,8 @@
       "source_location": "L188",
       "_origin": "ast",
       "id": "backend_routers_auth_postformesyncrequest",
-      "community": 56,
-      "community_name": "WorkspaceMember",
+      "community": 51,
+      "community_name": "SocialAccount",
       "norm_label": "postformesyncrequest"
     },
     {
@@ -2398,7 +2398,7 @@
       "_origin": "ast",
       "id": "backend_routers_auth_extract_followers_count",
       "community": 51,
-      "community_name": "auth.py",
+      "community_name": "SocialAccount",
       "norm_label": "extract_followers_count()"
     },
     {
@@ -2409,7 +2409,7 @@
       "_origin": "ast",
       "id": "backend_routers_auth_postforme_sync_accounts",
       "community": 51,
-      "community_name": "auth.py",
+      "community_name": "SocialAccount",
       "norm_label": "postforme_sync_accounts()"
     },
     {
@@ -2420,7 +2420,7 @@
       "_origin": "ast",
       "id": "backend_routers_auth_py_any",
       "community": 51,
-      "community_name": "auth.py",
+      "community_name": "SocialAccount",
       "norm_label": "any"
     },
     {
@@ -2431,7 +2431,7 @@
       "_origin": "ast",
       "id": "backend_routers_auth_postforme_connect_bluesky",
       "community": 51,
-      "community_name": "auth.py",
+      "community_name": "SocialAccount",
       "norm_label": "postforme_connect_bluesky()"
     },
     {
@@ -2442,7 +2442,7 @@
       "_origin": "ast",
       "id": "backend_routers_auth_meta_connect",
       "community": 51,
-      "community_name": "auth.py",
+      "community_name": "SocialAccount",
       "norm_label": "meta_connect()"
     },
     {
@@ -2453,7 +2453,7 @@
       "_origin": "ast",
       "id": "backend_routers_auth_instagram_connect",
       "community": 51,
-      "community_name": "auth.py",
+      "community_name": "SocialAccount",
       "norm_label": "instagram_connect()"
     },
     {
@@ -2464,7 +2464,7 @@
       "_origin": "ast",
       "id": "backend_routers_auth_instagram_cookie_login",
       "community": 51,
-      "community_name": "auth.py",
+      "community_name": "SocialAccount",
       "norm_label": "instagram_cookie_login()"
     },
     {
@@ -2475,7 +2475,7 @@
       "_origin": "ast",
       "id": "backend_routers_auth_instagram_credential_login",
       "community": 51,
-      "community_name": "auth.py",
+      "community_name": "SocialAccount",
       "norm_label": "instagram_credential_login()"
     },
     {
@@ -2486,7 +2486,7 @@
       "_origin": "ast",
       "id": "backend_routers_auth_instagram_challenge_resolve",
       "community": 51,
-      "community_name": "auth.py",
+      "community_name": "SocialAccount",
       "norm_label": "instagram_challenge_resolve()"
     },
     {
@@ -2497,7 +2497,7 @@
       "_origin": "ast",
       "id": "backend_routers_auth_save_instagram_account",
       "community": 51,
-      "community_name": "auth.py",
+      "community_name": "SocialAccount",
       "norm_label": "_save_instagram_account()"
     },
     {
@@ -2508,7 +2508,7 @@
       "_origin": "ast",
       "id": "backend_routers_auth_meta_callback",
       "community": 51,
-      "community_name": "auth.py",
+      "community_name": "SocialAccount",
       "norm_label": "meta_callback()"
     },
     {
@@ -2519,7 +2519,7 @@
       "_origin": "ast",
       "id": "backend_routers_auth_rationale_59",
       "community": 51,
-      "community_name": "auth.py",
+      "community_name": "SocialAccount",
       "norm_label": "returns (workspace, client) for the current user. priority: explicit..."
     },
     {
@@ -2530,7 +2530,7 @@
       "_origin": "ast",
       "id": "backend_routers_auth_rationale_124",
       "community": 51,
-      "community_name": "auth.py",
+      "community_name": "SocialAccount",
       "norm_label": "generates oauth authorization url for any supported platform via postforme api:..."
     },
     {
@@ -2541,7 +2541,7 @@
       "_origin": "ast",
       "id": "backend_routers_auth_rationale_193",
       "community": 51,
-      "community_name": "auth.py",
+      "community_name": "SocialAccount",
       "norm_label": "recursively search for follower / subscriber / fan counts in postforme account..."
     },
     {
@@ -2552,7 +2552,7 @@
       "_origin": "ast",
       "id": "backend_routers_auth_rationale_235",
       "community": 51,
-      "community_name": "auth.py",
+      "community_name": "SocialAccount",
       "norm_label": "fetch all social accounts from postforme api and sync them into local..."
     },
     {
@@ -2563,7 +2563,7 @@
       "_origin": "ast",
       "id": "backend_routers_auth_rationale_384",
       "community": 51,
-      "community_name": "auth.py",
+      "community_name": "SocialAccount",
       "norm_label": "connects bluesky account using handle & app_password in postforme."
     },
     {
@@ -2574,7 +2574,7 @@
       "_origin": "ast",
       "id": "backend_routers_auth_rationale_454",
       "community": 51,
-      "community_name": "auth.py",
+      "community_name": "SocialAccount",
       "norm_label": "generates meta oauth (facebook + instagram business) login redirect url."
     },
     {
@@ -2585,7 +2585,7 @@
       "_origin": "ast",
       "id": "backend_routers_auth_rationale_465",
       "community": 51,
-      "community_name": "auth.py",
+      "community_name": "SocialAccount",
       "norm_label": "generates meta business oauth redirect url for instagram business accounts."
     },
     {
@@ -2596,7 +2596,7 @@
       "_origin": "ast",
       "id": "backend_routers_auth_rationale_480",
       "community": 51,
-      "community_name": "auth.py",
+      "community_name": "SocialAccount",
       "norm_label": "connects instagram account directly using sessionid cookie via instagrapi...."
     },
     {
@@ -2607,7 +2607,7 @@
       "_origin": "ast",
       "id": "backend_routers_auth_rationale_584",
       "community": 51,
-      "community_name": "auth.py",
+      "community_name": "SocialAccount",
       "norm_label": "connects instagram account using username + password via instagrapi mobile..."
     },
     {
@@ -2618,7 +2618,7 @@
       "_origin": "ast",
       "id": "backend_routers_auth_rationale_622",
       "community": 51,
-      "community_name": "auth.py",
+      "community_name": "SocialAccount",
       "norm_label": "completes a pending instagram login challenge by submitting the 6-digit code...."
     },
     {
@@ -2629,7 +2629,7 @@
       "_origin": "ast",
       "id": "backend_routers_auth_rationale_650",
       "community": 51,
-      "community_name": "auth.py",
+      "community_name": "SocialAccount",
       "norm_label": "helper: saves/updates instagram account in db after a successful login. routes..."
     },
     {
@@ -2640,7 +2640,7 @@
       "_origin": "ast",
       "id": "backend_routers_auth_rationale_711",
       "community": 51,
-      "community_name": "auth.py",
+      "community_name": "SocialAccount",
       "norm_label": "processes meta / instagram oauth callback code, exchanges token, and saves..."
     },
     {
@@ -3376,8 +3376,8 @@
       "source_location": "L22",
       "_origin": "ast",
       "id": "backend_routers_firebase_auth_firebaseverifyrequest",
-      "community": 56,
-      "community_name": "WorkspaceMember",
+      "community": 8,
+      "community_name": "admin.py",
       "norm_label": "firebaseverifyrequest"
     },
     {
@@ -3387,8 +3387,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_routers_firebase_auth_py_basemodel",
-      "community": 56,
-      "community_name": "WorkspaceMember",
+      "community": 8,
+      "community_name": "admin.py",
       "norm_label": "basemodel"
     },
     {
@@ -3453,8 +3453,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_routers_firebase_auth_py_post",
-      "community": 56,
-      "community_name": "WorkspaceMember",
+      "community": 6,
+      "community_name": "User",
       "norm_label": "post"
     },
     {
@@ -3464,8 +3464,8 @@
       "source_location": "L101",
       "_origin": "ast",
       "id": "backend_routers_firebase_auth_verify_firebase",
-      "community": 56,
-      "community_name": "WorkspaceMember",
+      "community": 6,
+      "community_name": "User",
       "norm_label": "verify_firebase()"
     },
     {
@@ -3475,8 +3475,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_routers_firebase_auth_py_get",
-      "community": 78,
-      "community_name": "config.py",
+      "community": 6,
+      "community_name": "User",
       "norm_label": "get"
     },
     {
@@ -3486,8 +3486,8 @@
       "source_location": "L216",
       "_origin": "ast",
       "id": "backend_routers_firebase_auth_get_me",
-      "community": 78,
-      "community_name": "config.py",
+      "community": 6,
+      "community_name": "User",
       "norm_label": "get_me()"
     },
     {
@@ -3552,8 +3552,8 @@
       "source_location": "L102",
       "_origin": "ast",
       "id": "backend_routers_firebase_auth_rationale_102",
-      "community": 56,
-      "community_name": "WorkspaceMember",
+      "community": 6,
+      "community_name": "User",
       "norm_label": "verifies firebase id token (from google sign-in). creates or updates agencyos..."
     },
     {
@@ -3563,8 +3563,8 @@
       "source_location": "L220",
       "_origin": "ast",
       "id": "backend_routers_firebase_auth_rationale_220",
-      "community": 78,
-      "community_name": "config.py",
+      "community": 6,
+      "community_name": "User",
       "norm_label": "returns current authenticated user info from authorization header."
     },
     {
@@ -4124,7 +4124,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_routers_media",
-      "community": 28,
+      "community": 50,
       "community_name": "ActivityLog",
       "norm_label": "media.py"
     },
@@ -4135,7 +4135,7 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "backend_routers_media_mediaupdate",
-      "community": 28,
+      "community": 50,
       "community_name": "ActivityLog",
       "norm_label": "mediaupdate"
     },
@@ -4146,7 +4146,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_routers_media_py_basemodel",
-      "community": 28,
+      "community": 50,
       "community_name": "ActivityLog",
       "norm_label": "basemodel"
     },
@@ -4157,7 +4157,7 @@
       "source_location": "L19",
       "_origin": "ast",
       "id": "backend_routers_media_bulkdeleterequest",
-      "community": 28,
+      "community": 50,
       "community_name": "ActivityLog",
       "norm_label": "bulkdeleterequest"
     },
@@ -4168,7 +4168,7 @@
       "source_location": "L22",
       "_origin": "ast",
       "id": "backend_routers_media_bulkmoverequest",
-      "community": 28,
+      "community": 50,
       "community_name": "ActivityLog",
       "norm_label": "bulkmoverequest"
     },
@@ -4179,7 +4179,7 @@
       "source_location": "L26",
       "_origin": "ast",
       "id": "backend_routers_media_registerurlrequest",
-      "community": 28,
+      "community": 50,
       "community_name": "ActivityLog",
       "norm_label": "registerurlrequest"
     },
@@ -4245,7 +4245,7 @@
       "source_location": "L125",
       "_origin": "ast",
       "id": "backend_routers_media_reset_media_vault",
-      "community": 28,
+      "community": 50,
       "community_name": "ActivityLog",
       "norm_label": "reset_media_vault()"
     },
@@ -4256,7 +4256,7 @@
       "source_location": "L155",
       "_origin": "ast",
       "id": "backend_routers_media_register_external_url",
-      "community": 28,
+      "community": 50,
       "community_name": "ActivityLog",
       "norm_label": "register_external_url()"
     },
@@ -4366,7 +4366,7 @@
       "source_location": "L129",
       "_origin": "ast",
       "id": "backend_routers_media_rationale_129",
-      "community": 28,
+      "community": 50,
       "community_name": "ActivityLog",
       "norm_label": "resets all media assets for the workspace from backblaze b2 'agencyos/' and..."
     },
@@ -4377,7 +4377,7 @@
       "source_location": "L159",
       "_origin": "ast",
       "id": "backend_routers_media_rationale_159",
-      "community": 28,
+      "community": 50,
       "community_name": "ActivityLog",
       "norm_label": "registers an external media url (e.g. from postforme cdn) into the media db..."
     },
@@ -5599,7 +5599,7 @@
       "_origin": "ast",
       "id": "backend_routers_workspaces",
       "community": 56,
-      "community_name": "WorkspaceMember",
+      "community_name": "Workspace",
       "norm_label": "workspaces.py"
     },
     {
@@ -5610,7 +5610,7 @@
       "_origin": "ast",
       "id": "backend_routers_workspaces_workspacecreate",
       "community": 56,
-      "community_name": "WorkspaceMember",
+      "community_name": "Workspace",
       "norm_label": "workspacecreate"
     },
     {
@@ -5621,7 +5621,7 @@
       "_origin": "ast",
       "id": "backend_routers_workspaces_py_basemodel",
       "community": 56,
-      "community_name": "WorkspaceMember",
+      "community_name": "Workspace",
       "norm_label": "basemodel"
     },
     {
@@ -5632,7 +5632,7 @@
       "_origin": "ast",
       "id": "backend_routers_workspaces_py_get",
       "community": 56,
-      "community_name": "WorkspaceMember",
+      "community_name": "Workspace",
       "norm_label": "get"
     },
     {
@@ -5643,7 +5643,7 @@
       "_origin": "ast",
       "id": "backend_routers_workspaces_get_workspaces",
       "community": 56,
-      "community_name": "WorkspaceMember",
+      "community_name": "Workspace",
       "norm_label": "get_workspaces()"
     },
     {
@@ -5654,7 +5654,7 @@
       "_origin": "ast",
       "id": "backend_routers_workspaces_py_session",
       "community": 56,
-      "community_name": "WorkspaceMember",
+      "community_name": "Workspace",
       "norm_label": "session"
     },
     {
@@ -5665,7 +5665,7 @@
       "_origin": "ast",
       "id": "backend_routers_workspaces_py_post",
       "community": 56,
-      "community_name": "WorkspaceMember",
+      "community_name": "Workspace",
       "norm_label": "post"
     },
     {
@@ -5676,7 +5676,7 @@
       "_origin": "ast",
       "id": "backend_routers_workspaces_create_workspace",
       "community": 56,
-      "community_name": "WorkspaceMember",
+      "community_name": "Workspace",
       "norm_label": "create_workspace()"
     },
     {
@@ -5687,7 +5687,7 @@
       "_origin": "ast",
       "id": "backend_routers_workspaces_onboardingsetuprequest",
       "community": 56,
-      "community_name": "WorkspaceMember",
+      "community_name": "Workspace",
       "norm_label": "onboardingsetuprequest"
     },
     {
@@ -5698,7 +5698,7 @@
       "_origin": "ast",
       "id": "backend_routers_workspaces_setup_onboarding_workspace",
       "community": 56,
-      "community_name": "WorkspaceMember",
+      "community_name": "Workspace",
       "norm_label": "setup_onboarding_workspace()"
     },
     {
@@ -5709,7 +5709,7 @@
       "_origin": "ast",
       "id": "backend_routers_workspaces_rationale_23",
       "community": 56,
-      "community_name": "WorkspaceMember",
+      "community_name": "Workspace",
       "norm_label": "lists workspaces belonging to the authenticated user (via workspacemember)...."
     },
     {
@@ -5720,7 +5720,7 @@
       "_origin": "ast",
       "id": "backend_routers_workspaces_rationale_90",
       "community": 56,
-      "community_name": "WorkspaceMember",
+      "community_name": "Workspace",
       "norm_label": "creates a new workspace and adds the creator as owner member."
     },
     {
@@ -5731,7 +5731,7 @@
       "_origin": "ast",
       "id": "backend_routers_workspaces_rationale_139",
       "community": 56,
-      "community_name": "WorkspaceMember",
+      "community_name": "Workspace",
       "norm_label": "onboarding endpoint \u2014 creates the first workspace for a new user. validates..."
     },
     {
@@ -5907,7 +5907,7 @@
       "_origin": "ast",
       "id": "backend_security_normalize_identifier",
       "community": 51,
-      "community_name": "auth.py",
+      "community_name": "SocialAccount",
       "norm_label": "normalize_identifier()"
     },
     {
@@ -5917,7 +5917,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_seed",
-      "community": 28,
+      "community": 50,
       "community_name": "ActivityLog",
       "norm_label": "seed.py"
     },
@@ -5928,7 +5928,7 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "backend_seed_reset_and_seed_database",
-      "community": 28,
+      "community": 50,
       "community_name": "ActivityLog",
       "norm_label": "reset_and_seed_database()"
     },
@@ -5950,7 +5950,7 @@
       "source_location": "L87",
       "_origin": "ast",
       "id": "backend_seed_plans_seed_plans",
-      "community": 28,
+      "community": 50,
       "community_name": "ActivityLog",
       "norm_label": "seed_plans()"
     },
@@ -6346,8 +6346,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_services_firebase_service",
-      "community": 78,
-      "community_name": "config.py",
+      "community": 6,
+      "community_name": "User",
       "norm_label": "firebase_service.py"
     },
     {
@@ -6357,8 +6357,8 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "backend_services_firebase_service_verify_firebase_token",
-      "community": 78,
-      "community_name": "config.py",
+      "community": 6,
+      "community_name": "User",
       "norm_label": "verify_firebase_token()"
     },
     {
@@ -6368,8 +6368,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_services_firebase_service_py_any",
-      "community": 78,
-      "community_name": "config.py",
+      "community": 6,
+      "community_name": "User",
       "norm_label": "any"
     },
     {
@@ -6379,8 +6379,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_services_firebase_service_rationale_1",
-      "community": 78,
-      "community_name": "config.py",
+      "community": 6,
+      "community_name": "User",
       "norm_label": "firebase id token verification service uses google's public keys to verify..."
     },
     {
@@ -6390,8 +6390,8 @@
       "source_location": "L19",
       "_origin": "ast",
       "id": "backend_services_firebase_service_rationale_19",
-      "community": 78,
-      "community_name": "config.py",
+      "community": 6,
+      "community_name": "User",
       "norm_label": "verifies a firebase id token by calling google identity toolkit api. returns..."
     },
     {
@@ -6908,7 +6908,7 @@
       "_origin": "ast",
       "id": "backend_services_instagrapi_service",
       "community": 51,
-      "community_name": "auth.py",
+      "community_name": "SocialAccount",
       "norm_label": "instagrapi_service.py"
     },
     {
@@ -7216,7 +7216,7 @@
       "_origin": "ast",
       "id": "backend_services_instagrapi_service_rationale_1",
       "community": 51,
-      "community_name": "auth.py",
+      "community_name": "SocialAccount",
       "norm_label": "instagrapi service \u2014 instagram private api integration for competitor spy uses..."
     },
     {
@@ -7479,8 +7479,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_services_meta_adapter",
-      "community": 78,
-      "community_name": "config.py",
+      "community": 6,
+      "community_name": "User",
       "norm_label": "meta_adapter.py"
     },
     {
@@ -8777,8 +8777,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_services_storage_service",
-      "community": 78,
-      "community_name": "config.py",
+      "community": 6,
+      "community_name": "User",
       "norm_label": "storage_service.py"
     },
     {
@@ -8788,7 +8788,7 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "backend_services_storage_service_storageservice",
-      "community": 77,
+      "community": 57,
       "community_name": "StorageService",
       "norm_label": "storageservice"
     },
@@ -8799,7 +8799,7 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "backend_services_storage_service_storageservice_init",
-      "community": 77,
+      "community": 57,
       "community_name": "StorageService",
       "norm_label": ".__init__()"
     },
@@ -8810,7 +8810,7 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "backend_services_storage_service_storageservice_get_s3_client",
-      "community": 77,
+      "community": 57,
       "community_name": "StorageService",
       "norm_label": "._get_s3_client()"
     },
@@ -8821,7 +8821,7 @@
       "source_location": "L34",
       "_origin": "ast",
       "id": "backend_services_storage_service_storageservice_upload_file",
-      "community": 77,
+      "community": 57,
       "community_name": "StorageService",
       "norm_label": ".upload_file()"
     },
@@ -8832,7 +8832,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_services_storage_service_py_any",
-      "community": 77,
+      "community": 57,
       "community_name": "StorageService",
       "norm_label": "any"
     },
@@ -8843,7 +8843,7 @@
       "source_location": "L91",
       "_origin": "ast",
       "id": "backend_services_storage_service_storageservice_list_b2_objects",
-      "community": 77,
+      "community": 57,
       "community_name": "StorageService",
       "norm_label": ".list_b2_objects()"
     },
@@ -8854,7 +8854,7 @@
       "source_location": "L135",
       "_origin": "ast",
       "id": "backend_services_storage_service_storageservice_delete_file",
-      "community": 77,
+      "community": 57,
       "community_name": "StorageService",
       "norm_label": ".delete_file()"
     },
@@ -8865,7 +8865,7 @@
       "source_location": "L165",
       "_origin": "ast",
       "id": "backend_services_storage_service_storageservice_delete_bulk_files",
-      "community": 77,
+      "community": 57,
       "community_name": "StorageService",
       "norm_label": ".delete_bulk_files()"
     },
@@ -8876,7 +8876,7 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "backend_services_storage_service_rationale_9",
-      "community": 77,
+      "community": 57,
       "community_name": "StorageService",
       "norm_label": "backblaze b2 s3 compatible object storage service. strictly isolated under root..."
     },
@@ -8887,7 +8887,7 @@
       "source_location": "L42",
       "_origin": "ast",
       "id": "backend_services_storage_service_rationale_42",
-      "community": 77,
+      "community": 57,
       "community_name": "StorageService",
       "norm_label": "uploads file content to backblaze b2 under..."
     },
@@ -8898,7 +8898,7 @@
       "source_location": "L92",
       "_origin": "ast",
       "id": "backend_services_storage_service_rationale_92",
-      "community": 77,
+      "community": 57,
       "community_name": "StorageService",
       "norm_label": "lists only objects strictly starting with 'agencyos/' prefix from backblaze b2..."
     },
@@ -8909,7 +8909,7 @@
       "source_location": "L136",
       "_origin": "ast",
       "id": "backend_services_storage_service_rationale_136",
-      "community": 77,
+      "community": 57,
       "community_name": "StorageService",
       "norm_label": "deletes a single file object permanently from backblaze b2 bucket, including..."
     },
@@ -8920,7 +8920,7 @@
       "source_location": "L166",
       "_origin": "ast",
       "id": "backend_services_storage_service_rationale_166",
-      "community": 77,
+      "community": 57,
       "community_name": "StorageService",
       "norm_label": "permanently deletes multiple file objects and all their versions/delete markers..."
     },
@@ -11560,7 +11560,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "frontend_src_components_common_glasstoastmanager",
-      "community": 58,
+      "community": 28,
       "community_name": "KolDatabaseDrawer.tsx",
       "norm_label": "glasstoastmanager.tsx"
     },
@@ -11571,7 +11571,7 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "frontend_src_components_common_glasstoastmanager_glasstoastmanager",
-      "community": 58,
+      "community": 28,
       "community_name": "KolDatabaseDrawer.tsx",
       "norm_label": "glasstoastmanager()"
     },
@@ -11604,7 +11604,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "frontend_src_components_common_portal",
-      "community": 58,
+      "community": 28,
       "community_name": "KolDatabaseDrawer.tsx",
       "norm_label": "portal.tsx"
     },
@@ -11615,7 +11615,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "frontend_src_components_common_portal_portal",
-      "community": 58,
+      "community": 28,
       "community_name": "KolDatabaseDrawer.tsx",
       "norm_label": "portal()"
     },
@@ -11626,7 +11626,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "frontend_src_components_common_rupiahinput",
-      "community": 58,
+      "community": 28,
       "community_name": "KolDatabaseDrawer.tsx",
       "norm_label": "rupiahinput.tsx"
     },
@@ -11637,7 +11637,7 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "frontend_src_components_common_rupiahinput_rupiahinputprops",
-      "community": 58,
+      "community": 28,
       "community_name": "KolDatabaseDrawer.tsx",
       "norm_label": "rupiahinputprops"
     },
@@ -11648,7 +11648,7 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "frontend_src_components_common_rupiahinput_formatnumbertorupiahstring",
-      "community": 58,
+      "community": 28,
       "community_name": "KolDatabaseDrawer.tsx",
       "norm_label": "formatnumbertorupiahstring()"
     },
@@ -11659,7 +11659,7 @@
       "source_location": "L21",
       "_origin": "ast",
       "id": "frontend_src_components_common_rupiahinput_parserupiahstringtonumber",
-      "community": 58,
+      "community": 28,
       "community_name": "KolDatabaseDrawer.tsx",
       "norm_label": "parserupiahstringtonumber()"
     },
@@ -11670,7 +11670,7 @@
       "source_location": "L28",
       "_origin": "ast",
       "id": "frontend_src_components_common_rupiahinput_getterbilangshort",
-      "community": 58,
+      "community": 28,
       "community_name": "KolDatabaseDrawer.tsx",
       "norm_label": "getterbilangshort()"
     },
@@ -11681,7 +11681,7 @@
       "source_location": "L45",
       "_origin": "ast",
       "id": "frontend_src_components_common_rupiahinput_rupiahinput",
-      "community": 58,
+      "community": 28,
       "community_name": "KolDatabaseDrawer.tsx",
       "norm_label": "rupiahinput()"
     },
@@ -12132,7 +12132,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "frontend_src_components_kol_koladdeditmodal",
-      "community": 58,
+      "community": 28,
       "community_name": "KolDatabaseDrawer.tsx",
       "norm_label": "koladdeditmodal.tsx"
     },
@@ -12143,7 +12143,7 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "frontend_src_components_kol_koladdeditmodal_koladdeditmodalprops",
-      "community": 58,
+      "community": 28,
       "community_name": "KolDatabaseDrawer.tsx",
       "norm_label": "koladdeditmodalprops"
     },
@@ -12154,7 +12154,7 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "frontend_src_components_kol_koladdeditmodal_koladdeditmodal",
-      "community": 58,
+      "community": 28,
       "community_name": "KolDatabaseDrawer.tsx",
       "norm_label": "koladdeditmodal()"
     },
@@ -12198,7 +12198,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "frontend_src_components_kol_koldatabasedrawer",
-      "community": 58,
+      "community": 28,
       "community_name": "KolDatabaseDrawer.tsx",
       "norm_label": "koldatabasedrawer.tsx"
     },
@@ -12209,7 +12209,7 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "frontend_src_components_kol_koldatabasedrawer_kolprofileitem",
-      "community": 58,
+      "community": 28,
       "community_name": "KolDatabaseDrawer.tsx",
       "norm_label": "kolprofileitem"
     },
@@ -12220,7 +12220,7 @@
       "source_location": "L30",
       "_origin": "ast",
       "id": "frontend_src_components_kol_koldatabasedrawer_koldatabasedrawerprops",
-      "community": 58,
+      "community": 28,
       "community_name": "KolDatabaseDrawer.tsx",
       "norm_label": "koldatabasedrawerprops"
     },
@@ -12231,7 +12231,7 @@
       "source_location": "L35",
       "_origin": "ast",
       "id": "frontend_src_components_kol_koldatabasedrawer_tier_badges",
-      "community": 58,
+      "community": 28,
       "community_name": "KolDatabaseDrawer.tsx",
       "norm_label": "tier_badges"
     },
@@ -12242,7 +12242,7 @@
       "source_location": "L42",
       "_origin": "ast",
       "id": "frontend_src_components_kol_koldatabasedrawer_koldatabasedrawer",
-      "community": 58,
+      "community": 28,
       "community_name": "KolDatabaseDrawer.tsx",
       "norm_label": "koldatabasedrawer()"
     },
@@ -13122,7 +13122,7 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "frontend_src_store_usetoaststore_usetoaststore",
-      "community": 58,
+      "community": 28,
       "community_name": "KolDatabaseDrawer.tsx",
       "norm_label": "usetoaststore"
     },
@@ -55595,5 +55595,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "9a3a535d44fbbfbfce99e2ccd5415e79720bf611"
+  "built_at_commit": "51035153ae5d547637ccedfb6dda0d3596d976e5"
 }

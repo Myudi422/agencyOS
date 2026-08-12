@@ -1,7 +1,7 @@
 # Graph Report - agencyOS  (2026-08-12)
 
 ## Corpus Check
-- 145 files · ~772,979 words
+- 145 files · ~773,117 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
@@ -10,7 +10,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `9a3a535d`
+- Built from commit: `51035153`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -43,7 +43,7 @@
 - midtrans_service.py
 - dependencies
 - SecurityMiddleware
-- ActivityLog
+- KolDatabaseDrawer.tsx
 - queue/page.tsx
 - YTPlayer
 - Components
@@ -65,15 +65,15 @@
 - workflows/graphify.md
 - [token]/page.tsx
 - kol.py
-- migrate_db.py
-- auth.py
+- ActivityLog
+- SocialAccount
 - next.config.js
 - next-env.d.ts
 - useAuthStore
 - date-fns
-- WorkspaceMember
-- migrate_kol.py
-- KolDatabaseDrawer.tsx
+- Workspace
+- StorageService
+- AgentCreateRequest
 - next
 - QueueService
 - Token-efficient agent
@@ -84,12 +84,12 @@
 - workflows/token-efficient.md
 - get_activity_logs
 - zustand
-- migrate_publish_results.py
-- migrate_wa_otp.py
+- migrate_db.py
+- migrate_kol.py
 - kol-campaigns/page.tsx
 - tailwind-merge
-- StorageService
-- config.py
+- migrate_publish_results.py
+- migrate_wa_otp.py
 - accounts/page.tsx
 - idempotency_service.py
 - AppTour.tsx
@@ -150,8 +150,8 @@ Cohesion: 0.09
 Nodes (22): PostForMeService, Any, Get connected social accounts from PostForMe. Endpoint: GET /v1/social-accounts, Manually register or update a social account in PostForMe. Endpoint: POST…, Disconnect a social account in PostForMe. Endpoint: POST /v1/social-…, Delete a social account in PostForMe. Endpoint: DELETE /v1/social-accounts/{id}, Create a post across multi-platform social accounts in PostForMe. Endpoint:…, Delete a post from PostForMe. Endpoint: DELETE /v1/social-posts/{id} (+14 more)
 
 ### Community 6 - "User"
-Cohesion: 0.11
-Nodes (31): get_db(), AccountStatus, User, Reset Subscriptions Script — Clears all user subscriptions in DB. Run: python…, AccountBriefingSchema, BulkActionRequest, delete_account(), get_accounts() (+23 more)
+Cohesion: 0.07
+Nodes (42): Settings, get_db(), AccountStatus, User, Reset Subscriptions Script — Clears all user subscriptions in DB. Run: python…, AccountBriefingSchema, BulkActionRequest, delete_account() (+34 more)
 
 ### Community 7 - "Session"
 Cohesion: 0.14
@@ -159,7 +159,7 @@ Nodes (19): bulk_delete_media(), bulk_move_media(), delete_folder(), delete_medi
 
 ### Community 8 - "admin.py"
 Cohesion: 0.10
-Nodes (43): PlanTier, Paket langganan — semua plan unlimited akun sosmed, beda di quota post., Setting, SubscriptionPlan, SubscriptionStatus, assign_plan_by_email(), AssignPlanByEmailRequest, delete_setting() (+35 more)
+Nodes (46): PlanTier, Paket langganan — semua plan unlimited akun sosmed, beda di quota post., RoleEnum, Setting, SubscriptionPlan, SubscriptionStatus, assign_plan_by_email(), AssignPlanByEmailRequest (+38 more)
 
 ### Community 9 - "posts.py"
 Cohesion: 0.25
@@ -237,9 +237,9 @@ Nodes (15): dependencies, jspdf, lucide-react, react, react-dom, react-is, recha
 Cohesion: 0.26
 Nodes (5): InMemoryRateLimiter, Request, SecurityMiddleware, BaseHTTPMiddleware, Lock
 
-### Community 28 - "ActivityLog"
-Cohesion: 0.31
-Nodes (13): ActivityLog, Media, BulkDeleteRequest, BulkMoveRequest, MediaUpdate, BaseModel, Resets all media assets for the workspace from Backblaze B2 'AgencyOS/' and…, Registers an external media URL (e.g. from PostForMe CDN) into the Media DB… (+5 more)
+### Community 28 - "KolDatabaseDrawer.tsx"
+Cohesion: 0.16
+Nodes (14): GlassToastManager(), Portal(), formatNumberToRupiahString(), getTerbilangShort(), parseRupiahStringToNumber(), RupiahInput(), RupiahInputProps, KolAddEditModal() (+6 more)
 
 ### Community 29 - "queue/page.tsx"
 Cohesion: 0.19
@@ -309,21 +309,29 @@ Nodes (9): 1. Run Backend (FastAPI), 2. Run Frontend (Next.js 15), AgencyOS - En
 Cohesion: 0.08
 Nodes (62): add_kol_to_campaign(), create_campaign(), create_deliverable(), create_kol_profile(), delete_campaign(), delete_deliverable(), delete_kol_profile(), get_campaign_detail() (+54 more)
 
-### Community 51 - "auth.py"
+### Community 50 - "ActivityLog"
+Cohesion: 0.31
+Nodes (13): ActivityLog, Media, BulkDeleteRequest, BulkMoveRequest, MediaUpdate, BaseModel, Resets all media assets for the workspace from Backblaze B2 'AgencyOS/' and…, Registers an external media URL (e.g. from PostForMe CDN) into the Media DB… (+5 more)
+
+### Community 51 - "SocialAccount"
 Cohesion: 0.12
-Nodes (29): extract_followers_count(), _get_user_target_workspace(), instagram_challenge_resolve(), instagram_connect(), instagram_cookie_login(), instagram_credential_login(), meta_callback(), meta_connect() (+21 more)
+Nodes (37): SocialAccount, BlueskyConnectRequest, ChallengeResolveRequest, CookieLoginRequest, CredentialLoginRequest, extract_followers_count(), _get_user_target_workspace(), instagram_challenge_resolve() (+29 more)
 
 ### Community 54 - "useAuthStore"
 Cohesion: 0.09
 Nodes (31): jsonLd, metadata, LoginPage(), SubscriptionGuard(), TIER_META, PUBLIC_SPLASH_PATHS, SplashScreen(), AppLayout() (+23 more)
 
-### Community 56 - "WorkspaceMember"
-Cohesion: 0.15
-Nodes (34): AgentRunStatus, str, Client, RoleEnum, Workspace, WorkspaceMember, AgentCreateRequest, AgentUpdateRequest (+26 more)
+### Community 56 - "Workspace"
+Cohesion: 0.29
+Nodes (14): Client, Workspace, create_workspace(), get_workspaces(), OnboardingSetupRequest, BaseModel, get, post (+6 more)
 
-### Community 58 - "KolDatabaseDrawer.tsx"
-Cohesion: 0.16
-Nodes (14): GlassToastManager(), Portal(), formatNumberToRupiahString(), getTerbilangShort(), parseRupiahStringToNumber(), RupiahInput(), RupiahInputProps, KolAddEditModal() (+6 more)
+### Community 57 - "StorageService"
+Cohesion: 0.22
+Nodes (7): Any, Deletes a single file object permanently from Backblaze B2 bucket, including…, Permanently deletes multiple file objects and all their versions/delete markers…, Uploads file content to Backblaze B2 under…, Backblaze B2 S3 Compatible Object Storage Service. Strictly isolated under root…, Lists ONLY objects strictly starting with 'AgencyOS/' prefix from Backblaze B2…, StorageService
+
+### Community 58 - "AgentCreateRequest"
+Cohesion: 0.47
+Nodes (6): AgentRunStatus, str, AgentCreateRequest, AgentUpdateRequest, BulkDeleteLogsRequest, BaseModel
 
 ### Community 63 - "QueueService"
 Cohesion: 0.21
@@ -340,14 +348,6 @@ Nodes (11): clear_all_activity_logs(), delete_activity_log(), get_activity_logs(
 ### Community 75 - "kol-campaigns/page.tsx"
 Cohesion: 0.21
 Nodes (11): KolCampaignsPage(), CampaignCard(), CampaignCardProps, CampaignItem, STATUS_BADGES, CampaignCreateModal(), CampaignCreateModalProps, AccountItem (+3 more)
-
-### Community 77 - "StorageService"
-Cohesion: 0.22
-Nodes (7): Any, Deletes a single file object permanently from Backblaze B2 bucket, including…, Permanently deletes multiple file objects and all their versions/delete markers…, Uploads file content to Backblaze B2 under…, Backblaze B2 S3 Compatible Object Storage Service. Strictly isolated under root…, Lists ONLY objects strictly starting with 'AgencyOS/' prefix from Backblaze B2…, StorageService
-
-### Community 78 - "config.py"
-Cohesion: 0.17
-Nodes (8): Settings, get_me(), get, Returns current authenticated user info from Authorization header., Any, Firebase ID Token Verification Service Uses Google's public keys to verify…, Verifies a Firebase ID token by calling Google Identity Toolkit API. Returns…, verify_firebase_token()
 
 ### Community 79 - "accounts/page.tsx"
 Cohesion: 0.10
@@ -369,11 +369,11 @@ Nodes (3): AppTour(), DEFAULT_TOUR_STEPS, TourStep
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `User` connect `User` to `get_user_workspace`, `models.py`, `Session`, `admin.py`, `posts.py`, `queue.py`, `statistics.py`, `kol.py`, `sanitize_text`, `auth.py`, `billing.py`, `WorkspaceMember`, `QueueService`?**
+- **Why does `User` connect `User` to `get_user_workspace`, `models.py`, `Session`, `admin.py`, `posts.py`, `queue.py`, `statistics.py`, `kol.py`, `sanitize_text`, `SocialAccount`, `billing.py`, `Workspace`, `AgentCreateRequest`, `QueueService`?**
   _High betweenness centrality (0.113) - this node is a cross-community bridge._
 - **Why does `PostForMeService` connect `PostForMeService` to `queue.py`?**
   _High betweenness centrality (0.036) - this node is a cross-community bridge._
-- **Why does `Setting` connect `admin.py` to `models.py`, `auth.py`, `InstagrapiService`, `GeminiService`?**
+- **Why does `Setting` connect `admin.py` to `models.py`, `SocialAccount`, `InstagrapiService`, `GeminiService`?**
   _High betweenness centrality (0.028) - this node is a cross-community bridge._
 - **Are the 47 inferred relationships involving `User` (e.g. with `AccountBriefingSchema` and `BulkActionRequest`) actually correct?**
   _`User` has 47 INFERRED edges - model-reasoned connections that need verification._

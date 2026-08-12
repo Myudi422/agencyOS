@@ -26,6 +26,17 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   const isPublicPage = pathname === "/" || PUBLIC_PATHS.some((p) => pathname.startsWith(p));
 
+  // Mobile sidebar listener (allows AppTour to open/close sidebar on mobile automatically)
+  useEffect(() => {
+    const handleMobileSidebarEvent = (e: CustomEvent) => {
+      if (typeof e.detail?.open === "boolean") {
+        setIsMobileOpen(e.detail.open);
+      }
+    };
+    window.addEventListener("agencyos-mobile-sidebar", handleMobileSidebarEvent as EventListener);
+    return () => window.removeEventListener("agencyos-mobile-sidebar", handleMobileSidebarEvent as EventListener);
+  }, []);
+
   // Auth & Onboarding guard
   useEffect(() => {
     if (isLoading) return;

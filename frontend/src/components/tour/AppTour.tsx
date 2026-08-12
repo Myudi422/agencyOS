@@ -22,16 +22,31 @@ export default function AppTour() {
 
   const updateTargetRect = useCallback(() => {
     if (!isOpen || !currentStep) return;
-    const el = document.querySelector(currentStep.target);
-    if (el) {
-      el.scrollIntoView({ behavior: "smooth", block: "center", inline: "nearest" });
-      setTimeout(() => {
-        const rect = el.getBoundingClientRect();
-        setTargetRect(rect);
-      }, 250);
-    } else {
-      setTargetRect(null);
+
+    const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
+    const isSidebarTarget = currentStep.target.includes("sidebar");
+
+    if (isMobile) {
+      // Auto open sidebar drawer on mobile for sidebar steps, auto close for main content steps
+      window.dispatchEvent(
+        new CustomEvent("agencyos-mobile-sidebar", { detail: { open: isSidebarTarget } })
+      );
     }
+
+    // Allow CSS slide drawer transition to complete before calculating spotlight rect
+    const delay = isMobile ? 300 : 50;
+    setTimeout(() => {
+      const el = document.querySelector(currentStep.target);
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "center", inline: "nearest" });
+        setTimeout(() => {
+          const rect = el.getBoundingClientRect();
+          setTargetRect(rect);
+        }, 150);
+      } else {
+        setTargetRect(null);
+      }
+    }, delay);
   }, [isOpen, currentStep]);
 
   useEffect(() => {
@@ -83,6 +98,11 @@ export default function AppTour() {
 
   const handleComplete = () => {
     localStorage.setItem(STORAGE_KEY, "true");
+    if (typeof window !== "undefined" && window.innerWidth < 768) {
+      window.dispatchEvent(
+        new CustomEvent("agencyos-mobile-sidebar", { detail: { open: false } })
+      );
+    }
     setIsOpen(false);
   };
 

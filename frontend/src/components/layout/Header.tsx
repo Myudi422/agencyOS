@@ -31,6 +31,7 @@ export default function Header({ onToggleMobileSidebar }: { onToggleMobileSideba
         {/* Mobile Sidebar Toggle Button */}
         <button
           onClick={onToggleMobileSidebar}
+          data-tour="mobile-hamburger"
           className="md:hidden p-2 rounded-xl bg-slate-100 hover:bg-purple-50 text-slate-700 hover:text-purple-700 border border-slate-200 transition-all"
           aria-label="Toggle Navigation"
         >

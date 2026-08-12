@@ -445,14 +445,14 @@
     "semantic_hash": ""
   },
   "frontend/src/components/layout/AppLayout.tsx": {
-    "mtime": 1786537672.6664996,
-    "ast_hash": "fbe859876987b538c1765731c766a630",
+    "mtime": 1786538294.438255,
+    "ast_hash": "c2a3685818304969b6def822e36ca2d4",
     "semantic_hash": ""
   },
   "frontend/src/components/layout/Header.tsx": {
-    "mtime": 1785245324.1738498,
-    "ast_hash": "d882b899234eb67caa44aa4711652fb7",
-    "semantic_hash": "d882b899234eb67caa44aa4711652fb7"
+    "mtime": 1786538288.37703,
+    "ast_hash": "c73e678ebe8730a6118af0668213a1a5",
+    "semantic_hash": ""
   },
   "frontend/src/components/layout/Sidebar.tsx": {
     "mtime": 1786537643.2086506,
@@ -830,8 +830,8 @@
     "semantic_hash": ""
   },
   "frontend/src/components/tour/AppTour.tsx": {
-    "mtime": 1786537635.8097446,
-    "ast_hash": "002d9c81ce4c0573585ed1ae094965fc",
+    "mtime": 1786538301.5594757,
+    "ast_hash": "518a4a2bdd0f4ce2a08131f2c07592cf",
     "semantic_hash": ""
   },
   "frontend/src/components/tour/tourSteps.ts": {
