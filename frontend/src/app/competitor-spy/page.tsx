@@ -100,9 +100,11 @@ export default function CompetitorSpyPage() {
   const { setAddJob, setSyncAllJob } = useCompetitorSpyStore();
 
   const [activeTab, setActiveTab] = useState<ActiveTab>("accounts");
+  const [selectedPlatform, setSelectedPlatform] = useState<"instagram" | "tiktok">("instagram");
   const [loadingIgAccounts, setLoadingIgAccounts] = useState(true);
   const [igAccounts, setIgAccounts] = useState<ConnectedIgAccount[]>([]);
   const [selectedIgAccount, setSelectedIgAccount] = useState<ConnectedIgAccount | null>(null);
+
 
   const [competitors, setCompetitors] = useState<Competitor[]>([]);
   const [loading, setLoading] = useState(true);
@@ -505,18 +507,48 @@ export default function CompetitorSpyPage() {
         <div className="absolute top-0 right-0 w-96 h-96 bg-pink-500/10 rounded-full blur-3xl pointer-events-none" />
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-2">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               <span className="px-2.5 py-1 rounded-full bg-pink-500/20 border border-pink-400/30 text-pink-300 text-[10px] font-extrabold uppercase tracking-wider flex items-center gap-1.5">
-                <Target className="w-3 h-3 text-pink-400" /> Instagram Competitor Intelligence
+                <Target className="w-3 h-3 text-pink-400" /> {selectedPlatform === "tiktok" ? "TikTok Intelligence" : "Instagram Competitor Intelligence"}
               </span>
+
+              {/* Platform Submenu Switcher */}
+              <div className="flex items-center gap-1 bg-black/40 p-1 rounded-2xl border border-white/10">
+                <button
+                  type="button"
+                  onClick={() => setSelectedPlatform("instagram")}
+                  className={`px-3 py-1 rounded-xl text-[11px] font-bold transition-all flex items-center gap-1.5 ${
+                    selectedPlatform === "instagram"
+                      ? "bg-gradient-to-r from-pink-600 to-purple-600 text-white shadow-md shadow-pink-500/20"
+                      : "text-slate-400 hover:text-white"
+                  }`}
+                >
+                  <Instagram className="w-3 h-3" />
+                  <span>Instagram</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSelectedPlatform("tiktok")}
+                  className={`px-3 py-1 rounded-xl text-[11px] font-bold transition-all flex items-center gap-1.5 ${
+                    selectedPlatform === "tiktok"
+                      ? "bg-gradient-to-r from-cyan-600 to-slate-900 text-white shadow-md shadow-cyan-500/20 border border-cyan-400/40"
+                      : "text-slate-400 hover:text-white"
+                  }`}
+                >
+                  <Sparkles className="w-3 h-3 text-cyan-300" />
+                  <span>TikTok</span>
+                </button>
+              </div>
             </div>
+
             <h1 className="text-2xl md:text-3xl font-extrabold font-['Outfit'] tracking-tight">
-              Competitor Spy &amp; Analytics
+              Competitor Spy &amp; Analytics {selectedPlatform === "tiktok" ? "(TikTok)" : "(Instagram)"}
             </h1>
             <p className="text-xs md:text-sm text-slate-300 max-w-2xl leading-relaxed">
               Pantau strategi konten, engagement rate, &amp; postingan harian dari seluruh brand kompetitor Anda secara otomatis.
             </p>
           </div>
+
 
           <div className="flex flex-wrap items-center gap-3">
             <button

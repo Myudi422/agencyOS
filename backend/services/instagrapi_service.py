@@ -484,31 +484,108 @@ class InstagrapiService:
                 "message": f"Akun Instagram @{username} tidak ditemukan atau gagal diakses."
             }
 
+    @staticmethod
+    def parse_count_str(text: str) -> int:
+        """Parses count strings like '686M', '248.9K', '1,234' to integer."""
+        if not text:
+            return 0
+        s = text.strip().replace(",", "").replace(" ", "")
+        m = re.match(r"^([0-9]*\.?[0-9]+)\s*([KkMmBb]?)$", s)
+        if not m:
+            return 0
+        num = float(m.group(1))
+        suf = m.group(2).lower()
+        mult = {"k": 1_000, "m": 1_000_000, "b": 1_000_000_000}.get(suf, 1)
+        return int(num * mult)
+
+    def _fetch_profile_opengraph(self, db: Session, username: str) -> Dict[str, Any]:
+        """Unauthenticated OpenGraph fallback for profile metadata."""
+        import requests
+        from bs4 import BeautifulSoup
+
+        clean_user = username.strip().lstrip("@").lower()
+        proxy_url = self.get_proxy_url(db)
+        proxies = {"http": proxy_url, "https": proxy_url} if proxy_url else None
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+            "Accept-Language": "en-US,en;q=0.9",
+        }
+        url = f"https://www.instagram.com/{clean_user}/"
+
+        try:
+            resp = requests.get(url, headers=headers, proxies=proxies, timeout=15)
+            if resp.status_code == 404:
+                raise ValueError(f"Akun @{clean_user} tidak ditemukan di Instagram.")
+
+            soup = BeautifulSoup(resp.text, "html.parser")
+            og_desc = soup.find("meta", property="og:description")
+            og_title = soup.find("meta", property="og:title")
+            og_img = soup.find("meta", property="og:image")
+
+            followers_count = 0
+            following_count = 0
+            media_count = 0
+            full_name = clean_user
+            profile_pic_url = og_img["content"] if og_img and og_img.get("content") else ""
+
+            if og_title and og_title.get("content"):
+                m_title = re.match(r"^(.+?)\s*\(@", og_title["content"])
+                if m_title:
+                    full_name = m_title.group(1).strip()
+
+            if og_desc and og_desc.get("content"):
+                desc_text = og_desc["content"]
+                m_desc = re.search(r"([\d\.,\sKkMmBb]+)\s+Followers,\s+([\d\.,\sKkMmBb]+)\s+Following,\s+([\d\.,\sKkMmBb]+)\s+Posts", desc_text, re.I)
+                if m_desc:
+                    followers_count = self.parse_count_str(m_desc.group(1))
+                    following_count = self.parse_count_str(m_desc.group(2))
+                    media_count = self.parse_count_str(m_desc.group(3))
+
+            return {
+                "username": clean_user,
+                "instagram_pk": "",
+                "full_name": full_name,
+                "profile_pic_url": profile_pic_url,
+                "biography": "",
+                "followers_count": followers_count,
+                "following_count": following_count,
+                "media_count": media_count,
+                "is_verified": False,
+                "category_name": "",
+            }
+        except Exception as e_og:
+            logger.error(f"OpenGraph fallback failed for @{clean_user}: {e_og}")
+            raise e_og
+
     def fetch_competitor_profile(self, db: Session, username: str) -> Dict[str, Any]:
         """Fetch competitor profile information from Instagram."""
         clean_user = username.strip().lstrip("@").lower()
-        cl = self.get_client(db, allow_anonymous=True)
 
-        user_info = None
-        # Try v1 first, fall back to standard user_info_by_username
         try:
-            user_info = cl.user_info_by_username_v1(clean_user)
-        except Exception as e_v1:
-            logger.debug(f"v1 profile fetch failed for @{clean_user}: {e_v1}, trying standard endpoint...")
-            user_info = cl.user_info_by_username(clean_user)
+            cl = self.get_client(db, allow_anonymous=True)
+            user_info = None
+            try:
+                user_info = cl.user_info_by_username_v1(clean_user)
+            except Exception as e_v1:
+                logger.debug(f"v1 profile fetch failed for @{clean_user}: {e_v1}, trying standard endpoint...")
+                user_info = cl.user_info_by_username(clean_user)
 
-        return {
-            "username": clean_user,
-            "instagram_pk": str(getattr(user_info, "pk", "")),
-            "full_name": getattr(user_info, "full_name", clean_user) or clean_user,
-            "profile_pic_url": str(getattr(user_info, "profile_pic_url", "")),
-            "biography": getattr(user_info, "biography", ""),
-            "followers_count": getattr(user_info, "follower_count", 0) or 0,
-            "following_count": getattr(user_info, "following_count", 0) or 0,
-            "media_count": getattr(user_info, "media_count", 0) or 0,
-            "is_verified": getattr(user_info, "is_verified", False),
-            "category_name": getattr(user_info, "category_name", ""),
-        }
+            return {
+                "username": clean_user,
+                "instagram_pk": str(getattr(user_info, "pk", "")),
+                "full_name": getattr(user_info, "full_name", clean_user) or clean_user,
+                "profile_pic_url": str(getattr(user_info, "profile_pic_url", "")),
+                "biography": getattr(user_info, "biography", ""),
+                "followers_count": getattr(user_info, "follower_count", 0) or 0,
+                "following_count": getattr(user_info, "following_count", 0) or 0,
+                "media_count": getattr(user_info, "media_count", 0) or 0,
+                "is_verified": getattr(user_info, "is_verified", False),
+                "category_name": getattr(user_info, "category_name", ""),
+            }
+        except Exception as e_instagrapi:
+            logger.warning(f"Instagrapi user_info failed for @{clean_user} ({e_instagrapi}). Falling back to OpenGraph scraper...")
+            return self._fetch_profile_opengraph(db, clean_user)
+
 
     def fetch_competitor_posts(self, db: Session, user_id_or_username: str, amount: int = 20) -> Dict[str, Any]:
         """

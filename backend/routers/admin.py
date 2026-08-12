@@ -561,7 +561,7 @@ def test_proxy(
     db: Session = Depends(get_db)
 ):
     """Test proxy connectivity by querying public IP checkers."""
-    from backend.services.instagrapi_service import instagrapi_service
+    from backend.services.ensta_scraper_service import ensta_scraper_service
     p_url = req.proxy_url if req and req.proxy_url else None
 
     if not p_url:
@@ -575,43 +575,47 @@ def test_proxy(
     if not p_url:
         return {"success": False, "message": "URL Proxy belum diisi di form atau Admin Settings."}
 
-    return instagrapi_service.test_proxy_connection(p_url)
+    return ensta_scraper_service.test_proxy_connection(p_url)
 
 
-class InstagrapiScraperTestRequest(BaseModel):
+class EnstaScraperTestRequest(BaseModel):
     username: Optional[str] = "instagram"
     proxy_url: Optional[str] = None
 
 
 @router.post("/test-faustren")
 @router.post("/test-instagrapi")
-def test_instagrapi_scraper(
-    req: Optional[InstagrapiScraperTestRequest] = None,
+@router.post("/test-ensta")
+def test_ensta_scraper(
+    req: Optional[EnstaScraperTestRequest] = None,
     admin: User = Depends(require_admin),
     db: Session = Depends(get_db)
 ):
-    """Test Instagrapi Instagram scraper engine with optional proxy override."""
-    from backend.services.instagrapi_service import instagrapi_service
+    """Test Ensta (No Login + Proxy) Instagram scraper engine with optional proxy override."""
+    from backend.services.ensta_scraper_service import ensta_scraper_service
     sample_uname = (req.username if req and req.username else "instagram").strip()
     p_url = req.proxy_url if req and req.proxy_url else None
-    
-    try:
-        prof = instagrapi_service.fetch_competitor_profile(db, sample_uname)
-        posts_data = instagrapi_service.fetch_competitor_posts(db, sample_uname, amount=6)
-        posts_count = posts_data.get("total_posts_scraped", 0)
-        return {
-            "success": True,
-            "username": prof["username"],
-            "full_name": prof["full_name"],
-            "followers_count": prof["followers_count"],
-            "posts_count": posts_count,
-            "message": f"Instagrapi Engine Berhasil! Profil @{prof['username']} ({prof['followers_count']:,} followers) & {posts_count} posts berhasil ditarik."
-        }
-    except Exception as e:
-        return {
-            "success": False,
-            "message": f"Instagrapi Scraper gagal: {str(e)}"
-        }
+    return ensta_scraper_service.test_ensta_scraper(db, sample_username=sample_uname, override_proxy=p_url)
+
+
+class TikTokScraperTestRequest(BaseModel):
+    username: Optional[str] = "khaby.lame"
+    proxy_url: Optional[str] = None
+
+
+@router.post("/test-tiktok")
+def test_tiktok_scraper(
+    req: Optional[TikTokScraperTestRequest] = None,
+    admin: User = Depends(require_admin),
+    db: Session = Depends(get_db)
+):
+    """Test TikTok Web SSR Scraper engine with optional proxy override."""
+    from backend.services.tiktok_scraper_service import tiktok_scraper_service
+    sample_uname = (req.username if req and req.username else "khaby.lame").strip()
+    p_url = req.proxy_url if req and req.proxy_url else None
+    return tiktok_scraper_service.test_tiktok_scraper(db, sample_username=sample_uname, override_proxy=p_url)
+
+
 
 
 

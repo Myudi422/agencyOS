@@ -105,8 +105,8 @@
     "semantic_hash": ""
   },
   "backend/routers/admin.py": {
-    "mtime": 1786451357.7636423,
-    "ast_hash": "80da15f1667875882b9771ac3500414c",
+    "mtime": 1786490779.6841986,
+    "ast_hash": "42ec1e1e574a5402e0fd054e8230ae02",
     "semantic_hash": ""
   },
   "backend/routers/auth.py": {
@@ -130,8 +130,8 @@
     "semantic_hash": ""
   },
   "backend/routers/competitors.py": {
-    "mtime": 1786451376.055892,
-    "ast_hash": "da28ae6ef591925e784ae0b97f014e12",
+    "mtime": 1786490769.2409093,
+    "ast_hash": "150661c3da94972e4f98a8a01c730af0",
     "semantic_hash": ""
   },
   "backend/routers/dashboard.py": {
@@ -205,8 +205,8 @@
     "semantic_hash": ""
   },
   "backend/services/instagrapi_service.py": {
-    "mtime": 1785912080.5005279,
-    "ast_hash": "b23bc4c2bd92d5f678123bb2f5815968",
+    "mtime": 1786457022.000004,
+    "ast_hash": "3362683ab892d252a8404664cf8d96c8",
     "semantic_hash": ""
   },
   "backend/services/meta_adapter.py": {
@@ -275,8 +275,8 @@
     "semantic_hash": ""
   },
   "frontend/src/app/admin/page.tsx": {
-    "mtime": 1786452249.0483918,
-    "ast_hash": "815ef54406fcadda8c0cadd163647e97",
+    "mtime": 1786490791.926692,
+    "ast_hash": "83ee816e5e681751bd30f3f03a6eb5d4",
     "semantic_hash": ""
   },
   "frontend/src/app/auth/callback/page.tsx": {
@@ -640,8 +640,8 @@
     "semantic_hash": ""
   },
   "backend/requirements.txt": {
-    "mtime": 1786451802.5987034,
-    "ast_hash": "cae4f344e1e5df6b0660490d162267a4",
+    "mtime": 1786490798.6833105,
+    "ast_hash": "5c53aafe9438bb78cc970e63430a3e66",
     "semantic_hash": ""
   },
   "implementation_plan.md": {
@@ -670,8 +670,8 @@
     "semantic_hash": ""
   },
   "requirements.txt": {
-    "mtime": 1786451806.5761156,
-    "ast_hash": "947130bc067aa078f61d449e22f829bd",
+    "mtime": 1786490805.181103,
+    "ast_hash": "b59e0f6a32d78cc675e921ef0d4373e7",
     "semantic_hash": ""
   },
   "favicon/android-chrome-192x192.png": {
@@ -854,9 +854,9 @@
     "ast_hash": "56003495574b765054617817bb23336a",
     "semantic_hash": ""
   },
-  "backend/services/faustren_scraper_service.py": {
-    "mtime": 1786456050.151836,
-    "ast_hash": "427572d84eb671f5c026fb75643fbd4c",
+  "backend/services/ensta_scraper_service.py": {
+    "mtime": 1786490759.306456,
+    "ast_hash": "5cd526c16f20a460b60cc537c6873ba3",
     "semantic_hash": ""
   }
 }

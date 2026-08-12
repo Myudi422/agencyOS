@@ -30,15 +30,21 @@ from backend.models.models import (
     SocialAccount, AccountPlatform
 )
 from backend.services.firebase_service import verify_firebase_token
-from backend.services.firebase_service import verify_firebase_token
-from backend.services.instagrapi_service import instagrapi_service
+from backend.services.ensta_scraper_service import ensta_scraper_service
+from backend.services.tiktok_scraper_service import tiktok_scraper_service
 from backend.models.models import Setting
 
-def _fetch_profile(db: Session, username: str) -> dict:
-    return instagrapi_service.fetch_competitor_profile(db, username)
+def _fetch_profile(db: Session, username: str, platform: str = "instagram") -> dict:
+    if str(platform).lower().strip() == "tiktok":
+        return tiktok_scraper_service.fetch_competitor_profile(db, username)
+    return ensta_scraper_service.fetch_competitor_profile(db, username)
 
-def _fetch_posts(db: Session, username: str, amount: int = 20) -> dict:
-    return instagrapi_service.fetch_competitor_posts(db, username, amount=amount)
+def _fetch_posts(db: Session, username: str, amount: int = 20, platform: str = "instagram") -> dict:
+    if str(platform).lower().strip() == "tiktok":
+        return tiktok_scraper_service.fetch_competitor_posts(db, username, amount=amount)
+    return ensta_scraper_service.fetch_competitor_posts(db, username, amount=amount)
+
+
 
 
 from backend.services.redis_service import (

@@ -134,17 +134,46 @@ export default function AdminPage() {
       });
       setFaustrenTestResult(res);
       if (res.success) {
-        flash("ok", res.message || "Test FaustRen Scraper Berhasil!");
+        flash("ok", res.message || "Test Ensta Scraper Berhasil!");
       } else {
-        flash("err", res.message || "Gagal menguji FaustRen Scraper.");
+        flash("err", res.message || "Gagal menguji Ensta Scraper.");
       }
     } catch (e: any) {
-      setFaustrenTestResult({ success: false, message: e.message || "Terjadi kesalahan saat menguji FaustRen Scraper." });
-      flash("err", "Test FaustRen Scraper gagal");
+      setFaustrenTestResult({ success: false, message: e.message || "Terjadi kesalahan saat menguji Ensta Scraper." });
+      flash("err", "Test Ensta Scraper gagal");
     } finally {
       setFaustrenTesting(false);
     }
   };
+
+  const [tiktokTesting, setTiktokTesting] = useState(false);
+  const [tiktokTestResult, setTiktokTestResult] = useState<any>(null);
+
+  const testTikTokScraper = async () => {
+    setTiktokTesting(true);
+    setTiktokTestResult(null);
+    try {
+      const pEl = document.getElementById("setting-PROXY_URL") as HTMLInputElement;
+      const proxy_url = pEl?.value || appSettings["PROXY_URL"] || "";
+
+      const res: any = await fetchApi("/admin/test-tiktok", {
+        method: "POST",
+        body: JSON.stringify({ username: "khaby.lame", proxy_url })
+      });
+      setTiktokTestResult(res);
+      if (res.success) {
+        flash("ok", res.message || "Test TikTok Scraper Berhasil!");
+      } else {
+        flash("err", res.message || "Gagal menguji TikTok Scraper.");
+      }
+    } catch (e: any) {
+      setTiktokTestResult({ success: false, message: e.message || "Terjadi kesalahan saat menguji TikTok Scraper." });
+      flash("err", "Test TikTok Scraper gagal");
+    } finally {
+      setTiktokTesting(false);
+    }
+  };
+
 
 
   const [msg, setMsg] = useState<{ type: "ok" | "err"; text: string } | null>(null);
@@ -1737,7 +1766,17 @@ export default function AdminPage() {
                   className="flex items-center gap-2 px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-semibold shadow-lg shadow-purple-500/30 transition-all disabled:opacity-60 cursor-pointer"
                 >
                   {faustrenTesting ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5 text-amber-300" />}
-                  {faustrenTesting ? "Menguji Scraper..." : "Test Instagrapi Scraper"}
+                  {faustrenTesting ? "Menguji Instagram..." : "Test Ensta (IG)"}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={testTikTokScraper}
+                  disabled={tiktokTesting}
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-semibold shadow-lg shadow-cyan-500/30 transition-all disabled:opacity-60 cursor-pointer"
+                >
+                  {tiktokTesting ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5 text-cyan-200" />}
+                  {tiktokTesting ? "Menguji TikTok..." : "Test TikTok Scraper"}
                 </button>
               </div>
             </div>
@@ -1756,10 +1795,11 @@ export default function AdminPage() {
                 <div className="flex gap-2">
                   <select
                     id="setting-SCRAPER_ENGINE"
-                    defaultValue={appSettings["SCRAPER_ENGINE"] || "instagrapi"}
+                    defaultValue={appSettings["SCRAPER_ENGINE"] || "ensta"}
                     className="w-full px-3 py-2 rounded-xl border border-white/20 text-xs bg-slate-900 text-white focus:outline-none focus:ring-2 focus:ring-purple-400 font-sans"
                   >
-                    <option value="instagrapi">Instagrapi Engine (With Proxy & Session)</option>
+                    <option value="ensta">Ensta Engine (No Login + Proxy)</option>
+                    <option value="instagrapi">Instagrapi Engine (With Session)</option>
                     <option value="apify">Apify Managed API</option>
                   </select>
 
@@ -1838,6 +1878,18 @@ export default function AdminPage() {
                 </div>
               </div>
             )}
+
+            {tiktokTestResult && (
+              <div className={`p-4 rounded-2xl border text-xs flex items-start gap-3 transition-all ${
+                tiktokTestResult.success ? "bg-cyan-500/10 border-cyan-500/30 text-cyan-200" : "bg-red-500/10 border-red-500/30 text-red-200"
+              }`}>
+                {tiktokTestResult.success ? <CheckCircle2 className="w-5 h-5 text-cyan-400 shrink-0 mt-0.5" /> : <XCircle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />}
+                <div>
+                  <p className="font-bold">{tiktokTestResult.message}</p>
+                </div>
+              </div>
+            )}
+
           </div>
 
 
