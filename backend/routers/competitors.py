@@ -441,31 +441,13 @@ def add_competitor(
     db.commit()
     db.refresh(account)
 
-    # Invalidate list cache
-    cache_delete_prefix(f"competitors:list:{workspace.id}")
-
-    job_id = generate_uuid()
-    background_tasks.add_task(
-        _run_add_competitor_bg, job_id, account.id, clean_username, workspace.id, social_account.id if social_account else None
-    )
-
-    return {
-        "job_id": job_id,
-        "message": f"Kompetitor @{clean_username} ({plat.upper()}) berhasil ditambahkan!",
-        "competitor": {
-            "id": account.id,
-            "username": account.username,
-            "platform": account.platform,
-            "followers_count": account.followers_count,
-    }
-
-
     # Activity log
+    log_details = f"Menambahkan kompetitor @{account.username} untuk dipantau di akun @{social_account.username}" if social_account else f"Menambahkan kompetitor TikTok @{account.username}"
     log = ActivityLog(
         workspace_id=workspace.id,
         user_name=user.full_name,
         action="ADD_COMPETITOR",
-        details=f"Menambahkan kompetitor @{account.username} untuk dipantau di akun @{social_account.username}",
+        details=log_details,
         entity_type="Competitor",
         entity_id=account.id
     )
@@ -480,7 +462,7 @@ def add_competitor(
 
     background_tasks.add_task(
         _run_add_competitor_bg,
-        job_id, account.id, account.username, workspace.id, social_account.id
+        job_id, account.id, account.username, workspace.id, social_account.id if social_account else None
     )
 
     # Invalidate list cache immediately so newly added competitor profile appears
@@ -492,6 +474,7 @@ def add_competitor(
         "message": f"Kompetitor @{account.username} berhasil ditambahkan! Memproses postingan di background.",
         "competitor_id": account.id
     }
+
 
 
 @router.get("/add-status/{job_id}")
