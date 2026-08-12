@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import {
   X, Image as ImageIcon, Video, Layers,
@@ -182,8 +182,8 @@ export default function PostComposerModal() {
           targetAcc
             ? `✨ Caption & Hashtag berhasil digenerate dari Briefing @${targetAcc.username}!`
             : target.type === "thumbnail"
-            ? "✨ Caption & Hashtag berhasil digenerate dari Cover Thumbnail Video!"
-            : "✨ Caption & Hashtag berhasil digenerate dari Gambar Slide ke-1!"
+              ? "✨ Caption & Hashtag berhasil digenerate dari Cover Thumbnail Video!"
+              : "✨ Caption & Hashtag berhasil digenerate dari Gambar Slide ke-1!"
         );
       } else {
         toast.error("AI tidak menghasilkan caption. Silakan coba lagi.");
@@ -231,10 +231,28 @@ export default function PostComposerModal() {
   // Platform Customization Tab
   const [activePlatformTab, setActivePlatformTab] = useState<string>("instagram");
 
-  // CTA Media Attachments
-  const [ctaMediaUrls, setCtaMediaUrls] = useState<string[]>([]);
+  // CTA Media Library (persistent in Database under folder "CTA")
+  const [ctaLibrary, setCtaLibrary] = useState<any[]>([]);
   const [isUploadingCtaMedia, setIsUploadingCtaMedia] = useState(false);
   const [showCtaPanel, setShowCtaPanel] = useState(false);
+
+  // Load CTA library from Database
+  const loadCtaLibrary = useCallback(async () => {
+    if (!activeWorkspace?.id) return;
+    try {
+      const res = await fetchApi<any>(`/media/?workspace_id=${activeWorkspace.id}&folder=CTA`);
+      if (res?.items) {
+        setCtaLibrary(res.items);
+      }
+    } catch (err) {
+      console.error("Error loading CTA library from DB:", err);
+    }
+  }, [activeWorkspace?.id]);
+
+  useEffect(() => {
+    loadCtaLibrary();
+  }, [loadCtaLibrary]);
+
 
   // Media Library Picker Modal State & Storage Usage
   const [isMediaPickerOpen, setIsMediaPickerOpen] = useState(false);
@@ -631,7 +649,7 @@ export default function PostComposerModal() {
   };
 
   const handleCtaMediaUpload = async (files: FileList | File[]) => {
-    if (!files || files.length === 0) return;
+    if (!files || files.length === 0 || !activeWorkspace?.id) return;
     setIsUploadingCtaMedia(true);
 
     for (let i = 0; i < files.length; i++) {
@@ -656,8 +674,23 @@ export default function PostComposerModal() {
         });
 
         if (putRes.ok || putRes.status === 200 || putRes.status === 204) {
-          setCtaMediaUrls((prev) => [...prev, res.media_url]);
-          toast.success(`CTA '${file.name}' berhasil diupload!`);
+          // Register URL into Database Media table
+          await fetchApi<any>("/media/register-url", {
+            method: "POST",
+            body: JSON.stringify({
+              workspace_id: activeWorkspace.id,
+              url: res.media_url,
+              filename: file.name,
+              file_type: contentType,
+              folder: "CTA",
+              tags: ["cta_library"]
+            })
+          });
+
+          // Also immediately add to post's media attachments
+          setMediaUrls((prev) => prev.includes(res.media_url) ? prev : [...prev, res.media_url]);
+          toast.success(`CTA '${file.name}' berhasil diupload & disimpan ke database!`);
+          await loadCtaLibrary();
         } else {
           toast.error(`Gagal upload CTA '${file.name}' (HTTP ${putRes.status}).`);
         }
@@ -666,6 +699,20 @@ export default function PostComposerModal() {
       }
     }
     setIsUploadingCtaMedia(false);
+  };
+
+  const handleDeleteCtaFromLibrary = async (item: any) => {
+    const itemUrl = typeof item === "string" ? item : item.url;
+    try {
+      if (item?.id) {
+        await fetchApi(`/media/${item.id}`, { method: "DELETE" });
+      }
+      setCtaLibrary((prev) => prev.filter((i) => (typeof i === "string" ? i !== itemUrl : i.id !== item.id && i.url !== itemUrl)));
+      setMediaUrls((prev) => prev.filter((u) => u !== itemUrl));
+      toast.success("Item CTA berhasil dihapus dari database library.");
+    } catch (err: any) {
+      toast.error(`Gagal menghapus CTA: ${err.message || err}`);
+    }
   };
 
   const handlePostForMeUploadFiles = async (files: FileList | File[]) => {
@@ -1157,10 +1204,10 @@ export default function PostComposerModal() {
                         onClick={() => toggleAccountSelection(acc)}
                         title={!compat.compatible ? compat.reason : `@${acc.username} (${badgeInfo.name})`}
                         className={`flex items-center gap-1.5 px-2 py-1.5 rounded-xl border font-medium shrink-0 transition-all cursor-pointer ${!compat.compatible
-                            ? "bg-slate-100 border-slate-200 text-slate-400 opacity-60 cursor-not-allowed"
-                            : isSelected
-                              ? "bg-purple-600 text-white border-purple-600 shadow-sm ring-2 ring-purple-500/20"
-                              : "bg-white border-slate-200 text-slate-700 hover:text-purple-700 hover:border-purple-300 hover:bg-purple-50/50 shadow-2xs"
+                          ? "bg-slate-100 border-slate-200 text-slate-400 opacity-60 cursor-not-allowed"
+                          : isSelected
+                            ? "bg-purple-600 text-white border-purple-600 shadow-sm ring-2 ring-purple-500/20"
+                            : "bg-white border-slate-200 text-slate-700 hover:text-purple-700 hover:border-purple-300 hover:bg-purple-50/50 shadow-2xs"
                           }`}
                       >
                         {/* Avatar with Platform Icon Overlay */}
@@ -1238,10 +1285,10 @@ export default function PostComposerModal() {
                         onClick={() => !format.disabled && setPostType(format.id as any)}
                         title={format.disabled ? format.reason : format.label}
                         className={`p-2.5 rounded-xl border text-xs font-medium flex items-center justify-center gap-2 transition-all ${format.disabled
-                            ? "bg-slate-100 border-slate-200 text-slate-400 opacity-50 cursor-not-allowed"
-                            : isSelected
-                              ? "bg-purple-50 border-purple-300 text-purple-900 font-bold shadow-2xs cursor-pointer"
-                              : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50 cursor-pointer"
+                          ? "bg-slate-100 border-slate-200 text-slate-400 opacity-50 cursor-not-allowed"
+                          : isSelected
+                            ? "bg-purple-50 border-purple-300 text-purple-900 font-bold shadow-2xs cursor-pointer"
+                            : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50 cursor-pointer"
                           }`}
                       >
                         <Icon className={`w-4 h-4 ${isSelected ? "text-purple-600" : "text-slate-400"}`} />
@@ -1272,10 +1319,10 @@ export default function PostComposerModal() {
                                 : `Generate caption & hashtag otomatis dari ${aiTarget.type === "thumbnail" ? "Cover Thumbnail Video" : "Gambar Slide ke-1"} via Shiera AI`
                             }
                             className={`px-2.5 py-1 rounded-xl text-[11px] font-extrabold transition-all flex items-center gap-1 cursor-pointer ${!aiTarget
-                                ? "bg-slate-100 text-slate-400 border border-slate-200 opacity-60 cursor-not-allowed"
-                                : isGeneratingAiCaption
-                                  ? "bg-purple-100 text-purple-700 border border-purple-300 animate-pulse"
-                                  : "bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white shadow-xs hover:shadow-sm"
+                              ? "bg-slate-100 text-slate-400 border border-slate-200 opacity-60 cursor-not-allowed"
+                              : isGeneratingAiCaption
+                                ? "bg-purple-100 text-purple-700 border border-purple-300 animate-pulse"
+                                : "bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white shadow-xs hover:shadow-sm"
                               }`}
                           >
                             {isGeneratingAiCaption ? (
@@ -1471,43 +1518,43 @@ export default function PostComposerModal() {
                   <button
                     type="button"
                     onClick={() => setShowCtaPanel(v => !v)}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
-                      showCtaPanel
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer ${showCtaPanel
                         ? "bg-amber-500 text-white border-amber-500 shadow-sm"
                         : "bg-amber-50 text-amber-700 border-amber-300 hover:bg-amber-100"
-                    }`}
-                    title="Tambahkan media CTA / bahan promosi untuk akhir slide"
+                      }`}
+                    title="CTA Media Library — bahan promosi reusable untuk akhir slide"
                   >
                     <Sparkles className="w-3.5 h-3.5" />
                     CTA MEDIA
-                    {ctaMediaUrls.length > 0 && (
+                    {ctaLibrary.length > 0 && (
                       <span className="ml-1 bg-white/30 text-inherit px-1.5 py-0.5 rounded-full text-[9px] font-extrabold">
-                        {ctaMediaUrls.length}
+                        {ctaLibrary.length}
                       </span>
                     )}
                   </button>
                 </div>
 
-                {/* CTA Media Panel */}
+                {/* CTA Media Library Panel */}
                 {showCtaPanel && (
                   <div className="p-3.5 rounded-2xl bg-amber-50/70 border border-amber-200 space-y-3 animate-fadeIn">
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="text-xs font-extrabold text-amber-900 font-['Outfit'] flex items-center gap-1.5">
                           <Sparkles className="w-3.5 h-3.5 text-amber-600" />
-                          CTA Media — Bahan Promosi Akhir Slide
+                          CTA Media Library
                         </p>
-                        <p className="text-[10px] text-amber-700 mt-0.5">Upload gambar/video CTA, end-screen, atau bahan promosi yang akan ditambahkan di akhir slide carousel.</p>
+                        <p className="text-[10px] text-amber-700 mt-0.5">
+                          Upload sekali, pakai berkali-kali. Klik item untuk menambahkan ke post, klik lagi untuk menghapus dari post.
+                        </p>
                       </div>
                     </div>
 
                     {/* CTA Upload Dropzone */}
                     <label
-                      className={`relative border-2 border-dashed rounded-xl p-4 flex flex-col items-center justify-center text-center cursor-pointer transition-all ${
-                        isUploadingCtaMedia
+                      className={`relative border-2 border-dashed rounded-xl p-3.5 flex flex-col items-center justify-center text-center cursor-pointer transition-all ${isUploadingCtaMedia
                           ? "border-amber-400 bg-amber-50/80 cursor-wait"
                           : "border-amber-300 hover:border-amber-500 bg-white hover:bg-amber-50/40"
-                      }`}
+                        }`}
                     >
                       <input
                         type="file"
@@ -1520,51 +1567,85 @@ export default function PostComposerModal() {
                       {isUploadingCtaMedia ? (
                         <div className="py-1 flex flex-col items-center gap-1.5 text-amber-700">
                           <RefreshCw className="w-5 h-5 animate-spin" />
-                          <p className="text-xs font-bold">Mengunggah CTA Media...</p>
+                          <p className="text-xs font-bold">Mengunggah ke library...</p>
                         </div>
                       ) : (
                         <>
-                          <div className="w-9 h-9 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center mb-1.5">
-                            <UploadCloud className="w-4.5 h-4.5" />
+                          <div className="w-8 h-8 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center mb-1">
+                            <UploadCloud className="w-4 h-4" />
                           </div>
-                          <p className="text-xs font-bold text-slate-800">Upload CTA / Bahan Promosi</p>
-                          <p className="text-[10px] text-slate-500 mt-0.5">Klik atau seret file (Gambar / Video) ke sini</p>
+                          <p className="text-xs font-bold text-slate-800">Upload ke CTA Library</p>
+                          <p className="text-[10px] text-slate-500 mt-0.5">Klik atau seret file — tersimpan permanen di library</p>
                         </>
                       )}
                     </label>
 
-                    {/* CTA Media Thumbnails */}
-                    {ctaMediaUrls.length > 0 && (
-                      <div className="flex items-center gap-2 overflow-x-auto pb-1 pt-1 px-1">
-                        {ctaMediaUrls.map((url, idx) => {
-                          const isVid = isVideoMedia({ url });
-                          return (
-                            <div key={idx} className="relative group shrink-0">
-                              <div className="absolute top-1 left-1 z-10 px-1 py-0.5 rounded bg-amber-800/80 text-white text-[8px] font-mono font-bold">
-                                CTA#{idx + 1}
-                              </div>
-                              {isVid ? (
-                                <div className="relative w-14 h-14 rounded-xl overflow-hidden border border-amber-200 bg-black flex items-center justify-center">
-                                  <video src={url} preload="metadata" muted className="w-full h-full object-cover" />
-                                  <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
-                                    <Play className="w-3.5 h-3.5 fill-white text-white" />
-                                  </div>
-                                </div>
-                              ) : (
-                                <img src={url} alt={`CTA #${idx + 1}`} className="w-14 h-14 rounded-xl object-cover border border-amber-200" />
-                              )}
-                              <button
-                                type="button"
-                                onClick={() => setCtaMediaUrls(prev => prev.filter((_, i) => i !== idx))}
-                                title="Hapus CTA Media"
-                                className="absolute -top-1.5 -right-1.5 z-20 bg-rose-600 text-white rounded-full p-0.5 shadow-sm hover:scale-110 transition-transform cursor-pointer"
-                              >
-                                <X className="w-2.5 h-2.5" />
-                              </button>
-                            </div>
-                          );
-                        })}
+                    {/* CTA Library Grid */}
+                    {ctaLibrary.length === 0 ? (
+                      <div className="text-center py-4 text-[11px] text-amber-600/70 font-medium">
+                        Library kosong. Upload file CTA pertamamu di atas.
                       </div>
+                    ) : (
+                      <>
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] font-bold text-amber-800">{ctaLibrary.length} item di library</span>
+                          <span className="text-[10px] text-amber-600">✓ = sudah ada di post ini</span>
+                        </div>
+                        <div className="grid grid-cols-4 gap-2 max-h-48 overflow-y-auto pr-1">
+                          {ctaLibrary.map((item, idx) => {
+                            const url = typeof item === "string" ? item : item.url;
+                            const isVid = isVideoMedia({ url });
+                            const isInPost = mediaUrls.includes(url);
+                            return (
+                              <div key={item.id || idx} className="relative group">
+                                {/* Toggle add/remove from post */}
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    if (isInPost) {
+                                      setMediaUrls(prev => prev.filter(u => u !== url));
+                                    } else {
+                                      setMediaUrls(prev => [...prev, url]);
+                                      toast.success("CTA ditambahkan ke media post!");
+                                    }
+                                  }}
+                                  title={isInPost ? "Klik untuk hapus dari post" : "Klik untuk tambah ke post"}
+                                  className={`relative w-full aspect-square rounded-xl overflow-hidden border-2 transition-all cursor-pointer ${isInPost
+                                      ? "border-amber-500 ring-2 ring-amber-400/40"
+                                      : "border-amber-200 hover:border-amber-400 opacity-80 hover:opacity-100"
+                                    }`}
+                                >
+                                  {isVid ? (
+                                    <div className="relative w-full h-full bg-black flex items-center justify-center">
+                                      <video src={url} preload="metadata" muted className="w-full h-full object-cover" />
+                                      <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+                                        <Play className="w-3 h-3 fill-white text-white" />
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    <img src={url} alt={`CTA ${idx + 1}`} className="w-full h-full object-cover" />
+                                  )}
+                                  {/* In-post indicator */}
+                                  {isInPost && (
+                                    <div className="absolute top-1 right-1 w-4 h-4 rounded-full bg-amber-500 flex items-center justify-center shadow">
+                                      <CheckCircle2 className="w-2.5 h-2.5 text-white" />
+                                    </div>
+                                  )}
+                                </button>
+                                {/* Delete from database library */}
+                                <button
+                                  type="button"
+                                  onClick={() => handleDeleteCtaFromLibrary(item)}
+                                  title="Hapus dari database library"
+                                  className="absolute -top-1.5 -left-1.5 z-20 bg-rose-600 text-white rounded-full p-0.5 shadow-sm hover:scale-110 transition-transform cursor-pointer opacity-0 group-hover:opacity-100"
+                                >
+                                  <X className="w-2.5 h-2.5" />
+                                </button>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </>
                     )}
                   </div>
                 )}
@@ -1581,8 +1662,8 @@ export default function PostComposerModal() {
                     }
                   }}
                   className={`relative border-2 border-dashed rounded-2xl p-5 flex flex-col items-center justify-center text-center cursor-pointer transition-all ${isDragOver
-                      ? "border-purple-500 bg-purple-50/80 ring-4 ring-purple-500/10 scale-[0.99]"
-                      : "border-purple-300 hover:border-purple-500 bg-white hover:bg-purple-50/40"
+                    ? "border-purple-500 bg-purple-50/80 ring-4 ring-purple-500/10 scale-[0.99]"
+                    : "border-purple-300 hover:border-purple-500 bg-white hover:bg-purple-50/40"
                     }`}
                 >
                   <input
@@ -1782,8 +1863,8 @@ export default function PostComposerModal() {
                       {/* Dropzone */}
                       <label
                         className={`relative border-2 border-dashed rounded-2xl p-4 flex flex-col items-center justify-center text-center cursor-pointer transition-all ${isUploadingThumbnail
-                            ? "border-purple-400 bg-purple-50/80 cursor-wait"
-                            : "border-purple-300 hover:border-purple-500 bg-white hover:bg-purple-50/40"
+                          ? "border-purple-400 bg-purple-50/80 cursor-wait"
+                          : "border-purple-300 hover:border-purple-500 bg-white hover:bg-purple-50/40"
                           }`}
                       >
                         <input
@@ -2008,15 +2089,14 @@ export default function PostComposerModal() {
                         disabled={isDisabled}
                         onClick={() => !isDisabled && setActivePlatformTab(tab.id)}
                         title={isDisabled ? `Pilih akun ${tab.label} terlebih dahulu untuk mengatur opsi ini` : tab.label}
-                        className={`px-2.5 py-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-all border ${
-                          isDisabled
+                        className={`px-2.5 py-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-all border ${isDisabled
                             ? "bg-slate-50 border-slate-200 text-slate-300 opacity-50 cursor-not-allowed"
                             : !compat.compatible
-                            ? "bg-slate-50 border-slate-200 text-slate-400 opacity-60 cursor-pointer"
-                            : isActive
-                              ? "bg-purple-600 text-white border-purple-600 shadow-xs cursor-pointer"
-                              : "bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100 hover:border-purple-300 cursor-pointer"
-                        }`}
+                              ? "bg-slate-50 border-slate-200 text-slate-400 opacity-60 cursor-pointer"
+                              : isActive
+                                ? "bg-purple-600 text-white border-purple-600 shadow-xs cursor-pointer"
+                                : "bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100 hover:border-purple-300 cursor-pointer"
+                          }`}
                       >
                         <Icon className={`w-3.5 h-3.5 ${isActive ? "text-white" : isDisabled ? "text-slate-300" : tab.color}`} />
                         <span className="truncate">{tab.label}</span>
@@ -2657,8 +2737,8 @@ export default function PostComposerModal() {
                       setShowThumbnailInPreview(p => !p);
                     }}
                     className={`px-3 py-1 rounded-xl text-[11px] font-bold transition-all cursor-pointer flex items-center gap-1.5 shadow-2xs ${showThumbnailInPreview
-                        ? "bg-purple-600 text-white shadow-xs"
-                        : "bg-white text-slate-700 border border-slate-200 hover:bg-slate-50"
+                      ? "bg-purple-600 text-white shadow-xs"
+                      : "bg-white text-slate-700 border border-slate-200 hover:bg-slate-50"
                       }`}
                   >
                     {showThumbnailInPreview ? (
@@ -2692,9 +2772,9 @@ export default function PostComposerModal() {
                 {mediaUrls.length > 0 ? (
                   <div className="w-full flex items-center justify-center bg-slate-900/5 p-2 rounded-2xl border border-slate-100">
                     <div className={`relative w-full mx-auto overflow-hidden rounded-xl border border-slate-200 shadow-md bg-black ${previewAspect === "1:1" ? "aspect-square max-w-[340px]" :
-                        previewAspect === "4:5" ? "aspect-[4/5] max-w-[320px]" :
-                          previewAspect === "16:9" ? "aspect-[16/9] max-w-[420px]" :
-                            "aspect-[9/16] max-w-[280px]"
+                      previewAspect === "4:5" ? "aspect-[4/5] max-w-[320px]" :
+                        previewAspect === "16:9" ? "aspect-[16/9] max-w-[420px]" :
+                          "aspect-[9/16] max-w-[280px]"
                       }`}>
                       {/* Active Slide Rendering */}
                       {(() => {
@@ -2832,8 +2912,8 @@ export default function PostComposerModal() {
                     type="button"
                     onClick={() => setActionType(act.id as any)}
                     className={`px-3 py-1.5 sm:py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${actionType === act.id
-                        ? "bg-purple-600 text-white shadow-xs"
-                        : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-100"
+                      ? "bg-purple-600 text-white shadow-xs"
+                      : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-100"
                       }`}
                   >
                     <Icon className="w-3.5 h-3.5" />
@@ -3021,8 +3101,8 @@ export default function PostComposerModal() {
                           key={item.id || item.url}
                           onClick={() => toggleMediaSelectionFromLibrary(item.url)}
                           className={`group relative rounded-2xl border cursor-pointer overflow-hidden transition-all ${isSelected
-                              ? "border-purple-600 ring-2 ring-purple-500/30 bg-purple-50"
-                              : "border-slate-200 hover:border-purple-300"
+                            ? "border-purple-600 ring-2 ring-purple-500/30 bg-purple-50"
+                            : "border-slate-200 hover:border-purple-300"
                             }`}
                         >
                           {isVid ? (

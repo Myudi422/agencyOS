@@ -23,6 +23,14 @@ class BulkMoveRequest(BaseModel):
     media_ids: List[str]
     target_folder: str
 
+class RegisterUrlRequest(BaseModel):
+    workspace_id: str
+    url: str
+    filename: Optional[str] = None
+    file_type: Optional[str] = "image/jpeg"
+    folder: Optional[str] = "CTA"
+    tags: Optional[List[str]] = ["cta_library"]
+
 @router.post("/sync-b2")
 def sync_b2_bucket(
     workspace_id: str = Query(..., description="Workspace ID to sync into"),
@@ -143,6 +151,70 @@ def reset_media_vault(
     db.commit()
     return {"status": "success", "deleted_count": len(items)}
 
+@router.post("/register-url")
+def register_external_url(
+    req: RegisterUrlRequest,
+    db: Session = Depends(get_db)
+):
+    """
+    Registers an external media URL (e.g. from PostForMe CDN) into the Media DB
+    without uploading to Backblaze B2. Used for CTA Library items.
+    """
+    import uuid as _uuid
+    # Check for duplicate URL in this workspace
+    existing = db.query(Media).filter(
+        Media.workspace_id == req.workspace_id,
+        Media.url == req.url
+    ).first()
+    if existing:
+        return {
+            "id": existing.id,
+            "url": existing.url,
+            "filename": existing.filename,
+            "folder": existing.folder,
+            "tags": existing.tags or [],
+            "created_at": existing.created_at,
+            "duplicate": True
+        }
+
+    filename = req.filename or req.url.split("/")[-1].split("?")[0] or "cta_media"
+    fake_b2_key = f"postforme://{str(_uuid.uuid4())}"
+
+    media = Media(
+        workspace_id=req.workspace_id,
+        filename=filename,
+        file_type=req.file_type or "image/jpeg",
+        file_size=0,
+        url=req.url,
+        thumbnail_url=req.url,
+        b2_key=fake_b2_key,
+        folder=req.folder or "CTA",
+        tags=req.tags or ["cta_library"]
+    )
+    db.add(media)
+
+    log = ActivityLog(
+        workspace_id=req.workspace_id,
+        user_name="System",
+        action="REGISTER_EXTERNAL_URL",
+        details=f"Registered external URL '{req.url}' into CTA library",
+        entity_type="Media",
+        entity_id=media.id
+    )
+    db.add(log)
+    db.commit()
+    db.refresh(media)
+
+    return {
+        "id": media.id,
+        "url": media.url,
+        "filename": media.filename,
+        "folder": media.folder,
+        "tags": media.tags or [],
+        "created_at": media.created_at,
+        "duplicate": False
+    }
+
 @router.get("/")
 def get_media_items(
     workspace_id: str = Query(..., description="Workspace ID"),
@@ -152,22 +224,29 @@ def get_media_items(
     favorites_only: Optional[bool] = Query(False, description="Favorites only"),
     db: Session = Depends(get_db)
 ):
-    """Lists reusable media assets from Backblaze B2 S3 strictly under AgencyOS/ prefix."""
-    query = db.query(Media).filter(
-        Media.workspace_id == workspace_id,
-        Media.b2_key.ilike("AgencyOS/%")
-    )
+    """Lists reusable media assets. For folder=CTA also includes PostForMe-registered URLs."""
+    # For CTA folder: include both B2 and postforme:// items
+    if folder and folder == "CTA":
+        query = db.query(Media).filter(
+            Media.workspace_id == workspace_id,
+            Media.folder == "CTA"
+        )
+    else:
+        query = db.query(Media).filter(
+            Media.workspace_id == workspace_id,
+            Media.b2_key.ilike("AgencyOS/%")
+        )
 
-    total_count = query.count()
-    if total_count == 0:
-        try:
-            sync_b2_bucket(workspace_id=workspace_id, db=db)
-            query = db.query(Media).filter(
-                Media.workspace_id == workspace_id,
-                Media.b2_key.ilike("AgencyOS/%")
-            )
-        except Exception as e:
-            print("Auto B2 Sync warning:", e)
+        total_count = query.count()
+        if total_count == 0:
+            try:
+                sync_b2_bucket(workspace_id=workspace_id, db=db)
+                query = db.query(Media).filter(
+                    Media.workspace_id == workspace_id,
+                    Media.b2_key.ilike("AgencyOS/%")
+                )
+            except Exception as e:
+                print("Auto B2 Sync warning:", e)
 
     if folder and folder != "All":
         query = query.filter(Media.folder == folder)

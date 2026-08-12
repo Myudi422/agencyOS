@@ -1,42 +1,42 @@
 # Graph Report - agencyOS  (2026-08-12)
 
 ## Corpus Check
-- 142 files · ~770,380 words
+- 142 files · ~770,569 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1470 nodes · 3386 edges · 75 communities (53 shown, 22 thin omitted)
-- Extraction: 87% EXTRACTED · 13% INFERRED · 0% AMBIGUOUS · INFERRED: 428 edges (avg confidence: 0.5)
+- 1467 nodes · 3369 edges · 75 communities (61 shown, 14 thin omitted)
+- Extraction: 88% EXTRACTED · 12% INFERRED · 0% AMBIGUOUS · INFERRED: 419 edges (avg confidence: 0.5)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `0964e2bd`
+- Built from commit: `e0aab646`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
 ## Community Hubs (Navigation)
 - agent/page.tsx
 - useAuthStore
-- migrate_account_briefing.py
+- models.py
 - yt_clipper_agent.py
 - statistics/page.tsx
 - PostForMeService
-- database.py
+- User
 - media.py
 - admin.py
 - useStore
-- webhook.py
-- Session
+- postforme_webhook
+- agent_service.py
 - statistics.py
 - agent_scheduler.py
 - .apply_watermark
 - GeminiService
 - compilerOptions
 - KolDatabaseDrawer.tsx
-- UserSubscription
+- queue.py
 - fetchApi
 - InstagrapiService
-- billing.py
+- UserSubscription
 - Component: Firebase Auth (Backend)
 - devDependencies
 - Kelola Semua Sosmed, Campaign KOL, & Kompetitor Dalam Satu Command Center
@@ -48,9 +48,9 @@
 - YTPlayer
 - Components
 - MetaAdapter
-- get_user_workspace
+- agents.py
 - 3. Routers & Endpoints (Backend)
-- reset_subscriptions.py
+- Session
 - app/page.tsx
 - package.json
 - services
@@ -58,63 +58,63 @@
 - posts.py
 - AgencyOS Backend Documentation
 - 🚀 AgencyOS Server Upscaling & Load Management Guide (`load.md`)
-- migrate_kol_stats.py
+- QueueService
 - 🛠️ 2. Komponen Teknis Terimplementasi
 - AgencyOS - Enterprise Digital Agency Social Management Platform
 - rules/graphify.md
 - workflows/graphify.md
 - [token]/page.tsx
 - kol.py
-- User
+- SocialAccount
+- auth.py
 - next.config.js
 - next-env.d.ts
 - AuthProvider.tsx
 - date-fns
-- migrate_db.py
+- Workspace
 - kol-campaigns/page.tsx
+- config.py
 - next
-- migrate_kol.py
+- AgentCreateRequest
 - Token-efficient agent
 - firebase
 - rules/token-efficient.md
 - workflows/token-efficient.md
-- clear_all_activity_logs
+- database.py
 - zustand
-- migrate_post_ai_brief.py
 - tailwind-merge
-- migrate_publish_results.py
 - accounts/page.tsx
 - clsx
 - html2canvas
 
 ## God Nodes (most connected - your core abstractions)
-1. `User` - 153 edges
+1. `User` - 151 edges
 2. `fetchApi()` - 65 edges
 3. `ActivityLog` - 55 edges
 4. `SocialAccount` - 53 edges
-5. `WorkspaceMember` - 45 edges
+5. `WorkspaceMember` - 44 edges
 6. `useStore` - 44 edges
 7. `get_user_workspace()` - 43 edges
-8. `Workspace` - 40 edges
-9. `UserSubscription` - 32 edges
+8. `Workspace` - 39 edges
+9. `UserSubscription` - 31 edges
 10. `useAuthStore` - 31 edges
 
 ## Surprising Connections (you probably didn't know these)
-- `CheckoutRequest` --uses--> `PlanTier`  [INFERRED]
-  backend/routers/billing.py → backend/models/models.py
-- `OtpSendRequest` --uses--> `PlanTier`  [INFERRED]
-  backend/routers/billing.py → backend/models/models.py
-- `OtpVerifyRequest` --uses--> `PlanTier`  [INFERRED]
-  backend/routers/billing.py → backend/models/models.py
-- `SyncCheckoutRequest` --uses--> `PlanTier`  [INFERRED]
-  backend/routers/billing.py → backend/models/models.py
-- `FirebaseVerifyRequest` --uses--> `PlanTier`  [INFERRED]
-  backend/routers/firebase_auth.py → backend/models/models.py
+- `BulkDeleteLogsRequest` --uses--> `AgentRunStatus`  [INFERRED]
+  backend/routers/agents.py → backend/models/agent_models.py
+- `AgentCreateRequest` --uses--> `AgentConfig`  [INFERRED]
+  backend/routers/agents.py → backend/models/agent_models.py
+- `AgentUpdateRequest` --uses--> `AgentConfig`  [INFERRED]
+  backend/routers/agents.py → backend/models/agent_models.py
+- `BulkDeleteLogsRequest` --uses--> `AgentConfig`  [INFERRED]
+  backend/routers/agents.py → backend/models/agent_models.py
+- `AgentCreateRequest` --uses--> `AgentRunLog`  [INFERRED]
+  backend/routers/agents.py → backend/models/agent_models.py
 
 ## Import Cycles
 - None detected.
 
-## Communities (75 total, 22 thin omitted)
+## Communities (75 total, 14 thin omitted)
 
 ### Community 0 - "agent/page.tsx"
 Cohesion: 0.13
@@ -122,7 +122,11 @@ Nodes (19): AgentPage(), DAY_LABELS, formatDateTime(), formatTimeOnly(), LogCard
 
 ### Community 1 - "useAuthStore"
 Cohesion: 0.12
-Nodes (26): AdminPage(), TabType, TIER_COLORS, TIER_ICONS, LoginPage(), SubscriptionGuard(), TIER_META, PUBLIC_SPLASH_PATHS (+18 more)
+Nodes (24): BillingSuccessContent(), dynamic, LoginPage(), SubscriptionGuard(), TIER_META, PUBLIC_SPLASH_PATHS, SplashScreen(), AppLayout() (+16 more)
+
+### Community 2 - "models.py"
+Cohesion: 0.44
+Nodes (25): AccountPlatform, ActivityLog, KolCampaign, KolCampaignKol, KolCampaignStatus, KolDeliverable, KolDeliverableStatus, KolDeliverableType (+17 more)
 
 ### Community 3 - "yt_clipper_agent.py"
 Cohesion: 0.06
@@ -136,25 +140,29 @@ Nodes (39): AccountMetrics, AccountSummary, CHART_COLORS, CustomTooltip(), Daily
 Cohesion: 0.09
 Nodes (22): PostForMeService, Any, Get connected social accounts from PostForMe. Endpoint: GET /v1/social-accounts, Manually register or update a social account in PostForMe. Endpoint: POST…, Disconnect a social account in PostForMe. Endpoint: POST /v1/social-…, Delete a social account in PostForMe. Endpoint: DELETE /v1/social-accounts/{id}, Create a post across multi-platform social accounts in PostForMe. Endpoint:…, Delete a post from PostForMe. Endpoint: DELETE /v1/social-posts/{id} (+14 more)
 
+### Community 6 - "User"
+Cohesion: 0.20
+Nodes (26): User, AccountBriefingSchema, bulk_action(), BulkActionRequest, delete_account(), get_account_briefing(), get_account_watermark(), get_accounts() (+18 more)
+
 ### Community 7 - "media.py"
 Cohesion: 0.08
 Nodes (33): Media, bulk_delete_media(), bulk_move_media(), BulkDeleteRequest, BulkMoveRequest, delete_folder(), delete_media(), get_media_items() (+25 more)
 
 ### Community 8 - "admin.py"
-Cohesion: 0.26
-Nodes (21): PlanTier, RoleEnum, Setting, SubscriptionStatus, AssignPlanByEmailRequest, InstagramTestRequest, override_user_subscription(), PlanUpdateRequest (+13 more)
+Cohesion: 0.09
+Nodes (45): PlanTier, Paket langganan — semua plan unlimited akun sosmed, beda di quota post., Setting, SubscriptionPlan, SubscriptionStatus, assign_plan_by_email(), AssignPlanByEmailRequest, delete_setting() (+37 more)
 
 ### Community 9 - "useStore"
 Cohesion: 0.11
 Nodes (17): OAuthCallbackHandler(), CalendarImageThumbnail(), CalendarPage(), getProxiedImageUrl(), PLATFORM_ICONS, PLATFORM_LABELS, DashboardImageThumbnail(), DashboardPage() (+9 more)
 
-### Community 10 - "webhook.py"
-Cohesion: 0.17
-Nodes (15): list_postforme_webhooks(), postforme_webhook(), _process_post_result_event(), BackgroundTasks, get, post, Request, Webhook handler untuk menerima event dari PostForMe API. PostForMe mengirim… (+7 more)
+### Community 10 - "postforme_webhook"
+Cohesion: 0.16
+Nodes (14): list_postforme_webhooks(), postforme_webhook(), _process_post_result_event(), BackgroundTasks, get, post, Request, Menerima event dari PostForMe API. PostForMe mengirim POST request dengan: -… (+6 more)
 
-### Community 11 - "Session"
+### Community 11 - "agent_service.py"
 Cohesion: 0.12
-Nodes (22): assign_plan_by_email(), delete_setting(), delete_user(), get_plans(), get_settings(), get_user_stats(), list_users(), delete (+14 more)
+Nodes (18): Migration Script: Create agent_configs and agent_run_logs tables. Run: python…, AgentConfig, AgentRunLog, Base, Agent Models — Shiera AI Agent System Stores agent configurations and run…, Konfigurasi satu AI Agent per workspace. Satu agent = 1 jadwal otomatis yang…, Log setiap kali agent dijalankan (manual atau terjadwal). Menyimpan hasil brief…, _extract_composer_payload() (+10 more)
 
 ### Community 12 - "statistics.py"
 Cohesion: 0.08
@@ -180,21 +188,21 @@ Nodes (26): compilerOptions, allowJs, esModuleInterop, incremental, isolatedModu
 Cohesion: 0.23
 Nodes (9): GlassToastManager(), Portal(), KolAddEditModal(), KolAddEditModalProps, KolDatabaseDrawer(), KolDatabaseDrawerProps, KolProfileItem, TIER_BADGES (+1 more)
 
-### Community 18 - "UserSubscription"
-Cohesion: 0.25
-Nodes (13): Paket langganan — semua plan unlimited akun sosmed, beda di quota post., Subscription aktif milik satu user., Menyimpan OTP WhatsApp sementara untuk verifikasi sebelum claim trial., SubscriptionPlan, UserSubscription, WaOtpVerification, CheckoutRequest, OtpSendRequest (+5 more)
+### Community 18 - "queue.py"
+Cohesion: 0.33
+Nodes (8): Script perbaikan langsung: Ambil hasil dari PostForMe API untuk semua post yang…, JobStatus, Post, PostTarget, PublishJob, Webhook handler untuk menerima event dari PostForMe API. PostForMe mengirim…, seed_plans(), reset_and_seed_database()
 
 ### Community 19 - "fetchApi"
-Cohesion: 0.09
-Nodes (30): BillingSuccessContent(), dynamic, CampaignDetailPage(), DELIVERABLE_STATUS_COLORS, PAYMENT_STATUS_BADGES, DEFAULT_PLANS, PricingPage(), TIER_ORDER (+22 more)
+Cohesion: 0.08
+Nodes (32): AdminPage(), TabType, TIER_COLORS, TIER_ICONS, CampaignDetailPage(), DELIVERABLE_STATUS_COLORS, PAYMENT_STATUS_BADGES, DEFAULT_PLANS (+24 more)
 
 ### Community 20 - "InstagrapiService"
 Cohesion: 0.08
 Nodes (26): InstagrapiService, Any, Session, Fetch configured Residential Proxy setting from DB or parameters., Test proxy connectivity by querying public IP checkers., Create an instagrapi Client preconfigured with Proxy, Bandwidth Optimizations &…, Connects to IMAP mail server (e.g. Gmail) to automatically search and extract…, Handler called by instagrapi when Instagram forces a password change during… (+18 more)
 
-### Community 21 - "billing.py"
-Cohesion: 0.17
-Nodes (24): _activate_user_subscription(), create_checkout(), get_frontend_url(), get_subscription(), _get_user_from_auth(), list_plans(), midtrans_notification(), get (+16 more)
+### Community 21 - "UserSubscription"
+Cohesion: 0.09
+Nodes (41): Subscription aktif milik satu user., Menyimpan OTP WhatsApp sementara untuk verifikasi sebelum claim trial., UserSubscription, WaOtpVerification, Reset Subscriptions Script — Clears all user subscriptions in DB. Run: python…, _activate_user_subscription(), CheckoutRequest, create_checkout() (+33 more)
 
 ### Community 22 - "Component: Firebase Auth (Backend)"
 Cohesion: 0.06
@@ -217,12 +225,12 @@ Cohesion: 0.13
 Nodes (15): dependencies, jspdf, lucide-react, react, react-dom, react-is, recharts, @tanstack/react-query (+7 more)
 
 ### Community 27 - "SecurityMiddleware"
-Cohesion: 0.26
-Nodes (5): InMemoryRateLimiter, Request, SecurityMiddleware, BaseHTTPMiddleware, Lock
+Cohesion: 0.33
+Nodes (4): InMemoryRateLimiter, Request, SecurityMiddleware, BaseHTTPMiddleware
 
 ### Community 28 - "firebase_auth.py"
-Cohesion: 0.13
-Nodes (20): Settings, require_admin(), FirebaseVerifyRequest, get_current_user_from_token(), get_me(), BaseModel, get, post (+12 more)
+Cohesion: 0.12
+Nodes (22): ClientCreate, create_client(), delete_client(), get_clients(), BaseModel, delete, get, post (+14 more)
 
 ### Community 29 - "queue/page.tsx"
 Cohesion: 0.19
@@ -240,13 +248,17 @@ Nodes (31): Brand & Accent, Buttons, Collapsing Strategy, Colors, Components, Da
 Cohesion: 0.14
 Nodes (7): MetaAdapter, Any, Adapter for Meta Graph API (Instagram Business API & Facebook Page API).…, Publishes post to Instagram Business via Graph API container flow., Publishes post to Facebook Page via Graph API., Exchanges OAuth auth code for short-lived access token, then long-lived access…, Fetches connected Facebook Pages and associated Instagram Business Accounts.
 
-### Community 33 - "get_user_workspace"
-Cohesion: 0.06
-Nodes (61): get, root(), Migration Script: Create agent_configs and agent_run_logs tables. Run: python…, AgentConfig, AgentRunLog, AgentRunStatus, Base, str (+53 more)
+### Community 33 - "agents.py"
+Cohesion: 0.12
+Nodes (32): bulk_delete_agent_logs(), BulkDeleteLogsRequest, create_agent(), cron_trigger(), delete_agent(), delete_agent_log(), get_agent(), get_agent_logs() (+24 more)
 
 ### Community 34 - "3. Routers & Endpoints (Backend)"
 Cohesion: 0.09
 Nodes (22): 1. Configuration & Models (Backend), 2. PostForMe Service & Queue Engine (Backend), 3. Routers & Endpoints (Backend), 4. Frontend UI Rework, Automated Tests, Implementation Plan - PostForMe API Integration & Full Platform Overhaul, Manual Verification, [MODIFY] [accounts.py](file:///d:/CODING/agencyOs/agencyOS/backend/routers/accounts.py) (+14 more)
+
+### Community 35 - "Session"
+Cohesion: 0.11
+Nodes (23): cancel_postforme_post(), delete_queue_job(), _fallback_local_results(), get_postforme_posts(), get_postforme_results(), get_publish_history(), get_queue_status(), BackgroundTasks (+15 more)
 
 ### Community 36 - "app/page.tsx"
 Cohesion: 0.24
@@ -265,8 +277,8 @@ Cohesion: 0.33
 Nodes (5): app, { createServer }, handle, next, { parse }
 
 ### Community 40 - "posts.py"
-Cohesion: 0.05
-Nodes (78): Script perbaikan langsung: Ambil hasil dari PostForMe API untuk semua post yang…, JobStatus, Post, PostPublishResult, PostStatus, PostTarget, PostType, PublishJob (+70 more)
+Cohesion: 0.12
+Nodes (35): PostStatus, PostType, approve_public_post_review(), create_media_upload_url(), create_post(), delete_post(), generate_ai_caption(), GenerateAICaptionRequest (+27 more)
 
 ### Community 41 - "AgencyOS Backend Documentation"
 Cohesion: 0.11
@@ -275,6 +287,10 @@ Nodes (17): AgencyOS Backend Documentation, **Atau Jika Berada di Dalam Folder `
 ### Community 42 - "🚀 AgencyOS Server Upscaling & Load Management Guide (`load.md`)"
 Cohesion: 0.13
 Nodes (14): 📊 1. Matriks Kapasitas Infrastruktur, 🏗️ 2. Roadmap Upscaling Bertahap, 🛠️ 3. Langkah Implementasi Upscaling, 🧪 4. Load Testing & Benchmark Scripts, 📈 5. Monitoring & Alerting Checklist, A. Install Dependencies, 🚀 AgencyOS Server Upscaling & Load Management Guide (`load.md`), B. Konfigurasi Redis Queue (`backend/services/redis_queue.py`) (+6 more)
+
+### Community 43 - "QueueService"
+Cohesion: 0.20
+Nodes (12): PostPublishResult, Menyimpan hasil aktual publish dari PostForMe API (/v1/social-post-results).…, Any, Session, QueueService, Queue Engine menggunakan background tasks FastAPI. Mengelola publish job per…, Creates PublishJob records and executes them immediately., Sinkronisasi hasil publish dari PostForMe untuk satu target. Mengambil data… (+4 more)
 
 ### Community 44 - "🛠️ 2. Komponen Teknis Terimplementasi"
 Cohesion: 0.15
@@ -288,25 +304,41 @@ Nodes (9): 1. Run Backend (FastAPI), 2. Run Frontend (Next.js 15), AgencyOS - En
 Cohesion: 0.08
 Nodes (62): add_kol_to_campaign(), create_campaign(), create_deliverable(), create_kol_profile(), delete_campaign(), delete_deliverable(), delete_kol_profile(), get_campaign_detail() (+54 more)
 
-### Community 51 - "User"
-Cohesion: 0.07
-Nodes (121): AccountPlatform, AccountStatus, ActivityLog, Client, KolCampaign, KolCampaignKol, KolCampaignStatus, KolDeliverable (+113 more)
+### Community 50 - "SocialAccount"
+Cohesion: 0.30
+Nodes (16): AccountStatus, RoleEnum, SocialAccount, BlueskyConnectRequest, ChallengeResolveRequest, CookieLoginRequest, CredentialLoginRequest, PostForMeAuthUrlRequest (+8 more)
+
+### Community 51 - "auth.py"
+Cohesion: 0.13
+Nodes (32): extract_followers_count(), _get_user_target_workspace(), instagram_challenge_resolve(), instagram_connect(), instagram_cookie_login(), instagram_credential_login(), meta_callback(), meta_connect() (+24 more)
 
 ### Community 54 - "AuthProvider.tsx"
 Cohesion: 0.21
 Nodes (9): jsonLd, metadata, AuthProvider(), Providers(), getIdToken(), onAuthChange(), auth, firebaseConfig (+1 more)
 
+### Community 56 - "Workspace"
+Cohesion: 0.29
+Nodes (14): Client, Workspace, create_workspace(), get_workspaces(), OnboardingSetupRequest, BaseModel, get, post (+6 more)
+
 ### Community 57 - "kol-campaigns/page.tsx"
 Cohesion: 0.21
 Nodes (10): KolCampaignsPage(), CampaignCard(), CampaignCardProps, CampaignItem, STATUS_BADGES, CampaignCreateModalProps, AccountItem, KolAccountSelector() (+2 more)
+
+### Community 58 - "config.py"
+Cohesion: 0.25
+Nodes (3): Settings, get, root()
+
+### Community 63 - "AgentCreateRequest"
+Cohesion: 0.29
+Nodes (8): AgentRunStatus, str, AgentCreateRequest, AgentUpdateRequest, BaseModel, patch, Update agent configuration. Reschedules if schedule fields change., update_agent()
 
 ### Community 64 - "Token-efficient agent"
 Cohesion: 0.25
 Nodes (7): Graphify-first rule, Mandatory workflow, Preferred approach, Responsibilities, Token-efficient agent, Tool preferences, When to use this agent
 
-### Community 71 - "clear_all_activity_logs"
-Cohesion: 0.25
-Nodes (9): clear_all_activity_logs(), delete_activity_log(), get_activity_logs(), delete, get, Session, Retrieves chronological activity audit logs., Deletes a specific activity log entry. (+1 more)
+### Community 71 - "database.py"
+Cohesion: 0.07
+Nodes (18): get_db(), Migration Script: Add briefing column to social_accounts table, Database Migration Script — Migrate database schema from Stripe to Midtrans.…, Migration Script: Create KOL Campaign & Deliverable Tracker tables, column_exists(), migrate(), Migration Script: Add ai_brief column to posts table, Migration: Tambah tabel post_publish_results dan kolom baru ke posts. Jalankan:… (+10 more)
 
 ### Community 79 - "accounts/page.tsx"
 Cohesion: 0.10
@@ -315,22 +347,22 @@ Nodes (26): AccountsPage(), dynamic, PLATFORMS_CONFIG, ActivityPage(), ClientsPa
 ## Knowledge Gaps
 - **303 isolated node(s):** `Settings`, `nextConfig`, `name`, `version`, `private` (+298 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **22 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **14 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `User` connect `User` to `get_user_workspace`, `reset_subscriptions.py`, `admin.py`, `posts.py`, `Session`, `statistics.py`, `kol.py`, `UserSubscription`, `billing.py`, `firebase_auth.py`?**
-  _High betweenness centrality (0.112) - this node is a cross-community bridge._
-- **Why does `PostForMeService` connect `PostForMeService` to `posts.py`?**
-  _High betweenness centrality (0.032) - this node is a cross-community bridge._
-- **Why does `Setting` connect `admin.py` to `User`, `InstagrapiService`, `GeminiService`?**
-  _High betweenness centrality (0.028) - this node is a cross-community bridge._
-- **Are the 48 inferred relationships involving `User` (e.g. with `AccountBriefingSchema` and `BulkActionRequest`) actually correct?**
-  _`User` has 48 INFERRED edges - model-reasoned connections that need verification._
+- **Why does `User` connect `User` to `agents.py`, `models.py`, `Session`, `admin.py`, `posts.py`, `QueueService`, `statistics.py`, `kol.py`, `SocialAccount`, `auth.py`, `queue.py`, `UserSubscription`, `Workspace`, `firebase_auth.py`, `AgentCreateRequest`?**
+  _High betweenness centrality (0.104) - this node is a cross-community bridge._
+- **Why does `PostForMeService` connect `PostForMeService` to `queue.py`?**
+  _High betweenness centrality (0.037) - this node is a cross-community bridge._
+- **Why does `AgentConfig` connect `agent_service.py` to `agents.py`, `config.py`, `agent_scheduler.py`, `AgentCreateRequest`?**
+  _High betweenness centrality (0.020) - this node is a cross-community bridge._
+- **Are the 47 inferred relationships involving `User` (e.g. with `AccountBriefingSchema` and `BulkActionRequest`) actually correct?**
+  _`User` has 47 INFERRED edges - model-reasoned connections that need verification._
 - **Are the 30 inferred relationships involving `ActivityLog` (e.g. with `AccountBriefingSchema` and `BulkActionRequest`) actually correct?**
   _`ActivityLog` has 30 INFERRED edges - model-reasoned connections that need verification._
 - **Are the 33 inferred relationships involving `SocialAccount` (e.g. with `AccountBriefingSchema` and `BulkActionRequest`) actually correct?**
   _`SocialAccount` has 33 INFERRED edges - model-reasoned connections that need verification._
-- **Are the 30 inferred relationships involving `WorkspaceMember` (e.g. with `AssignPlanByEmailRequest` and `InstagramTestRequest`) actually correct?**
-  _`WorkspaceMember` has 30 INFERRED edges - model-reasoned connections that need verification._
+- **Are the 29 inferred relationships involving `WorkspaceMember` (e.g. with `AssignPlanByEmailRequest` and `PlanUpdateRequest`) actually correct?**
+  _`WorkspaceMember` has 29 INFERRED edges - model-reasoned connections that need verification._
