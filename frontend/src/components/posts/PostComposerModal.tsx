@@ -1557,16 +1557,15 @@ export default function PostComposerModal() {
                   <button
                     type="button"
                     onClick={() => setShowCtaPanel(v => !v)}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer ${showCtaPanel
+                    className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer ${showCtaPanel
                         ? "bg-purple-600 text-white border-purple-600 shadow-xs"
                         : "bg-white text-slate-700 border-slate-200 hover:border-purple-300 hover:bg-purple-50/50"
                       }`}
                     title="CTA Media Library — bahan promosi reusable untuk akhir slide"
                   >
                     <Folder className={`w-3.5 h-3.5 ${showCtaPanel ? "text-white" : "text-purple-600"}`} />
-                    <span>CTA Library</span>
                     {ctaLibrary.length > 0 && (
-                      <span className={`ml-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-extrabold ${
+                      <span className={`px-1.5 py-0.5 rounded-full text-[9px] font-extrabold ${
                         showCtaPanel ? "bg-white/20 text-white" : "bg-purple-100 text-purple-700"
                       }`}>
                         {ctaLibrary.length}
