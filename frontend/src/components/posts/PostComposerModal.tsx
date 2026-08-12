@@ -1519,15 +1519,17 @@ export default function PostComposerModal() {
                     type="button"
                     onClick={() => setShowCtaPanel(v => !v)}
                     className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer ${showCtaPanel
-                        ? "bg-amber-500 text-white border-amber-500 shadow-sm"
-                        : "bg-amber-50 text-amber-700 border-amber-300 hover:bg-amber-100"
+                        ? "bg-purple-600 text-white border-purple-600 shadow-xs"
+                        : "bg-white text-slate-700 border-slate-200 hover:border-purple-300 hover:bg-purple-50/50"
                       }`}
                     title="CTA Media Library — bahan promosi reusable untuk akhir slide"
                   >
-                    <Sparkles className="w-3.5 h-3.5" />
-                    CTA MEDIA
+                    <Sparkles className={`w-3.5 h-3.5 ${showCtaPanel ? "text-white" : "text-purple-600"}`} />
+                    <span>CTA Library</span>
                     {ctaLibrary.length > 0 && (
-                      <span className="ml-1 bg-white/30 text-inherit px-1.5 py-0.5 rounded-full text-[9px] font-extrabold">
+                      <span className={`ml-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-extrabold ${
+                        showCtaPanel ? "bg-white/20 text-white" : "bg-purple-100 text-purple-700"
+                      }`}>
                         {ctaLibrary.length}
                       </span>
                     )}
@@ -1536,24 +1538,24 @@ export default function PostComposerModal() {
 
                 {/* CTA Media Library Panel */}
                 {showCtaPanel && (
-                  <div className="p-3.5 rounded-2xl bg-amber-50/70 border border-amber-200 space-y-3 animate-fadeIn">
+                  <div className="p-4 rounded-2xl bg-white border border-purple-100 shadow-xs space-y-3 animate-fadeIn">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-xs font-extrabold text-amber-900 font-['Outfit'] flex items-center gap-1.5">
-                          <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+                        <p className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+                          <Sparkles className="w-3.5 h-3.5 text-purple-600" />
                           CTA Media Library
                         </p>
-                        <p className="text-[10px] text-amber-700 mt-0.5">
-                          Upload sekali, pakai berkali-kali. Klik item untuk menambahkan ke post, klik lagi untuk menghapus dari post.
+                        <p className="text-[11px] text-slate-500 mt-0.5">
+                          Bahan promosi & end-screen reusable. Klik item untuk tambah/lepas dari post.
                         </p>
                       </div>
                     </div>
 
                     {/* CTA Upload Dropzone */}
                     <label
-                      className={`relative border-2 border-dashed rounded-xl p-3.5 flex flex-col items-center justify-center text-center cursor-pointer transition-all ${isUploadingCtaMedia
-                          ? "border-amber-400 bg-amber-50/80 cursor-wait"
-                          : "border-amber-300 hover:border-amber-500 bg-white hover:bg-amber-50/40"
+                      className={`relative border border-dashed rounded-xl p-3 flex flex-col items-center justify-center text-center cursor-pointer transition-all ${isUploadingCtaMedia
+                          ? "border-purple-400 bg-purple-50/80 cursor-wait"
+                          : "border-slate-200 hover:border-purple-400 bg-slate-50/50 hover:bg-purple-50/30"
                         }`}
                     >
                       <input
@@ -1565,33 +1567,33 @@ export default function PostComposerModal() {
                         onChange={(e) => e.target.files && handleCtaMediaUpload(e.target.files)}
                       />
                       {isUploadingCtaMedia ? (
-                        <div className="py-1 flex flex-col items-center gap-1.5 text-amber-700">
-                          <RefreshCw className="w-5 h-5 animate-spin" />
+                        <div className="py-1 flex flex-col items-center gap-1.5 text-purple-700">
+                          <RefreshCw className="w-4 h-4 animate-spin" />
                           <p className="text-xs font-bold">Mengunggah ke library...</p>
                         </div>
                       ) : (
-                        <>
-                          <div className="w-8 h-8 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center mb-1">
-                            <UploadCloud className="w-4 h-4" />
+                        <div className="flex items-center gap-2 text-slate-600 hover:text-purple-700">
+                          <div className="w-6 h-6 rounded-lg bg-purple-100 text-purple-600 flex items-center justify-center">
+                            <UploadCloud className="w-3.5 h-3.5" />
                           </div>
-                          <p className="text-xs font-bold text-slate-800">Upload ke CTA Library</p>
-                          <p className="text-[10px] text-slate-500 mt-0.5">Klik atau seret file — tersimpan permanen di library</p>
-                        </>
+                          <span className="text-xs font-semibold">Upload file CTA baru</span>
+                          <span className="text-[10px] text-slate-400 font-normal">(Gambar / Video)</span>
+                        </div>
                       )}
                     </label>
 
                     {/* CTA Library Grid */}
                     {ctaLibrary.length === 0 ? (
-                      <div className="text-center py-4 text-[11px] text-amber-600/70 font-medium">
-                        Library kosong. Upload file CTA pertamamu di atas.
+                      <div className="text-center py-4 text-xs text-slate-400 font-medium">
+                        Library CTA masih kosong. Upload file CTA pertamamu di atas.
                       </div>
                     ) : (
                       <>
-                        <div className="flex items-center justify-between">
-                          <span className="text-[10px] font-bold text-amber-800">{ctaLibrary.length} item di library</span>
-                          <span className="text-[10px] text-amber-600">✓ = sudah ada di post ini</span>
+                        <div className="flex items-center justify-between text-[10px] text-slate-500 pt-1">
+                          <span className="font-semibold">{ctaLibrary.length} item tersimpan</span>
+                          <span>✓ = Aktif di post ini</span>
                         </div>
-                        <div className="grid grid-cols-4 gap-2 max-h-48 overflow-y-auto pr-1">
+                        <div className="grid grid-cols-4 sm:grid-cols-6 gap-2 max-h-44 overflow-y-auto pr-1">
                           {ctaLibrary.map((item, idx) => {
                             const url = typeof item === "string" ? item : item.url;
                             const isVid = isVideoMedia({ url });
@@ -1610,15 +1612,15 @@ export default function PostComposerModal() {
                                     }
                                   }}
                                   title={isInPost ? "Klik untuk hapus dari post" : "Klik untuk tambah ke post"}
-                                  className={`relative w-full aspect-square rounded-xl overflow-hidden border-2 transition-all cursor-pointer ${isInPost
-                                      ? "border-amber-500 ring-2 ring-amber-400/40"
-                                      : "border-amber-200 hover:border-amber-400 opacity-80 hover:opacity-100"
+                                  className={`relative w-full aspect-square rounded-xl overflow-hidden border transition-all cursor-pointer ${isInPost
+                                      ? "border-purple-600 ring-2 ring-purple-500/20 shadow-2xs"
+                                      : "border-slate-200 hover:border-purple-300 opacity-80 hover:opacity-100"
                                     }`}
                                 >
                                   {isVid ? (
-                                    <div className="relative w-full h-full bg-black flex items-center justify-center">
+                                    <div className="relative w-full h-full bg-slate-900 flex items-center justify-center">
                                       <video src={url} preload="metadata" muted className="w-full h-full object-cover" />
-                                      <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+                                      <div className="absolute inset-0 bg-slate-900/40 flex items-center justify-center">
                                         <Play className="w-3 h-3 fill-white text-white" />
                                       </div>
                                     </div>
@@ -1627,8 +1629,8 @@ export default function PostComposerModal() {
                                   )}
                                   {/* In-post indicator */}
                                   {isInPost && (
-                                    <div className="absolute top-1 right-1 w-4 h-4 rounded-full bg-amber-500 flex items-center justify-center shadow">
-                                      <CheckCircle2 className="w-2.5 h-2.5 text-white" />
+                                    <div className="absolute top-1 right-1 w-4 h-4 rounded-full bg-purple-600 text-white flex items-center justify-center shadow-xs">
+                                      <CheckCircle2 className="w-2.5 h-2.5" />
                                     </div>
                                   )}
                                 </button>
@@ -1637,7 +1639,7 @@ export default function PostComposerModal() {
                                   type="button"
                                   onClick={() => handleDeleteCtaFromLibrary(item)}
                                   title="Hapus dari database library"
-                                  className="absolute -top-1.5 -left-1.5 z-20 bg-rose-600 text-white rounded-full p-0.5 shadow-sm hover:scale-110 transition-transform cursor-pointer opacity-0 group-hover:opacity-100"
+                                  className="absolute -top-1 -right-1 z-20 bg-slate-900/80 hover:bg-rose-600 text-white rounded-full p-0.5 shadow-sm transition-all cursor-pointer opacity-0 group-hover:opacity-100"
                                 >
                                   <X className="w-2.5 h-2.5" />
                                 </button>
