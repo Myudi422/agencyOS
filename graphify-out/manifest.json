@@ -640,8 +640,8 @@
     "semantic_hash": ""
   },
   "backend/requirements.txt": {
-    "mtime": 1786490798.6833105,
-    "ast_hash": "5c53aafe9438bb78cc970e63430a3e66",
+    "mtime": 1786500589.3146012,
+    "ast_hash": "a3b285581da2bf943438c08f8331ea09",
     "semantic_hash": ""
   },
   "implementation_plan.md": {
@@ -670,8 +670,8 @@
     "semantic_hash": ""
   },
   "requirements.txt": {
-    "mtime": 1786490805.181103,
-    "ast_hash": "b59e0f6a32d78cc675e921ef0d4373e7",
+    "mtime": 1786500581.143118,
+    "ast_hash": "a68dede99f2ef87f16df5814bfec1981",
     "semantic_hash": ""
   },
   "favicon/android-chrome-192x192.png": {

@@ -17,5 +17,4 @@ gemini-webapi>=1.3.0
 google-generativeai>=0.5.0
 instagrapi>=2.1.0
 ensta>=5.2.11
-
-
+beautifulsoup4>=4.12.0
