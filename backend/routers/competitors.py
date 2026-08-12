@@ -517,7 +517,7 @@ def sync_competitor(
 
     # Re-fetch profile & posts
     try:
-        profile_data = _fetch_profile(db, account.username)
+        profile_data = _fetch_profile(db, account.username, platform=account.platform)
         account.full_name = profile_data["full_name"]
         account.profile_pic_url = profile_data["profile_pic_url"]
         account.biography = profile_data["biography"]
@@ -533,7 +533,6 @@ def sync_competitor(
     try:
         profile_data = _fetch_profile(db, account.username, platform=account.platform)
         posts_data = _fetch_posts(db, account.username, amount=25, platform=account.platform)
-
 
         primary_acc = _get_primary_competitor_account(db, account.username) or account
         target_comp_id = primary_acc.id
@@ -554,7 +553,7 @@ def sync_competitor(
                 comment_count=p["comment_count"],
                 engagement_rate=p["engagement_rate"],
                 is_top_performer=p["is_top_performer"],
-                posted_at=datetime.fromisoformat(p["posted_at"]) if p["posted_at"] else datetime.utcnow()
+                posted_at=datetime.fromisoformat(p["posted_at"].rstrip("Z")) if p.get("posted_at") else datetime.utcnow()
             )
             db.add(c_post)
 
@@ -578,7 +577,7 @@ def sync_competitor(
         db.commit()
     except Exception as e:
         logger.error(f"Sync posts failed for @{account.username}: {e}")
-        raise HTTPException(status_code=500, detail=f"Gagal melakukan sync postingan Instagram @{account.username}: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Gagal melakukan sync postingan @{account.username}: {str(e)}")
 
     # Set rate limit cooldown (3 min)
     set_rate_limit(rate_key, _ACCOUNT_SYNC_COOLDOWN)
@@ -666,6 +665,32 @@ def get_competitor_posts(
         query = query.filter(CompetitorPost.is_top_performer == True)
 
     posts = query.order_by(CompetitorPost.like_count.desc(), CompetitorPost.posted_at.desc()).all()
+
+    # If DB has 0 posts stored for this competitor, auto-fetch on the fly
+    if len(posts) == 0:
+        try:
+            logger.info(f"Auto-fetching posts on the fly for @{account.username} ({account.platform})")
+            posts_data = _fetch_posts(db, account.username, amount=20, platform=account.platform)
+            for p in posts_data.get("posts", []):
+                c_post = CompetitorPost(
+                    competitor_id=target_comp_id,
+                    instagram_media_id=p.get("instagram_media_id"),
+                    code=p.get("code"),
+                    post_type=p.get("post_type", "video"),
+                    caption=p.get("caption", ""),
+                    thumbnail_url=p.get("thumbnail_url"),
+                    media_urls=p.get("media_urls", []),
+                    like_count=p.get("like_count", 0),
+                    comment_count=p.get("comment_count", 0),
+                    engagement_rate=p.get("engagement_rate", 0.0),
+                    is_top_performer=p.get("is_top_performer", False),
+                    posted_at=datetime.fromisoformat(p["posted_at"].rstrip("Z")) if p.get("posted_at") else datetime.utcnow()
+                )
+                db.add(c_post)
+            db.commit()
+            posts = query.order_by(CompetitorPost.like_count.desc(), CompetitorPost.posted_at.desc()).all()
+        except Exception as e_auto:
+            logger.warning(f"Auto-fetch posts warning for @{account.username}: {e_auto}")
 
     result = []
     for p in posts:
