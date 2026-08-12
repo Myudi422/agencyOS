@@ -222,6 +222,45 @@ export default function PostComposerModal() {
   const [previewSlideIndex, setPreviewSlideIndex] = useState(0);
   const [previewAspect, setPreviewAspect] = useState<"1:1" | "4:5" | "16:9" | "9:16">("1:1");
 
+  // Auto detect & switch Live Feed Preview Aspect Ratio when uploading or switching slides
+  const autoDetectAspectFromUrl = useCallback((url: string) => {
+    if (!url) return;
+    const isVid = isVideoMedia({ url });
+    if (isVid) {
+      const video = document.createElement("video");
+      video.src = url;
+      video.onloadedmetadata = () => {
+        if (video.videoWidth && video.videoHeight) {
+          const ratio = video.videoWidth / video.videoHeight;
+          if (ratio >= 1.4) setPreviewAspect("16:9");
+          else if (ratio <= 0.65) setPreviewAspect("9:16");
+          else if (ratio < 0.9) setPreviewAspect("4:5");
+          else setPreviewAspect("1:1");
+        }
+      };
+    } else {
+      const img = new Image();
+      img.src = url;
+      img.onload = () => {
+        if (img.width && img.height) {
+          const ratio = img.width / img.height;
+          if (ratio >= 1.4) setPreviewAspect("16:9");
+          else if (ratio <= 0.65) setPreviewAspect("9:16");
+          else if (ratio < 0.9) setPreviewAspect("4:5");
+          else setPreviewAspect("1:1");
+        }
+      };
+    }
+  }, []);
+
+  useEffect(() => {
+    const currentUrl = mediaUrls[previewSlideIndex] || mediaUrls[0];
+    if (currentUrl) {
+      autoDetectAspectFromUrl(currentUrl);
+    }
+  }, [mediaUrls, previewSlideIndex, autoDetectAspectFromUrl]);
+
+
   // Video / Reels Cover Thumbnail Setup (SocialPostMediaDto)
   const [reelsThumbnailUrl, setReelsThumbnailUrl] = useState("");
   const [reelsThumbnailTimestampMs, setReelsThumbnailTimestampMs] = useState<number | "">(2000);
@@ -1524,7 +1563,7 @@ export default function PostComposerModal() {
                       }`}
                     title="CTA Media Library — bahan promosi reusable untuk akhir slide"
                   >
-                    <Sparkles className={`w-3.5 h-3.5 ${showCtaPanel ? "text-white" : "text-purple-600"}`} />
+                    <Folder className={`w-3.5 h-3.5 ${showCtaPanel ? "text-white" : "text-purple-600"}`} />
                     <span>CTA Library</span>
                     {ctaLibrary.length > 0 && (
                       <span className={`ml-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-extrabold ${
@@ -1542,7 +1581,7 @@ export default function PostComposerModal() {
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
-                          <Sparkles className="w-3.5 h-3.5 text-purple-600" />
+                          <Folder className="w-3.5 h-3.5 text-purple-600" />
                           CTA Media Library
                         </p>
                         <p className="text-[11px] text-slate-500 mt-0.5">

@@ -9118,8 +9118,8 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "frontend_package_dependencies_clsx",
-      "community": 26,
-      "community_name": "dependencies",
+      "community": 75,
+      "community_name": "clsx",
       "norm_label": "clsx"
     },
     {
@@ -9129,8 +9129,8 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "clsx",
-      "community": 26,
-      "community_name": "dependencies",
+      "community": 75,
+      "community_name": "clsx",
       "norm_label": "clsx"
     },
     {
@@ -9272,8 +9272,8 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "frontend_package_dependencies_react",
-      "community": 75,
-      "community_name": "react",
+      "community": 26,
+      "community_name": "dependencies",
       "norm_label": "react"
     },
     {
@@ -9283,8 +9283,8 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "react",
-      "community": 75,
-      "community_name": "react",
+      "community": 26,
+      "community_name": "dependencies",
       "norm_label": "react"
     },
     {
@@ -43933,7 +43933,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "frontend/src/app/accounts/page.tsx",
-      "source_location": "L440",
+      "source_location": "L481",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_src_app_accounts_page_accountspage",
@@ -47474,7 +47474,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "frontend/src/app/statistics/page.tsx",
-      "source_location": "L1019",
+      "source_location": "L1009",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_src_app_statistics_page_statisticspage",
@@ -47498,7 +47498,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "frontend/src/app/statistics/page.tsx",
-      "source_location": "L1297",
+      "source_location": "L1287",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_src_app_statistics_page_statisticspage",
@@ -55056,5 +55056,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "6fd6fab153ef36e8405c8a0d81372fb99d75fe10"
+  "built_at_commit": "a076ae810e0febae0e7fdfed9226e5565c483c3a"
 }
