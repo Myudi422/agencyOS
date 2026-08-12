@@ -125,7 +125,6 @@ class Workspace(Base):
     media = relationship("Media", back_populates="workspace", cascade="all, delete-orphan")
     posts = relationship("Post", back_populates="workspace", cascade="all, delete-orphan")
     activity_logs = relationship("ActivityLog", back_populates="workspace", cascade="all, delete-orphan")
-    competitor_accounts = relationship("CompetitorAccount", back_populates="workspace", cascade="all, delete-orphan")
     kol_profiles = relationship("KolProfile", back_populates="workspace", cascade="all, delete-orphan")
     kol_campaigns = relationship("KolCampaign", back_populates="workspace", cascade="all, delete-orphan")
 
@@ -186,7 +185,6 @@ class SocialAccount(Base):
     workspace = relationship("Workspace", back_populates="social_accounts")
     client = relationship("Client", back_populates="social_accounts")
     post_targets = relationship("PostTarget", back_populates="social_account", cascade="all, delete-orphan")
-    competitor_accounts = relationship("CompetitorAccount", back_populates="social_account", cascade="all, delete-orphan")
     kol_campaigns = relationship("KolCampaign", back_populates="social_account", cascade="all, delete-orphan")
 
 class Media(Base):
@@ -361,56 +359,8 @@ class UserSubscription(Base):
     plan = relationship("SubscriptionPlan", back_populates="subscriptions")
 
 
-class CompetitorAccount(Base):
-    __tablename__ = "competitor_accounts"
-
-    id = Column(String(36), primary_key=True, default=generate_uuid)
-    workspace_id = Column(String(36), ForeignKey("workspaces.id", ondelete="CASCADE"), nullable=False, index=True)
-    social_account_id = Column(String(36), ForeignKey("social_accounts.id", ondelete="CASCADE"), nullable=True, index=True)
-    platform = Column(String(50), default="instagram", nullable=False, index=True)
-    username = Column(String(255), nullable=False, index=True)
-
-    full_name = Column(String(255), nullable=True)
-    instagram_pk = Column(String(255), nullable=True)
-    profile_pic_url = Column(Text, nullable=True)
-    biography = Column(Text, nullable=True)
-    followers_count = Column(Integer, default=0)
-    following_count = Column(Integer, default=0)
-    media_count = Column(Integer, default=0)
-    is_verified = Column(Boolean, default=False)
-    category_name = Column(String(255), nullable=True)
-    avg_likes = Column(Float, default=0.0)
-    avg_comments = Column(Float, default=0.0)
-    engagement_rate = Column(Float, default=0.0)
-    top_hashtags = Column(JSON, default=list)
-    last_synced_at = Column(DateTime, default=datetime.utcnow)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-
-    workspace = relationship("Workspace", back_populates="competitor_accounts")
-    social_account = relationship("SocialAccount", back_populates="competitor_accounts")
-    posts = relationship("CompetitorPost", back_populates="competitor", cascade="all, delete-orphan")
 
 
-class CompetitorPost(Base):
-    __tablename__ = "competitor_posts"
-
-    id = Column(String(36), primary_key=True, default=generate_uuid)
-    competitor_id = Column(String(36), ForeignKey("competitor_accounts.id", ondelete="CASCADE"), nullable=False, index=True)
-    instagram_media_id = Column(String(255), nullable=False, index=True)
-    code = Column(String(255), nullable=True)  # Shortcode (e.g. C_x123)
-    post_type = Column(String(50), default="image") # image, video, carousel
-    caption = Column(Text, nullable=True)
-    thumbnail_url = Column(Text, nullable=True)
-    media_urls = Column(JSON, default=list)
-    like_count = Column(Integer, default=0)
-    comment_count = Column(Integer, default=0)
-    engagement_rate = Column(Float, default=0.0)
-    is_top_performer = Column(Boolean, default=False)
-    posted_at = Column(DateTime, nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
-
-    competitor = relationship("CompetitorAccount", back_populates="posts")
 
 
 class KolCampaignStatus(str, enum.Enum):
