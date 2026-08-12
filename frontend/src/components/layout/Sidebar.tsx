@@ -7,13 +7,14 @@ import {
   LayoutDashboard, Users2, Briefcase, Image as ImageIcon,
   CalendarDays, Cpu, History, Plus, ChevronDown, Sparkles, X,
   ShieldCheck, Wrench, Settings, LogOut, CreditCard,
-  Zap, Rocket, Crown, Building2, UserCircle, Loader2, BarChart2, Target, Bot
+  Zap, Rocket, Crown, Building2, UserCircle, Loader2, BarChart2, Target, Bot, HelpCircle
 } from "lucide-react";
 import { useStore } from "@/store/useStore";
 import { useAuthStore } from "@/store/authStore";
 import { fetchApi } from "@/lib/api";
 import { signOut } from "@/lib/auth";
 import { useSplashStore } from "@/store/useSplashStore";
+import { openHelpCenter } from "@/components/tour/HelpModal";
 
 interface SidebarProps {
   isMobileOpen?: boolean;
@@ -205,19 +206,6 @@ export default function Sidebar({ isMobileOpen = false, onCloseMobile }: Sidebar
               Account
             </p>
 
-            {/* Panduan Tutorial */}
-            <button
-              onClick={() => {
-                const { startAppTour } = require("@/components/tour/AppTour");
-                startAppTour();
-                if (onCloseMobile) onCloseMobile();
-              }}
-              className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-purple-700 bg-purple-50 hover:bg-purple-100 transition-all text-left border border-purple-200/80 mb-1"
-            >
-              <Sparkles className="w-4 h-4 text-purple-600" />
-              <span>Panduan App / Tutorial</span>
-            </button>
-
             {/* Profile */}
             <button
               onClick={() => { openSettings(); if (onCloseMobile) onCloseMobile(); }}
@@ -263,6 +251,19 @@ export default function Sidebar({ isMobileOpen = false, onCloseMobile }: Sidebar
                 <span>Billing &amp; Pricing</span>
               </Link>
             )}
+
+            {/* Panduan App / Tutorial (Positioned below Billing) */}
+            <button
+              onClick={() => {
+                openHelpCenter();
+                if (onCloseMobile) onCloseMobile();
+              }}
+              data-tour="sidebar-help"
+              className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-medium text-slate-600 hover:text-purple-700 hover:bg-purple-50/70 border border-transparent hover:border-purple-200/60 transition-all text-left group"
+            >
+              <HelpCircle className="w-4 h-4 text-slate-400 group-hover:text-purple-600 transition-colors" />
+              <span>Panduan App / Tutorial</span>
+            </button>
           </div>
         </div>
 

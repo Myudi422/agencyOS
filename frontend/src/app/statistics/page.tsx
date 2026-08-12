@@ -7,7 +7,7 @@ import {
   Filter, Loader2, AlertTriangle, ArrowUpRight, BarChart, Globe,
   Star, X, Bookmark, MousePointerClick, ChevronRight, Info,
   Image as ImageIcon, Video, LayoutGrid, List, FileText, CheckSquare,
-  Square, AlignLeft, Sparkles, Sliders, Check, Copy, Bot
+  Square, AlignLeft, Sparkles, Sliders, Check, Copy, Bot, HelpCircle
 } from "lucide-react";
 
 import {
@@ -700,7 +700,7 @@ export default function StatisticsPage() {
   return (
     <div className="space-y-6 pb-16 min-w-0">
       {/* ─── Hero Header ─── */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 sm:p-8 rounded-3xl glass-panel relative overflow-hidden shadow-sm">
+      <div data-tour="statistics-header" className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 sm:p-8 rounded-3xl glass-panel relative overflow-hidden shadow-sm">
         <div className="space-y-1.5 z-10 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
             <span className="px-3 py-1 rounded-full bg-purple-100 text-purple-700 text-[11px] font-bold tracking-wide uppercase border border-purple-200">
@@ -713,13 +713,23 @@ export default function StatisticsPage() {
             )}
           </div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight font-['Outfit'] gradient-text leading-tight">
-            Statistik & Performa Akun
+            Statistik &amp; Performa Akun
           </h1>
           <p className="text-xs sm:text-sm text-slate-600 max-w-2xl leading-relaxed">
             Monitor engagement, reach, dan performa konten semua akun sosial dalam satu dashboard.
           </p>
         </div>
         <div className="flex items-center gap-2 z-10 flex-wrap shrink-0">
+          <button
+            onClick={() => {
+              import("@/components/tour/AppTour").then(m => m.startAppTour("statistics"));
+            }}
+            className="py-2.5 px-3.5 rounded-2xl bg-purple-50 hover:bg-purple-100/80 border border-purple-200/80 text-purple-700 font-semibold text-xs flex items-center gap-1.5 shadow-xs transition-all shrink-0 cursor-pointer"
+            title="Mulai Panduan Interactive Statistics"
+          >
+            <HelpCircle className="w-4 h-4 text-purple-600" />
+            <span>Tutorial</span>
+          </button>
           <button
             onClick={() => loadStats(true)}
             disabled={loading}
@@ -729,6 +739,7 @@ export default function StatisticsPage() {
             <span>{loading ? "Memuat..." : "Refresh"}</span>
           </button>
           <button
+            data-tour="statistics-export"
             onClick={handleOpenPdfModal}
             disabled={!data || loading}
             className="py-2.5 px-4 rounded-2xl gradient-brand text-white font-semibold text-xs flex items-center gap-2 shadow-md shadow-purple-500/20 hover:shadow-lg hover:shadow-purple-500/30 hover:scale-[1.01] transition-all disabled:opacity-50"
@@ -736,12 +747,11 @@ export default function StatisticsPage() {
             <FileText className="w-4 h-4" />
             <span>Export PDF Laporan</span>
           </button>
-
         </div>
       </div>
 
       {/* ─── Filter Bar ─── */}
-      <div className="flex flex-wrap items-center gap-2.5 p-3.5 sm:p-4 rounded-2xl glass-card">
+      <div data-tour="statistics-filter" className="flex flex-wrap items-center gap-2.5 p-3.5 sm:p-4 rounded-2xl glass-card">
         {/* Account filter dropdown */}
         <div className="relative w-full sm:w-auto" ref={dropdownRef}>
           <button
@@ -887,7 +897,7 @@ export default function StatisticsPage() {
           </div>
 
           {/* ─── Metric Cards Row (Responsive Grid) ─── */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 sm:gap-3">
+          <div data-tour="statistics-metrics" className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 sm:gap-3">
             <MetricCard label="Total Post"    value={agg?.total_posts ?? 0}    icon={BarChart2}        color="text-purple-600" bg="bg-purple-100 border-purple-200" />
             <MetricCard label="Total Likes"   value={agg?.likes ?? 0}          icon={Heart}            color="text-rose-600"   bg="bg-rose-100 border-rose-200" />
             <MetricCard label="Komentar"      value={agg?.comments ?? 0}       icon={MessageCircle}    color="text-sky-600"    bg="bg-sky-100 border-sky-200" />

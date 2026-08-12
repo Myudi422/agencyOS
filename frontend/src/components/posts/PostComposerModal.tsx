@@ -7,7 +7,7 @@ import {
   Send, Clock, Save, CheckCircle2, Sparkles, Folder, Check, Calendar,
   Youtube, MessageSquare, Instagram as InstagramIcon, Twitter, Facebook as FacebookIcon, Share2,
   Eye, Edit3, Settings2, Link as LinkIcon, AlertCircle, Plus, Play, RefreshCw, AlertTriangle,
-  ChevronLeft, ChevronRight, UploadCloud, Info, Globe, Minus, Copy, ChevronDown
+  ChevronLeft, ChevronRight, UploadCloud, Info, Globe, Minus, Copy, ChevronDown, HelpCircle
 } from "lucide-react";
 import { useStore } from "@/store/useStore";
 import { toast } from "@/store/useToastStore";
@@ -89,6 +89,22 @@ export default function PostComposerModal() {
 
   // Mobile View Switcher (Editor vs Preview)
   const [mobileTab, setMobileTab] = useState<"editor" | "preview">("editor");
+
+  // Auto switch mobile tab during AppTour for Live Feed Preview step
+  useEffect(() => {
+    const handleTourStep = (e: any) => {
+      const { flow, target } = e.detail || {};
+      if (flow === "composer") {
+        if (target && target.includes("composer-preview")) {
+          setMobileTab("preview");
+        } else {
+          setMobileTab("editor");
+        }
+      }
+    };
+    window.addEventListener("shiera-tour-step-changed", handleTourStep as EventListener);
+    return () => window.removeEventListener("shiera-tour-step-changed", handleTourStep as EventListener);
+  }, []);
 
   // Account Warning & Close Confirmation Modal States
   const [showAccountConfirmModal, setShowAccountConfirmModal] = useState(false);
@@ -1188,6 +1204,19 @@ export default function PostComposerModal() {
 
               <button
                 type="button"
+                onClick={() => {
+                  const { startAppTour } = require("@/components/tour/AppTour");
+                  startAppTour("composer");
+                }}
+                title="Tutorial Composer"
+                className="p-1.5 sm:px-2.5 sm:py-1.5 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-700 font-bold text-xs flex items-center gap-1 border border-purple-200/80 transition-all cursor-pointer"
+              >
+                <HelpCircle className="w-4 h-4 text-purple-600" />
+                <span className="hidden sm:inline">Tutorial</span>
+              </button>
+
+              <button
+                type="button"
                 onClick={minimizeComposer}
                 title="Minimize Composer"
                 className="p-1.5 sm:p-2 rounded-xl bg-slate-100 hover:bg-purple-50 text-slate-500 hover:text-purple-700 transition-colors cursor-pointer"
@@ -1214,7 +1243,7 @@ export default function PostComposerModal() {
               }`}>
 
               {/* 1. Target Account Selection - Responsive Wrapped Desktop Container */}
-              <div className="space-y-2">
+              <div className="space-y-2" data-tour="composer-accounts">
                 <div className="flex items-center justify-between">
                   <label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
                     <span>Target Channels</span>
@@ -1231,54 +1260,76 @@ export default function PostComposerModal() {
                 </div>
 
                 {/* Flex Wrap Container for Desktop & Touch-Scroll for Mobile */}
-                <div className="flex flex-wrap items-center gap-2 max-h-48 overflow-y-auto p-2 rounded-2xl bg-slate-50 border border-slate-200/80 shadow-2xs">
-                  {availableAccounts.map((acc) => {
-                    const isSelected = selectedAccountIds.includes(acc.id);
-                    const compat = checkPlatformCompatibility(acc.platform);
-                    const badgeInfo = PLATFORM_BADGES[acc.platform] || { name: acc.platform, color: "", bg: "bg-purple-100 text-purple-700 border-purple-200" };
-                    return (
-                      <button
-                        key={acc.id}
-                        type="button"
-                        onClick={() => toggleAccountSelection(acc)}
-                        title={!compat.compatible ? compat.reason : `@${acc.username} (${badgeInfo.name})`}
-                        className={`flex items-center gap-1.5 px-2 py-1.5 rounded-xl border font-medium shrink-0 transition-all cursor-pointer ${!compat.compatible
-                          ? "bg-slate-100 border-slate-200 text-slate-400 opacity-60 cursor-not-allowed"
-                          : isSelected
-                            ? "bg-purple-600 text-white border-purple-600 shadow-sm ring-2 ring-purple-500/20"
-                            : "bg-white border-slate-200 text-slate-700 hover:text-purple-700 hover:border-purple-300 hover:bg-purple-50/50 shadow-2xs"
-                          }`}
-                      >
-                        {/* Avatar with Platform Icon Overlay */}
-                        <div className="relative shrink-0">
-                          <img
-                            src={acc.avatar_url || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150"}
-                            alt={acc.username}
-                            className={`w-6 h-6 rounded-full object-cover border-2 ${isSelected ? "border-white/40" : "border-slate-100"} ${!compat.compatible ? "grayscale" : ""}`}
-                          />
-                          <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-white flex items-center justify-center shadow-sm">
-                            <AccountPlatformIcon platform={acc.platform} className="w-2 h-2" />
+                {availableAccounts.length === 0 ? (
+                  <div className="p-3.5 rounded-2xl bg-amber-50/90 border border-amber-200 text-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-2xs">
+                    <div className="flex items-center gap-2.5">
+                      <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0" />
+                      <p className="text-xs font-semibold text-slate-700">
+                        Belum ada akun sosial media yang terhubung ke workspace ini.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        closeComposer();
+                        router.push("/accounts");
+                      }}
+                      className="px-3 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold shadow-xs transition-all shrink-0 cursor-pointer flex items-center gap-1.5"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>Hubungkan Akun Sosmed</span>
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex flex-wrap items-center gap-2 max-h-48 overflow-y-auto p-2 rounded-2xl bg-slate-50 border border-slate-200/80 shadow-2xs">
+                    {availableAccounts.map((acc) => {
+                      const isSelected = selectedAccountIds.includes(acc.id);
+                      const compat = checkPlatformCompatibility(acc.platform);
+                      const badgeInfo = PLATFORM_BADGES[acc.platform] || { name: acc.platform, color: "", bg: "bg-purple-100 text-purple-700 border-purple-200" };
+                      return (
+                        <button
+                          key={acc.id}
+                          type="button"
+                          onClick={() => toggleAccountSelection(acc)}
+                          title={!compat.compatible ? compat.reason : `@${acc.username} (${badgeInfo.name})`}
+                          className={`flex items-center gap-1.5 px-2 py-1.5 rounded-xl border font-medium shrink-0 transition-all cursor-pointer ${!compat.compatible
+                            ? "bg-slate-100 border-slate-200 text-slate-400 opacity-60 cursor-not-allowed"
+                            : isSelected
+                              ? "bg-purple-600 text-white border-purple-600 shadow-sm ring-2 ring-purple-500/20"
+                              : "bg-white border-slate-200 text-slate-700 hover:text-purple-700 hover:border-purple-300 hover:bg-purple-50/50 shadow-2xs"
+                            }`}
+                        >
+                          {/* Avatar with Platform Icon Overlay */}
+                          <div className="relative shrink-0">
+                            <img
+                              src={acc.avatar_url || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150"}
+                              alt={acc.username}
+                              className={`w-6 h-6 rounded-full object-cover border-2 ${isSelected ? "border-white/40" : "border-slate-100"} ${!compat.compatible ? "grayscale" : ""}`}
+                            />
+                            <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-white flex items-center justify-center shadow-sm">
+                              <AccountPlatformIcon platform={acc.platform} className="w-2 h-2" />
+                            </div>
                           </div>
-                        </div>
 
-                        {/* Username & tiny platform label */}
-                        <div className="flex flex-col items-start leading-tight max-w-[80px]">
-                          <span className="font-semibold text-[10px] truncate w-full">@{acc.username}</span>
-                          <span className={`text-[7.5px] font-extrabold uppercase leading-none ${isSelected ? "text-white/70" : "text-slate-400"
-                            }`}>
-                            {badgeInfo.name}
-                          </span>
-                        </div>
+                          {/* Username & tiny platform label */}
+                          <div className="flex flex-col items-start leading-tight max-w-[80px]">
+                            <span className="font-semibold text-[10px] truncate w-full">@{acc.username}</span>
+                            <span className={`text-[7.5px] font-extrabold uppercase leading-none ${isSelected ? "text-white/70" : "text-slate-400"
+                              }`}>
+                              {badgeInfo.name}
+                            </span>
+                          </div>
 
-                        {!compat.compatible ? (
-                          <AlertTriangle className="w-3.5 h-3.5 text-amber-500 ml-0.5" />
-                        ) : isSelected ? (
-                          <CheckCircle2 className="w-3.5 h-3.5 text-white ml-0.5" />
-                        ) : null}
-                      </button>
-                    );
-                  })}
-                </div>
+                          {!compat.compatible ? (
+                            <AlertTriangle className="w-3.5 h-3.5 text-amber-500 ml-0.5" />
+                          ) : isSelected ? (
+                            <CheckCircle2 className="w-3.5 h-3.5 text-white ml-0.5" />
+                          ) : null}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
 
               {/* 2. Format Selection with Smart Constraints */}
@@ -1339,7 +1390,7 @@ export default function PostComposerModal() {
               </div>
 
               {/* 3. Caption Box */}
-              <div className="space-y-1.5">
+              <div className="space-y-1.5" data-tour="composer-caption">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <label className="text-xs font-bold text-slate-800">Post Caption</label>
@@ -1544,8 +1595,9 @@ export default function PostComposerModal() {
                 )}
               </div>
 
-              {/* 5. Attached Media & Direct Upload Dropzone */}
-              <div className="space-y-3 p-4 rounded-2xl bg-slate-50 border border-slate-200/80">
+              {/* 5. Attached Media, Direct Upload & Watermark (Grouped for Tour Highlight) */}
+              <div className="space-y-3" data-tour="composer-media">
+                <div className="space-y-3 p-4 rounded-2xl bg-slate-50 border border-slate-200/80">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <label className="text-xs font-bold text-slate-800">Media Attachments</label>
@@ -1877,6 +1929,7 @@ export default function PostComposerModal() {
                   )}
                 </div>
               </div>
+            </div>
 
               {/* 6. Video / Reels Cover Thumbnail Setup */}
               {(postType === "video" || mediaUrls.some(u => isVideoMedia({ url: u }))) && (
@@ -2091,7 +2144,7 @@ export default function PostComposerModal() {
 
 
               {/* 7. Platform Specific Customization Grid */}
-              <div className="border border-slate-200 rounded-2xl overflow-hidden bg-white space-y-3 p-4">
+              <div className="border border-slate-200 rounded-2xl overflow-hidden bg-white space-y-3 p-4" data-tour="composer-platform-options">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
                     <Settings2 className="w-4 h-4 text-purple-600" />
@@ -2743,8 +2796,11 @@ export default function PostComposerModal() {
             </div>
 
             {/* Right Column: Live Feed Preview */}
-            <div className={`lg:col-span-5 p-4 sm:p-6 bg-slate-50/80 overflow-y-auto space-y-4 ${mobileTab === "preview" ? "block" : "hidden lg:block"
-              }`}>
+            <div
+              data-tour="composer-preview"
+              className={`lg:col-span-5 p-4 sm:p-6 bg-slate-50/80 overflow-y-auto space-y-4 ${mobileTab === "preview" ? "block" : "hidden lg:block"
+              }`}
+            >
               <div className="flex items-center justify-between pb-2 border-b border-slate-200">
                 <span className="text-xs font-bold text-slate-900 uppercase tracking-wider">Live Feed Preview</span>
                 <div className="flex items-center gap-1">
@@ -2938,7 +2994,7 @@ export default function PostComposerModal() {
           </div>
 
           {/* Modal Footer */}
-          <div className="px-4 sm:px-6 py-3.5 border-t border-slate-200/80 bg-slate-50/90 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shrink-0">
+          <div className="px-4 sm:px-6 py-3.5 border-t border-slate-200/80 bg-slate-50/90 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shrink-0" data-tour="composer-actions">
             <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto">
               {[
                 { id: "publish_now", label: "Publish Now", icon: Send },
@@ -2964,7 +3020,7 @@ export default function PostComposerModal() {
             </div>
 
             <div className="flex items-center gap-2">
-              <div className="relative">
+              <div className="relative" data-tour="composer-share">
                 <button
                   type="button"
                   onClick={() => setShowShareDropdown(prev => !prev)}

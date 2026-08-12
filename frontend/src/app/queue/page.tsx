@@ -9,12 +9,13 @@ import {
   ArrowUpRight, CreditCard, Loader2, Globe, Hourglass,
   Play, X, Eye, Video, FileText, Calendar, Edit3,
   Send, CalendarClock, ChevronDown, MoreHorizontal,
-  PenLine, ClipboardList, BanIcon, TimerOff, Flame
+  PenLine, ClipboardList, BanIcon, TimerOff, Flame, HelpCircle
 } from "lucide-react";
 import { useStore } from "@/store/useStore";
 import { toast } from "@/store/useToastStore";
 import { confirmModal } from "@/store/useConfirmStore";
 import { fetchApi } from "@/lib/api";
+import { startAppTour } from "@/components/tour/AppTour";
 
 /* ─── Types ─── */
 type LocalPostStatus = "draft" | "scheduled" | "processing" | "processed";
@@ -315,6 +316,21 @@ export default function QueuePage() {
   useEffect(() => { if (activeTab === "draft") loadDrafts(0); }, [draftSearch]);
   useEffect(() => { if (activeTab === "riwayat") loadHistory(0); }, [filterPlatform, filterSuccess]);
 
+  /* ── Auto-Switch Active Tab during Queue AppTour ── */
+  useEffect(() => {
+    const handleTourStep = (e: any) => {
+      const { flow, stepId } = e.detail || {};
+      if (flow === "queue") {
+        if (stepId === "queue-tab-draft") setActiveTab("draft");
+        else if (stepId === "queue-tab-terjadwal") setActiveTab("terjadwal");
+        else if (stepId === "queue-tab-diproses") setActiveTab("diproses");
+        else if (stepId === "queue-tab-riwayat") setActiveTab("riwayat");
+      }
+    };
+    window.addEventListener("shiera-tour-step-changed", handleTourStep as EventListener);
+    return () => window.removeEventListener("shiera-tour-step-changed", handleTourStep as EventListener);
+  }, []);
+
   /* ─── ACTIONS ─── */
 
   const handleDeleteDraft = (post: LocalPost) => {
@@ -378,7 +394,7 @@ export default function QueuePage() {
   return (
     <div className="space-y-6 pb-12">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 sm:p-8 rounded-3xl glass-panel relative overflow-hidden shadow-sm">
+      <div data-tour="queue-header" className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 sm:p-8 rounded-3xl glass-panel relative overflow-hidden shadow-sm">
         <div className="space-y-1.5 z-10">
           <div className="flex items-center gap-2">
             <span className="px-3 py-1 rounded-full bg-purple-100 text-purple-700 text-[11px] font-bold tracking-wide uppercase border border-purple-200">
@@ -386,10 +402,10 @@ export default function QueuePage() {
             </span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight font-['Outfit'] gradient-text">
-            Manage Posts & Queue
+            Manage Posts &amp; Queue
           </h1>
           <p className="text-xs sm:text-sm text-slate-600 max-w-2xl leading-relaxed">
-            Draft tersimpan lokal. Jadwal & riwayat tayang diambil langsung dari sistem. Waktu ditampilkan dalam <strong>WIB (UTC+7)</strong>.
+            Draft tersimpan lokal. Jadwal &amp; riwayat tayang diambil langsung dari sistem. Waktu ditampilkan dalam <strong>WIB (UTC+7)</strong>.
           </p>
         </div>
         <div className="flex items-center gap-2 z-10 flex-wrap">
@@ -404,6 +420,14 @@ export default function QueuePage() {
             </button>
           )}
           <button
+            onClick={() => startAppTour("queue")}
+            className="py-3 px-4 rounded-2xl bg-purple-50 hover:bg-purple-100/80 border border-purple-200/80 text-purple-700 font-semibold text-xs flex items-center gap-2 shadow-xs transition-all shrink-0 cursor-pointer"
+            title="Mulai Panduan Interaktif Queue"
+          >
+            <HelpCircle className="w-4 h-4 text-purple-600" />
+            <span>Tutorial</span>
+          </button>
+          <button
             onClick={refresh}
             className="py-3 px-5 rounded-2xl bg-white hover:bg-purple-50/80 border border-slate-200 text-slate-700 font-semibold text-xs flex items-center gap-2 shadow-xs transition-all shrink-0"
           >
@@ -414,7 +438,7 @@ export default function QueuePage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex items-center gap-1 p-1 bg-slate-100 rounded-2xl w-fit flex-wrap">
+      <div data-tour="queue-tabs" className="flex items-center gap-1 p-1 bg-slate-100 rounded-2xl w-fit flex-wrap">
         {TABS.map(({ key, icon: Icon, label, count, color }) => (
           <button
             key={key}
@@ -436,7 +460,7 @@ export default function QueuePage() {
 
       {/* ═══ TAB: DRAFT ═══ */}
       {activeTab === "draft" && (
-        <div className="space-y-4">
+        <div data-tour="queue-tab-draft-content" className="space-y-4">
           <div className="flex flex-wrap items-center gap-3 p-4 rounded-2xl glass-card">
             <div className="flex items-center gap-2 flex-1 min-w-[180px] px-3 py-2 rounded-xl bg-white border border-slate-200 focus-within:ring-2 focus-within:ring-purple-300">
               <Search className="w-3.5 h-3.5 text-slate-400 shrink-0" />
@@ -529,7 +553,7 @@ export default function QueuePage() {
 
       {/* ═══ TAB: TERJADWAL ═══ */}
       {activeTab === "terjadwal" && (
-        <div className="space-y-4">
+        <div data-tour="queue-tab-terjadwal-content" className="space-y-4">
           {/* Info banner */}
           <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-blue-50 border border-blue-200 text-blue-700 text-xs font-medium">
             <Globe className="w-4 h-4 shrink-0" />
@@ -612,7 +636,7 @@ export default function QueuePage() {
 
       {/* ═══ TAB: DIPROSES ═══ */}
       {activeTab === "diproses" && (
-        <div className="space-y-4">
+        <div data-tour="queue-tab-diproses-content" className="space-y-4">
           <div className="p-6 rounded-3xl glass-card space-y-4">
             <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
               <Flame className="w-4 h-4 text-amber-600" />
@@ -686,7 +710,7 @@ export default function QueuePage() {
 
       {/* ═══ TAB: RIWAYAT ═══ */}
       {activeTab === "riwayat" && (
-        <div className="space-y-4">
+        <div data-tour="queue-tab-riwayat-content" className="space-y-4">
           {/* Filters */}
           <div className="flex flex-wrap items-center gap-3 p-4 rounded-2xl glass-card">
             <div className="flex items-center gap-2 text-xs text-slate-500 font-semibold">

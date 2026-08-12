@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Briefcase, Plus, Users2, Clock, Trash2, Sparkles, Layers, X, AlertTriangle } from "lucide-react";
+import { Briefcase, Plus, Users2, Clock, Trash2, Sparkles, Layers, X, AlertTriangle, HelpCircle } from "lucide-react";
 import { useStore } from "@/store/useStore";
 import { toast } from "@/store/useToastStore";
 import { confirmModal } from "@/store/useConfirmStore";
@@ -80,7 +80,7 @@ export default function ClientsPage() {
   return (
     <div className="space-y-6 pb-12">
       {/* Top Banner - White Clean Glassmorphism */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 sm:p-8 rounded-3xl glass-panel relative overflow-hidden shadow-sm">
+      <div data-tour="clients-header" className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 sm:p-8 rounded-3xl glass-panel relative overflow-hidden shadow-sm">
         <div className="space-y-1.5 z-10">
           <div className="flex items-center gap-2">
             <span className="px-3 py-1 rounded-full bg-purple-100 text-purple-700 text-[11px] font-bold tracking-wide uppercase border border-purple-200">
@@ -95,17 +95,30 @@ export default function ClientsPage() {
           </p>
         </div>
 
-        <button
-          onClick={() => setShowAddModal(true)}
-          className="py-3 px-5 rounded-2xl gradient-brand text-white font-semibold text-xs sm:text-sm flex items-center gap-2 shadow-md shadow-purple-500/25 hover:shadow-lg hover:shadow-purple-500/35 hover:scale-[1.02] active:scale-[0.98] transition-all z-10 shrink-0"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Add New Client</span>
-        </button>
+        <div className="flex items-center gap-3 z-10 shrink-0 flex-wrap sm:flex-nowrap">
+          <button
+            onClick={() => {
+              import("@/components/tour/AppTour").then(m => m.startAppTour("clients"));
+            }}
+            className="py-2.5 px-3.5 rounded-2xl bg-purple-50 hover:bg-purple-100/80 border border-purple-200/80 text-purple-700 font-semibold text-xs flex items-center gap-1.5 shadow-xs transition-all shrink-0 cursor-pointer"
+            title="Mulai Panduan Interactive Clients"
+          >
+            <HelpCircle className="w-4 h-4 text-purple-600" />
+            <span>Tutorial</span>
+          </button>
+          <button
+            data-tour="clients-add-btn"
+            onClick={() => setShowAddModal(true)}
+            className="py-3 px-5 rounded-2xl gradient-brand text-white font-semibold text-xs sm:text-sm flex items-center gap-2 shadow-md shadow-purple-500/25 hover:shadow-lg hover:shadow-purple-500/35 hover:scale-[1.02] active:scale-[0.98] transition-all shrink-0"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Add New Client</span>
+          </button>
+        </div>
       </div>
 
       {/* Client Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div data-tour="clients-grid" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {clients.map((c) => (
           <div key={c.id} className="p-5 rounded-2xl glass-card flex flex-col justify-between space-y-4">
             <div className="space-y-3">

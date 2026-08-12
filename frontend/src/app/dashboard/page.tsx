@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { 
   Users2, CalendarDays, CheckCircle2, AlertTriangle, 
-  Cpu, Briefcase, ArrowUpRight, Plus, RefreshCw, Activity, Zap, HardDrive, Database, Server, Gauge, Clock, Image as ImageIcon, Calendar, TrendingUp, BarChart2, Sparkles, Folder, Award, Heart, MessageCircle, Share2, Bot
+  Cpu, Briefcase, ArrowUpRight, Plus, RefreshCw, Activity, Zap, HardDrive, Database, Server, Gauge, Clock, Image as ImageIcon, Calendar, TrendingUp, BarChart2, Sparkles, Folder, Award, Heart, MessageCircle, Share2, Bot, HelpCircle
 } from "lucide-react";
 // @ts-ignore
 import { 
@@ -186,6 +186,16 @@ export default function DashboardPage() {
         </div>
 
         <div className="flex items-center gap-3 z-10 shrink-0">
+          <button
+            onClick={() => {
+              import("@/components/tour/AppTour").then(m => m.startAppTour("default"));
+            }}
+            className="py-3 px-4 rounded-2xl bg-purple-50 hover:bg-purple-100/80 border border-purple-200/80 text-purple-700 font-semibold text-xs flex items-center gap-2 shadow-xs transition-all shrink-0 cursor-pointer"
+            title="Mulai Panduan Interactive Dashboard"
+          >
+            <HelpCircle className="w-4 h-4 text-purple-600" />
+            <span>Tutorial</span>
+          </button>
           <button
             onClick={() => loadDashboard(true)}
             disabled={isLoading}

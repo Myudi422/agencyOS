@@ -250,8 +250,8 @@
     "semantic_hash": ""
   },
   "frontend/src/app/accounts/page.tsx": {
-    "mtime": 1786536732.3281708,
-    "ast_hash": "e6f77b5e8287b86363421047ad9cdfbb",
+    "mtime": 1786540664.5041614,
+    "ast_hash": "711329a3ef8eb69ca5bcb6ae3ef15e2f",
     "semantic_hash": ""
   },
   "frontend/src/app/activity/page.tsx": {
@@ -275,8 +275,8 @@
     "semantic_hash": ""
   },
   "frontend/src/app/calendar/page.tsx": {
-    "mtime": 1786019670.4896004,
-    "ast_hash": "bff6ce3acc5b73fd075fc247fe128950",
+    "mtime": 1786540678.3366675,
+    "ast_hash": "bf4b613715e18dda096d4e31c2201d98",
     "semantic_hash": ""
   },
   "frontend/src/app/clients/page.tsx": {
@@ -340,8 +340,8 @@
     "semantic_hash": ""
   },
   "frontend/src/app/queue/page.tsx": {
-    "mtime": 1786536732.331303,
-    "ast_hash": "5f337c5d079a0ab0b63a6d5d3a72eabc",
+    "mtime": 1786540169.0299664,
+    "ast_hash": "8d52452e4041c40b9358de8ca1f08f51",
     "semantic_hash": ""
   },
   "frontend/src/app/statistics/page.tsx": {
@@ -445,18 +445,18 @@
     "semantic_hash": ""
   },
   "frontend/src/components/layout/AppLayout.tsx": {
-    "mtime": 1786537672.6664996,
-    "ast_hash": "fbe859876987b538c1765731c766a630",
+    "mtime": 1786538895.7282279,
+    "ast_hash": "f864ea22c65f13a9d332b3c367a28e90",
     "semantic_hash": ""
   },
   "frontend/src/components/layout/Header.tsx": {
-    "mtime": 1785245324.1738498,
-    "ast_hash": "d882b899234eb67caa44aa4711652fb7",
-    "semantic_hash": "d882b899234eb67caa44aa4711652fb7"
+    "mtime": 1786538288.37703,
+    "ast_hash": "c73e678ebe8730a6118af0668213a1a5",
+    "semantic_hash": ""
   },
   "frontend/src/components/layout/Sidebar.tsx": {
-    "mtime": 1786537643.2086506,
-    "ast_hash": "f9a5fa3f465f24a0dd5ebc3d12b4f714",
+    "mtime": 1786538911.0601683,
+    "ast_hash": "935c0c9afc3027cdc72b184e723b503a",
     "semantic_hash": ""
   },
   "frontend/src/components/media/MoveToFolderModal.tsx": {
@@ -465,8 +465,8 @@
     "semantic_hash": ""
   },
   "frontend/src/components/posts/PostComposerModal.tsx": {
-    "mtime": 1786536732.3340783,
-    "ast_hash": "f3fbd240357c6b8fb93e87c3ea43be12",
+    "mtime": 1786539652.3652728,
+    "ast_hash": "0db1d7f2c15857b00e60a2487b77bd06",
     "semantic_hash": ""
   },
   "frontend/src/components/profile/AccountSettingsModal.tsx": {
@@ -830,13 +830,18 @@
     "semantic_hash": ""
   },
   "frontend/src/components/tour/AppTour.tsx": {
-    "mtime": 1786537635.8097446,
-    "ast_hash": "002d9c81ce4c0573585ed1ae094965fc",
+    "mtime": 1786539812.6837666,
+    "ast_hash": "86867e19fb2ad785f69267bf89744095",
     "semantic_hash": ""
   },
   "frontend/src/components/tour/tourSteps.ts": {
-    "mtime": 1786537628.8466947,
-    "ast_hash": "5cae5a6ee25e447b95fb2543189a93de",
+    "mtime": 1786540453.341277,
+    "ast_hash": "3946cc4663b6d081c849b7d5c3901cbb",
+    "semantic_hash": ""
+  },
+  "frontend/src/components/tour/HelpModal.tsx": {
+    "mtime": 1786540508.677198,
+    "ast_hash": "17caa7c43d2b7c2a5c1bed3b78f86620",
     "semantic_hash": ""
   }
 }

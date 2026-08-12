@@ -4,7 +4,7 @@ export const dynamic = 'force-dynamic';
 
 import React, { useState, useEffect } from "react";
 import { 
-  Users2, Search, Star, RefreshCw, Trash2, FileText, Sparkles,
+  Users2, Search, Star, RefreshCw, Trash2, FileText, Sparkles, HelpCircle,
   Instagram, Facebook, Twitter, Youtube, Share2, MessageSquare, Plus, CheckSquare, Square, X, ExternalLink, ShieldCheck, CheckCircle2, AlertTriangle, Layers, Grid, List as ListIcon
 } from "lucide-react";
 import { useStore } from "@/store/useStore";
@@ -291,7 +291,7 @@ export default function AccountsPage() {
   return (
     <div className="space-y-4 sm:space-y-6 pb-12 min-w-0">
       {/* Header Banner - White Clean Glassmorphism */}
-      <div className="flex flex-col gap-4 p-4 sm:p-6 lg:p-8 rounded-3xl glass-panel relative overflow-hidden shadow-sm">
+      <div data-tour="accounts-header" className="flex flex-col gap-4 p-4 sm:p-6 lg:p-8 rounded-3xl glass-panel relative overflow-hidden shadow-sm">
         <div className="space-y-1.5 z-10">
           <div className="flex items-center gap-2">
             <span className="px-3 py-1 rounded-full bg-purple-100 text-purple-700 text-[11px] font-bold tracking-wide uppercase border border-purple-200">
@@ -309,6 +309,16 @@ export default function AccountsPage() {
 
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 z-10 shrink-0 w-full sm:w-auto">
           <button
+            onClick={() => {
+              import("@/components/tour/AppTour").then(m => m.startAppTour("accounts"));
+            }}
+            className="w-full sm:w-auto justify-center py-2.5 px-3.5 rounded-2xl bg-purple-50 hover:bg-purple-100/80 border border-purple-200/80 text-purple-700 font-semibold text-xs flex items-center gap-1.5 shadow-xs transition-all shrink-0 cursor-pointer"
+            title="Mulai Panduan Interactive Accounts"
+          >
+            <HelpCircle className="w-4 h-4 text-purple-600" />
+            <span>Tutorial</span>
+          </button>
+          <button
             onClick={handleSyncAccounts}
             disabled={isSyncing}
             title="Sync ulang data dari PostForMe (foto profil & followers)"
@@ -318,6 +328,7 @@ export default function AccountsPage() {
             <span>{isSyncing ? 'Syncing...' : 'Sync'}</span>
           </button>
           <button
+            data-tour="accounts-connect-btn"
             onClick={() => setIsConnectModalOpen(true)}
             className="w-full sm:w-auto justify-center py-3 px-5 rounded-2xl gradient-brand text-white font-semibold text-xs sm:text-sm flex items-center gap-2 shadow-md shadow-purple-500/25 hover:shadow-lg hover:shadow-purple-500/35 hover:scale-[1.02] active:scale-[0.98] transition-all"
           >
@@ -328,7 +339,7 @@ export default function AccountsPage() {
       </div>
 
       {/* Filter & Controls Bar */}
-      <div className="p-4 sm:p-5 rounded-3xl glass-card space-y-4 min-w-0">
+      <div data-tour="accounts-controls" className="p-4 sm:p-5 rounded-3xl glass-card space-y-4 min-w-0">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           
           {/* Search Box */}
@@ -476,7 +487,7 @@ export default function AccountsPage() {
           </button>
         </div>
       ) : viewMode === "grid" ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        <div data-tour="accounts-grid" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {accounts.map((acc) => {
             const platMeta = PLATFORMS_CONFIG.find(p => p.id === acc.platform) || PLATFORMS_CONFIG[0];
             const isSelected = selectedIds.includes(acc.id);

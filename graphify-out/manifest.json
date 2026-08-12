@@ -250,8 +250,8 @@
     "semantic_hash": ""
   },
   "frontend/src/app/accounts/page.tsx": {
-    "mtime": 1786536732.3281708,
-    "ast_hash": "e6f77b5e8287b86363421047ad9cdfbb",
+    "mtime": 1786540847.2108223,
+    "ast_hash": "943d2a8cec89dd9098fb2b1fc7f87ef8",
     "semantic_hash": ""
   },
   "frontend/src/app/activity/page.tsx": {
@@ -275,8 +275,8 @@
     "semantic_hash": ""
   },
   "frontend/src/app/calendar/page.tsx": {
-    "mtime": 1786019670.4896004,
-    "ast_hash": "bff6ce3acc5b73fd075fc247fe128950",
+    "mtime": 1786540854.8667648,
+    "ast_hash": "c44ee97b827b19a4d361e57886617ff3",
     "semantic_hash": ""
   },
   "frontend/src/app/clients/page.tsx": {
@@ -285,8 +285,8 @@
     "semantic_hash": ""
   },
   "frontend/src/app/dashboard/page.tsx": {
-    "mtime": 1786537658.9697006,
-    "ast_hash": "75847df2c2af8d62fa9d4df758fbfd3b",
+    "mtime": 1786540830.0827045,
+    "ast_hash": "6a1ff29fc062e6b17f7e85a93760a1c0",
     "semantic_hash": ""
   },
   "frontend/src/app/kol-campaigns/[campaignId]/page.tsx": {
@@ -340,8 +340,8 @@
     "semantic_hash": ""
   },
   "frontend/src/app/queue/page.tsx": {
-    "mtime": 1786536732.331303,
-    "ast_hash": "5f337c5d079a0ab0b63a6d5d3a72eabc",
+    "mtime": 1786540838.4203284,
+    "ast_hash": "78e596d010cddcd36322b0e940083cf5",
     "semantic_hash": ""
   },
   "frontend/src/app/statistics/page.tsx": {
@@ -445,8 +445,8 @@
     "semantic_hash": ""
   },
   "frontend/src/components/layout/AppLayout.tsx": {
-    "mtime": 1786538294.438255,
-    "ast_hash": "c2a3685818304969b6def822e36ca2d4",
+    "mtime": 1786538895.7282279,
+    "ast_hash": "f864ea22c65f13a9d332b3c367a28e90",
     "semantic_hash": ""
   },
   "frontend/src/components/layout/Header.tsx": {
@@ -455,8 +455,8 @@
     "semantic_hash": ""
   },
   "frontend/src/components/layout/Sidebar.tsx": {
-    "mtime": 1786537643.2086506,
-    "ast_hash": "f9a5fa3f465f24a0dd5ebc3d12b4f714",
+    "mtime": 1786538911.0601683,
+    "ast_hash": "935c0c9afc3027cdc72b184e723b503a",
     "semantic_hash": ""
   },
   "frontend/src/components/media/MoveToFolderModal.tsx": {
@@ -465,8 +465,8 @@
     "semantic_hash": ""
   },
   "frontend/src/components/posts/PostComposerModal.tsx": {
-    "mtime": 1786536732.3340783,
-    "ast_hash": "f3fbd240357c6b8fb93e87c3ea43be12",
+    "mtime": 1786539652.3652728,
+    "ast_hash": "0db1d7f2c15857b00e60a2487b77bd06",
     "semantic_hash": ""
   },
   "frontend/src/components/profile/AccountSettingsModal.tsx": {
@@ -830,13 +830,18 @@
     "semantic_hash": ""
   },
   "frontend/src/components/tour/AppTour.tsx": {
-    "mtime": 1786538301.5594757,
-    "ast_hash": "518a4a2bdd0f4ce2a08131f2c07592cf",
+    "mtime": 1786539812.6837666,
+    "ast_hash": "86867e19fb2ad785f69267bf89744095",
     "semantic_hash": ""
   },
   "frontend/src/components/tour/tourSteps.ts": {
-    "mtime": 1786537628.8466947,
-    "ast_hash": "5cae5a6ee25e447b95fb2543189a93de",
+    "mtime": 1786540453.341277,
+    "ast_hash": "3946cc4663b6d081c849b7d5c3901cbb",
+    "semantic_hash": ""
+  },
+  "frontend/src/components/tour/HelpModal.tsx": {
+    "mtime": 1786540508.677198,
+    "ast_hash": "17caa7c43d2b7c2a5c1bed3b78f86620",
     "semantic_hash": ""
   }
 }

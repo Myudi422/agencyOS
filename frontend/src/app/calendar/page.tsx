@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { 
   CalendarDays, ChevronLeft, ChevronRight, Plus, 
-  Clock, CheckCircle2, Loader2, RefreshCw, X, Filter, Globe, Edit3, Image as ImageIcon
+  Clock, CheckCircle2, Loader2, RefreshCw, X, Filter, Globe, Edit3, Image as ImageIcon, HelpCircle
 } from "lucide-react";
 import { useStore } from "@/store/useStore";
 import { fetchApi } from "@/lib/api";
@@ -126,7 +126,7 @@ export default function CalendarPage() {
   return (
     <div className="space-y-6 pb-12">
       {/* Top Banner */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 sm:p-8 rounded-3xl glass-panel relative overflow-hidden shadow-sm">
+      <div data-tour="calendar-header" className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 sm:p-8 rounded-3xl glass-panel relative overflow-hidden shadow-sm">
         <div className="space-y-1.5 z-10">
           <div className="flex items-center gap-2 flex-wrap">
             <span className="px-3 py-1 rounded-full bg-purple-100 text-purple-700 text-[11px] font-bold tracking-wide uppercase border border-purple-200">
@@ -141,13 +141,23 @@ export default function CalendarPage() {
             Content Calendar
           </h1>
           <p className="text-xs sm:text-sm text-slate-600 max-w-2xl leading-relaxed">
-            Pantau dan kelola jadwal postingan sosmed kamu secara visual & terintegrasi penuh.
+            Pantau dan kelola jadwal postingan sosmed kamu secara visual &amp; terintegrasi penuh.
           </p>
         </div>
 
         <div className="flex items-center gap-3 z-10 shrink-0 flex-wrap sm:flex-nowrap">
+          <button
+            onClick={() => {
+              import("@/components/tour/AppTour").then(m => m.startAppTour("calendar"));
+            }}
+            className="py-2.5 px-3.5 rounded-2xl bg-purple-50 hover:bg-purple-100/80 border border-purple-200/80 text-purple-700 font-semibold text-xs flex items-center gap-1.5 shadow-xs transition-all shrink-0 cursor-pointer"
+            title="Mulai Panduan Interactive Calendar"
+          >
+            <HelpCircle className="w-4 h-4 text-purple-600" />
+            <span>Tutorial</span>
+          </button>
           {/* Platform Filter Dropdown */}
-          <div className="flex items-center gap-1 px-3 py-2 bg-white border border-slate-200 rounded-2xl shadow-xs text-xs font-semibold text-slate-700">
+          <div data-tour="calendar-filter" className="flex items-center gap-1 px-3 py-2 bg-white border border-slate-200 rounded-2xl shadow-xs text-xs font-semibold text-slate-700">
             <Filter className="w-3.5 h-3.5 text-purple-500 shrink-0" />
             <select
               value={filterPlatform}
@@ -184,7 +194,7 @@ export default function CalendarPage() {
       {/* Calendar Grid Container */}
       <div className="p-4 sm:p-6 rounded-3xl glass-card space-y-4 overflow-hidden">
         {/* Month Header Navigation */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
+        <div data-tour="calendar-nav" className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
           <h2 className="text-lg font-extrabold text-slate-900 font-['Outfit'] flex items-center gap-2 capitalize">
             <CalendarDays className="w-5 h-5 text-purple-600" />
             <span>{monthName}</span>
@@ -247,7 +257,7 @@ export default function CalendarPage() {
 
         {/* Month Days Grid (Responsive Horizontal Scroll on small mobile if needed) */}
         <div className="overflow-x-auto no-scrollbar">
-          <div className="grid grid-cols-7 gap-1.5 sm:gap-2 min-w-[640px] md:min-w-0">
+          <div data-tour="calendar-grid" className="grid grid-cols-7 gap-1.5 sm:gap-2 min-w-[640px] md:min-w-0">
             {/* Padding days */}
             {paddingDays.map((p) => (
               <div key={`pad-${p}`} className="min-h-[105px] sm:min-h-[120px] p-2 rounded-2xl bg-slate-50/40 border border-slate-100 opacity-40 pointer-events-none" />

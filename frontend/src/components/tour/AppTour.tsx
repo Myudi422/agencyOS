@@ -1,59 +1,88 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
-import { DEFAULT_TOUR_STEPS, TourStep } from "./tourSteps";
-import { Sparkles, ChevronRight, ChevronLeft, X, CheckCircle2, HelpCircle } from "lucide-react";
+import { DEFAULT_TOUR_STEPS, TOUR_FLOWS, TourStep } from "./tourSteps";
+import { ChevronRight, ChevronLeft, X, CheckCircle2 } from "lucide-react";
 
-const STORAGE_KEY = "agencyos_tour_completed_v1";
+const STORAGE_KEY = "shiera_tour_completed_v1";
 
-export function startAppTour() {
+export function startAppTour(flowName: string = "default") {
   if (typeof window !== "undefined") {
-    window.dispatchEvent(new CustomEvent("agencyos-start-tour"));
+    window.dispatchEvent(new CustomEvent("agencyos-start-tour", { detail: { flow: flowName } }));
   }
 }
 
 export default function AppTour() {
   const [isOpen, setIsOpen] = useState(false);
+  const [activeFlow, setActiveFlow] = useState<string>("default");
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [targetRect, setTargetRect] = useState<DOMRect | null>(null);
 
-  const steps = DEFAULT_TOUR_STEPS;
+  const steps = TOUR_FLOWS[activeFlow] || DEFAULT_TOUR_STEPS;
   const currentStep = steps[currentStepIndex];
 
   const updateTargetRect = useCallback(() => {
     if (!isOpen || !currentStep) return;
 
-    const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
+    const isMobile = typeof window !== "undefined" && window.innerWidth < 1024;
     const isSidebarTarget = currentStep.target.includes("sidebar");
 
-    if (isMobile) {
-      // Auto open sidebar drawer on mobile for sidebar steps, auto close for main content steps
+    // Notify listeners (e.g. PostComposerModal) about step changes & target element
+    if (typeof window !== "undefined") {
       window.dispatchEvent(
-        new CustomEvent("agencyos-mobile-sidebar", { detail: { open: isSidebarTarget } })
+        new CustomEvent("shiera-tour-step-changed", {
+          detail: {
+            flow: activeFlow,
+            stepId: currentStep.id,
+            target: currentStep.target,
+          },
+        })
       );
     }
 
-    // Allow CSS slide drawer transition to complete before calculating spotlight rect
-    const delay = isMobile ? 300 : 50;
-    setTimeout(() => {
+    if (isMobile && isSidebarTarget) {
+      // Auto open sidebar drawer on mobile for sidebar steps
+      window.dispatchEvent(
+        new CustomEvent("agencyos-mobile-sidebar", { detail: { open: true } })
+      );
+    } else if (isMobile && !isSidebarTarget && activeFlow === "default") {
+      window.dispatchEvent(
+        new CustomEvent("agencyos-mobile-sidebar", { detail: { open: false } })
+      );
+    }
+
+    // Retry measuring target bounding box until DOM tab switch/render completes
+    const measureTarget = (retriesLeft = 6) => {
       const el = document.querySelector(currentStep.target);
       if (el) {
+        const rect = el.getBoundingClientRect();
+        if ((rect.width === 0 || rect.height === 0) && retriesLeft > 0) {
+          setTimeout(() => measureTarget(retriesLeft - 1), 120);
+          return;
+        }
         el.scrollIntoView({ behavior: "smooth", block: "center", inline: "nearest" });
         setTimeout(() => {
-          const rect = el.getBoundingClientRect();
-          setTargetRect(rect);
-        }, 150);
+          const finalRect = el.getBoundingClientRect();
+          setTargetRect(finalRect);
+        }, 120);
+      } else if (retriesLeft > 0) {
+        setTimeout(() => measureTarget(retriesLeft - 1), 120);
       } else {
         setTargetRect(null);
       }
-    }, delay);
-  }, [isOpen, currentStep]);
+    };
+
+    setTimeout(() => {
+      measureTarget();
+    }, isMobile ? 200 : 50);
+  }, [isOpen, currentStep, activeFlow]);
 
   useEffect(() => {
     // Check auto start on first visit
-    const completed = localStorage.getItem(STORAGE_KEY);
+    const completed = localStorage.getItem(STORAGE_KEY) || localStorage.getItem("agencyos_tour_completed_v1");
     if (!completed) {
       const timer = setTimeout(() => {
+        setActiveFlow("default");
         setIsOpen(true);
         setCurrentStepIndex(0);
       }, 1500);
@@ -62,12 +91,14 @@ export default function AppTour() {
   }, []);
 
   useEffect(() => {
-    const handleStartEvent = () => {
+    const handleStartEvent = (e: any) => {
+      const flow = e.detail?.flow || "default";
+      setActiveFlow(flow);
       setIsOpen(true);
       setCurrentStepIndex(0);
     };
-    window.addEventListener("agencyos-start-tour", handleStartEvent);
-    return () => window.removeEventListener("agencyos-start-tour", handleStartEvent);
+    window.addEventListener("agencyos-start-tour", handleStartEvent as EventListener);
+    return () => window.removeEventListener("agencyos-start-tour", handleStartEvent as EventListener);
   }, []);
 
   useEffect(() => {
@@ -98,7 +129,7 @@ export default function AppTour() {
 
   const handleComplete = () => {
     localStorage.setItem(STORAGE_KEY, "true");
-    if (typeof window !== "undefined" && window.innerWidth < 768) {
+    if (typeof window !== "undefined" && window.innerWidth < 1024) {
       window.dispatchEvent(
         new CustomEvent("agencyos-mobile-sidebar", { detail: { open: false } })
       );
@@ -112,20 +143,22 @@ export default function AppTour() {
   const padding = 8;
 
   // Compute popover position safely for desktop & mobile
-  const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
+  const isMobile = typeof window !== "undefined" && window.innerWidth < 1024;
 
   let popoverStyle: React.CSSProperties = {
     position: "fixed",
-    zIndex: 9999,
+    zIndex: 99999,
   };
 
   if (isMobile) {
+    const isTargetInLowerHalf = targetRect && targetRect.top > window.innerHeight / 2;
     popoverStyle = {
       ...popoverStyle,
-      bottom: "20px",
-      left: "16px",
-      right: "16px",
-      width: "calc(100vw - 32px)",
+      ...(isTargetInLowerHalf
+        ? { top: "16px", left: "16px", right: "16px", width: "calc(100vw - 32px)" }
+        : { bottom: "20px", left: "16px", right: "16px", width: "calc(100vw - 32px)" }),
+      maxHeight: "75vh",
+      overflowY: "auto",
     };
   } else if (targetRect) {
     const spaceBelow = window.innerHeight - targetRect.bottom;
@@ -157,10 +190,10 @@ export default function AppTour() {
   }
 
   return (
-    <div className="relative z-[9999]">
+    <div className="relative z-[99999]">
       {/* Dark Overlay with Spotlight Cutout */}
       {targetRect ? (
-        <div className="fixed inset-0 z-[9998] pointer-events-none transition-all duration-300">
+        <div className="fixed inset-0 z-[99998] pointer-events-none transition-all duration-300">
           <svg className="w-full h-full">
             <defs>
               <mask id="spotlight-mask">
@@ -181,13 +214,13 @@ export default function AppTour() {
               y="0"
               width="100%"
               height="100%"
-              fill="rgba(15, 23, 42, 0.7)"
+              fill="rgba(15, 23, 42, 0.75)"
               mask="url(#spotlight-mask)"
             />
           </svg>
           {/* Glowing Border around highlighted element */}
           <div
-            className="absolute rounded-2xl border-2 border-purple-400 shadow-[0_0_20px_rgba(168,85,247,0.5)] transition-all duration-300 pointer-events-none"
+            className="absolute rounded-2xl border-2 border-purple-400 shadow-[0_0_20px_rgba(168,85,247,0.6)] transition-all duration-300 pointer-events-none"
             style={{
               left: `${targetRect.left - padding}px`,
               top: `${targetRect.top - padding}px`,
@@ -197,13 +230,13 @@ export default function AppTour() {
           />
         </div>
       ) : (
-        <div className="fixed inset-0 z-[9998] bg-slate-900/70 backdrop-blur-xs" />
+        <div className="fixed inset-0 z-[99998] bg-slate-900/75 backdrop-blur-xs" />
       )}
 
       {/* Popover Card */}
       <div
         style={popoverStyle}
-        className="p-5 sm:p-6 rounded-3xl bg-white border border-purple-100 shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-200"
+        className="p-5 sm:p-6 rounded-3xl bg-white border border-purple-100 shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-200 pointer-events-auto"
       >
         <div className="flex items-center justify-between gap-2 border-b border-slate-100 pb-3">
           <div className="flex items-center gap-2">
@@ -211,13 +244,13 @@ export default function AppTour() {
               {currentStepIndex + 1}
             </div>
             <span className="text-[11px] font-extrabold uppercase tracking-wider text-purple-600">
-              Panduan AgencyOS ({currentStepIndex + 1}/{steps.length})
+              Panduan Shiera ({currentStepIndex + 1}/{steps.length})
             </span>
           </div>
 
           <button
             onClick={handleComplete}
-            className="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+            className="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
             title="Tutup Tutorial"
           >
             <X className="w-4 h-4" />
@@ -237,7 +270,7 @@ export default function AppTour() {
         <div className="flex items-center justify-between pt-2">
           <button
             onClick={handleComplete}
-            className="text-xs font-semibold text-slate-400 hover:text-slate-600 transition-colors"
+            className="text-xs font-semibold text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
           >
             Lewati Tour
           </button>
@@ -246,7 +279,7 @@ export default function AppTour() {
             {currentStepIndex > 0 && (
               <button
                 onClick={handlePrev}
-                className="p-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 text-xs font-semibold flex items-center gap-1 transition-all"
+                className="p-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 text-xs font-semibold flex items-center gap-1 transition-all cursor-pointer"
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
@@ -254,7 +287,7 @@ export default function AppTour() {
 
             <button
               onClick={handleNext}
-              className="py-2 px-4 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-md shadow-purple-500/20 transition-all active:scale-95"
+              className="py-2 px-4 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-md shadow-purple-500/20 transition-all active:scale-95 cursor-pointer"
             >
               <span>{isLastStep ? "Selesai" : "Lanjut"}</span>
               {isLastStep ? (

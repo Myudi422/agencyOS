@@ -4,7 +4,7 @@ import React, { useEffect, useState, useCallback } from "react";
 import {
   Bot, Plus, Sparkles, Play, Pause, Trash2, RefreshCw, Clock, Calendar,
   ChevronRight, Check, X, AlertTriangle, RotateCcw, Send, Zap, Settings2,
-  Eye, MoreVertical
+  Eye, MoreVertical, HelpCircle
 } from "lucide-react";
 import { useStore } from "@/store/useStore";
 import { useAgentStore, AgentConfig, AgentRunLog } from "@/store/useAgentStore";
@@ -397,7 +397,7 @@ export default function AgentPage() {
       </div>
 
       {/* Page Header */}
-      <div className="shrink-0 px-4 sm:px-6 py-4 bg-white border-b border-slate-200">
+      <div data-tour="agent-header" className="shrink-0 px-4 sm:px-6 py-4 bg-white border-b border-slate-200">
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-purple-600 to-indigo-700 flex items-center justify-center shadow-md shadow-purple-500/25 shrink-0">
@@ -408,21 +408,34 @@ export default function AgentPage() {
               <p className="text-[11px] text-slate-500">Otomasi brief konten harian dengan AI</p>
             </div>
           </div>
-          <button
-            onClick={() => { setEditingAgent(null); setShowCreateModal(true); }}
-            className="flex items-center gap-2 px-3.5 sm:px-4 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold transition-all shadow-md shadow-purple-500/20 shrink-0"
-          >
-            <Plus className="w-4 h-4" />
-            <span className="hidden sm:inline">Buat Agent Baru</span>
-            <span className="sm:hidden">Buat</span>
-          </button>
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              onClick={() => {
+                import("@/components/tour/AppTour").then(m => m.startAppTour("agent"));
+              }}
+              className="py-2 px-3 sm:px-3.5 rounded-xl bg-purple-50 hover:bg-purple-100/80 border border-purple-200/80 text-purple-700 font-semibold text-xs flex items-center gap-1.5 shadow-xs transition-all shrink-0 cursor-pointer"
+              title="Mulai Panduan Interactive Agent"
+            >
+              <HelpCircle className="w-4 h-4 text-purple-600" />
+              <span>Tutorial</span>
+            </button>
+            <button
+              data-tour="agent-create-btn"
+              onClick={() => { setEditingAgent(null); setShowCreateModal(true); }}
+              className="flex items-center gap-2 px-3.5 sm:px-4 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold transition-all shadow-md shadow-purple-500/20 shrink-0"
+            >
+              <Plus className="w-4 h-4" />
+              <span className="hidden sm:inline">Buat Agent Baru</span>
+              <span className="sm:hidden">Buat</span>
+            </button>
+          </div>
         </div>
       </div>
 
       {/* Main Layout */}
       <div className="flex flex-col md:flex-row flex-1 min-h-0 min-w-0 max-w-full">
         {/* Left Panel: Agent List */}
-        <div className={`w-full md:w-72 shrink-0 border-r border-slate-200 bg-white flex flex-col ${selectedAgentId ? "hidden md:flex" : "flex"}`}>
+        <div data-tour="agent-capacity" className={`w-full md:w-72 shrink-0 border-r border-slate-200 bg-white flex flex-col ${selectedAgentId ? "hidden md:flex" : "flex"}`}>
           <div className="p-4 border-b border-slate-100 bg-slate-50/50">
             <div className="flex items-center justify-between gap-2 mb-1.5">
               <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
@@ -589,7 +602,7 @@ export default function AgentPage() {
               </div>
 
               {/* Logs */}
-              <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 flex flex-col justify-between">
+              <div data-tour="agent-logs" className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 flex flex-col justify-between">
                 <div>
                   <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
                     <div className="flex items-center gap-2">
