@@ -1593,7 +1593,7 @@ export default function PostComposerModal() {
                           <span className="font-semibold">{ctaLibrary.length} item tersimpan</span>
                           <span>✓ = Aktif di post ini</span>
                         </div>
-                        <div className="grid grid-cols-4 sm:grid-cols-6 gap-2 max-h-44 overflow-y-auto pr-1">
+                        <div className="grid grid-cols-4 sm:grid-cols-6 gap-2 max-h-44 overflow-y-auto p-1">
                           {ctaLibrary.map((item, idx) => {
                             const url = typeof item === "string" ? item : item.url;
                             const isVid = isVideoMedia({ url });
@@ -1634,12 +1634,12 @@ export default function PostComposerModal() {
                                     </div>
                                   )}
                                 </button>
-                                {/* Delete from database library */}
+                                {/* Delete from database library (placed inside top-left with backdrop blur) */}
                                 <button
                                   type="button"
                                   onClick={() => handleDeleteCtaFromLibrary(item)}
                                   title="Hapus dari database library"
-                                  className="absolute -top-1 -right-1 z-20 bg-slate-900/80 hover:bg-rose-600 text-white rounded-full p-0.5 shadow-sm transition-all cursor-pointer opacity-0 group-hover:opacity-100"
+                                  className="absolute top-1 left-1 z-20 bg-rose-600 hover:bg-rose-700 text-white rounded-full p-1 shadow-sm transition-all cursor-pointer opacity-0 group-hover:opacity-100"
                                 >
                                   <X className="w-2.5 h-2.5" />
                                 </button>

@@ -456,7 +456,7 @@ export default function DashboardPage() {
           {/* Quick Shortcuts */}
           <div className="p-5 rounded-3xl glass-card space-y-3">
             <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Akses Cepat Modul</h4>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-3 gap-2">
               <a
                 href="/calendar"
                 className="p-3 rounded-2xl bg-white border border-slate-200/80 hover:border-purple-200 hover:shadow-xs transition-all flex flex-col items-center justify-center gap-1.5 text-center group"
@@ -477,13 +477,6 @@ export default function DashboardPage() {
               >
                 <Clock className="w-5 h-5 text-amber-600 group-hover:scale-110 transition-transform" />
                 <span className="text-xs font-bold text-slate-800">Antrean</span>
-              </a>
-              <a
-                href="/media"
-                className="p-3 rounded-2xl bg-white border border-slate-200/80 hover:border-purple-200 hover:shadow-xs transition-all flex flex-col items-center justify-center gap-1.5 text-center group"
-              >
-                <Folder className="w-5 h-5 text-emerald-600 group-hover:scale-110 transition-transform" />
-                <span className="text-xs font-bold text-slate-800">Media Library</span>
               </a>
             </div>
           </div>
