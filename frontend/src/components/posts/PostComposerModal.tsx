@@ -231,6 +231,11 @@ export default function PostComposerModal() {
   // Platform Customization Tab
   const [activePlatformTab, setActivePlatformTab] = useState<string>("instagram");
 
+  // CTA Media Attachments
+  const [ctaMediaUrls, setCtaMediaUrls] = useState<string[]>([]);
+  const [isUploadingCtaMedia, setIsUploadingCtaMedia] = useState(false);
+  const [showCtaPanel, setShowCtaPanel] = useState(false);
+
   // Media Library Picker Modal State & Storage Usage
   const [isMediaPickerOpen, setIsMediaPickerOpen] = useState(false);
   const [libraryMedia, setLibraryMedia] = useState<any[]>([]);
@@ -625,6 +630,44 @@ export default function PostComposerModal() {
     }
   };
 
+  const handleCtaMediaUpload = async (files: FileList | File[]) => {
+    if (!files || files.length === 0) return;
+    setIsUploadingCtaMedia(true);
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const contentType = file.type || (file.name.endsWith(".mp4") ? "video/mp4" : "image/jpeg");
+
+      try {
+        const res = await fetchApi<any>("/posts/media/create-upload-url", {
+          method: "POST",
+          body: JSON.stringify({ content_type: contentType })
+        });
+
+        if (!res?.upload_url || !res?.media_url) {
+          toast.error(`Gagal mendapatkan upload URL untuk '${file.name}'.`);
+          continue;
+        }
+
+        const putRes = await fetch(res.upload_url, {
+          method: "PUT",
+          headers: { "Content-Type": contentType },
+          body: file
+        });
+
+        if (putRes.ok || putRes.status === 200 || putRes.status === 204) {
+          setCtaMediaUrls((prev) => [...prev, res.media_url]);
+          toast.success(`CTA '${file.name}' berhasil diupload!`);
+        } else {
+          toast.error(`Gagal upload CTA '${file.name}' (HTTP ${putRes.status}).`);
+        }
+      } catch (err: any) {
+        toast.error(`Gagal upload CTA: ${err.message || err}`);
+      }
+    }
+    setIsUploadingCtaMedia(false);
+  };
+
   const handlePostForMeUploadFiles = async (files: FileList | File[]) => {
     if (!files || files.length === 0) return;
     setIsUploadingMedia(true);
@@ -823,9 +866,23 @@ export default function PostComposerModal() {
       return;
     }
 
-    setSelectedAccountIds((prev) =>
-      prev.includes(acc.id) ? prev.filter((item) => item !== acc.id) : [...prev, acc.id]
-    );
+    setSelectedAccountIds((prev) => {
+      const next = prev.includes(acc.id) ? prev.filter((item) => item !== acc.id) : [...prev, acc.id];
+      // Auto-switch platform tab to the first selected account's platform
+      if (!prev.includes(acc.id)) {
+        // Just added this account — switch tab to its platform
+        const basePlatform = acc.platform.replace(/_business$/, "").replace(/_page$/, "");
+        setActivePlatformTab(basePlatform);
+      } else if (next.length > 0) {
+        // Removed this account — switch to first remaining account's platform
+        const firstAcc = availableAccounts.find((a) => next.includes(a.id));
+        if (firstAcc) {
+          const basePlatform = firstAcc.platform.replace(/_business$/, "").replace(/_page$/, "");
+          setActivePlatformTab(basePlatform);
+        }
+      }
+      return next;
+    });
   };
 
   const selectAllAccounts = () => {
@@ -973,7 +1030,7 @@ export default function PostComposerModal() {
       clearLocalDraft();
       resetForm();
       closeComposer();
-      router.push("/queue");
+      router.push("/queue?tab=diproses");
     } catch (err: any) {
       console.error("Post submit error:", err);
       toast.error(`Gagal membuat post: ${err.message || err}`);
@@ -1410,7 +1467,107 @@ export default function PostComposerModal() {
                       {mediaUrls.length} File{mediaUrls.length !== 1 ? "s" : ""}
                     </span>
                   </div>
+                  {/* CTA MEDIA Button */}
+                  <button
+                    type="button"
+                    onClick={() => setShowCtaPanel(v => !v)}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
+                      showCtaPanel
+                        ? "bg-amber-500 text-white border-amber-500 shadow-sm"
+                        : "bg-amber-50 text-amber-700 border-amber-300 hover:bg-amber-100"
+                    }`}
+                    title="Tambahkan media CTA / bahan promosi untuk akhir slide"
+                  >
+                    <Sparkles className="w-3.5 h-3.5" />
+                    CTA MEDIA
+                    {ctaMediaUrls.length > 0 && (
+                      <span className="ml-1 bg-white/30 text-inherit px-1.5 py-0.5 rounded-full text-[9px] font-extrabold">
+                        {ctaMediaUrls.length}
+                      </span>
+                    )}
+                  </button>
                 </div>
+
+                {/* CTA Media Panel */}
+                {showCtaPanel && (
+                  <div className="p-3.5 rounded-2xl bg-amber-50/70 border border-amber-200 space-y-3 animate-fadeIn">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-xs font-extrabold text-amber-900 font-['Outfit'] flex items-center gap-1.5">
+                          <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+                          CTA Media — Bahan Promosi Akhir Slide
+                        </p>
+                        <p className="text-[10px] text-amber-700 mt-0.5">Upload gambar/video CTA, end-screen, atau bahan promosi yang akan ditambahkan di akhir slide carousel.</p>
+                      </div>
+                    </div>
+
+                    {/* CTA Upload Dropzone */}
+                    <label
+                      className={`relative border-2 border-dashed rounded-xl p-4 flex flex-col items-center justify-center text-center cursor-pointer transition-all ${
+                        isUploadingCtaMedia
+                          ? "border-amber-400 bg-amber-50/80 cursor-wait"
+                          : "border-amber-300 hover:border-amber-500 bg-white hover:bg-amber-50/40"
+                      }`}
+                    >
+                      <input
+                        type="file"
+                        multiple
+                        accept="image/*,video/*"
+                        className="hidden"
+                        disabled={isUploadingCtaMedia}
+                        onChange={(e) => e.target.files && handleCtaMediaUpload(e.target.files)}
+                      />
+                      {isUploadingCtaMedia ? (
+                        <div className="py-1 flex flex-col items-center gap-1.5 text-amber-700">
+                          <RefreshCw className="w-5 h-5 animate-spin" />
+                          <p className="text-xs font-bold">Mengunggah CTA Media...</p>
+                        </div>
+                      ) : (
+                        <>
+                          <div className="w-9 h-9 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center mb-1.5">
+                            <UploadCloud className="w-4.5 h-4.5" />
+                          </div>
+                          <p className="text-xs font-bold text-slate-800">Upload CTA / Bahan Promosi</p>
+                          <p className="text-[10px] text-slate-500 mt-0.5">Klik atau seret file (Gambar / Video) ke sini</p>
+                        </>
+                      )}
+                    </label>
+
+                    {/* CTA Media Thumbnails */}
+                    {ctaMediaUrls.length > 0 && (
+                      <div className="flex items-center gap-2 overflow-x-auto pb-1 pt-1 px-1">
+                        {ctaMediaUrls.map((url, idx) => {
+                          const isVid = isVideoMedia({ url });
+                          return (
+                            <div key={idx} className="relative group shrink-0">
+                              <div className="absolute top-1 left-1 z-10 px-1 py-0.5 rounded bg-amber-800/80 text-white text-[8px] font-mono font-bold">
+                                CTA#{idx + 1}
+                              </div>
+                              {isVid ? (
+                                <div className="relative w-14 h-14 rounded-xl overflow-hidden border border-amber-200 bg-black flex items-center justify-center">
+                                  <video src={url} preload="metadata" muted className="w-full h-full object-cover" />
+                                  <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+                                    <Play className="w-3.5 h-3.5 fill-white text-white" />
+                                  </div>
+                                </div>
+                              ) : (
+                                <img src={url} alt={`CTA #${idx + 1}`} className="w-14 h-14 rounded-xl object-cover border border-amber-200" />
+                              )}
+                              <button
+                                type="button"
+                                onClick={() => setCtaMediaUrls(prev => prev.filter((_, i) => i !== idx))}
+                                title="Hapus CTA Media"
+                                className="absolute -top-1.5 -right-1.5 z-20 bg-rose-600 text-white rounded-full p-0.5 shadow-sm hover:scale-110 transition-transform cursor-pointer"
+                              >
+                                <X className="w-2.5 h-2.5" />
+                              </button>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 {/* Ruang Upload Langsung Berukuran Besar (Large Upload Dropzone) */}
                 <label
@@ -1838,21 +1995,32 @@ export default function PostComposerModal() {
                     const Icon = tab.icon;
                     const isActive = activePlatformTab === tab.id;
                     const compat = checkPlatformCompatibility(tab.id);
+                    // Check if any selected account belongs to this platform
+                    const hasSelectedAccount = selectedAccountIds.some((id) => {
+                      const acc = availableAccounts.find((a) => a.id === id);
+                      return acc && (acc.platform === tab.id || acc.platform.startsWith(tab.id + "_"));
+                    });
+                    const isDisabled = !hasSelectedAccount;
                     return (
                       <button
                         key={tab.id}
                         type="button"
-                        onClick={() => setActivePlatformTab(tab.id)}
-                        className={`px-2.5 py-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer border ${!compat.compatible
-                            ? "bg-slate-50 border-slate-200 text-slate-400 opacity-60"
+                        disabled={isDisabled}
+                        onClick={() => !isDisabled && setActivePlatformTab(tab.id)}
+                        title={isDisabled ? `Pilih akun ${tab.label} terlebih dahulu untuk mengatur opsi ini` : tab.label}
+                        className={`px-2.5 py-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-all border ${
+                          isDisabled
+                            ? "bg-slate-50 border-slate-200 text-slate-300 opacity-50 cursor-not-allowed"
+                            : !compat.compatible
+                            ? "bg-slate-50 border-slate-200 text-slate-400 opacity-60 cursor-pointer"
                             : isActive
-                              ? "bg-purple-600 text-white border-purple-600 shadow-xs"
-                              : "bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100 hover:border-purple-300"
-                          }`}
+                              ? "bg-purple-600 text-white border-purple-600 shadow-xs cursor-pointer"
+                              : "bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100 hover:border-purple-300 cursor-pointer"
+                        }`}
                       >
-                        <Icon className={`w-3.5 h-3.5 ${isActive ? "text-white" : tab.color}`} />
+                        <Icon className={`w-3.5 h-3.5 ${isActive ? "text-white" : isDisabled ? "text-slate-300" : tab.color}`} />
                         <span className="truncate">{tab.label}</span>
-                        {!compat.compatible && <AlertTriangle className="w-3 h-3 text-amber-500 shrink-0" />}
+                        {!isDisabled && !compat.compatible && <AlertTriangle className="w-3 h-3 text-amber-500 shrink-0" />}
                       </button>
                     );
                   })}

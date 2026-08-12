@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback, useRef } from "react";
+import { useSearchParams } from "next/navigation";
 import {
   Cpu, RefreshCw, AlertTriangle, CheckCircle2,
   Clock, RotateCcw, Trash2, History, ExternalLink,
@@ -187,7 +188,9 @@ function MediaPreviewModal({ url, type, caption, onClose }: {
 /* ─── Main Queue Page ─── */
 export default function QueuePage() {
   const { activeWorkspace, openComposer } = useStore();
-  const [activeTab, setActiveTab] = useState<QueueTab>("draft");
+  const searchParams = useSearchParams();
+  const initialTab = (searchParams.get("tab") as QueueTab) || "draft";
+  const [activeTab, setActiveTab] = useState<QueueTab>(initialTab);
 
   /* ── Draft tab (local posts) ── */
   const [drafts, setDrafts] = useState<LocalPost[]>([]);
