@@ -1,7 +1,7 @@
 # Graph Report - agencyOS  (2026-08-12)
 
 ## Corpus Check
-- 152 files · ~783,527 words
+- 152 files · ~783,902 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
@@ -10,7 +10,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `122174c9`
+- Built from commit: `40d87622`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -95,7 +95,7 @@
 - instagrapi_service.py
 - clsx
 - jspdf
-- date-fns
+- html2canvas
 - @tanstack/react-query
 
 ## God Nodes (most connected - your core abstractions)
@@ -221,11 +221,11 @@ Nodes (14): create_snap_transaction(), get_core_api_client(), get_snap_client(),
 
 ### Community 26 - "dependencies"
 Cohesion: 0.13
-Nodes (15): dependencies, html2canvas, lucide-react, next, react-dom, react-is, recharts, zustand (+7 more)
+Nodes (15): date-fns, dependencies, date-fns, lucide-react, next, react-dom, react-is, recharts (+7 more)
 
 ### Community 27 - "TikTokScraperService"
 Cohesion: 0.18
-Nodes (10): Any, Session, Test proxy connectivity by querying public IP checkers., Fetch TikTok competitor profile information via Web SSR parsing. 100% Anonymous…, Fetch profile & recent video posts metadata for TikTok competitor. Includes…, Run end-to-end test of TikTok Scraper Engine., Parses count strings like '162.6M', '2.5B', '1,234' to integer., Normalizes various proxy input formats to a valid URL string. Supports: -… (+2 more)
+Nodes (10): Any, Session, Test proxy connectivity by querying public IP checkers., Fetch TikTok competitor profile information via Web SSR parsing. 100% Anonymous…, Fetch profile & recent video posts metadata for TikTok competitor. Generates…, Run end-to-end test of TikTok Scraper Engine., Parses count strings like '162.6M', '2.5B', '1,234' to integer., Normalizes various proxy input formats to a valid URL string. Supports: -… (+2 more)
 
 ### Community 28 - "database.py"
 Cohesion: 0.09

@@ -84,6 +84,6 @@
   "82": "instagrapi_service.py",
   "83": "clsx",
   "84": "jspdf",
-  "85": "date-fns",
+  "85": "html2canvas",
   "86": "@tanstack/react-query"
 }

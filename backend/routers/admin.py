@@ -550,70 +550,8 @@ def test_instagram(
     return res
 
 
-class ProxyTestRequest(BaseModel):
-    proxy_url: Optional[str] = None
 
 
-@router.post("/test-proxy")
-def test_proxy(
-    req: Optional[ProxyTestRequest] = None,
-    admin: User = Depends(require_admin),
-    db: Session = Depends(get_db)
-):
-    """Test proxy connectivity by querying public IP checkers."""
-    from backend.services.ensta_scraper_service import ensta_scraper_service
-    p_url = req.proxy_url if req and req.proxy_url else None
-
-    if not p_url:
-        url_row = db.query(Setting).filter(
-            Setting.workspace_id == GLOBAL_WS_ID,
-            Setting.key.in_(["PROXY_URL", "PROXY_CONNECTION_STRING"])
-        ).first()
-        if url_row and url_row.value:
-            p_url = str(url_row.value).strip()
-
-    if not p_url:
-        return {"success": False, "message": "URL Proxy belum diisi di form atau Admin Settings."}
-
-    return ensta_scraper_service.test_proxy_connection(p_url)
-
-
-class EnstaScraperTestRequest(BaseModel):
-    username: Optional[str] = "instagram"
-    proxy_url: Optional[str] = None
-
-
-@router.post("/test-faustren")
-@router.post("/test-instagrapi")
-@router.post("/test-ensta")
-def test_ensta_scraper(
-    req: Optional[EnstaScraperTestRequest] = None,
-    admin: User = Depends(require_admin),
-    db: Session = Depends(get_db)
-):
-    """Test Ensta (No Login + Proxy) Instagram scraper engine with optional proxy override."""
-    from backend.services.ensta_scraper_service import ensta_scraper_service
-    sample_uname = (req.username if req and req.username else "instagram").strip()
-    p_url = req.proxy_url if req and req.proxy_url else None
-    return ensta_scraper_service.test_ensta_scraper(db, sample_username=sample_uname, override_proxy=p_url)
-
-
-class TikTokScraperTestRequest(BaseModel):
-    username: Optional[str] = "khaby.lame"
-    proxy_url: Optional[str] = None
-
-
-@router.post("/test-tiktok")
-def test_tiktok_scraper(
-    req: Optional[TikTokScraperTestRequest] = None,
-    admin: User = Depends(require_admin),
-    db: Session = Depends(get_db)
-):
-    """Test TikTok Web SSR Scraper engine with optional proxy override."""
-    from backend.services.tiktok_scraper_service import tiktok_scraper_service
-    sample_uname = (req.username if req and req.username else "khaby.lame").strip()
-    p_url = req.proxy_url if req and req.proxy_url else None
-    return tiktok_scraper_service.test_tiktok_scraper(db, sample_username=sample_uname, override_proxy=p_url)
 
 
 

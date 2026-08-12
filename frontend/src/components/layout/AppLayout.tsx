@@ -13,7 +13,6 @@ import { useAuthStore } from "@/store/authStore";
 import AccountSettingsModal from "@/components/profile/AccountSettingsModal";
 
 import ShieraAiReportWidget from "@/components/common/ShieraAiReportWidget";
-import CompetitorProgressWidget from "@/components/common/CompetitorProgressWidget";
 import SplashScreen from "@/components/common/SplashScreen";
 
 const PUBLIC_PATHS = ["/landing", "/login", "/pricing", "/billing/success", "/onboarding", "/kol-portal", "/review"];
@@ -83,7 +82,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       <GlassToastManager />
       <GlobalGlassConfirmModal />
       <ShieraAiReportWidget />
-      <CompetitorProgressWidget />
     </div>
   );
 }
