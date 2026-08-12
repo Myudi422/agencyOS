@@ -167,6 +167,8 @@ export default function CompetitorSpyPage() {
   const [competitorPosts, setCompetitorPosts] = useState<CompetitorPost[]>([]);
   const [postsLoading, setPostsLoading] = useState(false);
   const [filterTopOnly, setFilterTopOnly] = useState(false);
+  const [modalViewMode, setModalViewMode] = useState<"cards" | "widget">("cards");
+
 
   // Benchmark matrix state
   const [benchmarkData, setBenchmarkData] = useState<any>(null);
@@ -1423,6 +1425,27 @@ export default function CompetitorSpyPage() {
               </div>
 
               <div className="flex items-center gap-2">
+                {(selectedPlatform === "tiktok" || selectedCompetitor.platform === "tiktok") && (
+                  <div className="flex items-center gap-1 bg-slate-200/80 p-1 rounded-xl text-[11px] font-bold">
+                    <button
+                      onClick={() => setModalViewMode("cards")}
+                      className={`px-2.5 py-1 rounded-lg transition-all ${
+                        modalViewMode === "cards" ? "bg-white text-slate-900 shadow-xs" : "text-slate-500 hover:text-slate-800"
+                      }`}
+                    >
+                      Post Cards
+                    </button>
+                    <button
+                      onClick={() => setModalViewMode("widget")}
+                      className={`px-2.5 py-1 rounded-lg transition-all ${
+                        modalViewMode === "widget" ? "bg-cyan-600 text-white shadow-xs" : "text-slate-500 hover:text-slate-800"
+                      }`}
+                    >
+                      Widget
+                    </button>
+                  </div>
+                )}
+
                 {selectedPlatform === "instagram" && (
                   <button
                     onClick={() => {
@@ -1450,14 +1473,14 @@ export default function CompetitorSpyPage() {
               </div>
             </div>
 
-            {/* Posts Feed Area (TikTok Feed Embed vs IG Posts Grid) */}
+            {/* Posts Feed Area (Native Cards vs Widget Mode) */}
 
-            {selectedPlatform === "tiktok" || selectedCompetitor.platform === "tiktok" ? (
+            {(selectedPlatform === "tiktok" || selectedCompetitor.platform === "tiktok") && modalViewMode === "widget" ? (
               <div className="p-6 overflow-y-auto flex-1 flex justify-center bg-slate-950">
                 <div className="w-full max-w-[780px] bg-slate-900 p-5 rounded-3xl border border-slate-800 text-center space-y-4">
                   <div className="flex items-center justify-between flex-wrap gap-2">
                     <span className="px-3 py-1 rounded-full bg-cyan-500/20 text-cyan-300 text-xs font-bold border border-cyan-400/30 flex items-center gap-1.5">
-                      <Sparkles className="w-3.5 h-3.5" /> 12+ Postingan Video Terbaru TikTok @{selectedCompetitor.username}
+                      <Sparkles className="w-3.5 h-3.5" /> Widget Creator TikTok @{selectedCompetitor.username}
                     </span>
                     <a
                       href={`https://www.tiktok.com/@${selectedCompetitor.username}`}
@@ -1470,7 +1493,6 @@ export default function CompetitorSpyPage() {
                     </a>
                   </div>
 
-                  {/* Interactive TikTok Embed Grid */}
                   <TikTokCreatorEmbed username={selectedCompetitor.username} />
                 </div>
               </div>
@@ -1509,8 +1531,10 @@ export default function CompetitorSpyPage() {
                                 <Flame className="w-3 h-3 text-white fill-white" /> Top Performer
                               </span>
                             )}
-                            <span className="absolute top-2.5 right-2.5 px-2 py-0.5 rounded-full bg-black/60 backdrop-blur-xs text-white text-[10px] font-bold capitalize">
-                              {post.post_type}
+                            <span className={`absolute top-2.5 right-2.5 px-2 py-0.5 rounded-full text-white text-[10px] font-bold capitalize ${
+                              selectedPlatform === "tiktok" ? "bg-cyan-600/90" : "bg-black/60 backdrop-blur-xs"
+                            }`}>
+                              {selectedPlatform === "tiktok" ? "TikTok Video" : post.post_type}
                             </span>
                           </div>
 
@@ -1528,7 +1552,9 @@ export default function CompetitorSpyPage() {
                                 <MessageSquare className="w-3.5 h-3.5" />
                                 {post.comment_count.toLocaleString()}
                               </span>
-                              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-purple-100 text-purple-700">
+                              <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
+                                selectedPlatform === "tiktok" ? "bg-cyan-100 text-cyan-800" : "bg-purple-100 text-purple-700"
+                              }`}>
                                 ER {post.engagement_rate}%
                               </span>
                             </div>
@@ -1536,18 +1562,16 @@ export default function CompetitorSpyPage() {
                         </div>
 
                         <div className="p-3 bg-slate-50 border-t border-slate-100 flex items-center gap-2">
-                          {(post.instagram_url || post.code) && (
-                            <a
-                              href={post.instagram_url || `https://www.instagram.com/p/${post.code}/`}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="py-2 px-2.5 rounded-xl bg-white hover:bg-purple-50 hover:text-purple-600 text-slate-600 font-bold text-[11px] flex items-center justify-center gap-1 transition-all border border-slate-200/80 shadow-2xs shrink-0"
-                              title="Lihat Postingan di Instagram"
-                            >
-                              <ExternalLink className="w-3.5 h-3.5" />
-                              <span className="text-[11px]">IG</span>
-                            </a>
-                          )}
+                          <a
+                            href={post.instagram_url || `https://www.tiktok.com/@${selectedCompetitor.username}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="py-2 px-2.5 rounded-xl bg-white hover:bg-cyan-50 hover:text-cyan-600 text-slate-600 font-bold text-[11px] flex items-center justify-center gap-1 transition-all border border-slate-200/80 shadow-2xs shrink-0"
+                            title="Lihat Postingan"
+                          >
+                            <ExternalLink className="w-3.5 h-3.5" />
+                            <span className="text-[11px]">{selectedPlatform === "tiktok" ? "TikTok" : "IG"}</span>
+                          </a>
                           <button
                             onClick={() => handleUseAsInspiration(post, selectedCompetitor?.username)}
                             className="flex-1 py-2 px-3 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-[11px] flex items-center justify-center gap-1.5 transition-all shadow-xs min-w-0"
@@ -1562,6 +1586,7 @@ export default function CompetitorSpyPage() {
                 )}
               </div>
             )}
+
           </div>
         </div>
         </Portal>

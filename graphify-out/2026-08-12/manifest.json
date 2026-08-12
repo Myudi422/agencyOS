@@ -300,8 +300,8 @@
     "semantic_hash": ""
   },
   "frontend/src/app/competitor-spy/page.tsx": {
-    "mtime": 1786501545.8683772,
-    "ast_hash": "87f05ab2b435c91fa7f6182b8c53820f",
+    "mtime": 1786502397.3328972,
+    "ast_hash": "1a46a52d876c86a64eee538036f944b5",
     "semantic_hash": ""
   },
   "frontend/src/app/dashboard/page.tsx": {
@@ -872,6 +872,11 @@
   "backend/migrate_competitor_platform.py": {
     "mtime": 1786500995.2139895,
     "ast_hash": "439f1a4c7912ccc5bc2153649777a862",
+    "semantic_hash": ""
+  },
+  "backend/test_tiktok_embed.html": {
+    "mtime": 1786502361.732717,
+    "ast_hash": "de9eacb8c8ddee6c1c03a8c0115a718f",
     "semantic_hash": ""
   }
 }

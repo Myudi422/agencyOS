@@ -130,8 +130,8 @@
     "semantic_hash": ""
   },
   "backend/routers/competitors.py": {
-    "mtime": 1786501912.1697905,
-    "ast_hash": "9363372ee455fb0dfac71e22eeb3987e",
+    "mtime": 1786503307.9360182,
+    "ast_hash": "0c2fe94d6d08d7143f97b32de3d317fd",
     "semantic_hash": ""
   },
   "backend/routers/dashboard.py": {
@@ -300,8 +300,8 @@
     "semantic_hash": ""
   },
   "frontend/src/app/competitor-spy/page.tsx": {
-    "mtime": 1786502397.3328972,
-    "ast_hash": "1a46a52d876c86a64eee538036f944b5",
+    "mtime": 1786503331.091117,
+    "ast_hash": "74c81a46f76d1ef44d1b613a78b7151b",
     "semantic_hash": ""
   },
   "frontend/src/app/dashboard/page.tsx": {
@@ -860,13 +860,13 @@
     "semantic_hash": ""
   },
   "backend/services/tiktok_scraper_service.py": {
-    "mtime": 1786500321.718067,
-    "ast_hash": "9dc62d9f8aacabbd68a873333ccf9aa3",
+    "mtime": 1786503299.1307247,
+    "ast_hash": "5ef452089e0960a6c60955e0f513e26f",
     "semantic_hash": ""
   },
   "backend/test_tiktok_posts.py": {
-    "mtime": 1786500074.686883,
-    "ast_hash": "5cf31fe4ff2fb20e60b1fbac87b06439",
+    "mtime": 1786503140.5544243,
+    "ast_hash": "f8a05db87e1c7716807b31710fd4650d",
     "semantic_hash": ""
   },
   "backend/migrate_competitor_platform.py": {

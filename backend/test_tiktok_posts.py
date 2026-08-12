@@ -1,18 +1,36 @@
 import requests
-import urllib3
 import json
+import bs4
 
-urllib3.disable_warnings()
-
-proxy_url = "http://eclipse_akuiiki:5e74d102-b2a7-48cc-a9a3-1ae7d02559b8@core.eclipseproxy.com:3030"
-proxies = {"http": proxy_url, "https": proxy_url}
-
-headers = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+headers_mobile = {
+    "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.3 Mobile/15E148 Safari/604.1",
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    "Accept-Language": "en-US,en;q=0.9",
 }
 
-print("Testing TikTok oEmbed endpoint...")
-r = requests.get("https://www.tiktok.com/oembed?url=https://www.tiktok.com/@khaby.lame", headers=headers, proxies=proxies, verify=False, timeout=15)
-print("Status code:", r.status_code)
-if r.status_code == 200:
-    print("oEmbed Data:", json.dumps(r.json(), indent=2))
+for username in ["khaby.lame", "gopro", "tiktok", "papundastudio"]:
+    r = requests.get(f"https://www.tiktok.com/@{username}", headers=headers_mobile, timeout=15)
+    soup = bs4.BeautifulSoup(r.text, "html.parser")
+    s10 = soup.find("script", id="__UNIVERSAL_DATA_FOR_REHYDRATION__")
+
+    if s10 and s10.string:
+        data = json.loads(s10.string)
+        default_scope = data.get("__DEFAULT_SCOPE__", {})
+        user_detail = default_scope.get("webapp.user-detail", {})
+        user_info = user_detail.get("userInfo", {})
+        items = user_info.get("itemList") or []
+
+        # Search all keys in default_scope for lists of items
+        if not items:
+            for k, v in default_scope.items():
+                if isinstance(v, dict):
+                    for subk, subv in v.items():
+                        if isinstance(subv, list) and len(subv) > 0 and isinstance(subv[0], dict) and "id" in subv[0]:
+                            print(f"FOUND items in {k}.{subk} for @{username}: len={len(subv)}")
+                            items = subv
+                            break
+
+        print(f"Result for @{username}: items_len={len(items) if isinstance(items, list) else 'not list'}")
+        if isinstance(items, list) and len(items) > 0:
+            item = items[0]
+            print(f"  First Video ID: {item.get('id')}, Desc: {item.get('desc', '')[:40]}")

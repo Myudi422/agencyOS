@@ -315,8 +315,7 @@ def _run_add_competitor_bg(job_id: str, competitor_id: str, username: str, works
                 account.engagement_rate = cached_source.engagement_rate
                 account.top_hashtags = cached_source.top_hashtags
                 db.commit()
-            else:
-                posts_data = _fetch_posts(db, username, amount=20)
+                posts_data = _fetch_posts(db, username, amount=20, platform=account.platform)
 
                 account.avg_likes = posts_data["avg_likes"]
                 account.avg_comments = posts_data["avg_comments"]
@@ -532,8 +531,8 @@ def sync_competitor(
 
     # Re-fetch posts
     try:
-        profile_data = _fetch_profile(db, account.username)
-        posts_data = _fetch_posts(db, account.username, amount=25)
+        profile_data = _fetch_profile(db, account.username, platform=account.platform)
+        posts_data = _fetch_posts(db, account.username, amount=25, platform=account.platform)
 
 
         primary_acc = _get_primary_competitor_account(db, account.username) or account
