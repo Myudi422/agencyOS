@@ -10020,7 +10020,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "frontend_src_app_auth_callback_page",
-      "community": 1,
+      "community": 54,
       "community_name": "useStore",
       "norm_label": "callback/page.tsx"
     },
@@ -10031,7 +10031,7 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "frontend_src_app_auth_callback_page_oauthcallbackhandler",
-      "community": 1,
+      "community": 54,
       "community_name": "useStore",
       "norm_label": "oauthcallbackhandler()"
     },
@@ -10042,7 +10042,7 @@
       "source_location": "L160",
       "_origin": "ast",
       "id": "frontend_src_app_auth_callback_page_callbackpage",
-      "community": 1,
+      "community": 54,
       "community_name": "useStore",
       "norm_label": "callbackpage()"
     },
@@ -10053,8 +10053,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "frontend_src_app_billing_success_page",
-      "community": 54,
-      "community_name": "useAuthStore",
+      "community": 19,
+      "community_name": "fetchApi",
       "norm_label": "success/page.tsx"
     },
     {
@@ -10064,8 +10064,8 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "frontend_src_app_billing_success_page_dynamic",
-      "community": 54,
-      "community_name": "useAuthStore",
+      "community": 19,
+      "community_name": "fetchApi",
       "norm_label": "dynamic"
     },
     {
@@ -10075,8 +10075,8 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "frontend_src_app_billing_success_page_billingsuccesscontent",
-      "community": 54,
-      "community_name": "useAuthStore",
+      "community": 19,
+      "community_name": "fetchApi",
       "norm_label": "billingsuccesscontent()"
     },
     {
@@ -10086,8 +10086,8 @@
       "source_location": "L135",
       "_origin": "ast",
       "id": "frontend_src_app_billing_success_page_billingsuccesspage",
-      "community": 54,
-      "community_name": "useAuthStore",
+      "community": 19,
+      "community_name": "fetchApi",
       "norm_label": "billingsuccesspage()"
     },
     {
@@ -10098,7 +10098,7 @@
       "_origin": "ast",
       "id": "frontend_src_app_calendar_page",
       "community": 1,
-      "community_name": "useStore",
+      "community_name": "calendar/page.tsx",
       "norm_label": "calendar/page.tsx"
     },
     {
@@ -10109,7 +10109,7 @@
       "_origin": "ast",
       "id": "frontend_src_app_calendar_page_platform_icons",
       "community": 1,
-      "community_name": "useStore",
+      "community_name": "calendar/page.tsx",
       "norm_label": "platform_icons"
     },
     {
@@ -10120,7 +10120,7 @@
       "_origin": "ast",
       "id": "frontend_src_app_calendar_page_platform_labels",
       "community": 1,
-      "community_name": "useStore",
+      "community_name": "calendar/page.tsx",
       "norm_label": "platform_labels"
     },
     {
@@ -10131,7 +10131,7 @@
       "_origin": "ast",
       "id": "frontend_src_app_calendar_page_getproxiedimageurl",
       "community": 1,
-      "community_name": "useStore",
+      "community_name": "calendar/page.tsx",
       "norm_label": "getproxiedimageurl()"
     },
     {
@@ -10142,7 +10142,7 @@
       "_origin": "ast",
       "id": "frontend_src_app_calendar_page_calendarimagethumbnail",
       "community": 1,
-      "community_name": "useStore",
+      "community_name": "calendar/page.tsx",
       "norm_label": "calendarimagethumbnail()"
     },
     {
@@ -10153,7 +10153,7 @@
       "_origin": "ast",
       "id": "frontend_src_app_calendar_page_calendarpage",
       "community": 1,
-      "community_name": "useStore",
+      "community_name": "calendar/page.tsx",
       "norm_label": "calendarpage()"
     },
     {
@@ -10174,8 +10174,8 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "frontend_src_app_clients_page_clientspage",
-      "community": 10,
-      "community_name": "AppTour.tsx",
+      "community": 29,
+      "community_name": "queue/page.tsx",
       "norm_label": "clientspage()"
     },
     {
@@ -10185,7 +10185,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "frontend_src_app_dashboard_page",
-      "community": 1,
+      "community": 54,
       "community_name": "useStore",
       "norm_label": "dashboard/page.tsx"
     },
@@ -10196,7 +10196,7 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "frontend_src_app_dashboard_page_customcharttooltip",
-      "community": 1,
+      "community": 54,
       "community_name": "useStore",
       "norm_label": "customcharttooltip()"
     },
@@ -10207,7 +10207,7 @@
       "source_location": "L31",
       "_origin": "ast",
       "id": "frontend_src_app_dashboard_page_getproxiedimageurl",
-      "community": 1,
+      "community": 54,
       "community_name": "useStore",
       "norm_label": "getproxiedimageurl()"
     },
@@ -10218,7 +10218,7 @@
       "source_location": "L38",
       "_origin": "ast",
       "id": "frontend_src_app_dashboard_page_dashboardimagethumbnail",
-      "community": 1,
+      "community": 54,
       "community_name": "useStore",
       "norm_label": "dashboardimagethumbnail()"
     },
@@ -10229,7 +10229,7 @@
       "source_location": "L64",
       "_origin": "ast",
       "id": "frontend_src_app_dashboard_page_dashboardpage",
-      "community": 1,
+      "community": 54,
       "community_name": "useStore",
       "norm_label": "dashboardpage()"
     },
@@ -10351,7 +10351,7 @@
       "_origin": "ast",
       "id": "frontend_src_app_layout",
       "community": 28,
-      "community_name": "AuthProvider.tsx",
+      "community_name": "Sidebar.tsx",
       "norm_label": "layout.tsx"
     },
     {
@@ -10362,7 +10362,7 @@
       "_origin": "ast",
       "id": "frontend_src_app_layout_metadata",
       "community": 28,
-      "community_name": "AuthProvider.tsx",
+      "community_name": "Sidebar.tsx",
       "norm_label": "metadata"
     },
     {
@@ -10373,7 +10373,7 @@
       "_origin": "ast",
       "id": "frontend_src_app_layout_jsonld",
       "community": 28,
-      "community_name": "AuthProvider.tsx",
+      "community_name": "Sidebar.tsx",
       "norm_label": "jsonld"
     },
     {
@@ -10384,7 +10384,7 @@
       "_origin": "ast",
       "id": "frontend_src_app_layout_rootlayout",
       "community": 28,
-      "community_name": "AuthProvider.tsx",
+      "community_name": "Sidebar.tsx",
       "norm_label": "rootlayout()"
     },
     {
@@ -10394,8 +10394,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "frontend_src_app_login_page",
-      "community": 54,
-      "community_name": "useAuthStore",
+      "community": 28,
+      "community_name": "Sidebar.tsx",
       "norm_label": "login/page.tsx"
     },
     {
@@ -10405,8 +10405,8 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "frontend_src_app_login_page_loginpage",
-      "community": 54,
-      "community_name": "useAuthStore",
+      "community": 28,
+      "community_name": "Sidebar.tsx",
       "norm_label": "loginpage()"
     },
     {
@@ -10439,7 +10439,7 @@
       "_origin": "ast",
       "id": "frontend_src_app_onboarding_page",
       "community": 54,
-      "community_name": "useAuthStore",
+      "community_name": "useStore",
       "norm_label": "onboarding/page.tsx"
     },
     {
@@ -10450,7 +10450,7 @@
       "_origin": "ast",
       "id": "frontend_src_app_onboarding_page_onboardingpage",
       "community": 54,
-      "community_name": "useAuthStore",
+      "community_name": "useStore",
       "norm_label": "onboardingpage()"
     },
     {
@@ -11451,7 +11451,7 @@
       "_origin": "ast",
       "id": "frontend_src_components_billing_subscriptionguard",
       "community": 54,
-      "community_name": "useAuthStore",
+      "community_name": "useStore",
       "norm_label": "subscriptionguard.tsx"
     },
     {
@@ -11462,7 +11462,7 @@
       "_origin": "ast",
       "id": "frontend_src_components_billing_subscriptionguard_tier_meta",
       "community": 54,
-      "community_name": "useAuthStore",
+      "community_name": "useStore",
       "norm_label": "tier_meta"
     },
     {
@@ -11473,7 +11473,7 @@
       "_origin": "ast",
       "id": "frontend_src_components_billing_subscriptionguard_subscriptionguard",
       "community": 54,
-      "community_name": "useAuthStore",
+      "community_name": "useStore",
       "norm_label": "subscriptionguard()"
     },
     {
@@ -11626,8 +11626,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "frontend_src_components_common_rupiahinput",
-      "community": 19,
-      "community_name": "fetchApi",
+      "community": 57,
+      "community_name": "PostComposerModal.tsx",
       "norm_label": "rupiahinput.tsx"
     },
     {
@@ -11637,8 +11637,8 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "frontend_src_components_common_rupiahinput_rupiahinputprops",
-      "community": 19,
-      "community_name": "fetchApi",
+      "community": 57,
+      "community_name": "PostComposerModal.tsx",
       "norm_label": "rupiahinputprops"
     },
     {
@@ -11648,8 +11648,8 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "frontend_src_components_common_rupiahinput_formatnumbertorupiahstring",
-      "community": 19,
-      "community_name": "fetchApi",
+      "community": 57,
+      "community_name": "PostComposerModal.tsx",
       "norm_label": "formatnumbertorupiahstring()"
     },
     {
@@ -11659,8 +11659,8 @@
       "source_location": "L21",
       "_origin": "ast",
       "id": "frontend_src_components_common_rupiahinput_parserupiahstringtonumber",
-      "community": 19,
-      "community_name": "fetchApi",
+      "community": 57,
+      "community_name": "PostComposerModal.tsx",
       "norm_label": "parserupiahstringtonumber()"
     },
     {
@@ -11670,8 +11670,8 @@
       "source_location": "L28",
       "_origin": "ast",
       "id": "frontend_src_components_common_rupiahinput_getterbilangshort",
-      "community": 19,
-      "community_name": "fetchApi",
+      "community": 57,
+      "community_name": "PostComposerModal.tsx",
       "norm_label": "getterbilangshort()"
     },
     {
@@ -11681,8 +11681,8 @@
       "source_location": "L45",
       "_origin": "ast",
       "id": "frontend_src_components_common_rupiahinput_rupiahinput",
-      "community": 19,
-      "community_name": "fetchApi",
+      "community": 57,
+      "community_name": "PostComposerModal.tsx",
       "norm_label": "rupiahinput()"
     },
     {
@@ -11824,7 +11824,7 @@
       "source_location": "L274",
       "_origin": "ast",
       "id": "frontend_src_components_common_shieraaireportwidget_shieraaireportwidget",
-      "community": 1,
+      "community": 54,
       "community_name": "useStore",
       "norm_label": "shieraaireportwidget()"
     },
@@ -11869,7 +11869,7 @@
       "_origin": "ast",
       "id": "frontend_src_components_common_splashscreen",
       "community": 54,
-      "community_name": "useAuthStore",
+      "community_name": "useStore",
       "norm_label": "splashscreen.tsx"
     },
     {
@@ -11880,7 +11880,7 @@
       "_origin": "ast",
       "id": "frontend_src_components_common_splashscreen_public_splash_paths",
       "community": 54,
-      "community_name": "useAuthStore",
+      "community_name": "useStore",
       "norm_label": "public_splash_paths"
     },
     {
@@ -11891,7 +11891,7 @@
       "_origin": "ast",
       "id": "frontend_src_components_common_splashscreen_splashscreen",
       "community": 54,
-      "community_name": "useAuthStore",
+      "community_name": "useStore",
       "norm_label": "splashscreen()"
     },
     {
@@ -11901,7 +11901,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "frontend_src_components_common_uploadprogresswidget",
-      "community": 1,
+      "community": 54,
       "community_name": "useStore",
       "norm_label": "uploadprogresswidget.tsx"
     },
@@ -11912,7 +11912,7 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "frontend_src_components_common_uploadprogresswidget_uploadprogresswidget",
-      "community": 1,
+      "community": 54,
       "community_name": "useStore",
       "norm_label": "uploadprogresswidget()"
     },
@@ -12254,7 +12254,7 @@
       "_origin": "ast",
       "id": "frontend_src_components_layout_applayout",
       "community": 54,
-      "community_name": "useAuthStore",
+      "community_name": "useStore",
       "norm_label": "applayout.tsx"
     },
     {
@@ -12265,7 +12265,7 @@
       "_origin": "ast",
       "id": "frontend_src_components_layout_applayout_public_paths",
       "community": 54,
-      "community_name": "useAuthStore",
+      "community_name": "useStore",
       "norm_label": "public_paths"
     },
     {
@@ -12276,7 +12276,7 @@
       "_origin": "ast",
       "id": "frontend_src_components_layout_applayout_applayout",
       "community": 54,
-      "community_name": "useAuthStore",
+      "community_name": "useStore",
       "norm_label": "applayout()"
     },
     {
@@ -12287,7 +12287,7 @@
       "_origin": "ast",
       "id": "frontend_src_components_layout_header",
       "community": 54,
-      "community_name": "useAuthStore",
+      "community_name": "useStore",
       "norm_label": "header.tsx"
     },
     {
@@ -12298,7 +12298,7 @@
       "_origin": "ast",
       "id": "frontend_src_components_layout_header_tier_colors",
       "community": 54,
-      "community_name": "useAuthStore",
+      "community_name": "useStore",
       "norm_label": "tier_colors"
     },
     {
@@ -12309,7 +12309,7 @@
       "_origin": "ast",
       "id": "frontend_src_components_layout_header_header",
       "community": 54,
-      "community_name": "useAuthStore",
+      "community_name": "useStore",
       "norm_label": "header()"
     },
     {
@@ -12319,8 +12319,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "frontend_src_components_layout_sidebar",
-      "community": 54,
-      "community_name": "useAuthStore",
+      "community": 28,
+      "community_name": "Sidebar.tsx",
       "norm_label": "sidebar.tsx"
     },
     {
@@ -12330,8 +12330,8 @@
       "source_location": "L19",
       "_origin": "ast",
       "id": "frontend_src_components_layout_sidebar_sidebarprops",
-      "community": 54,
-      "community_name": "useAuthStore",
+      "community": 28,
+      "community_name": "Sidebar.tsx",
       "norm_label": "sidebarprops"
     },
     {
@@ -12341,8 +12341,8 @@
       "source_location": "L24",
       "_origin": "ast",
       "id": "frontend_src_components_layout_sidebar_tier_icons",
-      "community": 54,
-      "community_name": "useAuthStore",
+      "community": 28,
+      "community_name": "Sidebar.tsx",
       "norm_label": "tier_icons"
     },
     {
@@ -12352,8 +12352,8 @@
       "source_location": "L31",
       "_origin": "ast",
       "id": "frontend_src_components_layout_sidebar_tier_colors",
-      "community": 54,
-      "community_name": "useAuthStore",
+      "community": 28,
+      "community_name": "Sidebar.tsx",
       "norm_label": "tier_colors"
     },
     {
@@ -12363,8 +12363,8 @@
       "source_location": "L38",
       "_origin": "ast",
       "id": "frontend_src_components_layout_sidebar_sidebar",
-      "community": 54,
-      "community_name": "useAuthStore",
+      "community": 28,
+      "community_name": "Sidebar.tsx",
       "norm_label": "sidebar()"
     },
     {
@@ -12463,7 +12463,7 @@
       "_origin": "ast",
       "id": "frontend_src_components_profile_accountsettingsmodal",
       "community": 54,
-      "community_name": "useAuthStore",
+      "community_name": "useStore",
       "norm_label": "accountsettingsmodal.tsx"
     },
     {
@@ -12474,7 +12474,7 @@
       "_origin": "ast",
       "id": "frontend_src_components_profile_accountsettingsmodal_accountsettingsmodal",
       "community": 54,
-      "community_name": "useAuthStore",
+      "community_name": "useStore",
       "norm_label": "accountsettingsmodal()"
     },
     {
@@ -12485,7 +12485,7 @@
       "_origin": "ast",
       "id": "frontend_src_components_providers_authprovider",
       "community": 28,
-      "community_name": "AuthProvider.tsx",
+      "community_name": "Sidebar.tsx",
       "norm_label": "authprovider.tsx"
     },
     {
@@ -12496,7 +12496,7 @@
       "_origin": "ast",
       "id": "frontend_src_components_providers_authprovider_authprovider",
       "community": 28,
-      "community_name": "AuthProvider.tsx",
+      "community_name": "Sidebar.tsx",
       "norm_label": "authprovider()"
     },
     {
@@ -12507,7 +12507,7 @@
       "_origin": "ast",
       "id": "frontend_src_components_providers_providers",
       "community": 28,
-      "community_name": "AuthProvider.tsx",
+      "community_name": "Sidebar.tsx",
       "norm_label": "providers.tsx"
     },
     {
@@ -12518,7 +12518,7 @@
       "_origin": "ast",
       "id": "frontend_src_components_providers_providers_providers",
       "community": 28,
-      "community_name": "AuthProvider.tsx",
+      "community_name": "Sidebar.tsx",
       "norm_label": "providers()"
     },
     {
@@ -12528,8 +12528,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "frontend_src_components_tour_apptour",
-      "community": 10,
-      "community_name": "AppTour.tsx",
+      "community": 29,
+      "community_name": "queue/page.tsx",
       "norm_label": "apptour.tsx"
     },
     {
@@ -12539,8 +12539,8 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "frontend_src_components_tour_apptour_startapptour",
-      "community": 54,
-      "community_name": "useAuthStore",
+      "community": 29,
+      "community_name": "queue/page.tsx",
       "norm_label": "startapptour()"
     },
     {
@@ -12550,8 +12550,8 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "frontend_src_components_tour_apptour_apptour",
-      "community": 10,
-      "community_name": "AppTour.tsx",
+      "community": 29,
+      "community_name": "queue/page.tsx",
       "norm_label": "apptour()"
     },
     {
@@ -12561,8 +12561,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "frontend_src_components_tour_helpmodal",
-      "community": 54,
-      "community_name": "useAuthStore",
+      "community": 29,
+      "community_name": "queue/page.tsx",
       "norm_label": "helpmodal.tsx"
     },
     {
@@ -12572,8 +12572,8 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "frontend_src_components_tour_helpmodal_openhelpcenter",
-      "community": 54,
-      "community_name": "useAuthStore",
+      "community": 28,
+      "community_name": "Sidebar.tsx",
       "norm_label": "openhelpcenter()"
     },
     {
@@ -12583,8 +12583,8 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "frontend_src_components_tour_helpmodal_helpmodal",
-      "community": 54,
-      "community_name": "useAuthStore",
+      "community": 29,
+      "community_name": "queue/page.tsx",
       "norm_label": "helpmodal()"
     },
     {
@@ -12594,8 +12594,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "frontend_src_components_tour_toursteps",
-      "community": 10,
-      "community_name": "AppTour.tsx",
+      "community": 29,
+      "community_name": "queue/page.tsx",
       "norm_label": "toursteps.ts"
     },
     {
@@ -12605,8 +12605,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "frontend_src_components_tour_toursteps_tourstep",
-      "community": 10,
-      "community_name": "AppTour.tsx",
+      "community": 29,
+      "community_name": "queue/page.tsx",
       "norm_label": "tourstep"
     },
     {
@@ -12616,8 +12616,8 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "frontend_src_components_tour_toursteps_default_tour_steps",
-      "community": 10,
-      "community_name": "AppTour.tsx",
+      "community": 29,
+      "community_name": "queue/page.tsx",
       "norm_label": "default_tour_steps"
     },
     {
@@ -12627,8 +12627,8 @@
       "source_location": "L54",
       "_origin": "ast",
       "id": "frontend_src_components_tour_toursteps_composer_tour_steps",
-      "community": 10,
-      "community_name": "AppTour.tsx",
+      "community": 29,
+      "community_name": "queue/page.tsx",
       "norm_label": "composer_tour_steps"
     },
     {
@@ -12638,8 +12638,8 @@
       "source_location": "L106",
       "_origin": "ast",
       "id": "frontend_src_components_tour_toursteps_queue_tour_steps",
-      "community": 10,
-      "community_name": "AppTour.tsx",
+      "community": 29,
+      "community_name": "queue/page.tsx",
       "norm_label": "queue_tour_steps"
     },
     {
@@ -12649,8 +12649,8 @@
       "source_location": "L151",
       "_origin": "ast",
       "id": "frontend_src_components_tour_toursteps_accounts_tour_steps",
-      "community": 10,
-      "community_name": "AppTour.tsx",
+      "community": 29,
+      "community_name": "queue/page.tsx",
       "norm_label": "accounts_tour_steps"
     },
     {
@@ -12660,8 +12660,8 @@
       "source_location": "L182",
       "_origin": "ast",
       "id": "frontend_src_components_tour_toursteps_calendar_tour_steps",
-      "community": 10,
-      "community_name": "AppTour.tsx",
+      "community": 29,
+      "community_name": "queue/page.tsx",
       "norm_label": "calendar_tour_steps"
     },
     {
@@ -12671,8 +12671,8 @@
       "source_location": "L213",
       "_origin": "ast",
       "id": "frontend_src_components_tour_toursteps_agent_tour_steps",
-      "community": 10,
-      "community_name": "AppTour.tsx",
+      "community": 29,
+      "community_name": "queue/page.tsx",
       "norm_label": "agent_tour_steps"
     },
     {
@@ -12682,8 +12682,8 @@
       "source_location": "L244",
       "_origin": "ast",
       "id": "frontend_src_components_tour_toursteps_statistics_tour_steps",
-      "community": 10,
-      "community_name": "AppTour.tsx",
+      "community": 29,
+      "community_name": "queue/page.tsx",
       "norm_label": "statistics_tour_steps"
     },
     {
@@ -12693,8 +12693,8 @@
       "source_location": "L275",
       "_origin": "ast",
       "id": "frontend_src_components_tour_toursteps_clients_tour_steps",
-      "community": 10,
-      "community_name": "AppTour.tsx",
+      "community": 29,
+      "community_name": "queue/page.tsx",
       "norm_label": "clients_tour_steps"
     },
     {
@@ -12704,8 +12704,8 @@
       "source_location": "L299",
       "_origin": "ast",
       "id": "frontend_src_components_tour_toursteps_tour_flows",
-      "community": 10,
-      "community_name": "AppTour.tsx",
+      "community": 29,
+      "community_name": "queue/page.tsx",
       "norm_label": "tour_flows"
     },
     {
@@ -12749,7 +12749,7 @@
       "_origin": "ast",
       "id": "frontend_src_lib_auth",
       "community": 28,
-      "community_name": "AuthProvider.tsx",
+      "community_name": "Sidebar.tsx",
       "norm_label": "auth.ts"
     },
     {
@@ -12759,8 +12759,8 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "frontend_src_lib_auth_signinwithgoogle",
-      "community": 54,
-      "community_name": "useAuthStore",
+      "community": 28,
+      "community_name": "Sidebar.tsx",
       "norm_label": "signinwithgoogle()"
     },
     {
@@ -12770,8 +12770,8 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "frontend_src_lib_auth_signout",
-      "community": 54,
-      "community_name": "useAuthStore",
+      "community": 28,
+      "community_name": "Sidebar.tsx",
       "norm_label": "signout()"
     },
     {
@@ -12782,7 +12782,7 @@
       "_origin": "ast",
       "id": "frontend_src_lib_auth_getidtoken",
       "community": 28,
-      "community_name": "AuthProvider.tsx",
+      "community_name": "Sidebar.tsx",
       "norm_label": "getidtoken()"
     },
     {
@@ -12793,7 +12793,7 @@
       "_origin": "ast",
       "id": "frontend_src_lib_auth_onauthchange",
       "community": 28,
-      "community_name": "AuthProvider.tsx",
+      "community_name": "Sidebar.tsx",
       "norm_label": "onauthchange()"
     },
     {
@@ -12804,7 +12804,7 @@
       "_origin": "ast",
       "id": "frontend_src_lib_firebase",
       "community": 28,
-      "community_name": "AuthProvider.tsx",
+      "community_name": "Sidebar.tsx",
       "norm_label": "firebase.ts"
     },
     {
@@ -12815,7 +12815,7 @@
       "_origin": "ast",
       "id": "frontend_src_lib_firebase_firebaseconfig",
       "community": 28,
-      "community_name": "AuthProvider.tsx",
+      "community_name": "Sidebar.tsx",
       "norm_label": "firebaseconfig"
     },
     {
@@ -12826,7 +12826,7 @@
       "_origin": "ast",
       "id": "frontend_src_lib_firebase_auth",
       "community": 28,
-      "community_name": "AuthProvider.tsx",
+      "community_name": "Sidebar.tsx",
       "norm_label": "auth"
     },
     {
@@ -12837,7 +12837,7 @@
       "_origin": "ast",
       "id": "frontend_src_lib_firebase_googleprovider",
       "community": 28,
-      "community_name": "AuthProvider.tsx",
+      "community_name": "Sidebar.tsx",
       "norm_label": "googleprovider"
     },
     {
@@ -12847,7 +12847,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "frontend_src_lib_uploadmanager",
-      "community": 1,
+      "community": 54,
       "community_name": "useStore",
       "norm_label": "uploadmanager.ts"
     },
@@ -12870,7 +12870,7 @@
       "_origin": "ast",
       "id": "frontend_src_store_authstore",
       "community": 54,
-      "community_name": "useAuthStore",
+      "community_name": "useStore",
       "norm_label": "authstore.ts"
     },
     {
@@ -12881,7 +12881,7 @@
       "_origin": "ast",
       "id": "frontend_src_store_authstore_subscriptioninfo",
       "community": 54,
-      "community_name": "useAuthStore",
+      "community_name": "useStore",
       "norm_label": "subscriptioninfo"
     },
     {
@@ -12892,7 +12892,7 @@
       "_origin": "ast",
       "id": "frontend_src_store_authstore_authuser",
       "community": 54,
-      "community_name": "useAuthStore",
+      "community_name": "useStore",
       "norm_label": "authuser"
     },
     {
@@ -12903,7 +12903,7 @@
       "_origin": "ast",
       "id": "frontend_src_store_authstore_authstate",
       "community": 54,
-      "community_name": "useAuthStore",
+      "community_name": "useStore",
       "norm_label": "authstate"
     },
     {
@@ -12914,7 +12914,7 @@
       "_origin": "ast",
       "id": "frontend_src_store_authstore_useauthstore",
       "community": 54,
-      "community_name": "useAuthStore",
+      "community_name": "useStore",
       "norm_label": "useauthstore"
     },
     {
@@ -13111,8 +13111,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "frontend_src_store_usesplashstore",
-      "community": 54,
-      "community_name": "useAuthStore",
+      "community": 28,
+      "community_name": "Sidebar.tsx",
       "norm_label": "usesplashstore.ts"
     },
     {
@@ -13122,8 +13122,8 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "frontend_src_store_usesplashstore_splashstate",
-      "community": 54,
-      "community_name": "useAuthStore",
+      "community": 28,
+      "community_name": "Sidebar.tsx",
       "norm_label": "splashstate"
     },
     {
@@ -13133,8 +13133,8 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "frontend_src_store_usesplashstore_usesplashstore",
-      "community": 54,
-      "community_name": "useAuthStore",
+      "community": 28,
+      "community_name": "Sidebar.tsx",
       "norm_label": "usesplashstore"
     },
     {
@@ -13144,7 +13144,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "frontend_src_store_usestore",
-      "community": 1,
+      "community": 54,
       "community_name": "useStore",
       "norm_label": "usestore.ts"
     },
@@ -13155,7 +13155,7 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "frontend_src_store_usestore_workspace",
-      "community": 1,
+      "community": 54,
       "community_name": "useStore",
       "norm_label": "workspace"
     },
@@ -13166,7 +13166,7 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "frontend_src_store_usestore_client",
-      "community": 1,
+      "community": 54,
       "community_name": "useStore",
       "norm_label": "client"
     },
@@ -13177,7 +13177,7 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "frontend_src_store_usestore_uploadtask",
-      "community": 1,
+      "community": 54,
       "community_name": "useStore",
       "norm_label": "uploadtask"
     },
@@ -13188,7 +13188,7 @@
       "source_location": "L27",
       "_origin": "ast",
       "id": "frontend_src_store_usestore_storestate",
-      "community": 1,
+      "community": 54,
       "community_name": "useStore",
       "norm_label": "storestate"
     },
@@ -13196,10 +13196,10 @@
       "label": "useStore",
       "file_type": "code",
       "source_file": "frontend/src/store/useStore.ts",
-      "source_location": "L58",
+      "source_location": "L60",
       "_origin": "ast",
       "id": "frontend_src_store_usestore_usestore",
-      "community": 1,
+      "community": 54,
       "community_name": "useStore",
       "norm_label": "usestore"
     },
@@ -44478,7 +44478,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "frontend/src/app/accounts/page.tsx",
-      "source_location": "L492",
+      "source_location": "L506",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_src_app_accounts_page_accountspage",
@@ -51303,7 +51303,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "frontend/src/components/posts/PostComposerModal.tsx",
-      "source_location": "L450",
+      "source_location": "L452",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_src_components_posts_postcomposermodal_postcomposermodal",
@@ -51315,7 +51315,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "frontend/src/components/posts/PostComposerModal.tsx",
-      "source_location": "L88",
+      "source_location": "L90",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_src_components_posts_postcomposermodal_postcomposermodal",
@@ -52379,7 +52379,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/src/store/useStore.ts",
-      "source_location": "L58",
+      "source_location": "L60",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_src_store_usestore",
@@ -56084,5 +56084,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "e3834844353bd053882a42115704d6aa1b5e6f68"
+  "built_at_commit": "e307bcb8dc3fd3ac18dc2eacef82c1f1fbe9607b"
 }

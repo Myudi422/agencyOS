@@ -20,8 +20,8 @@
     "semantic_hash": ""
   },
   "backend/database.py": {
-    "mtime": 1785417831.460265,
-    "ast_hash": "4a9bcf6b9665fec2eb473692f869f877",
+    "mtime": 1786592139.943316,
+    "ast_hash": "1e42e9aa689ea010e2b1490cffb23794",
     "semantic_hash": ""
   },
   "backend/fix_stuck_posts.py": {
@@ -250,8 +250,8 @@
     "semantic_hash": ""
   },
   "frontend/src/app/accounts/page.tsx": {
-    "mtime": 1786540847.2108223,
-    "ast_hash": "943d2a8cec89dd9098fb2b1fc7f87ef8",
+    "mtime": 1786593098.4843466,
+    "ast_hash": "ed4e3ee798282ad1f8501166a6fc3c02",
     "semantic_hash": ""
   },
   "frontend/src/app/activity/page.tsx": {
@@ -465,8 +465,8 @@
     "semantic_hash": ""
   },
   "frontend/src/components/posts/PostComposerModal.tsx": {
-    "mtime": 1786539652.3652728,
-    "ast_hash": "0db1d7f2c15857b00e60a2487b77bd06",
+    "mtime": 1786593063.3047988,
+    "ast_hash": "008c865ee65333ed7a1ad6bec174cf41",
     "semantic_hash": ""
   },
   "frontend/src/components/profile/AccountSettingsModal.tsx": {
@@ -525,8 +525,8 @@
     "semantic_hash": ""
   },
   "frontend/src/store/useStore.ts": {
-    "mtime": 1786019670.4990268,
-    "ast_hash": "681b2b2936e35851f5f532834bd53881",
+    "mtime": 1786593044.166295,
+    "ast_hash": "0f55411836d5763d036fce0b443f371e",
     "semantic_hash": ""
   },
   "frontend/src/store/useToastStore.ts": {
@@ -610,8 +610,8 @@
     "semantic_hash": ""
   },
   "backend/requirements.txt": {
-    "mtime": 1786536732.3239274,
-    "ast_hash": "a3b285581da2bf943438c08f8331ea09",
+    "mtime": 1786592461.6311972,
+    "ast_hash": "74b6510f7c292523fd8c35e16da303bd",
     "semantic_hash": ""
   },
   "implementation_plan.md": {
@@ -640,8 +640,8 @@
     "semantic_hash": ""
   },
   "requirements.txt": {
-    "mtime": 1786536732.3886392,
-    "ast_hash": "a68dede99f2ef87f16df5814bfec1981",
+    "mtime": 1786592465.4539409,
+    "ast_hash": "74b6510f7c292523fd8c35e16da303bd",
     "semantic_hash": ""
   },
   "favicon/android-chrome-192x192.png": {
@@ -842,6 +842,11 @@
   "frontend/src/components/tour/HelpModal.tsx": {
     "mtime": 1786541046.4240217,
     "ast_hash": "568da64660f54bef53f670e62a2ff3ee",
+    "semantic_hash": ""
+  },
+  "api/requirements.txt": {
+    "mtime": 1786592198.4227128,
+    "ast_hash": "74b6510f7c292523fd8c35e16da303bd",
     "semantic_hash": ""
   }
 }

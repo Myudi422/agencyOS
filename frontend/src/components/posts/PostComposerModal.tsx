@@ -6,7 +6,7 @@ import {
   X, Image as ImageIcon, Video, Layers,
   Send, Clock, Save, CheckCircle2, Sparkles, Folder, Check, Calendar,
   Youtube, MessageSquare, Instagram as InstagramIcon, Twitter, Facebook as FacebookIcon, Share2,
-  Eye, Edit3, Settings2, Link as LinkIcon, AlertCircle, Plus, Play, RefreshCw, AlertTriangle,
+  Eye, EyeOff, Edit3, Settings2, Link as LinkIcon, AlertCircle, Plus, Play, RefreshCw, AlertTriangle,
   ChevronLeft, ChevronRight, UploadCloud, Info, Globe, Minus, Copy, ChevronDown, HelpCircle
 } from "lucide-react";
 import { useStore } from "@/store/useStore";
@@ -84,7 +84,9 @@ export default function PostComposerModal() {
     activeClientId,
     composerPreselectedAccounts,
     composerInitialPost,
-    composerInitialBrief
+    composerInitialBrief,
+    isAccountsMasked,
+    toggleAccountsMasked
   } = useStore();
 
   // Mobile View Switcher (Editor vs Preview)
@@ -1251,12 +1253,27 @@ export default function PostComposerModal() {
                       {selectedAccountIds.length} Selected
                     </span>
                   </label>
-                  <button
-                    onClick={selectAllAccounts}
-                    className="text-[11px] text-purple-600 hover:underline font-semibold cursor-pointer"
-                  >
-                    Select All Compatible
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={toggleAccountsMasked}
+                      className={`px-2 py-0.5 rounded-lg border text-[10.5px] font-bold flex items-center gap-1 transition-all cursor-pointer ${
+                        isAccountsMasked
+                          ? "bg-amber-100 text-amber-800 border-amber-300 shadow-2xs"
+                          : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50"
+                      }`}
+                      title={isAccountsMasked ? "Tampilkan Nama & Foto Akun" : "Samarkan Nama & Foto Akun (Privacy Mode)"}
+                    >
+                      {isAccountsMasked ? <EyeOff className="w-3 h-3 text-amber-600" /> : <Eye className="w-3 h-3 text-slate-500" />}
+                      <span>{isAccountsMasked ? "Buka Blur" : "Samarkan"}</span>
+                    </button>
+                    <button
+                      onClick={selectAllAccounts}
+                      className="text-[11px] text-purple-600 hover:underline font-semibold cursor-pointer"
+                    >
+                      Select All Compatible
+                    </button>
+                  </div>
                 </div>
 
                 {/* Flex Wrap Container for Desktop & Touch-Scroll for Mobile */}
@@ -1291,7 +1308,7 @@ export default function PostComposerModal() {
                           key={acc.id}
                           type="button"
                           onClick={() => toggleAccountSelection(acc)}
-                          title={!compat.compatible ? compat.reason : `@${acc.username} (${badgeInfo.name})`}
+                          title={!compat.compatible ? compat.reason : isAccountsMasked ? `•••••••• (${badgeInfo.name})` : `@${acc.username} (${badgeInfo.name})`}
                           className={`flex items-center gap-1.5 px-2 py-1.5 rounded-xl border font-medium shrink-0 transition-all cursor-pointer ${!compat.compatible
                             ? "bg-slate-100 border-slate-200 text-slate-400 opacity-60 cursor-not-allowed"
                             : isSelected
@@ -1304,7 +1321,7 @@ export default function PostComposerModal() {
                             <img
                               src={acc.avatar_url || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150"}
                               alt={acc.username}
-                              className={`w-6 h-6 rounded-full object-cover border-2 ${isSelected ? "border-white/40" : "border-slate-100"} ${!compat.compatible ? "grayscale" : ""}`}
+                              className={`w-6 h-6 rounded-full object-cover border-2 ${isSelected ? "border-white/40" : "border-slate-100"} ${!compat.compatible ? "grayscale" : ""} ${isAccountsMasked ? "blur-xs select-none" : ""}`}
                             />
                             <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-white flex items-center justify-center shadow-sm">
                               <AccountPlatformIcon platform={acc.platform} className="w-2 h-2" />
@@ -1313,7 +1330,9 @@ export default function PostComposerModal() {
 
                           {/* Username & tiny platform label */}
                           <div className="flex flex-col items-start leading-tight max-w-[80px]">
-                            <span className="font-semibold text-[10px] truncate w-full">@{acc.username}</span>
+                            <span className={`font-semibold text-[10px] truncate w-full ${isAccountsMasked ? "blur-[2.5px] select-none" : ""}`}>
+                              {isAccountsMasked ? "••••••••" : `@${acc.username}`}
+                            </span>
                             <span className={`text-[7.5px] font-extrabold uppercase leading-none ${isSelected ? "text-white/70" : "text-slate-400"
                               }`}>
                               {badgeInfo.name}

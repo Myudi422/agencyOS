@@ -36,6 +36,7 @@ interface StoreState {
   composerInitialPost: any | null;
   composerInitialBrief: { caption?: string; hashtags?: string; ai_brief?: string; post_type?: string; account_ids?: string[] } | null;
   uploadTasks: UploadTask[];
+  isAccountsMasked: boolean;
 
   setWorkspaces: (workspaces: Workspace[]) => void;
   setActiveWorkspace: (ws: Workspace) => void;
@@ -48,6 +49,7 @@ interface StoreState {
   maximizeComposer: () => void;
   openSettings: () => void;
   closeSettings: () => void;
+  toggleAccountsMasked: () => void;
 
   addUploadTasks: (tasks: UploadTask[]) => void;
   updateUploadTask: (id: string, updates: Partial<UploadTask>) => void;
@@ -67,6 +69,7 @@ export const useStore = create<StoreState>((set) => ({
   composerInitialPost: null,
   composerInitialBrief: null,
   uploadTasks: [],
+  isAccountsMasked: false,
 
   setWorkspaces: (workspaces) => set({ 
     workspaces, 
@@ -88,6 +91,7 @@ export const useStore = create<StoreState>((set) => ({
   maximizeComposer: () => set({ isComposerMinimized: false }),
   openSettings: () => set({ isSettingsOpen: true }),
   closeSettings: () => set({ isSettingsOpen: false }),
+  toggleAccountsMasked: () => set((state) => ({ isAccountsMasked: !state.isAccountsMasked })),
 
 
   addUploadTasks: (newTasks) => set((state) => ({ uploadTasks: [...state.uploadTasks, ...newTasks] })),

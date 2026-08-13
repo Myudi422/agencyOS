@@ -4,7 +4,7 @@ export const dynamic = 'force-dynamic';
 
 import React, { useState, useEffect } from "react";
 import { 
-  Users2, Search, Star, RefreshCw, Trash2, FileText, Sparkles, HelpCircle,
+  Users2, Search, Star, RefreshCw, Trash2, FileText, Sparkles, HelpCircle, Eye, EyeOff,
   Instagram, Facebook, Twitter, Youtube, Share2, MessageSquare, Plus, CheckSquare, Square, X, ExternalLink, ShieldCheck, CheckCircle2, AlertTriangle, Layers, Grid, List as ListIcon
 } from "lucide-react";
 import { useStore } from "@/store/useStore";
@@ -30,7 +30,7 @@ const PLATFORMS_CONFIG = [
 ];
 
 export default function AccountsPage() {
-  const { activeWorkspace, activeClientId, openComposer } = useStore();
+  const { activeWorkspace, activeClientId, openComposer, isAccountsMasked, toggleAccountsMasked } = useStore();
 
   const [accounts, setAccounts] = useState<any[]>([]);
   const [totalAccounts, setTotalAccounts] = useState(0);
@@ -387,6 +387,20 @@ export default function AccountsPage() {
               <span>Favorit</span>
             </button>
 
+            {/* Privacy Account Masking Toggle */}
+            <button
+              onClick={toggleAccountsMasked}
+              className={`w-full sm:w-auto justify-center px-3.5 py-2.5 rounded-2xl border text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
+                isAccountsMasked
+                  ? "bg-amber-100 text-amber-800 border-amber-300 shadow-2xs font-bold"
+                  : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50"
+              }`}
+              title={isAccountsMasked ? "Tampilkan Nama & Foto Akun" : "Samarkan Nama & Foto Akun (Privacy Mode)"}
+            >
+              {isAccountsMasked ? <EyeOff className="w-3.5 h-3.5 text-amber-600" /> : <Eye className="w-3.5 h-3.5 text-slate-400" />}
+              <span>{isAccountsMasked ? "Buka Blur" : "Samarkan Akun"}</span>
+            </button>
+
             {/* Select All Button when accounts exist */}
             {accounts.length > 0 && (
               <button
@@ -515,7 +529,7 @@ export default function AccountsPage() {
                               const fallback = img.nextElementSibling as HTMLElement;
                               if (fallback) fallback.style.display = 'flex';
                             }}
-                            className="w-11 h-11 rounded-2xl object-cover border border-slate-200 shadow-2xs"
+                            className={`w-11 h-11 rounded-2xl object-cover border border-slate-200 shadow-2xs ${isAccountsMasked ? "blur-xs select-none" : ""}`}
                           />
                         ) : null}
                         <div
@@ -527,8 +541,12 @@ export default function AccountsPage() {
                         <span className="absolute -bottom-1 -right-1 flex h-3.5 w-3.5 items-center justify-center rounded-full border-2 border-white bg-emerald-500 shadow-xs" title="Terkoneksi" />
                       </div>
                       <div className="min-w-0">
-                        <h3 className="text-xs font-bold text-slate-900 truncate max-w-[130px] sm:max-w-[150px]">{acc.name || acc.username}</h3>
-                        <p className="text-[11px] text-slate-500 font-medium truncate">@{acc.username}</p>
+                        <h3 className={`text-xs font-bold text-slate-900 truncate max-w-[130px] sm:max-w-[150px] ${isAccountsMasked ? "blur-[2.5px] select-none" : ""}`}>
+                          {isAccountsMasked ? "••••••••" : (acc.name || acc.username)}
+                        </h3>
+                        <p className={`text-[11px] text-slate-500 font-medium truncate ${isAccountsMasked ? "blur-[2.5px] select-none" : ""}`}>
+                          {isAccountsMasked ? "••••••••" : `@${acc.username}`}
+                        </p>
                         <span className={`inline-block text-[9.5px] px-2 py-0.5 rounded-md font-bold mt-1 border ${platMeta.bgBadge}`}>
                           {platMeta.name}
                         </span>
@@ -628,7 +646,9 @@ export default function AccountsPage() {
                 const isBriefed = acc.briefing && Object.keys(acc.briefing).some(k => k !== 'updated_at' && Boolean(acc.briefing[k]));
                 return (
                   <tr key={acc.id} className="border-b border-slate-100 hover:bg-purple-50/40 transition-colors">
-                    <td className="py-3 px-4 font-bold text-slate-900">@{acc.username}</td>
+                    <td className={`py-3 px-4 font-bold text-slate-900 ${isAccountsMasked ? "blur-[2.5px] select-none" : ""}`}>
+                      {isAccountsMasked ? "••••••••" : `@${acc.username}`}
+                    </td>
                     <td className="py-3 px-4 capitalize">{acc.platform}</td>
                     <td className="py-3 px-4">
                       <div className="flex items-center gap-1.5">
