@@ -15,8 +15,8 @@
     "semantic_hash": ""
   },
   "backend/config.py": {
-    "mtime": 1786317214.017488,
-    "ast_hash": "b38baeef3566e6bf77710820aef1c1b1",
+    "mtime": 1786611875.7955673,
+    "ast_hash": "905eb84e7f1ed3b7a205c7aab911be2a",
     "semantic_hash": ""
   },
   "backend/database.py": {
@@ -30,8 +30,8 @@
     "semantic_hash": ""
   },
   "backend/main.py": {
-    "mtime": 1786536732.3229027,
-    "ast_hash": "e84787d199f7f56fe1ab5b0e4cd45ba5",
+    "mtime": 1786611936.2581873,
+    "ast_hash": "fd1d9fa4b28114fad68a703e74a9132c",
     "semantic_hash": ""
   },
   "backend/migrate_account_briefing.py": {
@@ -95,8 +95,8 @@
     "semantic_hash": ""
   },
   "backend/routers/admin.py": {
-    "mtime": 1786536732.3244417,
-    "ast_hash": "291c4ca5db2e1fbdf8abd5e91930adef",
+    "mtime": 1786611962.7654371,
+    "ast_hash": "3bbb801c16a6852540489e0599955a1b",
     "semantic_hash": ""
   },
   "backend/routers/auth.py": {
@@ -105,8 +105,8 @@
     "semantic_hash": ""
   },
   "backend/routers/billing.py": {
-    "mtime": 1786537590.692753,
-    "ast_hash": "c65e148a7b0184d7d4ff445db15d1058",
+    "mtime": 1786612397.8311238,
+    "ast_hash": "aedbb78724f963271eac3b7b1a70755a",
     "semantic_hash": ""
   },
   "backend/routers/calendar.py": {
@@ -155,8 +155,8 @@
     "semantic_hash": ""
   },
   "backend/routers/webhook.py": {
-    "mtime": 1785245324.165674,
-    "ast_hash": "b756fcb0d32a6115d1ad3cc06b408c68",
+    "mtime": 1786611926.1592448,
+    "ast_hash": "3b6cfc85b5b81b378bb51ba1e3a106a1",
     "semantic_hash": ""
   },
   "backend/routers/workspaces.py": {
@@ -750,8 +750,8 @@
     "semantic_hash": ""
   },
   "backend/security.py": {
-    "mtime": 1786610770.5589433,
-    "ast_hash": "de260356812aea37cee8acf08c8179a2",
+    "mtime": 1786611887.6386964,
+    "ast_hash": "70804265f4fb6cfc941d8b674e6bbf11",
     "semantic_hash": ""
   },
   "package.json": {
