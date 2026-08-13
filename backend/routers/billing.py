@@ -82,7 +82,7 @@ def list_plans(db: Session = Depends(get_db)):
     plans_sorted = sorted(plans, key=lambda p: tier_order.get(p.tier.value if hasattr(p.tier, "value") else str(p.tier), 99))
     return [
         {
-            "id": p.id,
+            # Note: internal 'id' UUID intentionally omitted from public endpoint
             "tier": p.tier,
             "name": p.name,
             "description": p.description,

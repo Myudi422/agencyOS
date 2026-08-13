@@ -15,6 +15,7 @@ from backend.models.models import (
     User, SubscriptionPlan, UserSubscription, SubscriptionStatus, PlanTier, Setting
 )
 from backend.config import settings
+from backend.security import sanitize_text
 
 logger = logging.getLogger("AdminRouter")
 router = APIRouter(prefix="/admin", tags=["Admin"])
@@ -344,12 +345,17 @@ def assign_plan_by_email(
     """
     from backend.models.models import Workspace, WorkspaceMember, RoleEnum
 
+    # Sanitize & normalize email input
+    email = sanitize_text(req.email, max_length=254).lower().strip()
+    if not email or "@" not in email:
+        raise HTTPException(status_code=400, detail="Format email tidak valid.")
+
     # Find or create user
-    user = db.query(User).filter(User.email == req.email).first()
+    user = db.query(User).filter(User.email == email).first()
     if not user:
         user = User(
-            email=req.email,
-            full_name=req.email.split("@")[0].replace(".", " ").title(),
+            email=email,
+            full_name=email.split("@")[0].replace(".", " ").title(),
             avatar_url=None,
             firebase_uid=None,
             is_admin=bool(req.is_admin) if req.is_admin is not None else False,
@@ -480,24 +486,29 @@ def upsert_setting(
     db: Session = Depends(get_db)
 ):
     """Upsert a global app setting (API key, config value, etc.)."""
+    # Sanitize key (identifier)
+    safe_key = sanitize_text(req.key, max_length=120) if isinstance(req.key, str) else req.key
+    # Sanitize value if it's a string
+    safe_value = sanitize_text(req.value, max_length=4000, allow_newlines=True) if isinstance(req.value, str) else req.value
+
     existing = db.query(Setting).filter(
         Setting.workspace_id == GLOBAL_WS_ID,
-        Setting.key == req.key
+        Setting.key == safe_key
     ).first()
 
     if existing:
-        existing.value = req.value
+        existing.value = safe_value
         existing.updated_at = datetime.utcnow()
     else:
         new_setting = Setting(
             workspace_id=GLOBAL_WS_ID,
-            key=req.key,
-            value=req.value,
+            key=safe_key,
+            value=safe_value,
         )
         db.add(new_setting)
 
     db.commit()
-    return {"status": "ok", "key": req.key}
+    return {"status": "ok", "key": safe_key}
 
 
 @router.delete("/settings/{key}")

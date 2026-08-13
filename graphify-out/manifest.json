@@ -15,8 +15,8 @@
     "semantic_hash": ""
   },
   "backend/config.py": {
-    "mtime": 1786317214.017488,
-    "ast_hash": "b38baeef3566e6bf77710820aef1c1b1",
+    "mtime": 1786611875.7955673,
+    "ast_hash": "905eb84e7f1ed3b7a205c7aab911be2a",
     "semantic_hash": ""
   },
   "backend/database.py": {
@@ -30,8 +30,8 @@
     "semantic_hash": ""
   },
   "backend/main.py": {
-    "mtime": 1786536732.3229027,
-    "ast_hash": "e84787d199f7f56fe1ab5b0e4cd45ba5",
+    "mtime": 1786611936.2581873,
+    "ast_hash": "fd1d9fa4b28114fad68a703e74a9132c",
     "semantic_hash": ""
   },
   "backend/migrate_account_briefing.py": {
@@ -95,8 +95,8 @@
     "semantic_hash": ""
   },
   "backend/routers/admin.py": {
-    "mtime": 1786536732.3244417,
-    "ast_hash": "291c4ca5db2e1fbdf8abd5e91930adef",
+    "mtime": 1786611962.7654371,
+    "ast_hash": "3bbb801c16a6852540489e0599955a1b",
     "semantic_hash": ""
   },
   "backend/routers/auth.py": {
@@ -105,8 +105,8 @@
     "semantic_hash": ""
   },
   "backend/routers/billing.py": {
-    "mtime": 1786537590.692753,
-    "ast_hash": "c65e148a7b0184d7d4ff445db15d1058",
+    "mtime": 1786612397.8311238,
+    "ast_hash": "aedbb78724f963271eac3b7b1a70755a",
     "semantic_hash": ""
   },
   "backend/routers/calendar.py": {
@@ -155,8 +155,8 @@
     "semantic_hash": ""
   },
   "backend/routers/webhook.py": {
-    "mtime": 1785245324.165674,
-    "ast_hash": "b756fcb0d32a6115d1ad3cc06b408c68",
+    "mtime": 1786611926.1592448,
+    "ast_hash": "3b6cfc85b5b81b378bb51ba1e3a106a1",
     "semantic_hash": ""
   },
   "backend/routers/workspaces.py": {
@@ -335,8 +335,8 @@
     "semantic_hash": ""
   },
   "frontend/src/app/pricing/page.tsx": {
-    "mtime": 1786600379.27996,
-    "ast_hash": "0370951dda2715d50aef53d49f51e585",
+    "mtime": 1786600594.8137343,
+    "ast_hash": "2fa3c04a0cc4e3b980a92ee780bba98e",
     "semantic_hash": ""
   },
   "frontend/src/app/queue/page.tsx": {
@@ -750,8 +750,8 @@
     "semantic_hash": ""
   },
   "backend/security.py": {
-    "mtime": 1786019670.4823706,
-    "ast_hash": "5a5bee32e9bc434d26ecc5ca2fff4090",
+    "mtime": 1786611887.6386964,
+    "ast_hash": "70804265f4fb6cfc941d8b674e6bbf11",
     "semantic_hash": ""
   },
   "package.json": {
@@ -857,6 +857,2021 @@
   "frontend/src/app/terms/page.tsx": {
     "mtime": 1786600362.3280742,
     "ast_hash": "7f39050975a49dcd5f978d89785f76df",
+    "semantic_hash": ""
+  },
+  "strix/containers/docker-entrypoint.sh": {
+    "mtime": 1786610844.2313879,
+    "ast_hash": "551836c450416bf9c7ecee69de56f14c",
+    "semantic_hash": ""
+  },
+  "strix/docs/docs.json": {
+    "mtime": 1786610844.2313879,
+    "ast_hash": "08a6dce5d4bf0d33aa34834e76b216ab",
+    "semantic_hash": ""
+  },
+  "strix/pyproject.toml": {
+    "mtime": 1786610844.2443855,
+    "ast_hash": "7c886b541003b1c672139507980bb4f1",
+    "semantic_hash": ""
+  },
+  "strix/scripts/build.sh": {
+    "mtime": 1786610844.2443855,
+    "ast_hash": "4273c1d4062197bb69645280d703d786",
+    "semantic_hash": ""
+  },
+  "strix/scripts/docker.sh": {
+    "mtime": 1786610844.2443855,
+    "ast_hash": "6298c7cdbfc7cff8d9c11c6a74b02c78",
+    "semantic_hash": ""
+  },
+  "strix/scripts/install.sh": {
+    "mtime": 1786610844.2454083,
+    "ast_hash": "b7358f76c255ddcd18273ce8526eb695",
+    "semantic_hash": ""
+  },
+  "strix/scripts/tui_sidecar_hook.py": {
+    "mtime": 1786610844.2454083,
+    "ast_hash": "9a968af28e338da8987de3f657cdb2f0",
+    "semantic_hash": ""
+  },
+  "strix/strix/__init__.py": {
+    "mtime": 1786610844.2464113,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "strix/strix/agents/__init__.py": {
+    "mtime": 1786610844.2464113,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "strix/strix/agents/factory.py": {
+    "mtime": 1786610844.2474144,
+    "ast_hash": "6ba96b76f34c59332114c98f266ddc82",
+    "semantic_hash": ""
+  },
+  "strix/strix/agents/prompt.py": {
+    "mtime": 1786610844.2474144,
+    "ast_hash": "c3caa461bb901194e92970839e7998c2",
+    "semantic_hash": ""
+  },
+  "strix/strix/config/__init__.py": {
+    "mtime": 1786610844.2474144,
+    "ast_hash": "198ee7150592769d2ab8b8c946114cc8",
+    "semantic_hash": ""
+  },
+  "strix/strix/config/codex.py": {
+    "mtime": 1786610844.2474144,
+    "ast_hash": "0162510cffe7356dca12a6f2b03fcf39",
+    "semantic_hash": ""
+  },
+  "strix/strix/config/loader.py": {
+    "mtime": 1786610844.2474144,
+    "ast_hash": "63e16c0624f83cbe2cac9deacfc9279c",
+    "semantic_hash": ""
+  },
+  "strix/strix/config/models.py": {
+    "mtime": 1786610844.2489195,
+    "ast_hash": "8646f172c01a1dd39bf73133d10386d5",
+    "semantic_hash": ""
+  },
+  "strix/strix/config/settings.py": {
+    "mtime": 1786610844.2489195,
+    "ast_hash": "4c8f53f04b1ea23a432c8b9c8577cdbb",
+    "semantic_hash": ""
+  },
+  "strix/strix/config/tool_call_ids.py": {
+    "mtime": 1786610844.2489195,
+    "ast_hash": "0c8b7a645f3606acd7a91a6690bfd748",
+    "semantic_hash": ""
+  },
+  "strix/strix/config/tool_call_limits.py": {
+    "mtime": 1786610844.2489195,
+    "ast_hash": "44fc53a74a581376df4426180136f607",
+    "semantic_hash": ""
+  },
+  "strix/strix/core/__init__.py": {
+    "mtime": 1786610844.2500117,
+    "ast_hash": "a2e67b3cfa52f9eaede03c5273782c53",
+    "semantic_hash": ""
+  },
+  "strix/strix/core/agents.py": {
+    "mtime": 1786610844.2500117,
+    "ast_hash": "36ae715763726ddd3d65286b5e95c0de",
+    "semantic_hash": ""
+  },
+  "strix/strix/core/execution.py": {
+    "mtime": 1786610844.2500117,
+    "ast_hash": "04b21a7927b18850d6e27f41b6c6b832",
+    "semantic_hash": ""
+  },
+  "strix/strix/core/hooks.py": {
+    "mtime": 1786610844.2500117,
+    "ast_hash": "9cfa2ceec1d42e22fab420cc18316dfd",
+    "semantic_hash": ""
+  },
+  "strix/strix/core/inputs.py": {
+    "mtime": 1786610844.2515197,
+    "ast_hash": "a620110cab5b3452775cec14daf705d0",
+    "semantic_hash": ""
+  },
+  "strix/strix/core/paths.py": {
+    "mtime": 1786610844.2515197,
+    "ast_hash": "c302fb59494171199e38e198e920abee",
+    "semantic_hash": ""
+  },
+  "strix/strix/core/runner.py": {
+    "mtime": 1786610844.2521074,
+    "ast_hash": "b61d78e374ff950ef340f74f866176ac",
+    "semantic_hash": ""
+  },
+  "strix/strix/core/sessions.py": {
+    "mtime": 1786610844.2526176,
+    "ast_hash": "80a907c763ede07c63bc1de6263458e9",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/__init__.py": {
+    "mtime": 1786610844.2526176,
+    "ast_hash": "d820fb31d20561840900864132fe8051",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/auth_cli.py": {
+    "mtime": 1786610844.2526176,
+    "ast_hash": "1e3cbe3677d0b7e6a4c321d4671ca9bf",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/cli.py": {
+    "mtime": 1786610844.2526176,
+    "ast_hash": "2c266e5831005b4121a4c4aa621119c8",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/cli_args.py": {
+    "mtime": 1786610844.2536302,
+    "ast_hash": "9728540652822beaa48944558f962443",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/environment.py": {
+    "mtime": 1786610844.2536302,
+    "ast_hash": "06c26fc93ea47fb3f7c19f64b9524f73",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/interactive.py": {
+    "mtime": 1786610844.2536302,
+    "ast_hash": "ea54fe53bd530cb9005efdcaa9a8f05f",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/main.py": {
+    "mtime": 1786610844.2541637,
+    "ast_hash": "7f2033c44f6ac12a66f8927c162edeb4",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/scan_setup.py": {
+    "mtime": 1786610844.2541637,
+    "ast_hash": "31cb2eb24547bdde114725688236bc04",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/tui/__init__.py": {
+    "mtime": 1786610844.2541637,
+    "ast_hash": "76ee0312007d16feacf824b364127b9c",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/tui/backend/__init__.py": {
+    "mtime": 1786610844.2541637,
+    "ast_hash": "481e8d6b2219e308d386d9caec694411",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/tui/backend/controller.py": {
+    "mtime": 1786610844.2551773,
+    "ast_hash": "e8d13d2b2031b285e64318be47c01456",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/tui/backend/live_view.py": {
+    "mtime": 1786610844.2551773,
+    "ast_hash": "83a991415b667ea6d8a30a94db41b5e1",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/tui/backend/messages.py": {
+    "mtime": 1786610844.2551773,
+    "ast_hash": "7f67deb88ea8197e9230595b223be227",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/tui/backend/projection.py": {
+    "mtime": 1786610844.2551773,
+    "ast_hash": "0947869f8d2c2569c1923eec3870476a",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/tui/backend/protocol.py": {
+    "mtime": 1786610844.2551773,
+    "ast_hash": "eb247bd77720d21545184143672875a2",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/tui/backend/server.py": {
+    "mtime": 1786610844.2551773,
+    "ast_hash": "986b8c7cd37581e4caaefaec4904de9a",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/tui/cmd/strix-tui/main.go": {
+    "mtime": 1786610844.2551773,
+    "ast_hash": "269b11f0fff86d0350274b1b58879059",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/tui/go.mod": {
+    "mtime": 1786610844.2551773,
+    "ast_hash": "e00aa9e2c78722d268efa665b0aa13f1",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/tui/history.py": {
+    "mtime": 1786610844.2566779,
+    "ast_hash": "f96fed4799df65a238e7a0d9c57b79fa",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/tui/internal/app/agents.go": {
+    "mtime": 1786610844.2566779,
+    "ast_hash": "1bbb10818b6c40cf1d78b96f35cf95d3",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/tui/internal/app/client.go": {
+    "mtime": 1786610844.2566779,
+    "ast_hash": "afc1ff75ea9416e01f909b9b29cc66bf",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/tui/internal/app/client_test.go": {
+    "mtime": 1786610844.2566779,
+    "ast_hash": "1772cac76dff4719e38451ba072400cc",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/tui/internal/app/findings_test.go": {
+    "mtime": 1786610844.2566779,
+    "ast_hash": "d3379e8b9afe285236d4e9f760114e1d",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/tui/internal/app/frame_bench_test.go": {
+    "mtime": 1786610844.2576802,
+    "ast_hash": "cdfeb3fde4c52fb5b73415f295cb734b",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/tui/internal/app/input_test.go": {
+    "mtime": 1786610844.2576802,
+    "ast_hash": "01d9499df8e0f2ba4ead5972fb5d54db",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/tui/internal/app/model.go": {
+    "mtime": 1786610844.2576802,
+    "ast_hash": "de7302472863e82f7c994f9e2e5d25bb",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/tui/internal/app/model_test.go": {
+    "mtime": 1786610844.2576802,
+    "ast_hash": "0836b7ab3f4e0edc159111016d328a55",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/tui/internal/app/selection.go": {
+    "mtime": 1786610844.2576802,
+    "ast_hash": "8c858de973add993ac0d55c2ca7ce8a3",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/tui/internal/app/selection_test.go": {
+    "mtime": 1786610844.2576802,
+    "ast_hash": "a23217921840f7d40fe4f780943a24f5",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/tui/internal/app/setup.go": {
+    "mtime": 1786610844.2591848,
+    "ast_hash": "5bfd39ae38febd08fc475b6f32974eed",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/tui/internal/app/setup_log_test.go": {
+    "mtime": 1786610844.2591848,
+    "ast_hash": "fcc66f522a69597a470f4ce589cde98f",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/tui/internal/app/setup_prompt_test.go": {
+    "mtime": 1786610844.2591848,
+    "ast_hash": "de20f723aae564e0c5f53f948f83da07",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/tui/internal/app/update.go": {
+    "mtime": 1786610844.2591848,
+    "ast_hash": "2965139d652cf1bc1e1f25b72aa5bd0d",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/tui/internal/app/view.go": {
+    "mtime": 1786610844.2591848,
+    "ast_hash": "8ee59b0f12a33e9f2c4691e51e926697",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/tui/internal/app/vuln_report.go": {
+    "mtime": 1786610844.2602086,
+    "ast_hash": "30fcbe68b31f460d3442abb59b562a57",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/tui/internal/app/vulnerabilities.go": {
+    "mtime": 1786610844.2602086,
+    "ast_hash": "089478bc988f41d4e42e246593d7e0bc",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/tui/internal/app/wire.go": {
+    "mtime": 1786610844.2602086,
+    "ast_hash": "4783cc25d6cf06995e487864ec569112",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/tui/internal/protocol/protocol.go": {
+    "mtime": 1786610844.2602086,
+    "ast_hash": "d332449070c6fedb3a30ab44d7c321ca",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/tui/internal/protocol/protocol_test.go": {
+    "mtime": 1786610844.2602086,
+    "ast_hash": "4c620a30dfb2b3038dc43e51561d0890",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/tui/internal/render/agent_message.go": {
+    "mtime": 1786610844.2612102,
+    "ast_hash": "8b60f80b4bf2da776f509a547dcb472b",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/tui/internal/render/agents_graph.go": {
+    "mtime": 1786610844.2612102,
+    "ast_hash": "f97011573a75a191499dc42fae62f986",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/tui/internal/render/chat.go": {
+    "mtime": 1786610844.2612102,
+    "ast_hash": "cbd383fd6cecba34cb1a6dd931479faa",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/tui/internal/render/code.go": {
+    "mtime": 1786610844.2612102,
+    "ast_hash": "bd974f280e2c6ca8c096990aede498c4",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/tui/internal/render/dependency.go": {
+    "mtime": 1786610844.2612102,
+    "ast_hash": "0551e745eac21c3268c8476e407b86c3",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/tui/internal/render/file_edit.go": {
+    "mtime": 1786610844.2612102,
+    "ast_hash": "cd4621b62962fee3f65f90f21065d227",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/tui/internal/render/helpers.go": {
+    "mtime": 1786610844.2622106,
+    "ast_hash": "290dd967bab664e752e6fd7a3dc6f117",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/tui/internal/render/image.go": {
+    "mtime": 1786610844.2622106,
+    "ast_hash": "9c4daa58079e703067130a2858f63039",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/tui/internal/render/image_detect.go": {
+    "mtime": 1786610844.2622106,
+    "ast_hash": "95fc83bedde61daf4a55f55cefbf1cb9",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/tui/internal/render/image_detect_test.go": {
+    "mtime": 1786610844.2622106,
+    "ast_hash": "29d9a5168543aa9e24defc7ea950f383",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/tui/internal/render/image_detect_unix.go": {
+    "mtime": 1786610844.2622106,
+    "ast_hash": "74ef016459758c86381e548f34697844",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/tui/internal/render/image_detect_windows.go": {
+    "mtime": 1786610844.2622106,
+    "ast_hash": "efa978c76df3bfe3a31b1f8a03baff59",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/tui/internal/render/image_kitty.go": {
+    "mtime": 1786610844.2622106,
+    "ast_hash": "e003851413b401b9f3c0e4f6ead3e6a5",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/tui/internal/render/image_kitty_test.go": {
+    "mtime": 1786610844.2622106,
+    "ast_hash": "9be2221ff8773f584340cd543d9fb572",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/tui/internal/render/markdown_test.go": {
+    "mtime": 1786610844.2622106,
+    "ast_hash": "fd5c27cc36042a174605941a132c6a56",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/tui/internal/render/notes.go": {
+    "mtime": 1786610844.2622106,
+    "ast_hash": "c5f2b855e29707cb369690283326ed6f",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/tui/internal/render/proxy.go": {
+    "mtime": 1786610844.2622106,
+    "ast_hash": "72cbb78cdee0a5166dafd70c07b523c4",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/tui/internal/render/registry.go": {
+    "mtime": 1786610844.2622106,
+    "ast_hash": "6ff958a2039208b50236711d03ed0527",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/tui/internal/render/render_test.go": {
+    "mtime": 1786610844.2637708,
+    "ast_hash": "9981d4616530ddd1555eb7acc5f6ca8a",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/tui/internal/render/report.go": {
+    "mtime": 1786610844.2637708,
+    "ast_hash": "06c39cb2e8a6a6235c0e4c4439740a50",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/tui/internal/render/report_list.go": {
+    "mtime": 1786610844.2637708,
+    "ast_hash": "07519c68cf51d4d8e22f768dcd31d0d7",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/tui/internal/render/respond.go": {
+    "mtime": 1786610844.2637708,
+    "ast_hash": "5b0ec0dbc0907aae0afea77cdb003212",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/tui/internal/render/scan.go": {
+    "mtime": 1786610844.2643425,
+    "ast_hash": "73866685950f3eff1975bec6dbc0a838",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/tui/internal/render/simple.go": {
+    "mtime": 1786610844.2643425,
+    "ast_hash": "f28cc79d80873f7ac5ac8418b242da6d",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/tui/internal/render/styles.go": {
+    "mtime": 1786610844.2643425,
+    "ast_hash": "b1f8f4036199d358236e203f1d29297b",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/tui/internal/render/terminal.go": {
+    "mtime": 1786610844.2643425,
+    "ast_hash": "0c1b9e1a189b690ee95e7f33233f2f51",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/tui/internal/render/todo.go": {
+    "mtime": 1786610844.2643425,
+    "ast_hash": "85d0e9f132f7c9f54a91392c8afae937",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/tui/live_view.py": {
+    "mtime": 1786610844.2654278,
+    "ast_hash": "e8a50032bff10b2fd818916e6d3ea89a",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/tui/runtime.py": {
+    "mtime": 1786610844.2654278,
+    "ast_hash": "bd36b02c527530e9016b1802b537a2f2",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/tui/sidecar.py": {
+    "mtime": 1786610844.2654278,
+    "ast_hash": "df1eaf85c97676fd0e9d3eac1283fdce",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/update_check.py": {
+    "mtime": 1786610844.2659328,
+    "ast_hash": "6895ed541d3c2809912c4bb730c3e5a5",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/utils.py": {
+    "mtime": 1786610844.266443,
+    "ast_hash": "4d29caf7637469ffc870531ab23a5413",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/viewer/__init__.py": {
+    "mtime": 1786610844.266443,
+    "ast_hash": "a02c74c68678a24d6050c360a67b7a56",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/viewer/auth.py": {
+    "mtime": 1786610844.266443,
+    "ast_hash": "36ba174f9d58a3f80b37a0ae9b518d55",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/viewer/cli.py": {
+    "mtime": 1786610844.266443,
+    "ast_hash": "07de6f0065bba064c2dc702a1955423f",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/viewer/frontend/package.json": {
+    "mtime": 1786610844.2674458,
+    "ast_hash": "b8fc0765c0e9243ca3e64e550d1b7788",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/viewer/frontend/src/App.tsx": {
+    "mtime": 1786610844.2684646,
+    "ast_hash": "345ea321754baa867086f117424048df",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/viewer/frontend/src/components/AddRepositoryDialog.tsx": {
+    "mtime": 1786610844.2684646,
+    "ast_hash": "b221c10d24cd91eab3bea53e3b4ee966",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/viewer/frontend/src/components/EmailReportView.tsx": {
+    "mtime": 1786610844.2684646,
+    "ast_hash": "5edff506539f6bc841a4b341ba423b57",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/viewer/frontend/src/components/EmailVerifyInline.tsx": {
+    "mtime": 1786610844.2684646,
+    "ast_hash": "710a11912d2025d2e8f57ba155dea87b",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/viewer/frontend/src/components/FeedbackView.tsx": {
+    "mtime": 1786610844.2684646,
+    "ast_hash": "89fb1f91c6b36e5256cf928fe1e5f8e8",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/viewer/frontend/src/components/IssueSeveritySummary.tsx": {
+    "mtime": 1786610844.2694664,
+    "ast_hash": "f77cad533f4df56639666c02a0939d03",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/viewer/frontend/src/components/PastRunsView.tsx": {
+    "mtime": 1786610844.2694664,
+    "ast_hash": "0b4ec8bca87acb169c0fba07d8414b5a",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/viewer/frontend/src/components/ProCta.tsx": {
+    "mtime": 1786610844.2694664,
+    "ast_hash": "f3b636b61fe6d6e7c15ff3e9d51b9e0a",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/viewer/frontend/src/components/RunDetails.tsx": {
+    "mtime": 1786610844.2694664,
+    "ast_hash": "fb27d27ce39315dd7268f8b6c805afd5",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/viewer/frontend/src/components/Sidebar.tsx": {
+    "mtime": 1786610844.2694664,
+    "ast_hash": "23c6d4f36de0fa887c0a663d2238fabf",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/viewer/frontend/src/components/TrustToast.tsx": {
+    "mtime": 1786610844.2694664,
+    "ast_hash": "504ab4d5e067b35765d9fbbf265c320e",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/viewer/frontend/src/components/UpgradeModal.tsx": {
+    "mtime": 1786610844.2694664,
+    "ast_hash": "79e6d0175c2560a2f56b4099b40ea42e",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/viewer/frontend/src/components/live/AgentDetailModal.tsx": {
+    "mtime": 1786610844.2694664,
+    "ast_hash": "39ab2e1a2cb809a63996ab5064ef49f3",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/viewer/frontend/src/components/live/AgentGraph.tsx": {
+    "mtime": 1786610844.2709713,
+    "ast_hash": "3843ee5a3f4e130fdfd5478facdf2a50",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/viewer/frontend/src/components/live/AgentNode.tsx": {
+    "mtime": 1786610844.2709713,
+    "ast_hash": "b7428dd379594f1a8ef6450c2e4f3ccb",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/viewer/frontend/src/components/live/AgentTranscript.tsx": {
+    "mtime": 1786610844.2709713,
+    "ast_hash": "2d55dcbff9bac4ecba71bd203c55ca62",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/viewer/frontend/src/components/live/GraphSkeleton.tsx": {
+    "mtime": 1786610844.2714794,
+    "ast_hash": "dfa7e9b37fbca3c1302c0346e242e002",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/viewer/frontend/src/components/live/ScanPromptComposer.tsx": {
+    "mtime": 1786610844.2714794,
+    "ast_hash": "6316a4ed08da70125b6c9cc87f412283",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/viewer/frontend/src/components/live/tool-renderers/AgentCommsRenderer.tsx": {
+    "mtime": 1786610844.2714794,
+    "ast_hash": "ee49174149f309af4adfa1681c9dd787",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/viewer/frontend/src/components/live/tool-renderers/ApplyPatchRenderer.tsx": {
+    "mtime": 1786610844.2714794,
+    "ast_hash": "8fc1224a5cd76c64fb780dda12c5c9a5",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/viewer/frontend/src/components/live/tool-renderers/BrowserRenderer.tsx": {
+    "mtime": 1786610844.2714794,
+    "ast_hash": "38a7f7d3459d110aec0ec4ea50760643",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/viewer/frontend/src/components/live/tool-renderers/ChatBubble.tsx": {
+    "mtime": 1786610844.2714794,
+    "ast_hash": "7ab4d37f04c9c98c1788b77966cff699",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/viewer/frontend/src/components/live/tool-renderers/FallbackRenderer.tsx": {
+    "mtime": 1786610844.2724843,
+    "ast_hash": "a67aadec451c2e9748ae57d1dc77b6d7",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/viewer/frontend/src/components/live/tool-renderers/FileEditRenderer.tsx": {
+    "mtime": 1786610844.2724843,
+    "ast_hash": "6f8beaa7254b3648a2dcc174ef7df3cc",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/viewer/frontend/src/components/live/tool-renderers/FinishRenderer.tsx": {
+    "mtime": 1786610844.2724843,
+    "ast_hash": "114ad0811acf2eab38b1dbe54a9fccdd",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/viewer/frontend/src/components/live/tool-renderers/LoadSkillRenderer.tsx": {
+    "mtime": 1786610844.2724843,
+    "ast_hash": "44f64f25a4c44c92f210e1562573a2c3",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/viewer/frontend/src/components/live/tool-renderers/Markdown.tsx": {
+    "mtime": 1786610844.2724843,
+    "ast_hash": "e4108e3643c740479c51c0f6ac1e3f17",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/viewer/frontend/src/components/live/tool-renderers/NotesRenderer.tsx": {
+    "mtime": 1786610844.2724843,
+    "ast_hash": "0e7e500f5b4e21c8525ff8df1e0b3bc3",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/viewer/frontend/src/components/live/tool-renderers/ProxyRenderer.tsx": {
+    "mtime": 1786610844.2724843,
+    "ast_hash": "c0da09ed945b87e4472e15717bed3cf4",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/viewer/frontend/src/components/live/tool-renderers/PythonRenderer.tsx": {
+    "mtime": 1786610844.2734864,
+    "ast_hash": "3b9f0314e2f543473d851272a797af19",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/viewer/frontend/src/components/live/tool-renderers/ReportListRenderer.tsx": {
+    "mtime": 1786610844.2734864,
+    "ast_hash": "7226d6358dcb32246d9560b153d29370",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/viewer/frontend/src/components/live/tool-renderers/RespondRenderer.tsx": {
+    "mtime": 1786610844.2734864,
+    "ast_hash": "5dc3d3e626c16932c4a023c5708e271a",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/viewer/frontend/src/components/live/tool-renderers/ScanInfoRenderer.tsx": {
+    "mtime": 1786610844.2734864,
+    "ast_hash": "9e45c518b6be872d298a5523375b7df5",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/viewer/frontend/src/components/live/tool-renderers/TerminalRenderer.tsx": {
+    "mtime": 1786610844.2734864,
+    "ast_hash": "f9a4d6b8021aff5edf35611665511e51",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/viewer/frontend/src/components/live/tool-renderers/ThinkRenderer.tsx": {
+    "mtime": 1786610844.2734864,
+    "ast_hash": "60e8d54aa886bd460343fb131a1e516d",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/viewer/frontend/src/components/live/tool-renderers/TodoRenderer.tsx": {
+    "mtime": 1786610844.2734864,
+    "ast_hash": "fa20c1ecd752aa9ae01b597b91474fba",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/viewer/frontend/src/components/live/tool-renderers/ToolCard.tsx": {
+    "mtime": 1786610844.2734864,
+    "ast_hash": "be9315b91f8ff2f2038d52c058bbcb8d",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/viewer/frontend/src/components/live/tool-renderers/ViewImageRenderer.tsx": {
+    "mtime": 1786610844.2744863,
+    "ast_hash": "bc47f7592b2d5f6f022e3d45d4ac96f7",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/viewer/frontend/src/components/live/tool-renderers/VulnReportRenderer.tsx": {
+    "mtime": 1786610844.2744863,
+    "ast_hash": "4b2a4bae43452d58f1223e991cfb63db",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/viewer/frontend/src/components/live/tool-renderers/WebSearchRenderer.tsx": {
+    "mtime": 1786610844.2744863,
+    "ast_hash": "0108efb34e87bb0a2f14290dc751003d",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/viewer/frontend/src/components/live/tool-renderers/index.ts": {
+    "mtime": 1786610844.2744863,
+    "ast_hash": "2141452f56c13eda9c7b6c58d67dbf21",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/viewer/frontend/src/components/live/tool-renderers/utils.ts": {
+    "mtime": 1786610844.2744863,
+    "ast_hash": "692c88256d2f8dafcfe007d35737ab5f",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/viewer/frontend/src/components/vulnerability/CodeDiffBlock.tsx": {
+    "mtime": 1786610844.2744863,
+    "ast_hash": "9dd93b4105785bb69a99e1b9e001376f",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/viewer/frontend/src/components/vulnerability/ContentSection.tsx": {
+    "mtime": 1786610844.2744863,
+    "ast_hash": "89688dd1f9559c5708ba953ff34ca10d",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/viewer/frontend/src/components/vulnerability/IssueSidebar.tsx": {
+    "mtime": 1786610844.2754984,
+    "ast_hash": "0e655a7372f7a2738f0839d6222bad2f",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/viewer/frontend/src/components/vulnerability/MdCodeBlock.tsx": {
+    "mtime": 1786610844.2754984,
+    "ast_hash": "080527d52dcb47382418377f2c0e16ee",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/viewer/frontend/src/components/vulnerability/PocBlock.tsx": {
+    "mtime": 1786610844.2754984,
+    "ast_hash": "d2bee1833becb7e50e2eeeb4d9787e12",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/viewer/frontend/src/components/vulnerability/VulnerabilityDetail.tsx": {
+    "mtime": 1786610844.2754984,
+    "ast_hash": "93596cedc426783320edf47611f24567",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/viewer/frontend/src/data/serverSource.ts": {
+    "mtime": 1786610844.2754984,
+    "ast_hash": "bfd06b6ef72578d9fb6a7fce8fdebc82",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/viewer/frontend/src/lib/cta.ts": {
+    "mtime": 1786610844.2754984,
+    "ast_hash": "9665f82319172d0eb576b91d9fad0cdb",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/viewer/frontend/src/lib/display-number.ts": {
+    "mtime": 1786610844.2754984,
+    "ast_hash": "9b3afa5e88e2b504da3a6d38f011be8d",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/viewer/frontend/src/lib/fenced-code.ts": {
+    "mtime": 1786610844.2754984,
+    "ast_hash": "897272b19462bac32bf0ab9987ee1b2d",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/viewer/frontend/src/lib/hljs.ts": {
+    "mtime": 1786610844.2770598,
+    "ast_hash": "59874f5b096d4622bbc0668cfa94ce56",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/viewer/frontend/src/lib/local-run-parser.ts": {
+    "mtime": 1786610844.2770598,
+    "ast_hash": "1f820b9078a70298c7cb0330edc87bdf",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/viewer/frontend/src/lib/target-utils.ts": {
+    "mtime": 1786610844.2770598,
+    "ast_hash": "7947187e5856d8d4bc299ac0fd2f2a64",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/viewer/frontend/src/lib/utils.ts": {
+    "mtime": 1786610844.2770598,
+    "ast_hash": "c1259e6c95ca6ae4f88d5ed8ceeaafbd",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/viewer/frontend/src/lib/vulnerability-utils.ts": {
+    "mtime": 1786610844.2770598,
+    "ast_hash": "40fd57191660a337b0a628b197074670",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/viewer/frontend/src/main.tsx": {
+    "mtime": 1786610844.2770598,
+    "ast_hash": "fb44150c51e7b505af03cbb1fe0f4974",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/viewer/frontend/src/stores/auth.ts": {
+    "mtime": 1786610844.2770598,
+    "ast_hash": "9135dcdffc9b79c63730ed8aeba407da",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/viewer/frontend/src/types/events.ts": {
+    "mtime": 1786610844.278116,
+    "ast_hash": "2c346c3019f95eaeb9328e928750b2eb",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/viewer/frontend/src/types/issues.ts": {
+    "mtime": 1786610844.278116,
+    "ast_hash": "930afcc772002515f9d7c1d0e26a3366",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/viewer/frontend/tsconfig.json": {
+    "mtime": 1786610844.278116,
+    "ast_hash": "9d428a2c7d3a25ebba351f659214b6df",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/viewer/frontend/vite.config.ts": {
+    "mtime": 1786610844.278116,
+    "ast_hash": "6afe3468e115fb65e5343b7ce67e0e3f",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/viewer/report_pdf.py": {
+    "mtime": 1786610844.278116,
+    "ast_hash": "aee3b5bb722c3a49524b3ac856265564",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/viewer/server.py": {
+    "mtime": 1786610844.2791178,
+    "ast_hash": "500bbf8a8ead4e26a1abd1935fde63c0",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/viewer/static/assets/index-DBJ-RJqo.js": {
+    "mtime": 1786610844.283665,
+    "ast_hash": "21c5197de140a121b6d3400f7154d3f5",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/viewer/transcript.py": {
+    "mtime": 1786610844.2846675,
+    "ast_hash": "c12a2dd67ec409cc5ca2b732b560ab16",
+    "semantic_hash": ""
+  },
+  "strix/strix/llm/__init__.py": {
+    "mtime": 1786610844.2846675,
+    "ast_hash": "39a44c5c562e8979693a38d0046a4fe6",
+    "semantic_hash": ""
+  },
+  "strix/strix/llm/compaction.py": {
+    "mtime": 1786610844.2846675,
+    "ast_hash": "49889bb6c00749ca967064f2f72f4040",
+    "semantic_hash": ""
+  },
+  "strix/strix/llm/context_budget.py": {
+    "mtime": 1786610844.2846675,
+    "ast_hash": "7cc2d0c376e705b81fbe2001cf3e17cf",
+    "semantic_hash": ""
+  },
+  "strix/strix/report/__init__.py": {
+    "mtime": 1786610844.2856703,
+    "ast_hash": "79a1b1a4f4db319f7b04584a7c63d7bd",
+    "semantic_hash": ""
+  },
+  "strix/strix/report/dedupe.py": {
+    "mtime": 1786610844.2856703,
+    "ast_hash": "6653f6025e844b281b6fdf63b2dd127c",
+    "semantic_hash": ""
+  },
+  "strix/strix/report/pricing.py": {
+    "mtime": 1786610844.2856703,
+    "ast_hash": "ddb8a0b6bee4bc88aa9746ab456c8b24",
+    "semantic_hash": ""
+  },
+  "strix/strix/report/sarif.py": {
+    "mtime": 1786610844.2856703,
+    "ast_hash": "528d4013ffe31730004a04fde4206e49",
+    "semantic_hash": ""
+  },
+  "strix/strix/report/state.py": {
+    "mtime": 1786610844.2856703,
+    "ast_hash": "f713444be0ec5549217abe118db0b09f",
+    "semantic_hash": ""
+  },
+  "strix/strix/report/usage.py": {
+    "mtime": 1786610844.2866728,
+    "ast_hash": "9d48522f2e051a471fd73cc75bcd90c9",
+    "semantic_hash": ""
+  },
+  "strix/strix/report/writer.py": {
+    "mtime": 1786610844.2866728,
+    "ast_hash": "1c085a86804f06b181f3aaa6636f9c2d",
+    "semantic_hash": ""
+  },
+  "strix/strix/runtime/__init__.py": {
+    "mtime": 1786610844.2866728,
+    "ast_hash": "1bd5225b05a53e0678bf7e5c790fadfc",
+    "semantic_hash": ""
+  },
+  "strix/strix/runtime/backends.py": {
+    "mtime": 1786610844.2866728,
+    "ast_hash": "a5b52864e1fb13d4a309966280990627",
+    "semantic_hash": ""
+  },
+  "strix/strix/runtime/caido_bootstrap.py": {
+    "mtime": 1786610844.2866728,
+    "ast_hash": "b43e8f7c71566b024b61edc149e416b0",
+    "semantic_hash": ""
+  },
+  "strix/strix/runtime/docker_client.py": {
+    "mtime": 1786610844.2866728,
+    "ast_hash": "6785b7145a361e0581c31407813ba645",
+    "semantic_hash": ""
+  },
+  "strix/strix/runtime/session_manager.py": {
+    "mtime": 1786610844.2866728,
+    "ast_hash": "3f511a1a780b0b44303a9d4c6a8055b9",
+    "semantic_hash": ""
+  },
+  "strix/strix/runtime/status.py": {
+    "mtime": 1786610844.288178,
+    "ast_hash": "3c02f7773a238025bcf5855f80e6307d",
+    "semantic_hash": ""
+  },
+  "strix/strix/skills/__init__.py": {
+    "mtime": 1786610844.288178,
+    "ast_hash": "cfe379d403ac0578b42f5d1bd187f105",
+    "semantic_hash": ""
+  },
+  "strix/strix/telemetry/__init__.py": {
+    "mtime": 1786610844.3000185,
+    "ast_hash": "944d89faf8d6bc0cc31ceb3cc4c8c0a1",
+    "semantic_hash": ""
+  },
+  "strix/strix/telemetry/_common.py": {
+    "mtime": 1786610844.3000185,
+    "ast_hash": "9727ad86da976b12222d2e5808acefcc",
+    "semantic_hash": ""
+  },
+  "strix/strix/telemetry/logging.py": {
+    "mtime": 1786610844.3000185,
+    "ast_hash": "5ea3aa29524745d4908db168a077c561",
+    "semantic_hash": ""
+  },
+  "strix/strix/telemetry/posthog.py": {
+    "mtime": 1786610844.3000185,
+    "ast_hash": "1a10ba44048c12d03cc22eb69d86c720",
+    "semantic_hash": ""
+  },
+  "strix/strix/telemetry/scarf.py": {
+    "mtime": 1786610844.3000185,
+    "ast_hash": "8a4ca01cc0fd9e06ac1aa800f112d0eb",
+    "semantic_hash": ""
+  },
+  "strix/strix/tools/__init__.py": {
+    "mtime": 1786610844.3015227,
+    "ast_hash": "01d286cad217214b6c741873c6117ca4",
+    "semantic_hash": ""
+  },
+  "strix/strix/tools/agents_graph/__init__.py": {
+    "mtime": 1786610844.3015227,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "strix/strix/tools/agents_graph/tools.py": {
+    "mtime": 1786610844.3015227,
+    "ast_hash": "67d488bc4ec0921c8ec2340dc7ff8f8f",
+    "semantic_hash": ""
+  },
+  "strix/strix/tools/finish/__init__.py": {
+    "mtime": 1786610844.3025234,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "strix/strix/tools/finish/tool.py": {
+    "mtime": 1786610844.3025234,
+    "ast_hash": "f6391c87f56b2b25e97c38d640433d17",
+    "semantic_hash": ""
+  },
+  "strix/strix/tools/load_skill/__init__.py": {
+    "mtime": 1786610844.3025234,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "strix/strix/tools/load_skill/tool.py": {
+    "mtime": 1786610844.3030274,
+    "ast_hash": "ada98086df7616dcd3b4c989ec2eb55f",
+    "semantic_hash": ""
+  },
+  "strix/strix/tools/notes/__init__.py": {
+    "mtime": 1786610844.3030274,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "strix/strix/tools/notes/tools.py": {
+    "mtime": 1786610844.3030274,
+    "ast_hash": "60761b6f05dd3df932e73f6c8abb52b7",
+    "semantic_hash": ""
+  },
+  "strix/strix/tools/output_store.py": {
+    "mtime": 1786610844.3030274,
+    "ast_hash": "eeddadde8803ebce30eddb6010c1068e",
+    "semantic_hash": ""
+  },
+  "strix/strix/tools/proxy/__init__.py": {
+    "mtime": 1786610844.3030274,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "strix/strix/tools/proxy/caido_api.py": {
+    "mtime": 1786610844.3040283,
+    "ast_hash": "023d42280a3c7254cd362c5ec1bf81b0",
+    "semantic_hash": ""
+  },
+  "strix/strix/tools/proxy/tools.py": {
+    "mtime": 1786610844.3040283,
+    "ast_hash": "16d41fe3176761e5fe756e571e2b2fbe",
+    "semantic_hash": ""
+  },
+  "strix/strix/tools/reporting/__init__.py": {
+    "mtime": 1786610844.3040283,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "strix/strix/tools/reporting/tool.py": {
+    "mtime": 1786610844.3050282,
+    "ast_hash": "075a8d79c19bc6c9ddc7954d03d0d1cc",
+    "semantic_hash": ""
+  },
+  "strix/strix/tools/respond/__init__.py": {
+    "mtime": 1786610844.3050282,
+    "ast_hash": "598f87d57b2401b874749ebd93659e9f",
+    "semantic_hash": ""
+  },
+  "strix/strix/tools/respond/tool.py": {
+    "mtime": 1786610844.3050282,
+    "ast_hash": "0529fe947a1c657234b3ab52ed639343",
+    "semantic_hash": ""
+  },
+  "strix/strix/tools/thinking/__init__.py": {
+    "mtime": 1786610844.3050282,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "strix/strix/tools/thinking/tool.py": {
+    "mtime": 1786610844.3050282,
+    "ast_hash": "42adf66496b4ba3102001a62307d5b32",
+    "semantic_hash": ""
+  },
+  "strix/strix/tools/todo/__init__.py": {
+    "mtime": 1786610844.3060281,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "strix/strix/tools/todo/tools.py": {
+    "mtime": 1786610844.3060281,
+    "ast_hash": "2a1bb0b90f771c2d5736e3f23b645236",
+    "semantic_hash": ""
+  },
+  "strix/strix/tools/web_search/__init__.py": {
+    "mtime": 1786610844.3060281,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "strix/strix/tools/web_search/tool.py": {
+    "mtime": 1786610844.3060281,
+    "ast_hash": "f088b6706109eefdc38b675e820b2b8c",
+    "semantic_hash": ""
+  },
+  "strix/strix/utils/__init__.py": {
+    "mtime": 1786610844.307028,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "strix/strix/utils/api_spec.py": {
+    "mtime": 1786610844.307532,
+    "ast_hash": "6d0ba03df8a1bdb9933271c59836959b",
+    "semantic_hash": ""
+  },
+  "strix/strix/utils/resource_paths.py": {
+    "mtime": 1786610844.307532,
+    "ast_hash": "5c19577989d0f7b49fad25fb607b1aaa",
+    "semantic_hash": ""
+  },
+  "strix/strix/utils/secret_files.py": {
+    "mtime": 1786610844.307532,
+    "ast_hash": "a2c8e9064840257bf9ac4a89a21e7df8",
+    "semantic_hash": ""
+  },
+  "strix/tests/__init__.py": {
+    "mtime": 1786610844.307532,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "strix/tests/test_agent_factory_shell.py": {
+    "mtime": 1786610844.307532,
+    "ast_hash": "ec8573ce79e4cd35b429248fdfc6a012",
+    "semantic_hash": ""
+  },
+  "strix/tests/test_agent_factory_tool_arguments.py": {
+    "mtime": 1786610844.307532,
+    "ast_hash": "915e8cdc299f0dc1a34ad7d74b3e1f1b",
+    "semantic_hash": ""
+  },
+  "strix/tests/test_agent_tool_registration.py": {
+    "mtime": 1786610844.3085327,
+    "ast_hash": "3ea3262642866de02f9c059c34b45b17",
+    "semantic_hash": ""
+  },
+  "strix/tests/test_api_spec.py": {
+    "mtime": 1786610844.3085327,
+    "ast_hash": "47bb4bfe1b107a21467fde5703bf17b9",
+    "semantic_hash": ""
+  },
+  "strix/tests/test_api_spec_targets.py": {
+    "mtime": 1786610844.3085327,
+    "ast_hash": "dceeb9060983fe4ccf58f061395e4388",
+    "semantic_hash": ""
+  },
+  "strix/tests/test_auth_cli.py": {
+    "mtime": 1786610844.3085327,
+    "ast_hash": "81d491f74bb6f325e55aa7189b29cb23",
+    "semantic_hash": ""
+  },
+  "strix/tests/test_cli_target_list.py": {
+    "mtime": 1786610844.3085327,
+    "ast_hash": "edf24e0decca0513df1ffb088d79faa3",
+    "semantic_hash": ""
+  },
+  "strix/tests/test_codex_auth.py": {
+    "mtime": 1786610844.3095326,
+    "ast_hash": "a2878ac4ab210b606a49a882776e5aa6",
+    "semantic_hash": ""
+  },
+  "strix/tests/test_codex_streaming.py": {
+    "mtime": 1786610844.3095326,
+    "ast_hash": "452293270592d0eccc9812272e5d9125",
+    "semantic_hash": ""
+  },
+  "strix/tests/test_compaction.py": {
+    "mtime": 1786610844.3095326,
+    "ast_hash": "c8a1fb866243a57216e86dab5e8157d5",
+    "semantic_hash": ""
+  },
+  "strix/tests/test_config_loader.py": {
+    "mtime": 1786610844.3095326,
+    "ast_hash": "bbcf3bbcf3e4075924b13c279301ccca",
+    "semantic_hash": ""
+  },
+  "strix/tests/test_context_budget.py": {
+    "mtime": 1786610844.3095326,
+    "ast_hash": "1a4b99cf6182fb6298a1a9ecbc87753e",
+    "semantic_hash": ""
+  },
+  "strix/tests/test_cost_tracking.py": {
+    "mtime": 1786610844.3095326,
+    "ast_hash": "0968dfb6c9a8190308a0494692015704",
+    "semantic_hash": ""
+  },
+  "strix/tests/test_dedupe_model.py": {
+    "mtime": 1786610844.3105328,
+    "ast_hash": "f638e1dbeb8a49d2704349e7d2ae669d",
+    "semantic_hash": ""
+  },
+  "strix/tests/test_disable_streaming.py": {
+    "mtime": 1786610844.3105328,
+    "ast_hash": "dbdd044e586dd1ca84fe04fb68469b7b",
+    "semantic_hash": ""
+  },
+  "strix/tests/test_docker_client_delete.py": {
+    "mtime": 1786610844.3105328,
+    "ast_hash": "ca060c1d027db6c88389d67c4e7ebb2d",
+    "semantic_hash": ""
+  },
+  "strix/tests/test_e2e_budget_lifecycle.py": {
+    "mtime": 1786610844.3105328,
+    "ast_hash": "26fdc37b9b9bd9611c89a7e167314e28",
+    "semantic_hash": ""
+  },
+  "strix/tests/test_execution.py": {
+    "mtime": 1786610844.3105328,
+    "ast_hash": "7ac8beb94e4eef0af46d8ed932d19d76",
+    "semantic_hash": ""
+  },
+  "strix/tests/test_execution_transient_retry.py": {
+    "mtime": 1786610844.3105328,
+    "ast_hash": "78fa5b6d67e52e6c0b7a4c3c36016d3e",
+    "semantic_hash": ""
+  },
+  "strix/tests/test_fenced_code.py": {
+    "mtime": 1786610844.3105328,
+    "ast_hash": "f767b8ea200437b60a136ce579fadf4b",
+    "semantic_hash": ""
+  },
+  "strix/tests/test_go_tui_runtime.py": {
+    "mtime": 1786610844.3105328,
+    "ast_hash": "25f34e6089ae6e92cc2d35353af497f5",
+    "semantic_hash": ""
+  },
+  "strix/tests/test_hooks.py": {
+    "mtime": 1786610844.3120372,
+    "ast_hash": "0563db246091b2e768d0752e4dd735e3",
+    "semantic_hash": ""
+  },
+  "strix/tests/test_inputs.py": {
+    "mtime": 1786610844.3120372,
+    "ast_hash": "5484ffce497e41c3a31174866591dec7",
+    "semantic_hash": ""
+  },
+  "strix/tests/test_install_script.py": {
+    "mtime": 1786610844.3120372,
+    "ast_hash": "3b7fcf56064acd35cec5d3fb458b2b06",
+    "semantic_hash": ""
+  },
+  "strix/tests/test_list_reports.py": {
+    "mtime": 1786610844.3120372,
+    "ast_hash": "3821e62218fdc25f8aacdedd68a4bbbc",
+    "semantic_hash": ""
+  },
+  "strix/tests/test_llm_extra_headers.py": {
+    "mtime": 1786610844.3120372,
+    "ast_hash": "2d255e7560dbb7a5046d6bb1a7cdf8ca",
+    "semantic_hash": ""
+  },
+  "strix/tests/test_local_sources.py": {
+    "mtime": 1786610844.3120372,
+    "ast_hash": "6f84d79689665e2d7494fcdfcdebf26d",
+    "semantic_hash": ""
+  },
+  "strix/tests/test_model_retry.py": {
+    "mtime": 1786610844.3120372,
+    "ast_hash": "c85f99e6dba99abdbe874c89ee1d64c4",
+    "semantic_hash": ""
+  },
+  "strix/tests/test_models.py": {
+    "mtime": 1786610844.3120372,
+    "ast_hash": "7d52b6a2d1fcec9228ca4ec10474d9d6",
+    "semantic_hash": ""
+  },
+  "strix/tests/test_notes.py": {
+    "mtime": 1786610844.3120372,
+    "ast_hash": "9b231661f2419ea00788fb2ee3b99c65",
+    "semantic_hash": ""
+  },
+  "strix/tests/test_optional_deps.py": {
+    "mtime": 1786610844.3120372,
+    "ast_hash": "8fa29a925a62ddd794c395e747036014",
+    "semantic_hash": ""
+  },
+  "strix/tests/test_output_store.py": {
+    "mtime": 1786610844.313616,
+    "ast_hash": "c40e3fcca03c8396b251616110c01a7b",
+    "semantic_hash": ""
+  },
+  "strix/tests/test_packaging.py": {
+    "mtime": 1786610844.313616,
+    "ast_hash": "36d934f93e643ca0e9203af5708bd329",
+    "semantic_hash": ""
+  },
+  "strix/tests/test_pricing.py": {
+    "mtime": 1786610844.313616,
+    "ast_hash": "fc2b74cfb5194ea8e552bbe5f848d793",
+    "semantic_hash": ""
+  },
+  "strix/tests/test_provider_hints.py": {
+    "mtime": 1786610844.313616,
+    "ast_hash": "6a94c5191bcfa0950ffa398e1a08603a",
+    "semantic_hash": ""
+  },
+  "strix/tests/test_proxy_client.py": {
+    "mtime": 1786610844.313616,
+    "ast_hash": "4c07ea2895f0042156d3b16cf4fc8c00",
+    "semantic_hash": ""
+  },
+  "strix/tests/test_report_pdf.py": {
+    "mtime": 1786610844.314251,
+    "ast_hash": "44d3dd69b629adde37e5f8da90415155",
+    "semantic_hash": ""
+  },
+  "strix/tests/test_report_writer.py": {
+    "mtime": 1786610844.314251,
+    "ast_hash": "306a12307c1f5369ebe0d133c79953d0",
+    "semantic_hash": ""
+  },
+  "strix/tests/test_reporting_fields.py": {
+    "mtime": 1786610844.314251,
+    "ast_hash": "b599280b2989ed1716f4502d6dc6d0c8",
+    "semantic_hash": ""
+  },
+  "strix/tests/test_reporting_tool.py": {
+    "mtime": 1786610844.314251,
+    "ast_hash": "548b98cc6e5916a28ea82a668d911113",
+    "semantic_hash": ""
+  },
+  "strix/tests/test_respond_to_user.py": {
+    "mtime": 1786610844.314251,
+    "ast_hash": "2240e4d024af9c4680789b94c434edc9",
+    "semantic_hash": ""
+  },
+  "strix/tests/test_runner_interrupt.py": {
+    "mtime": 1786610844.314251,
+    "ast_hash": "f2556783be429f75c30b7b9db0693077",
+    "semantic_hash": ""
+  },
+  "strix/tests/test_runner_rate_limit.py": {
+    "mtime": 1786610844.314251,
+    "ast_hash": "2d3b49d1dd65e3d6f064cc71acd7b093",
+    "semantic_hash": ""
+  },
+  "strix/tests/test_runner_root_prompt.py": {
+    "mtime": 1786610844.315307,
+    "ast_hash": "ff7be727a26ba49bc4955498cc006be6",
+    "semantic_hash": ""
+  },
+  "strix/tests/test_runner_teardown.py": {
+    "mtime": 1786610844.315307,
+    "ast_hash": "b8d3b955713858c362449fa2d4ddc119",
+    "semantic_hash": ""
+  },
+  "strix/tests/test_sarif.py": {
+    "mtime": 1786610844.315307,
+    "ast_hash": "566046fe698f8703485c9b53d2ec6a69",
+    "semantic_hash": ""
+  },
+  "strix/tests/test_sarif_stride.py": {
+    "mtime": 1786610844.315307,
+    "ast_hash": "6b7c314e4b24bffeb26a91afaeef57f9",
+    "semantic_hash": ""
+  },
+  "strix/tests/test_secret_files.py": {
+    "mtime": 1786610844.315307,
+    "ast_hash": "dbe327a62ee00830d43366e186b0058d",
+    "semantic_hash": ""
+  },
+  "strix/tests/test_session_entries.py": {
+    "mtime": 1786610844.315307,
+    "ast_hash": "85deb8cf24ecf682860737269f365415",
+    "semantic_hash": ""
+  },
+  "strix/tests/test_session_fd.py": {
+    "mtime": 1786610844.316301,
+    "ast_hash": "3fc0c55944b988c2cb390f98c99c38a6",
+    "semantic_hash": ""
+  },
+  "strix/tests/test_skill_dir_extension.py": {
+    "mtime": 1786610844.316301,
+    "ast_hash": "d8b89a300ce006cbaef1fa35259ac97b",
+    "semantic_hash": ""
+  },
+  "strix/tests/test_state_repo_context.py": {
+    "mtime": 1786610844.316301,
+    "ast_hash": "0f644be0ea329441e114c9dd294322b4",
+    "semantic_hash": ""
+  },
+  "strix/tests/test_stream_idle_timeout.py": {
+    "mtime": 1786610844.316301,
+    "ast_hash": "01bfcfdfb4430a848077e69f71c55621",
+    "semantic_hash": ""
+  },
+  "strix/tests/test_todo.py": {
+    "mtime": 1786610844.316301,
+    "ast_hash": "d0065796641f15d89bd220c77c0a4473",
+    "semantic_hash": ""
+  },
+  "strix/tests/test_tool_call_ids.py": {
+    "mtime": 1786610844.316301,
+    "ast_hash": "798bd4c19ee40f8641484e6176b923e2",
+    "semantic_hash": ""
+  },
+  "strix/tests/test_tool_call_limits.py": {
+    "mtime": 1786610844.316301,
+    "ast_hash": "12aaf067c8b34cf583886026faf3253b",
+    "semantic_hash": ""
+  },
+  "strix/tests/test_tui_backend_controller.py": {
+    "mtime": 1786610844.316301,
+    "ast_hash": "c8d49be66570ac35e7eb3f184c7e9e0f",
+    "semantic_hash": ""
+  },
+  "strix/tests/test_tui_backend_server.py": {
+    "mtime": 1786610844.316301,
+    "ast_hash": "4b5a28543bcda21030a1f007780b751d",
+    "semantic_hash": ""
+  },
+  "strix/tests/test_tui_protocol_conformance.py": {
+    "mtime": 1786610844.316301,
+    "ast_hash": "89514007f78758b87fa93926c5678346",
+    "semantic_hash": ""
+  },
+  "strix/tests/test_tui_resume_history.py": {
+    "mtime": 1786610844.316301,
+    "ast_hash": "078f9f775e643194eb218eac4479ba02",
+    "semantic_hash": ""
+  },
+  "strix/tests/test_unknown_tool_recovery.py": {
+    "mtime": 1786610844.316301,
+    "ast_hash": "6918dd91b0020fb9aec1bb3219b42dc2",
+    "semantic_hash": ""
+  },
+  "strix/tests/test_unraisable_filter.py": {
+    "mtime": 1786610844.3182218,
+    "ast_hash": "ca3571ae5b4cc70e238647f28b5afabc",
+    "semantic_hash": ""
+  },
+  "strix/tests/test_update_check.py": {
+    "mtime": 1786610844.31839,
+    "ast_hash": "f61d9b498ab848ec0fcb4c04590a99f8",
+    "semantic_hash": ""
+  },
+  "strix/tests/test_usage_subscription.py": {
+    "mtime": 1786610844.31839,
+    "ast_hash": "8bd96a415983061c4d2b3e51dcc32160",
+    "semantic_hash": ""
+  },
+  "strix/tests/test_viewer.py": {
+    "mtime": 1786610844.31839,
+    "ast_hash": "e093c51d03a46de9568a03757c78c60a",
+    "semantic_hash": ""
+  },
+  "strix/tests/test_viewer_auth.py": {
+    "mtime": 1786610844.31839,
+    "ast_hash": "a6c72519c2aa01ad19418865234da816",
+    "semantic_hash": ""
+  },
+  "strix/tests/test_viewer_runs_gating.py": {
+    "mtime": 1786610844.31839,
+    "ast_hash": "4d512d9312cffcaa665abf70efd5067e",
+    "semantic_hash": ""
+  },
+  "strix/tests/test_wait_dedupe.py": {
+    "mtime": 1786610844.31839,
+    "ast_hash": "ecff86d307e6951f143527c684f4a8c5",
+    "semantic_hash": ""
+  },
+  ".agents/rules/security-agent.md": {
+    "mtime": 1786611491.7563803,
+    "ast_hash": "4b0fed0b46085076ca43d810c4c67ee4",
+    "semantic_hash": ""
+  },
+  ".agents/workflows/devsecops.md": {
+    "mtime": 1786611469.0538433,
+    "ast_hash": "99cc11466c32f4734c55f8aba28a3e57",
+    "semantic_hash": ""
+  },
+  ".agents/workflows/pentest.md": {
+    "mtime": 1786611479.0780985,
+    "ast_hash": "81115dd251463621f8657c96f33224f8",
+    "semantic_hash": ""
+  },
+  ".agents/workflows/security-audit.md": {
+    "mtime": 1786611451.2245934,
+    "ast_hash": "fb4daf2ebc4891e85cb0de3025b0e6c4",
+    "semantic_hash": ""
+  },
+  "strix/.github/ISSUE_TEMPLATE/bug_report.md": {
+    "mtime": 1786610844.2198067,
+    "ast_hash": "ad4719aa94451ade394ed202f3791fa7",
+    "semantic_hash": ""
+  },
+  "strix/.github/ISSUE_TEMPLATE/feature_request.md": {
+    "mtime": 1786610844.2198067,
+    "ast_hash": "f36b97e08d1db22f8e87e8317ab9651a",
+    "semantic_hash": ""
+  },
+  "strix/.github/workflows/build-release.yml": {
+    "mtime": 1786610844.228876,
+    "ast_hash": "6a336a0a6decc093f3b2de0a3372712b",
+    "semantic_hash": ""
+  },
+  "strix/.pre-commit-config.yaml": {
+    "mtime": 1786610844.228876,
+    "ast_hash": "d17cf70237c7dbe4803bff4c76070016",
+    "semantic_hash": ""
+  },
+  "strix/AGENTS.md": {
+    "mtime": 1786610844.228876,
+    "ast_hash": "d62860c2322f23ecaaf88ecdc79187f6",
+    "semantic_hash": ""
+  },
+  "strix/CONTRIBUTING.md": {
+    "mtime": 1786610844.228876,
+    "ast_hash": "fb70da97e811cce2550bf83a76216659",
+    "semantic_hash": ""
+  },
+  "strix/README.md": {
+    "mtime": 1786610844.2303815,
+    "ast_hash": "4f544eab642d0ad851f500d5dd521b29",
+    "semantic_hash": ""
+  },
+  "strix/benchmarks/README.md": {
+    "mtime": 1786610844.2303815,
+    "ast_hash": "e4e7b69ce0d57353b946576c171bc11b",
+    "semantic_hash": ""
+  },
+  "strix/docs/README.md": {
+    "mtime": 1786610844.2313879,
+    "ast_hash": "911c0f38e8a791a5d7c3db327daf57a5",
+    "semantic_hash": ""
+  },
+  "strix/docs/advanced/configuration.mdx": {
+    "mtime": 1786610844.2313879,
+    "ast_hash": "4dc516d0610ad8c667ff8e781923a85a",
+    "semantic_hash": ""
+  },
+  "strix/docs/advanced/skills.mdx": {
+    "mtime": 1786610844.2313879,
+    "ast_hash": "9b2666559bca4ea01d4013d31eb2dbb3",
+    "semantic_hash": ""
+  },
+  "strix/docs/cloud/overview.mdx": {
+    "mtime": 1786610844.2313879,
+    "ast_hash": "e1776d463bff2047502b6e74f0c12973",
+    "semantic_hash": ""
+  },
+  "strix/docs/contributing.mdx": {
+    "mtime": 1786610844.2313879,
+    "ast_hash": "27c7bfaa9e1018075f970a0e57e39579",
+    "semantic_hash": ""
+  },
+  "strix/docs/index.mdx": {
+    "mtime": 1786610844.2403333,
+    "ast_hash": "bec499003261b9a84dff304402aafa3a",
+    "semantic_hash": ""
+  },
+  "strix/docs/integrations/ci-cd.mdx": {
+    "mtime": 1786610844.2403333,
+    "ast_hash": "b764695f172da6c9f22a4c3558eda08c",
+    "semantic_hash": ""
+  },
+  "strix/docs/integrations/coding-agents.mdx": {
+    "mtime": 1786610844.2403333,
+    "ast_hash": "88ec7b1924076df32612b4655809100b",
+    "semantic_hash": ""
+  },
+  "strix/docs/integrations/github-actions.mdx": {
+    "mtime": 1786610844.2403333,
+    "ast_hash": "3e93b661b1a01b69f5b250c3719f161c",
+    "semantic_hash": ""
+  },
+  "strix/docs/llm-providers/anthropic.mdx": {
+    "mtime": 1786610844.2418396,
+    "ast_hash": "46613292d2072aaff0ae41442a9ba2e2",
+    "semantic_hash": ""
+  },
+  "strix/docs/llm-providers/azure.mdx": {
+    "mtime": 1786610844.2418396,
+    "ast_hash": "eed8881445fc8944446f33fdaa470f8c",
+    "semantic_hash": ""
+  },
+  "strix/docs/llm-providers/bedrock.mdx": {
+    "mtime": 1786610844.2418396,
+    "ast_hash": "0f36b1bac726b09025509bf1149c25a9",
+    "semantic_hash": ""
+  },
+  "strix/docs/llm-providers/local.mdx": {
+    "mtime": 1786610844.2418396,
+    "ast_hash": "57111b940fdcd8f7f82d89f8d452fd38",
+    "semantic_hash": ""
+  },
+  "strix/docs/llm-providers/novita.mdx": {
+    "mtime": 1786610844.2418396,
+    "ast_hash": "04092fa96e42c695148d0ee1ac0f1fb9",
+    "semantic_hash": ""
+  },
+  "strix/docs/llm-providers/openai.mdx": {
+    "mtime": 1786610844.2418396,
+    "ast_hash": "c5a401836fb63249ae6aa8e7aa1d032a",
+    "semantic_hash": ""
+  },
+  "strix/docs/llm-providers/openrouter.mdx": {
+    "mtime": 1786610844.2418396,
+    "ast_hash": "6548f22786de73a18ccf069a186372a0",
+    "semantic_hash": ""
+  },
+  "strix/docs/llm-providers/overview.mdx": {
+    "mtime": 1786610844.2418396,
+    "ast_hash": "45e7b96767daa664b144086af40a2462",
+    "semantic_hash": ""
+  },
+  "strix/docs/llm-providers/vertex.mdx": {
+    "mtime": 1786610844.2418396,
+    "ast_hash": "b096c448750bf58f2d4301830155ad60",
+    "semantic_hash": ""
+  },
+  "strix/docs/quickstart.mdx": {
+    "mtime": 1786610844.2433493,
+    "ast_hash": "ba4c159e00f692946d2e094989e02f8c",
+    "semantic_hash": ""
+  },
+  "strix/docs/tools/browser.mdx": {
+    "mtime": 1786610844.2433493,
+    "ast_hash": "1b9ad0cd54aae3b7288e87e4279f4ff9",
+    "semantic_hash": ""
+  },
+  "strix/docs/tools/overview.mdx": {
+    "mtime": 1786610844.2433493,
+    "ast_hash": "ee5eb1ba1c7027ba810a85a2c9b16626",
+    "semantic_hash": ""
+  },
+  "strix/docs/tools/proxy.mdx": {
+    "mtime": 1786610844.2438629,
+    "ast_hash": "ea0df82337a51f985cd5912f2acf5121",
+    "semantic_hash": ""
+  },
+  "strix/docs/tools/sandbox.mdx": {
+    "mtime": 1786610844.2438629,
+    "ast_hash": "2f749f507dbc20f9f3fbb62999d8ef3d",
+    "semantic_hash": ""
+  },
+  "strix/docs/tools/terminal.mdx": {
+    "mtime": 1786610844.2438629,
+    "ast_hash": "ddc08160f78a289604c5f5b82e03900a",
+    "semantic_hash": ""
+  },
+  "strix/docs/usage/cli.mdx": {
+    "mtime": 1786610844.2443855,
+    "ast_hash": "451e05770f3c7a9402edc718455ad02f",
+    "semantic_hash": ""
+  },
+  "strix/docs/usage/instructions.mdx": {
+    "mtime": 1786610844.2443855,
+    "ast_hash": "37c993e2596c8669b2c5710b8837a51e",
+    "semantic_hash": ""
+  },
+  "strix/docs/usage/scan-modes.mdx": {
+    "mtime": 1786610844.2443855,
+    "ast_hash": "5161270591d94cda0239ecf40ebd918b",
+    "semantic_hash": ""
+  },
+  "strix/skills/ci-security-scanning-with-strix/SKILL.md": {
+    "mtime": 1786610844.2454083,
+    "ast_hash": "2ab62c6f7bcc35a0c635d3ee55a846d2",
+    "semantic_hash": ""
+  },
+  "strix/skills/fix-security-vulnerabilities-with-strix/SKILL.md": {
+    "mtime": 1786610844.2454083,
+    "ast_hash": "7d4a2da838f46ad30a9431ca2ea7d7a6",
+    "semantic_hash": ""
+  },
+  "strix/skills/managed-pentesting-with-strix/SKILL.md": {
+    "mtime": 1786610844.2464113,
+    "ast_hash": "f3ff3fdfee257ade245b8a11b60d3df4",
+    "semantic_hash": ""
+  },
+  "strix/skills/penetration-testing-with-strix/SKILL.md": {
+    "mtime": 1786610844.2464113,
+    "ast_hash": "6b2f63552943ee7865b72d05688df0a0",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/viewer/frontend/index.html": {
+    "mtime": 1786610844.266443,
+    "ast_hash": "492b5a188b6b86beebe814c9a33f6bad",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/viewer/static/index.html": {
+    "mtime": 1786610844.283665,
+    "ast_hash": "f8b007338f77807411374b6d8210d403",
+    "semantic_hash": ""
+  },
+  "strix/strix/skills/README.md": {
+    "mtime": 1786610844.288178,
+    "ast_hash": "c57f50cf40237f72598ba60cdd4c95aa",
+    "semantic_hash": ""
+  },
+  "strix/strix/skills/cloud/aws.md": {
+    "mtime": 1786610844.288178,
+    "ast_hash": "0d91c850f31e0b381fcbb4ae71e1ce8a",
+    "semantic_hash": ""
+  },
+  "strix/strix/skills/cloud/gcp.md": {
+    "mtime": 1786610844.288178,
+    "ast_hash": "90fcdb90a660a3022419d2c66863edae",
+    "semantic_hash": ""
+  },
+  "strix/strix/skills/cloud/kubernetes.md": {
+    "mtime": 1786610844.289185,
+    "ast_hash": "de2da212a3f2d541af104a238b8e63c9",
+    "semantic_hash": ""
+  },
+  "strix/strix/skills/coordination/root_agent.md": {
+    "mtime": 1786610844.289185,
+    "ast_hash": "b2125559fbae8cea28d93b28bfdd8e52",
+    "semantic_hash": ""
+  },
+  "strix/strix/skills/coordination/source_aware_whitebox.md": {
+    "mtime": 1786610844.289185,
+    "ast_hash": "537ddd8f538197575f9f11f71e5f9be5",
+    "semantic_hash": ""
+  },
+  "strix/strix/skills/custom/api_spec_testing.md": {
+    "mtime": 1786610844.289185,
+    "ast_hash": "012dca8af8d68491780fe7587b466ff1",
+    "semantic_hash": ""
+  },
+  "strix/strix/skills/custom/dependency_cve_scanning.md": {
+    "mtime": 1786610844.289185,
+    "ast_hash": "67f730a9db6cfebbd87e310b810d0ad9",
+    "semantic_hash": ""
+  },
+  "strix/strix/skills/custom/source_aware_sast.md": {
+    "mtime": 1786610844.290185,
+    "ast_hash": "462c64bd23c58b35b2842ded9cf348d7",
+    "semantic_hash": ""
+  },
+  "strix/strix/skills/frameworks/django.md": {
+    "mtime": 1786610844.290185,
+    "ast_hash": "951e4d38e30d924304a65757d70b172e",
+    "semantic_hash": ""
+  },
+  "strix/strix/skills/frameworks/fastapi.md": {
+    "mtime": 1786610844.2906923,
+    "ast_hash": "0c04c28be4fd6ba17dd8baadf960f416",
+    "semantic_hash": ""
+  },
+  "strix/strix/skills/frameworks/nestjs.md": {
+    "mtime": 1786610844.2906923,
+    "ast_hash": "ad074ba4d7b923403f7c9881ea9d3124",
+    "semantic_hash": ""
+  },
+  "strix/strix/skills/frameworks/nextjs.md": {
+    "mtime": 1786610844.2906923,
+    "ast_hash": "67fef6035d53814a5824b072f9e73bef",
+    "semantic_hash": ""
+  },
+  "strix/strix/skills/protocols/graphql.md": {
+    "mtime": 1786610844.2906923,
+    "ast_hash": "cbcf88d1a835d631f76ff4271837962f",
+    "semantic_hash": ""
+  },
+  "strix/strix/skills/protocols/oauth.md": {
+    "mtime": 1786610844.2906923,
+    "ast_hash": "e3fb89011af6994649bab35d7c8a39cb",
+    "semantic_hash": ""
+  },
+  "strix/strix/skills/reconnaissance/asset_discovery.md": {
+    "mtime": 1786610844.2906923,
+    "ast_hash": "984cdafbbdd164b485a7a9125005886b",
+    "semantic_hash": ""
+  },
+  "strix/strix/skills/scan_modes/deep.md": {
+    "mtime": 1786610844.2906923,
+    "ast_hash": "b281036667699150e040364ba7cfa06b",
+    "semantic_hash": ""
+  },
+  "strix/strix/skills/scan_modes/quick.md": {
+    "mtime": 1786610844.2922063,
+    "ast_hash": "ab035cbd900fceee7aa5c1e464f34d25",
+    "semantic_hash": ""
+  },
+  "strix/strix/skills/scan_modes/standard.md": {
+    "mtime": 1786610844.2922063,
+    "ast_hash": "d5c6deb9883f836b391148c918010ca2",
+    "semantic_hash": ""
+  },
+  "strix/strix/skills/technologies/active_directory.md": {
+    "mtime": 1786610844.2922063,
+    "ast_hash": "f47fc760738068d6fc3d7dcaec504d43",
+    "semantic_hash": ""
+  },
+  "strix/strix/skills/technologies/auth0.md": {
+    "mtime": 1786610844.2922063,
+    "ast_hash": "d7811c76bb0c8f6698f744598afabd0c",
+    "semantic_hash": ""
+  },
+  "strix/strix/skills/technologies/firebase.md": {
+    "mtime": 1786610844.2922063,
+    "ast_hash": "ca8ee58d271bdc1a9ce12f66c697f67e",
+    "semantic_hash": ""
+  },
+  "strix/strix/skills/technologies/grafana_prometheus.md": {
+    "mtime": 1786610844.293229,
+    "ast_hash": "1185efd48852b69abb3b0d525cc7c062",
+    "semantic_hash": ""
+  },
+  "strix/strix/skills/technologies/supabase.md": {
+    "mtime": 1786610844.293229,
+    "ast_hash": "ab60efbca3766f775dcdee0bf6a201e7",
+    "semantic_hash": ""
+  },
+  "strix/strix/skills/tooling/agent_browser.md": {
+    "mtime": 1786610844.293229,
+    "ast_hash": "8bece14c4085875dda8ac499677578b2",
+    "semantic_hash": ""
+  },
+  "strix/strix/skills/tooling/ffuf.md": {
+    "mtime": 1786610844.293229,
+    "ast_hash": "5dd050020b011725d8c338933d6232dc",
+    "semantic_hash": ""
+  },
+  "strix/strix/skills/tooling/httpx.md": {
+    "mtime": 1786610844.293229,
+    "ast_hash": "05d4573f4d3867520fca4b3ba56486b7",
+    "semantic_hash": ""
+  },
+  "strix/strix/skills/tooling/katana.md": {
+    "mtime": 1786610844.293229,
+    "ast_hash": "1311e3235c3307a1601970f89608b8b9",
+    "semantic_hash": ""
+  },
+  "strix/strix/skills/tooling/naabu.md": {
+    "mtime": 1786610844.294229,
+    "ast_hash": "68c139c72cf858ed2af16d90cddea2f0",
+    "semantic_hash": ""
+  },
+  "strix/strix/skills/tooling/nmap.md": {
+    "mtime": 1786610844.294229,
+    "ast_hash": "8ad1f96afefa64e82fc18b894dfc13d9",
+    "semantic_hash": ""
+  },
+  "strix/strix/skills/tooling/nuclei.md": {
+    "mtime": 1786610844.294229,
+    "ast_hash": "bd96fc626ca40bb11c7007a1fbe1fb7c",
+    "semantic_hash": ""
+  },
+  "strix/strix/skills/tooling/python.md": {
+    "mtime": 1786610844.294229,
+    "ast_hash": "f83a5ccb43c7ae67208dd4782d5c0f69",
+    "semantic_hash": ""
+  },
+  "strix/strix/skills/tooling/semgrep.md": {
+    "mtime": 1786610844.294229,
+    "ast_hash": "99b941ea97f2e80073ea7b112525d097",
+    "semantic_hash": ""
+  },
+  "strix/strix/skills/tooling/sqlmap.md": {
+    "mtime": 1786610844.294229,
+    "ast_hash": "56ab0822f76fa4b13ebfb5e9e1febd4d",
+    "semantic_hash": ""
+  },
+  "strix/strix/skills/tooling/subfinder.md": {
+    "mtime": 1786610844.294229,
+    "ast_hash": "1342d022c37f5a84a8065f158d31f9f0",
+    "semantic_hash": ""
+  },
+  "strix/strix/skills/vulnerabilities/authentication_jwt.md": {
+    "mtime": 1786610844.295509,
+    "ast_hash": "40a837993ecbf1a783e43868e120aa85",
+    "semantic_hash": ""
+  },
+  "strix/strix/skills/vulnerabilities/broken_function_level_authorization.md": {
+    "mtime": 1786610844.295509,
+    "ast_hash": "0619644742cab87f152b7ceafac6a32b",
+    "semantic_hash": ""
+  },
+  "strix/strix/skills/vulnerabilities/business_logic.md": {
+    "mtime": 1786610844.295509,
+    "ast_hash": "7050da12e5a557ed18caed1037ffeb89",
+    "semantic_hash": ""
+  },
+  "strix/strix/skills/vulnerabilities/csrf.md": {
+    "mtime": 1786610844.295509,
+    "ast_hash": "abd2afb3101393bad8078b039a72035f",
+    "semantic_hash": ""
+  },
+  "strix/strix/skills/vulnerabilities/header_injection.md": {
+    "mtime": 1786610844.295509,
+    "ast_hash": "e4d2587f0bf89a5e9203c964c8d511d5",
+    "semantic_hash": ""
+  },
+  "strix/strix/skills/vulnerabilities/http_request_smuggling.md": {
+    "mtime": 1786610844.295509,
+    "ast_hash": "48682a55d9751f9d6a35fddc7051e882",
+    "semantic_hash": ""
+  },
+  "strix/strix/skills/vulnerabilities/idor.md": {
+    "mtime": 1786610844.2965121,
+    "ast_hash": "ee024df66545ff53ef99670efc686d36",
+    "semantic_hash": ""
+  },
+  "strix/strix/skills/vulnerabilities/information_disclosure.md": {
+    "mtime": 1786610844.2965121,
+    "ast_hash": "05f8a77cf9b95e4c17c8a143b40d9949",
+    "semantic_hash": ""
+  },
+  "strix/strix/skills/vulnerabilities/insecure_deserialization.md": {
+    "mtime": 1786610844.2965121,
+    "ast_hash": "982e6782bebe141de4189f7da731c881",
+    "semantic_hash": ""
+  },
+  "strix/strix/skills/vulnerabilities/insecure_file_uploads.md": {
+    "mtime": 1786610844.2965121,
+    "ast_hash": "9d0db05a4ed14147eaa206ca883b3e05",
+    "semantic_hash": ""
+  },
+  "strix/strix/skills/vulnerabilities/llm_prompt_injection.md": {
+    "mtime": 1786610844.297511,
+    "ast_hash": "89c96e0e032358212f495b8b8794d548",
+    "semantic_hash": ""
+  },
+  "strix/strix/skills/vulnerabilities/mass_assignment.md": {
+    "mtime": 1786610844.297511,
+    "ast_hash": "9cf14676dde489e0f5ec0e1f8fca529e",
+    "semantic_hash": ""
+  },
+  "strix/strix/skills/vulnerabilities/nosql_injection.md": {
+    "mtime": 1786610844.297511,
+    "ast_hash": "82071c5f8bf56faeb09eea6ab7b3631a",
+    "semantic_hash": ""
+  },
+  "strix/strix/skills/vulnerabilities/open_redirect.md": {
+    "mtime": 1786610844.297511,
+    "ast_hash": "40ce47b4b3336bb463952934424d6ff8",
+    "semantic_hash": ""
+  },
+  "strix/strix/skills/vulnerabilities/path_traversal_lfi_rfi.md": {
+    "mtime": 1786610844.297511,
+    "ast_hash": "aef8fc9cfc4d49fb86792a1980ae6f0a",
+    "semantic_hash": ""
+  },
+  "strix/strix/skills/vulnerabilities/prototype_pollution.md": {
+    "mtime": 1786610844.297511,
+    "ast_hash": "9975e17ce23fddfed84944602f70b69b",
+    "semantic_hash": ""
+  },
+  "strix/strix/skills/vulnerabilities/race_conditions.md": {
+    "mtime": 1786610844.297511,
+    "ast_hash": "f16739fecfa41b105ab2de9f3fc36eaf",
+    "semantic_hash": ""
+  },
+  "strix/strix/skills/vulnerabilities/rce.md": {
+    "mtime": 1786610844.297511,
+    "ast_hash": "9cc530a986f3f96ca26b6287f75e4bbd",
+    "semantic_hash": ""
+  },
+  "strix/strix/skills/vulnerabilities/sql_injection.md": {
+    "mtime": 1786610844.2990153,
+    "ast_hash": "f888676baef5ca2b418706294309fe0f",
+    "semantic_hash": ""
+  },
+  "strix/strix/skills/vulnerabilities/ssrf.md": {
+    "mtime": 1786610844.2990153,
+    "ast_hash": "b80def8fd461cdb16e857d032e05f15e",
+    "semantic_hash": ""
+  },
+  "strix/strix/skills/vulnerabilities/ssti.md": {
+    "mtime": 1786610844.2990153,
+    "ast_hash": "06af23e2228d6d00d48acc68e39ffeb8",
+    "semantic_hash": ""
+  },
+  "strix/strix/skills/vulnerabilities/subdomain_takeover.md": {
+    "mtime": 1786610844.2990153,
+    "ast_hash": "739a9666c7955cf029a366a067182006",
+    "semantic_hash": ""
+  },
+  "strix/strix/skills/vulnerabilities/weak_password_detection.md": {
+    "mtime": 1786610844.3000185,
+    "ast_hash": "1fa9fe08d45e8069d1b1f5f3f34714fe",
+    "semantic_hash": ""
+  },
+  "strix/strix/skills/vulnerabilities/xss.md": {
+    "mtime": 1786610844.3000185,
+    "ast_hash": "79fb6dd2053b118bd07f048de4eac147",
+    "semantic_hash": ""
+  },
+  "strix/strix/skills/vulnerabilities/xxe.md": {
+    "mtime": 1786610844.3000185,
+    "ast_hash": "781ec27a7a028300f9b979844983d973",
+    "semantic_hash": ""
+  },
+  "strix/strix/telemetry/README.md": {
+    "mtime": 1786610844.3000185,
+    "ast_hash": "28a347312906a1f01ac829040943ffb5",
+    "semantic_hash": ""
+  },
+  "strix/strix/tools/agent_browser/README.md": {
+    "mtime": 1786610844.3015227,
+    "ast_hash": "bc07eac8320447cc5a22e23e67d8bd58",
+    "semantic_hash": ""
+  },
+  "strix/strix/tools/apply_patch/README.md": {
+    "mtime": 1786610844.3015227,
+    "ast_hash": "27f46597ae9c6ed16102d1202c64651e",
+    "semantic_hash": ""
+  },
+  "strix/strix/tools/shell/README.md": {
+    "mtime": 1786610844.3050282,
+    "ast_hash": "a3daa575e869730b552ebf5372dce48c",
+    "semantic_hash": ""
+  },
+  "strix/strix/tools/view_image/README.md": {
+    "mtime": 1786610844.3060281,
+    "ast_hash": "f083d13ff2c31ac6eaf245c17c81c4ae",
+    "semantic_hash": ""
+  },
+  "strix/.github/logo.png": {
+    "mtime": 1786610844.2198067,
+    "ast_hash": "c25fd702de374ec0f0c95d737f50c277",
+    "semantic_hash": ""
+  },
+  "strix/.github/screenshot.png": {
+    "mtime": 1786610844.2278697,
+    "ast_hash": "486a93d0bab2d247f14728773f9b2c76",
+    "semantic_hash": ""
+  },
+  "strix/docs/images/logo.png": {
+    "mtime": 1786610844.2313879,
+    "ast_hash": "c25fd702de374ec0f0c95d737f50c277",
+    "semantic_hash": ""
+  },
+  "strix/docs/images/screenshot.png": {
+    "mtime": 1786610844.2403333,
+    "ast_hash": "486a93d0bab2d247f14728773f9b2c76",
+    "semantic_hash": ""
+  },
+  "strix/docs/logo/strix.png": {
+    "mtime": 1786610844.2418396,
+    "ast_hash": "c25fd702de374ec0f0c95d737f50c277",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/viewer/frontend/public/logo.png": {
+    "mtime": 1786610844.2674458,
+    "ast_hash": "c25fd702de374ec0f0c95d737f50c277",
+    "semantic_hash": ""
+  },
+  "strix/strix/interface/viewer/static/logo.png": {
+    "mtime": 1786610844.2846675,
+    "ast_hash": "c25fd702de374ec0f0c95d737f50c277",
     "semantic_hash": ""
   }
 }

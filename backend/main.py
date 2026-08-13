@@ -91,12 +91,18 @@ async def lifespan(app):
         except Exception as e:
             logger.error(f"Failed to stop agent scheduler: {e}")
 
+_is_production = os.getenv("ENV", "development") == "production"
+
 app = FastAPI(
     title=settings.APP_NAME,
     version="1.0.0-MVP",
     description="Enterprise Multi-Workspace, Multi-Client Instagram Business & Facebook Page Management Platform.",
     root_path="/api/backend",
     lifespan=lifespan,
+    # Disable interactive API docs in production (security: M2)
+    docs_url=None if _is_production else "/docs",
+    redoc_url=None if _is_production else "/redoc",
+    openapi_url=None if _is_production else "/openapi.json",
 )
 
 def _build_allowed_origins() -> list[str]:

@@ -12,11 +12,12 @@ Event yang dihandle:
 import logging
 import hmac
 import hashlib
-from fastapi import APIRouter, Request, HTTPException, BackgroundTasks, Depends
+from fastapi import APIRouter, Request, HTTPException, BackgroundTasks, Depends, Header
 from sqlalchemy.orm import Session
+from typing import Optional
 from backend.database import get_db
 from backend.config import settings
-from backend.models.models import Post, PostTarget, PostPublishResult, PostStatus
+from backend.models.models import Post, PostTarget, PostPublishResult, PostStatus, User
 from backend.services.postforme_service import postforme_service
 
 logger = logging.getLogger("WebhookRouter")
@@ -28,12 +29,13 @@ def _verify_webhook_secret(request_secret: str) -> bool:
     """
     Verifikasi bahwa request berasal dari PostForMe menggunakan secret di header.
     Header: Post-For-Me-Webhook-Secret
+    Fail-closed: jika secret belum dikonfigurasi, tolak semua request.
     """
     configured_secret = settings.POSTFORME_WEBHOOK_SECRET
     if not configured_secret:
-        # Jika secret belum dikonfigurasi, skip verifikasi (log warning)
-        logger.warning("POSTFORME_WEBHOOK_SECRET belum dikonfigurasi. Skipping webhook verification.")
-        return True
+        # Fail-closed: tolak semua webhook jika secret belum dikonfigurasi
+        logger.error("POSTFORME_WEBHOOK_SECRET tidak dikonfigurasi. Menolak semua webhook request.")
+        return False
     return hmac.compare_digest(configured_secret, request_secret)
 
 
@@ -223,7 +225,12 @@ async def postforme_webhook(
 
 
 @router.post("/setup")
-async def setup_postforme_webhook():
+async def setup_postforme_webhook(
+    authorization: Optional[str] = Header(None),
+    db: Session = Depends(get_db)
+):
+    from backend.routers.admin import require_admin
+    require_admin(authorization=authorization, db=db)
     """
     Setup / daftarkan webhook ke PostForMe secara otomatis.
     Panggil endpoint ini sekali setelah deploy untuk mendaftarkan webhook URL.
@@ -248,8 +255,13 @@ async def setup_postforme_webhook():
 
 
 @router.get("/list")
-async def list_postforme_webhooks():
-    """Tampilkan semua webhook yang terdaftar di PostForMe."""
+async def list_postforme_webhooks(
+    authorization: Optional[str] = Header(None),
+    db: Session = Depends(get_db)
+):
+    """Tampilkan semua webhook yang terdaftar di PostForMe. Admin only."""
+    from backend.routers.admin import require_admin
+    require_admin(authorization=authorization, db=db)
     try:
         result = await postforme_service.list_webhooks()
         return result

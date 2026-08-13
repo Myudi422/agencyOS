@@ -34,11 +34,18 @@ class SecurityMiddleware(BaseHTTPMiddleware):
         self.general_limiter = InMemoryRateLimiter(max_requests=general_limit, window_seconds=60)
         self.auth_limiter = InMemoryRateLimiter(max_requests=auth_limit, window_seconds=60)
 
+    # Trusted reverse proxy IPs — only these may set X-Forwarded-For.
+    # Vercel edge IPs are internal; add Cloudflare ranges if behind CF.
+    _TRUSTED_PROXIES: frozenset = frozenset({"127.0.0.1", "::1", "10.0.0.1"})
+
     def _get_client_key(self, request: Request) -> str:
-        forwarded_for = request.headers.get("x-forwarded-for", "")
-        if forwarded_for:
-            return forwarded_for.split(",")[0].strip()
-        return request.client.host if request.client else "unknown"
+        client_ip = request.client.host if request.client else "unknown"
+        # Only trust X-Forwarded-For if the direct connection comes from a known proxy
+        if client_ip in self._TRUSTED_PROXIES:
+            forwarded_for = request.headers.get("x-forwarded-for", "")
+            if forwarded_for:
+                return forwarded_for.split(",")[0].strip()
+        return client_ip
 
     def _is_auth_path(self, path: str) -> bool:
         normalized = path.lower()
@@ -69,6 +76,16 @@ class SecurityMiddleware(BaseHTTPMiddleware):
                 return JSONResponse(
                     status_code=429,
                     content={"detail": "Too many requests. Please slow down and try again shortly."},
+                    headers={
+                        "Retry-After": "60",
+                        "X-RateLimit-Limit": str(limiter.max_requests),
+                        "X-RateLimit-Remaining": "0",
+                        "X-Content-Type-Options": "nosniff",
+                        "Referrer-Policy": "strict-origin-when-cross-origin",
+                        "Permissions-Policy": "geolocation=(), microphone=(), camera=()",
+                        "X-Frame-Options": "DENY",
+                        "Cache-Control": "no-store",
+                    },
                 )
 
         response = await call_next(request)
