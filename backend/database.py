@@ -1,6 +1,8 @@
+import os
 import logging
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
+from sqlalchemy.pool import NullPool
 from backend.config import settings
 
 logger = logging.getLogger("Database")
@@ -21,11 +23,19 @@ if "pooler.supabase.com" in db_url and ":5432/" in db_url:
     logger.info("Detected Supabase Pooler on port 5432. Switching to port 6543 (Transaction Mode) to avoid EMAXCONNSESSION errors.")
     db_url = db_url.replace(":5432/", ":6543/", 1)
 
+is_serverless = bool(os.getenv("VERCEL") or "pooler.supabase.com" in db_url)
+
 # Configure engine with serverless-friendly pooling settings
 if "sqlite" in db_url:
     engine = create_engine(
         db_url,
         connect_args=connect_args
+    )
+elif is_serverless:
+    engine = create_engine(
+        db_url,
+        connect_args=connect_args,
+        poolclass=NullPool
     )
 else:
     engine = create_engine(
