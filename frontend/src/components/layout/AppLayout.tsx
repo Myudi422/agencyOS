@@ -17,7 +17,7 @@ import SplashScreen from "@/components/common/SplashScreen";
 import AppTour from "@/components/tour/AppTour";
 import HelpModal from "@/components/tour/HelpModal";
 
-const PUBLIC_PATHS = ["/landing", "/login", "/pricing", "/billing/success", "/onboarding", "/kol-portal", "/review"];
+const PUBLIC_PATHS = ["/landing", "/login", "/pricing", "/billing/success", "/onboarding", "/kol-portal", "/review", "/terms", "/privacy"];
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [isMobileOpen, setIsMobileOpen] = useState(false);

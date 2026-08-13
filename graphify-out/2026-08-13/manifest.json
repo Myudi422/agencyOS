@@ -330,13 +330,13 @@
     "semantic_hash": "bb8a479cc6d47f6d90ae256e823a21b1"
   },
   "frontend/src/app/page.tsx": {
-    "mtime": 1786019670.4918127,
-    "ast_hash": "6104260414e903d1a98352c3dce0484d",
+    "mtime": 1786600114.5802226,
+    "ast_hash": "0f1b1bdb041c52d6494a47812b3823c6",
     "semantic_hash": ""
   },
   "frontend/src/app/pricing/page.tsx": {
-    "mtime": 1786019670.4926143,
-    "ast_hash": "c3c0501ed55e03c56aa393fe985b258d",
+    "mtime": 1786599380.9140742,
+    "ast_hash": "67fc05ef9fb643843c663ca9600dcbe0",
     "semantic_hash": ""
   },
   "frontend/src/app/queue/page.tsx": {

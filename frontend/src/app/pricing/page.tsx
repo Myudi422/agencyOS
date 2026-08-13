@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/authStore";
-import { CreditCard, Zap, Crown, Rocket, Building2, ChevronRight, Check, Loader2, ShieldCheck } from "lucide-react";
+import { CreditCard, Zap, Crown, Rocket, Building2, ChevronRight, Check, Loader2, ShieldCheck, Link } from "lucide-react";
 import { fetchApi } from "@/lib/api";
 import WaVerifyModal from "@/components/billing/WaVerifyModal";
 
@@ -91,9 +91,9 @@ const DEFAULT_PLANS = [
       "Unlimited akun sosmed",
       "Multi-client management",
       "Semua 10+ platform",
-      "AI Assistant support analisa, brainstorm & brief",
+      "AI Assistant & AI Agent Briefing Otomatis",
       "KOL Manager & Deliverable Tracker",
-      "Competitor Spy & Executive PDF Report",
+      "Executive PDF Report Generator",
     ],
   },
   {
@@ -113,9 +113,9 @@ const DEFAULT_PLANS = [
       "Unlimited akun sosmed",
       "Multi-client management",
       "Semua 10+ platform",
-      "AI Assistant support analisa, brainstorm & brief",
+      "AI Assistant & AI Agent Briefing Otomatis",
       "KOL Manager & Deliverable Tracker",
-      "Competitor Spy & Executive PDF Report",
+      "Executive PDF Report Generator",
     ],
   },
   {
@@ -135,9 +135,9 @@ const DEFAULT_PLANS = [
       "Unlimited akun sosmed",
       "Multi-client management",
       "Semua 10+ platform",
-      "AI Assistant support analisa, brainstorm & brief",
+      "AI Assistant & AI Agent Briefing Otomatis",
       "KOL Manager & Deliverable Tracker",
-      "Competitor Spy & Executive PDF Report",
+      "Executive PDF Report Generator",
     ],
   },
 ];
@@ -187,7 +187,7 @@ export default function PricingPage() {
           setPlans(mapped);
         }
       })
-      .catch(() => {});
+      .catch(() => { });
   }, []);
 
   // ── Checkout for paid plans ──────────────────────────────────────────────
@@ -315,19 +315,17 @@ export default function PricingPage() {
             return (
               <div
                 key={plan.tier}
-                className={`relative flex flex-col rounded-3xl border-2 bg-white shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 ${
-                  isPopular ? "border-purple-400 shadow-purple-100/80" : plan.border
-                }`}
+                className={`relative flex flex-col rounded-3xl border-2 bg-white shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 ${isPopular ? "border-purple-400 shadow-purple-100/80" : plan.border
+                  }`}
               >
                 {plan.badge && (
                   <div
-                    className={`absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full text-[11px] font-bold text-white shadow-md ${
-                      isPopular
+                    className={`absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full text-[11px] font-bold text-white shadow-md ${isPopular
                         ? "bg-gradient-to-r from-purple-500 to-violet-600"
                         : isTrial
-                        ? "bg-gradient-to-r from-green-500 to-emerald-600"
-                        : "bg-gradient-to-r from-amber-500 to-orange-500"
-                    }`}
+                          ? "bg-gradient-to-r from-green-500 to-emerald-600"
+                          : "bg-gradient-to-r from-amber-500 to-orange-500"
+                      }`}
                   >
                     {plan.badge}
                   </div>
@@ -378,13 +376,12 @@ export default function PricingPage() {
                     id={`plan-cta-${plan.tier}`}
                     onClick={() => handleSelectPlan(plan.tier)}
                     disabled={isLoading}
-                    className={`w-full py-3 px-4 rounded-2xl font-semibold text-sm flex items-center justify-center gap-2 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:scale-100 ${
-                      isPopular
+                    className={`w-full py-3 px-4 rounded-2xl font-semibold text-sm flex items-center justify-center gap-2 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:scale-100 ${isPopular
                         ? "bg-gradient-to-r from-purple-600 to-violet-600 text-white shadow-lg shadow-purple-500/30 hover:shadow-xl hover:shadow-purple-500/40"
                         : isTrial
-                        ? "bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-lg shadow-green-300/40 hover:shadow-xl hover:shadow-green-400/50"
-                        : "bg-slate-100 hover:bg-slate-200 text-slate-800"
-                    }`}
+                          ? "bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-lg shadow-green-300/40 hover:shadow-xl hover:shadow-green-400/50"
+                          : "bg-slate-100 hover:bg-slate-200 text-slate-800"
+                      }`}
                   >
                     {isLoading ? (
                       <>
@@ -415,6 +412,13 @@ export default function PricingPage() {
           </p>
           <p className="text-xs text-slate-400">
             Tidak ada kontrak mengikat. Bisa batal kapan saja.
+          </p>
+          <p className="text-xs text-slate-400 flex flex-wrap items-center justify-center gap-3 pt-1">
+            <Link href="/terms" className="hover:text-purple-600 underline">Syarat &amp; Ketentuan</Link>
+            <span>•</span>
+            <Link href="/privacy" className="hover:text-purple-600 underline">Kebijakan Privasi</Link>
+            <span>•</span>
+            <a href="https://wa.me/6289654728249?text=Halo%20Tim%20Shiera,%20saya%20butuh%20bantuan" target="_blank" rel="noopener noreferrer" className="hover:text-purple-600 underline">Support WA (+62 896-5472-8249)</a>
           </p>
         </div>
       </div>

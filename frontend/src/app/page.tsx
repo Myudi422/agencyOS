@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { 
   Calendar, Users, Newspaper, Search, Heart, Star, Sparkles, 
-  ChevronDown, ArrowRight, Hash, TrendingUp, FileText,
+  ChevronDown, ArrowRight, Hash, TrendingUp, FileText, Bot,
   Check, LayoutGrid, FileBarChart, LineChart, Zap, Building2, Share2, ShieldCheck,
   Sliders, Award, MessageCircle, User, Store, Briefcase, Clock, CheckCircle, Target
 } from "lucide-react";
@@ -41,7 +41,6 @@ const CATEGORIES = [
   { id: "AI ASSISTANT", label: "AI Assistant", icon: Sparkles },
   { id: "KOL MANAGEMENT", label: "KOL Campaigns", icon: Users },
   { id: "REPORT & ANALYTICS", label: "Report PDF", icon: FileBarChart },
-  { id: "CHECK KOMPETITOR", label: "Check Kompetitor", icon: LineChart },
 ];
 
 // Feature Cards Mock Data matching Airbnb Property Card style
@@ -89,20 +88,6 @@ const FEATURES = [
     platforms: ["TikTok", "Instagram", "YouTube"]
   },
   {
-    id: "competitor",
-    category: "CHECK KOMPETITOR",
-    badge: "AI Powered",
-    badgeColor: "bg-amber-100 text-amber-700 border-amber-200",
-    title: "Competitor Intelligence & Content Audit",
-    meta: "Pantau jam posting rahasia, postingan terlaris, dan strategi engagement rate kompetitor secara otomatis.",
-    metric: "Real-Time Insights",
-    visualBg: "from-amber-500/10 via-orange-500/5 to-slate-100",
-    visualIcon: LineChart,
-    visualTag: "Competitor Spy",
-    iconColor: "text-amber-600",
-    platforms: ["Instagram", "TikTok", "LinkedIn"]
-  },
-  {
     id: "reports",
     category: "REPORT & ANALYTICS",
     badge: "1-Click Export",
@@ -129,6 +114,20 @@ const FEATURES = [
     visualTag: "Client Portal",
     iconColor: "text-sky-600",
     platforms: ["Approval Link", "Media Storage", "Multi-Client"]
+  },
+  {
+    id: "ai_agent",
+    category: "AI ASSISTANT",
+    badge: "Auto Pilot",
+    badgeColor: "bg-purple-100 text-purple-700 border-purple-200",
+    title: "Autonomous AI Agent & Content Briefing",
+    meta: "AI Agent otomatis yang memahami persona brand, menghasilkan draf ide & brief konten harian, serta siap transfer ke composer.",
+    metric: "Auto Daily Draft",
+    visualBg: "from-purple-500/10 via-pink-500/5 to-slate-100",
+    visualIcon: Bot,
+    visualTag: "Shiera AI Agent",
+    iconColor: "text-purple-600",
+    platforms: ["Auto Brief", "Content Pillars", "Auto Draft"]
   }
 ];
 
@@ -163,7 +162,7 @@ const TARGET_AUDIENCE = [
     iconBg: "bg-amber-100 text-amber-600",
     badge: "Efisiensi Marketing",
     title: "Social Media Specialist & Tim Marketing",
-    description: "Pantau tren & strategi kompetitor, atur brief campaign influencer, serta analisis performa statistik sosmed secara real-time dalam satu platform.",
+    description: "Atur brief campaign influencer, analisis performa statistik sosmed secara real-time, serta optimasi strategi konten dalam satu platform.",
     tag: "All-in-One Growth Toolkit"
   }
 ];
@@ -209,9 +208,9 @@ const DEFAULT_PRICING_PLANS = [
       "Unlimited akun sosmed",
       "Multi-client management",
       "Semua 10+ platform",
-      "AI Assistant support analisa, brainstorm & brief",
+      "AI Assistant & AI Agent Briefing Otomatis",
       "KOL Manager & Deliverable Tracker",
-      "Competitor Spy & Executive PDF Report",
+      "Executive PDF Report Generator",
     ],
     buttonText: "Pilih Creator",
     buttonStyle: "bg-slate-100 text-slate-800 hover:bg-slate-200 border border-slate-300",
@@ -234,9 +233,9 @@ const DEFAULT_PRICING_PLANS = [
       "Unlimited akun sosmed",
       "Multi-client management",
       "Semua 10+ platform",
-      "AI Assistant support analisa, brainstorm & brief",
+      "AI Assistant & AI Agent Briefing Otomatis",
       "KOL Manager & Deliverable Tracker",
-      "Competitor Spy & Executive PDF Report",
+      "Executive PDF Report Generator",
     ],
     buttonText: "Pilih Agency",
     buttonStyle: "bg-gradient-to-r from-purple-600 to-violet-600 text-white shadow-lg shadow-purple-500/30 hover:shadow-xl hover:shadow-purple-500/40",
@@ -259,9 +258,9 @@ const DEFAULT_PRICING_PLANS = [
       "Unlimited akun sosmed",
       "Multi-client management",
       "Semua 10+ platform",
-      "AI Assistant support analisa, brainstorm & brief",
+      "AI Assistant & AI Agent Briefing Otomatis",
       "KOL Manager & Deliverable Tracker",
-      "Competitor Spy & Executive PDF Report",
+      "Executive PDF Report Generator",
     ],
     buttonText: "Pilih Studio",
     buttonStyle: "bg-slate-100 text-slate-800 hover:bg-slate-200 border border-slate-300",
@@ -271,24 +270,36 @@ const DEFAULT_PRICING_PLANS = [
 
 const FAQS = [
   {
+    question: "Bagaimana cara menghubungkan akun sosial media ke Shiera?",
+    answer: "Sangat mudah! Di menu Accounts Manager, Anda dapat mengaitkan akun Instagram, TikTok, Facebook, LinkedIn, YouTube, X, & Bluesky via OAuth resmi. Anda juga bisa mengatur Briefing Tone brand dan Auto-Watermark untuk setiap akun."
+  },
+  {
+    question: "Bagaimana cara kerja Multi-Channel Post Composer & AI Auto-Caption?",
+    answer: "Composer Shiera memungkinkan Anda menjadwalkan konten ke banyak sosmed sekaligus dalam 1 kali klik. Dilengkapi Shiera AI Co-Pilot yang dapat membuatkan caption menarik, tagar (hashtags), dan penyesuaian format media otomatis per platform."
+  },
+  {
+    question: "Bagaimana Shiera AI Agent bekerja secara otomatis?",
+    answer: "Shiera AI Agent mempelajari profil dan briefing brand Anda. Agent akan secara otomatis menghasilkan ide draf & brief konten harian sesuai pilar konten pilihan Anda, yang kemudian dapat ditinjau dan ditransfer langsung ke Composer."
+  },
+  {
+    question: "Bagaimana cara kerja Queue (Antrean) dan Kalender Konten?",
+    answer: "Menu Queue memantau status postingan secara real-time (Draft, Scheduled, Processing, Published). Anda juga dapat melihat visualisasi kalender bulanan interaktif dalam zona waktu WIB/UTC untuk memastikan konsistensi postingan."
+  },
+  {
+    question: "Bagaimana cara mengirimkan link persetujuan (Client Approval Portal) ke klien?",
+    answer: "Untuk agensi atau tim marketing, Anda dapat membagikan link preview persetujuan profesional kepada klien. Klien dapat melihat tampilan presisi feed dan memberikan approval/catatan revisi tanpa perlu membuat akun."
+  },
+  {
+    question: "Bagaimana fitur Executive PDF Report Generator bekerja?",
+    answer: "Menu Statistics & Reports mengagregasi metric engagement, reach, dan impresi dari semua saluran sosmed. Anda dapat meng-generate laporan bulanan format PDF siap kirim dan memasang logo agensi Anda sendiri (White-Label)."
+  },
+  {
     question: "Apakah Shiera aman dan melanggar API Instagram / TikTok?",
-    answer: "Shiera 100% Aman dan Legal. Kami menggunakan Graph API Resmi dari Meta (Instagram & Facebook), TikTok Content Posting API, LinkedIn API, YouTube API, dan X API resmi. Tidak ada risk akun terkena banned karena tidak ada scraping ilegal."
+    answer: "Shiera 100% Aman dan Legal. Kami menggunakan Official Graph API dari Meta (Instagram & Facebook), TikTok Content Posting API, LinkedIn API, YouTube API, dan X API resmi tanpa scraping ilegal sehingga akun Anda bebas risiko."
   },
   {
-    question: "Bagaimana cara kerja Free Trial 3 Hari?",
-    answer: "Anda mendapatkan akses langsung ke paket Starter Trial selama 3 hari dengan kuota 6 postingan (2 post/hari). Pendaftaran sangat mudah dan memerlukan verifikasi OTP WhatsApp aktif untuk mencegah pengiklanan spam."
-  },
-  {
-    question: "Apakah laporan PDF dapat dipasang logo saya sendiri (White-Label)?",
-    answer: "Ya! Pada paket Agency dan Studio, fitur Executive PDF Report Generator memungkinkan Anda mengunggah logo sendiri, mengatur warna brand, dan menghapus watermark Shiera."
-  },
-  {
-    question: "Metode pembayaran apa saja yang didukung?",
-    answer: "Pembayaran diproses secara aman melalui Midtrans Payment Gateway. Kami menerima QRIS (BCA, Mandiri, GoPay, OVO, ShopeePay), Virtual Account Bank (BCA, Mandiri, BNI, BRI, Permata), dan Kartu Kredit/Debit Visa/Mastercard."
-  },
-  {
-    question: "Apakah Shiera hanya untuk Agency saja?",
-    answer: "Tidak! Shiera dirancang untuk SIAPA SAJA yang ingin mengelola banyak akun sosmed tanpa harus lelah upload satu per satu. Sangat cocok untuk Content Creator, Pemvilik Olshop / UMKM, Freelancer, maupun Tim Media Publisher."
+    question: "Metode pembayaran apa saja yang didukung & bagaimana cara klaim Free Trial?",
+    answer: "Free Trial 3 Hari dapat diklaim langsung setelah verifikasi nomor WhatsApp aktif. Pembayaran paket langganan diproses secara otomatis & aman via Midtrans Payment Gateway (QRIS, GoPay, ShopeePay, Virtual Account Bank, & Credit Card)."
   }
 ];
 
@@ -297,6 +308,7 @@ export default function LandingHomePage() {
   const [activeCategory, setActiveCategory] = useState("ALL SOLUTIONS");
   const [favorites, setFavorites] = useState<Record<string, boolean>>({});
   const [openFaq, setOpenFaq] = useState<number | null>(0);
+  const [isNavDropdownOpen, setIsNavDropdownOpen] = useState(false);
   const [pricingPlans, setPricingPlans] = useState<any[]>(DEFAULT_PRICING_PLANS);
 
   // Fetch live pricing from API on landing page
@@ -352,7 +364,7 @@ export default function LandingHomePage() {
     <div className="min-h-screen bg-white text-slate-900 font-sans selection:bg-purple-200 selection:text-purple-900">
       
       {/* ── [SECTION 1] Airbnb-Style Top Navigation Header ──────────────────── */}
-      <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200/80 h-20 px-4 sm:px-8 flex items-center justify-between transition-all">
+      <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200/80 h-20 px-4 sm:px-8 flex items-center justify-between relative transition-all">
         {/* Brand Logo Left */}
         <div className="flex items-center gap-2">
           <Link href="/" className="flex items-center gap-2.5 group">
@@ -369,34 +381,107 @@ export default function LandingHomePage() {
           </Link>
         </div>
 
-        {/* Center Tabs - Airbnb 3 Product Entries with Vector Icons */}
-        <nav className="hidden md:flex items-center gap-8">
-          <button className="flex items-center gap-2 font-semibold text-sm text-slate-900 border-b-2 border-slate-900 pb-1">
-            <Calendar className="w-4 h-4 text-purple-600" />
-            <span>Scheduler</span>
-          </button>
-          <button className="flex items-center gap-2 font-semibold text-sm text-slate-500 hover:text-slate-900 transition-colors pb-1 relative">
-            <Users className="w-4 h-4 text-slate-400 group-hover:text-purple-600" />
-            <span>KOL Campaigns</span>
-            <span className="px-1.5 py-0.5 rounded-full bg-purple-100 text-purple-700 text-[9px] font-bold uppercase tracking-wider">
-              NEW
-            </span>
-          </button>
-          <button className="flex items-center gap-2 font-semibold text-sm text-slate-500 hover:text-slate-900 transition-colors pb-1 relative">
-            <Sparkles className="w-4 h-4 text-purple-600 group-hover:text-purple-600" />
-            <span>AI Assistant</span>
-            <span className="px-1.5 py-0.5 rounded-full bg-purple-100 text-purple-700 text-[9px] font-bold uppercase tracking-wider">
-              AI
-            </span>
-          </button>
+        {/* Center Navigation Links (Centered) */}
+        <nav className="hidden md:flex items-center gap-6 lg:gap-8 absolute left-1/2 -translate-x-1/2">
+          
+          {/* Fitur & Solusi Dropdown Popover */}
+          <div 
+            className="relative"
+            onMouseEnter={() => setIsNavDropdownOpen(true)}
+            onMouseLeave={() => setIsNavDropdownOpen(false)}
+          >
+            <button 
+              onClick={() => setIsNavDropdownOpen(!isNavDropdownOpen)}
+              className="flex items-center gap-1.5 font-semibold text-xs sm:text-sm text-slate-700 hover:text-purple-600 transition-colors py-2"
+            >
+              <Sliders className="w-4 h-4 text-purple-600" />
+              <span>Fitur &amp; Solusi</span>
+              <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform ${isNavDropdownOpen ? "rotate-180 text-purple-600" : ""}`} />
+            </button>
+
+            {/* Floating Popover Card */}
+            {isNavDropdownOpen && (
+              <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1 w-80 p-2.5 rounded-2xl bg-white border border-slate-200/90 shadow-2xl shadow-slate-900/10 space-y-1 animate-in fade-in slide-in-from-top-2 duration-150 z-50">
+                <a 
+                  href="#features" 
+                  onClick={() => { setActiveCategory("SCHEDULER"); setIsNavDropdownOpen(false); }}
+                  className="flex items-start gap-3 p-2.5 rounded-xl hover:bg-purple-50/70 transition-colors group"
+                >
+                  <div className="w-8 h-8 rounded-lg bg-purple-100 text-purple-600 flex items-center justify-center shrink-0 mt-0.5">
+                    <Calendar className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <div className="text-xs font-bold text-slate-900 group-hover:text-purple-600 transition-colors">Multi-Channel Scheduler</div>
+                    <div className="text-[11px] text-slate-500">Auto-post ke 10+ platform sosmed.</div>
+                  </div>
+                </a>
+
+                <a 
+                  href="#features" 
+                  onClick={() => { setActiveCategory("AI ASSISTANT"); setIsNavDropdownOpen(false); }}
+                  className="flex items-start gap-3 p-2.5 rounded-xl hover:bg-purple-50/70 transition-colors group"
+                >
+                  <div className="w-8 h-8 rounded-lg bg-purple-100 text-purple-600 flex items-center justify-center shrink-0 mt-0.5">
+                    <Bot className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <div className="text-xs font-bold text-slate-900 group-hover:text-purple-600 transition-colors flex items-center gap-1.5">
+                      <span>AI Agent Center</span>
+                      <span className="px-1.5 py-0.2 rounded-full bg-purple-100 text-purple-700 text-[8px] font-bold">AUTO</span>
+                    </div>
+                    <div className="text-[11px] text-slate-500">Briefing &amp; draf ide harian otomatis.</div>
+                  </div>
+                </a>
+
+                <a 
+                  href="#features" 
+                  onClick={() => { setActiveCategory("KOL MANAGEMENT"); setIsNavDropdownOpen(false); }}
+                  className="flex items-start gap-3 p-2.5 rounded-xl hover:bg-emerald-50/70 transition-colors group"
+                >
+                  <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0 mt-0.5">
+                    <Users className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <div className="text-xs font-bold text-slate-900 group-hover:text-emerald-600 transition-colors">KOL Campaigns</div>
+                    <div className="text-[11px] text-slate-500">Kelola brief influencer &amp; hitung ROI.</div>
+                  </div>
+                </a>
+
+                <a 
+                  href="#features" 
+                  onClick={() => { setActiveCategory("REPORT & ANALYTICS"); setIsNavDropdownOpen(false); }}
+                  className="flex items-start gap-3 p-2.5 rounded-xl hover:bg-indigo-50/70 transition-colors group"
+                >
+                  <div className="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center shrink-0 mt-0.5">
+                    <FileBarChart className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <div className="text-xs font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">Executive PDF Reports</div>
+                    <div className="text-[11px] text-slate-500">Laporan bulanan format PDF white-label.</div>
+                  </div>
+                </a>
+              </div>
+            )}
+          </div>
+
+          <a 
+            href="#pricing" 
+            className="flex items-center gap-1.5 font-semibold text-xs sm:text-sm text-slate-700 hover:text-purple-600 transition-colors"
+          >
+            <Zap className="w-4 h-4 text-amber-500" />
+            <span>Paket Harga</span>
+          </a>
+          <a 
+            href="#faq" 
+            className="flex items-center gap-1.5 font-semibold text-xs sm:text-sm text-slate-700 hover:text-purple-600 transition-colors"
+          >
+            <MessageCircle className="w-4 h-4 text-sky-500" />
+            <span>FAQ</span>
+          </a>
         </nav>
 
         {/* Right Utilities */}
         <div className="flex items-center gap-3 sm:gap-4">
-          <Link href="/pricing" className="hidden sm:inline-block text-xs font-semibold text-slate-600 hover:text-purple-600 transition-colors">
-            Lihat Paket Harga
-          </Link>
-
           {isAuthenticated ? (
             <Link 
               href="/dashboard" 
@@ -443,7 +528,7 @@ export default function LandingHomePage() {
             </span>
           </h1>
           <p className="text-base sm:text-xl text-slate-600 leading-relaxed max-w-3xl mx-auto">
-            Stop buang waktu upload manual. Satu platform untuk auto-post ke 10+ sosmed, AI Assistant strategi &amp; brief, KOL manager, spy kompetitor, hingga laporan PDF executive otomatis.
+            Stop buang waktu upload manual. Satu platform untuk auto-post ke 10+ sosmed, AI Assistant strategi &amp; brief, KOL manager, hingga laporan PDF executive otomatis.
           </p>
         </div>
 
@@ -480,7 +565,7 @@ export default function LandingHomePage() {
               </div>
               <div className="min-w-0 flex-1">
                 <div className="text-[11px] font-bold uppercase tracking-wider text-slate-900">Tipe Solusi</div>
-                <div className="text-xs text-slate-500 truncate">Auto Scheduler, KOL, Competitor Spy</div>
+                <div className="text-xs text-slate-500 truncate">Auto Scheduler, AI Agent, KOL, PDF Report</div>
               </div>
             </div>
 
@@ -584,7 +669,7 @@ export default function LandingHomePage() {
 
 
       {/* ── [SECTION 4] Feature Showcase Grid (Airbnb Property Card Layout) ─── */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-10 border-t border-slate-200/80">
+      <section id="features" className="py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-10 border-t border-slate-200/80">
         
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div>
@@ -682,7 +767,7 @@ export default function LandingHomePage() {
 
       {/* ── [SECTION 5] Airbnb Rating Display with Laurel Wreaths ──────────── */}
       <section className="py-20 bg-slate-900 text-white relative overflow-hidden">
-        <div className="max-w-5xl mx-auto px-4 text-center space-y-8 relative z-10">
+        <div className="max-w-6xl mx-auto px-4 text-center space-y-12 relative z-10">
           
           {/* Laurel Wreath Vector SVG + Rating Display 64px */}
           <div className="space-y-3">
@@ -708,41 +793,96 @@ export default function LandingHomePage() {
 
           {/* Headline Statement */}
           <h2 className="text-2xl sm:text-4xl font-extrabold max-w-3xl mx-auto leading-tight font-['Outfit']">
-            &ldquo;Platform SMM Auto-Post Paling Stabil &amp; Hemat Waktu Di Indonesia&rdquo;
+            &ldquo;Solusi Kelola Sosmed Auto-Post Yang Hemat Waktu &amp; Diandalkan Tim Creative&rdquo;
           </h2>
 
-          {/* Testimonial Quote */}
-          <div className="p-8 rounded-3xl bg-white/5 border border-white/10 backdrop-blur-md max-w-2xl mx-auto text-left space-y-4">
-            <p className="text-sm sm:text-base text-slate-300 italic leading-relaxed">
-              &ldquo;Dulu capek banget upload satu per satu ke TikTok, Instagram Reels, dan YouTube Shorts. Sekarang dengan Shiera, dalam 10 menit jadwal sebulan langsung beres!&rdquo;
-            </p>
-            <div className="flex items-center gap-3 pt-2">
-              <div className="w-10 h-10 rounded-full bg-purple-600 flex items-center justify-center font-bold text-white text-sm shadow-md">
-                BP
+          {/* 3 Testimonial Cards Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-left">
+            
+            <div className="p-6 rounded-3xl bg-white/5 border border-white/10 backdrop-blur-md space-y-4 flex flex-col justify-between hover:border-purple-500/40 transition-all">
+              <div className="space-y-3">
+                <div className="flex items-center gap-1 text-amber-400">
+                  {[1, 2, 3, 4, 5].map((s) => (
+                    <Star key={s} className="w-4 h-4 fill-amber-400 text-amber-400" />
+                  ))}
+                </div>
+                <p className="text-xs sm:text-sm text-slate-300 leading-relaxed italic">
+                  &ldquo;Kelola 25+ akun sosmed klien sekarang super efisien. Fitur Client Approval link sangat membantu — klien tinggal approve tanpa harus bolak-balik kirim revisi di WhatsApp.&rdquo;
+                </p>
               </div>
-              <div>
-                <p className="text-sm font-bold text-white">Budi Pratama</p>
-                <p className="text-xs text-purple-300">Content Creator &amp; Founder Agency</p>
+              <div className="flex items-center gap-3 pt-3 border-t border-white/10">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center font-bold text-white text-xs shadow-md">
+                  RA
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-white">Rian Ardiansyah</p>
+                  <p className="text-xs text-purple-300">Managing Director, GrowthMedia Agency</p>
+                </div>
               </div>
             </div>
+
+            <div className="p-6 rounded-3xl bg-white/5 border border-white/10 backdrop-blur-md space-y-4 flex flex-col justify-between hover:border-purple-500/40 transition-all">
+              <div className="space-y-3">
+                <div className="flex items-center gap-1 text-amber-400">
+                  {[1, 2, 3, 4, 5].map((s) => (
+                    <Star key={s} className="w-4 h-4 fill-amber-400 text-amber-400" />
+                  ))}
+                </div>
+                <p className="text-xs sm:text-sm text-slate-300 leading-relaxed italic">
+                  &ldquo;Shiera AI Agent penolong banget! Draf ide konten harian langsung dibuatin sesuai persona brand aku. Sekali setting composer, postingan 1 bulan di Reels &amp; TikTok beres.&rdquo;
+                </p>
+              </div>
+              <div className="flex items-center gap-3 pt-3 border-t border-white/10">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center font-bold text-white text-xs shadow-md">
+                  CP
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-white">Clarissa Putri</p>
+                  <p className="text-xs text-emerald-300">Content Creator &amp; Lifestyle Influencer</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-6 rounded-3xl bg-white/5 border border-white/10 backdrop-blur-md space-y-4 flex flex-col justify-between hover:border-purple-500/40 transition-all">
+              <div className="space-y-3">
+                <div className="flex items-center gap-1 text-amber-400">
+                  {[1, 2, 3, 4, 5].map((s) => (
+                    <Star key={s} className="w-4 h-4 fill-amber-400 text-amber-400" />
+                  ))}
+                </div>
+                <p className="text-xs sm:text-sm text-slate-300 leading-relaxed italic">
+                  &ldquo;Dulu tim kami buang 2 jam sehari cuma buat upload ulang ke 5 sosmed. Dengan auto-scheduler Shiera, kami bisa fokus buat konten promo kreatif &amp; tingkatkan omzet.&rdquo;
+                </p>
+              </div>
+              <div className="flex items-center gap-3 pt-3 border-t border-white/10">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center font-bold text-white text-xs shadow-md">
+                  HS
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-white">Hendy Setiawan</p>
+                  <p className="text-xs text-amber-300">Head of Marketing, LocalBrand Co.</p>
+                </div>
+              </div>
+            </div>
+
           </div>
 
         </div>
       </section>
 
 
-      {/* ── [SECTION 6] Client & Team Workflow Portal ──────────────────────── */}
+      {/* ── [SECTION 6] 3-Step Workflow ──────────────────────────────────── */}
       <section className="py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-12">
         <div className="text-center space-y-3 max-w-3xl mx-auto">
           <span className="text-xs font-bold uppercase tracking-wider text-purple-600 bg-purple-50 px-3 py-1 rounded-full border border-purple-100 flex items-center gap-1.5 w-fit mx-auto">
             <Clock className="w-3.5 h-3.5 text-purple-600" />
-            <span>Alur Kerja Praktis</span>
+            <span>Alur Kerja Otomatis</span>
           </span>
           <h2 className="text-2xl sm:text-4xl font-bold text-slate-900 font-['Outfit'] tracking-tight">
-            Review &amp; Approval Konten Tanpa Revisi Berantakan
+            Kelola Sosmed Dalam 3 Langkah Mudah &amp; Praktis
           </h2>
           <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-            Kirim link preview profesional yang dapat langsung di-approve oleh klien atau tim tanpa perlu buat akun.
+            Otomatisasi seluruh proses manajemen media sosial Anda dari perencanaan ide hingga publikasi otomatis.
           </p>
         </div>
 
@@ -752,9 +892,9 @@ export default function LandingHomePage() {
             <div className="w-12 h-12 rounded-2xl bg-purple-100 text-purple-700 flex items-center justify-center font-black text-lg">
               1
             </div>
-            <h3 className="font-bold text-lg text-slate-900 font-['Outfit']">1. Bagikan Link Review</h3>
+            <h3 className="font-bold text-lg text-slate-900 font-['Outfit']">1. Hubungkan Akun Sosmed</h3>
             <p className="text-xs text-slate-600 leading-relaxed">
-              Kirim link preview terlindungi kata sandi tanpa meminta klien / atasan untuk membuat akun terlebih dahulu.
+              Hubungkan akun Instagram, TikTok, Facebook, LinkedIn, YouTube, &amp; X Anda via API resmi dalam hitungan detik.
             </p>
           </div>
 
@@ -762,9 +902,9 @@ export default function LandingHomePage() {
             <div className="w-12 h-12 rounded-2xl bg-purple-100 text-purple-700 flex items-center justify-center font-black text-lg">
               2
             </div>
-            <h3 className="font-bold text-lg text-slate-900 font-['Outfit']">2. Cek &amp; Beri Catatan</h3>
+            <h3 className="font-bold text-lg text-slate-900 font-['Outfit']">2. Buat &amp; Jadwalkan Konten</h3>
             <p className="text-xs text-slate-600 leading-relaxed">
-              Penerima link dapat melihat tampilan visual presisi feed asli dan meninggalkan catatan revisi per post.
+              Gunakan Multi-Channel Composer &amp; AI Co-Pilot untuk buat caption otomatis, atur media, &amp; tentukan tanggal tayang.
             </p>
           </div>
 
@@ -772,9 +912,9 @@ export default function LandingHomePage() {
             <div className="w-12 h-12 rounded-2xl bg-purple-100 text-purple-700 flex items-center justify-center font-black text-lg">
               3
             </div>
-            <h3 className="font-bold text-lg text-slate-900 font-['Outfit']">3. Auto-Schedule Tayang</h3>
+            <h3 className="font-bold text-lg text-slate-900 font-['Outfit']">3. Auto-Post &amp; Laporan PDF</h3>
             <p className="text-xs text-slate-600 leading-relaxed">
-              Konten yang telah disetujui (&quot;Approved&quot;) langsung masuk ke antrean tayang otomatis sesuai jadwal.
+              Sistem menayangkan konten secara otomatis 100% tepat waktu dan siap di-export menjadi laporan PDF executive.
             </p>
           </div>
         </div>
@@ -869,7 +1009,7 @@ export default function LandingHomePage() {
 
 
       {/* ── [SECTION 8] Frequently Asked Questions (FAQ) ──────────────────── */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto space-y-8">
+      <section id="faq" className="py-16 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto space-y-8">
         <div className="text-center space-y-2">
           <h2 className="text-2xl sm:text-4xl font-bold text-slate-900 font-['Outfit'] tracking-tight">
             Pertanyaan Yang Sering Diajukan (FAQ)
@@ -940,10 +1080,22 @@ export default function LandingHomePage() {
             </Link>
           </div>
 
-          <p className="text-xs text-slate-400 pt-2 flex items-center justify-center gap-2">
-            <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-            <span>Tanpa Kartu Kredit • Batal Kapan Saja • Support WA Fast Response</span>
-          </p>
+          <div className="text-[11px] sm:text-xs text-slate-300 pt-2 flex flex-wrap items-center justify-center gap-y-2 gap-x-3 text-center">
+            <span className="flex items-center gap-1.5">
+              <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
+              <span>Tanpa Kartu Kredit</span>
+            </span>
+            <span className="hidden sm:inline text-slate-500">•</span>
+            <span className="flex items-center gap-1.5">
+              <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
+              <span>Batal Kapan Saja</span>
+            </span>
+            <span className="hidden sm:inline text-slate-500">•</span>
+            <span className="flex items-center gap-1.5">
+              <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
+              <span>Support WA Fast Response</span>
+            </span>
+          </div>
         </div>
       </section>
 
@@ -968,9 +1120,9 @@ export default function LandingHomePage() {
             <p className="font-bold text-slate-900">Produk &amp; Fitur</p>
             <ul className="space-y-1.5 text-slate-500">
               <li><a href="#features" className="hover:text-purple-600 transition-colors">Multi-Channel Scheduler</a></li>
-              <li><a href="#features" className="hover:text-purple-600 transition-colors">AI Assistant &amp; Strategy</a></li>
+              <li><a href="#features" className="hover:text-purple-600 transition-colors">AI Agent Autopilot</a></li>
               <li><a href="#features" className="hover:text-purple-600 transition-colors">KOL Campaign Tracker</a></li>
-              <li><a href="#features" className="hover:text-purple-600 transition-colors">Competitor Intelligence</a></li>
+              <li><a href="#features" className="hover:text-purple-600 transition-colors">Executive PDF Reports</a></li>
             </ul>
           </div>
 
@@ -986,9 +1138,18 @@ export default function LandingHomePage() {
           <div className="space-y-2">
             <p className="font-bold text-slate-900">Dukungan</p>
             <ul className="space-y-1.5 text-slate-500">
-              <li><Link href="/login" className="hover:text-purple-600 transition-colors">Bantuan WhatsApp</Link></li>
-              <li><Link href="/pricing" className="hover:text-purple-600 transition-colors">Verifikasi WA OTP</Link></li>
-              <li><Link href="/login" className="hover:text-purple-600 transition-colors">Syarat &amp; Ketentuan</Link></li>
+              <li>
+                <a 
+                  href="https://wa.me/6289654728249?text=Halo%20Tim%20Shiera,%20saya%20butuh%20bantuan" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="hover:text-purple-600 transition-colors"
+                >
+                  Bantuan WhatsApp (+62 896-5472-8249)
+                </a>
+              </li>
+              <li><Link href="/privacy" className="hover:text-purple-600 transition-colors">Kebijakan Privasi</Link></li>
+              <li><Link href="/terms" className="hover:text-purple-600 transition-colors">Syarat &amp; Ketentuan</Link></li>
             </ul>
           </div>
 
@@ -999,8 +1160,8 @@ export default function LandingHomePage() {
           <p>© 2026 Shiera Inc. PT. Digital Inter Nusa</p>
           <div className="flex items-center gap-4 text-slate-500">
             <span>🇮🇩 Indonesia (IDR)</span>
-            <span>Privacy Policy</span>
-            <span>Terms of Service</span>
+            <Link href="/privacy" className="hover:text-purple-600 transition-colors">Privacy Policy</Link>
+            <Link href="/terms" className="hover:text-purple-600 transition-colors">Terms of Service</Link>
           </div>
         </div>
       </footer>

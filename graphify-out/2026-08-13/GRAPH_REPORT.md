@@ -1,22 +1,22 @@
 # Graph Report - agencyOS  (2026-08-13)
 
 ## Corpus Check
-- 146 files · ~776,399 words
+- 146 files · ~777,107 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1501 nodes · 3439 edges · 81 communities (59 shown, 22 thin omitted)
+- 1501 nodes · 3439 edges · 82 communities (60 shown, 22 thin omitted)
 - Extraction: 88% EXTRACTED · 12% INFERRED · 0% AMBIGUOUS · INFERRED: 421 edges (avg confidence: 0.5)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `e307bcb8`
+- Built from commit: `3d2b9ee1`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
 ## Community Hubs (Navigation)
 - agent/page.tsx
-- calendar/page.tsx
+- useStore
 - models.py
 - yt_clipper_agent.py
 - statistics/page.tsx
@@ -25,6 +25,7 @@
 - media.py
 - User
 - posts.py
+- PostComposerModal.tsx
 - database.py
 - statistics.py
 - agent_scheduler.py
@@ -42,7 +43,7 @@
 - midtrans_service.py
 - dependencies
 - update_post
-- Sidebar.tsx
+- AuthProvider.tsx
 - queue/page.tsx
 - YTPlayer
 - Components
@@ -68,10 +69,10 @@
 - auth.py
 - next.config.js
 - next-env.d.ts
-- useStore
+- useAuthStore
 - date-fns
 - WorkspaceMember
-- PostComposerModal.tsx
+- AppTour.tsx
 - main.py
 - next
 - QueueService
@@ -120,15 +121,15 @@
 ## Import Cycles
 - None detected.
 
-## Communities (81 total, 22 thin omitted)
+## Communities (82 total, 22 thin omitted)
 
 ### Community 0 - "agent/page.tsx"
 Cohesion: 0.11
 Nodes (21): AgentPage(), DAY_LABELS, formatDateTime(), formatTimeOnly(), LogCard(), PLATFORM_ICONS, STATUS_CONFIG, AgentCreateModal() (+13 more)
 
-### Community 1 - "calendar/page.tsx"
-Cohesion: 0.40
-Nodes (5): CalendarImageThumbnail(), CalendarPage(), getProxiedImageUrl(), PLATFORM_ICONS, PLATFORM_LABELS
+### Community 1 - "useStore"
+Cohesion: 0.13
+Nodes (16): OAuthCallbackHandler(), CalendarImageThumbnail(), CalendarPage(), getProxiedImageUrl(), PLATFORM_ICONS, PLATFORM_LABELS, DashboardImageThumbnail(), DashboardPage() (+8 more)
 
 ### Community 2 - "models.py"
 Cohesion: 0.44
@@ -162,6 +163,10 @@ Nodes (47): PlanTier, Paket langganan — semua plan unlimited akun sosmed, beda
 Cohesion: 0.18
 Nodes (26): Post, PostTarget, PostType, Subscription aktif milik satu user., UserSubscription, create_media_upload_url(), create_post(), GenerateAICaptionRequest (+18 more)
 
+### Community 10 - "PostComposerModal.tsx"
+Cohesion: 0.16
+Nodes (11): GlassToastManager(), Portal(), KolAddEditModal(), KolAddEditModalProps, KolDatabaseDrawer(), KolDatabaseDrawerProps, KolProfileItem, TIER_BADGES (+3 more)
+
 ### Community 11 - "database.py"
 Cohesion: 0.13
 Nodes (17): get_db(), Migration Script: Create agent_configs and agent_run_logs tables. Run: python…, AgentConfig, AgentRunLog, AgentRunStatus, Base, str, Agent Models — Shiera AI Agent System Stores agent configurations and run… (+9 more)
@@ -192,7 +197,7 @@ Nodes (29): AccountStatus, ActivityLog, Client, SocialAccount, AccountBriefingSc
 
 ### Community 19 - "fetchApi"
 Cohesion: 0.08
-Nodes (29): AdminPage(), TabType, TIER_COLORS, TIER_ICONS, BillingSuccessContent(), dynamic, CampaignDetailPage(), DELIVERABLE_STATUS_COLORS (+21 more)
+Nodes (32): AdminPage(), TabType, TIER_COLORS, TIER_ICONS, CampaignDetailPage(), DELIVERABLE_STATUS_COLORS, PAYMENT_STATUS_BADGES, DEFAULT_PLANS (+24 more)
 
 ### Community 20 - "InstagrapiService"
 Cohesion: 0.08
@@ -226,13 +231,13 @@ Nodes (15): clsx, dependencies, clsx, jspdf, lucide-react, react-dom, react-is, 
 Cohesion: 0.18
 Nodes (15): approve_public_post_review(), delete_post(), generate_ai_caption(), get_posts(), BackgroundTasks, delete, get, post (+7 more)
 
-### Community 28 - "Sidebar.tsx"
-Cohesion: 0.12
-Nodes (19): jsonLd, metadata, LoginPage(), Sidebar(), SidebarProps, TIER_COLORS, TIER_ICONS, AuthProvider() (+11 more)
+### Community 28 - "AuthProvider.tsx"
+Cohesion: 0.21
+Nodes (9): jsonLd, metadata, AuthProvider(), Providers(), getIdToken(), onAuthChange(), auth, firebaseConfig (+1 more)
 
 ### Community 29 - "queue/page.tsx"
-Cohesion: 0.09
-Nodes (26): ClientsPage(), isDatePast(), LocalPost, LocalPostStatus, PfPost, PfResult, PLATFORM_COLORS, PLATFORM_ICONS (+18 more)
+Cohesion: 0.19
+Nodes (12): isDatePast(), LocalPost, LocalPostStatus, PfPost, PfResult, PLATFORM_COLORS, PLATFORM_ICONS, QueuePage() (+4 more)
 
 ### Community 30 - "YTPlayer"
 Cohesion: 0.17
@@ -306,17 +311,17 @@ Nodes (11): Script perbaikan langsung: Ambil hasil dari PostForMe API untuk semu
 Cohesion: 0.12
 Nodes (29): extract_followers_count(), _get_user_target_workspace(), instagram_challenge_resolve(), instagram_connect(), instagram_cookie_login(), instagram_credential_login(), meta_callback(), meta_connect() (+21 more)
 
-### Community 54 - "useStore"
-Cohesion: 0.12
-Nodes (25): OAuthCallbackHandler(), DashboardImageThumbnail(), DashboardPage(), getProxiedImageUrl(), OnboardingPage(), SubscriptionGuard(), TIER_META, ShieraAiReportWidget() (+17 more)
+### Community 54 - "useAuthStore"
+Cohesion: 0.10
+Nodes (28): BillingSuccessContent(), dynamic, LoginPage(), OnboardingPage(), SubscriptionGuard(), TIER_META, PUBLIC_SPLASH_PATHS, SplashScreen() (+20 more)
 
 ### Community 56 - "WorkspaceMember"
 Cohesion: 0.26
 Nodes (13): WorkspaceMember, create_workspace(), get_workspaces(), OnboardingSetupRequest, BaseModel, get, post, Session (+5 more)
 
-### Community 57 - "PostComposerModal.tsx"
-Cohesion: 0.12
-Nodes (16): GlassToastManager(), Portal(), formatNumberToRupiahString(), getTerbilangShort(), parseRupiahStringToNumber(), RupiahInput(), RupiahInputProps, KolAddEditModal() (+8 more)
+### Community 57 - "AppTour.tsx"
+Cohesion: 0.18
+Nodes (12): ClientsPage(), AppTour(), ACCOUNTS_TOUR_STEPS, AGENT_TOUR_STEPS, CALENDAR_TOUR_STEPS, CLIENTS_TOUR_STEPS, COMPOSER_TOUR_STEPS, DEFAULT_TOUR_STEPS (+4 more)
 
 ### Community 63 - "QueueService"
 Cohesion: 0.21

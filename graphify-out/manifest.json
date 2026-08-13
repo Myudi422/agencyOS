@@ -330,13 +330,13 @@
     "semantic_hash": "bb8a479cc6d47f6d90ae256e823a21b1"
   },
   "frontend/src/app/page.tsx": {
-    "mtime": 1786019670.4918127,
-    "ast_hash": "6104260414e903d1a98352c3dce0484d",
+    "mtime": 1786600373.6939058,
+    "ast_hash": "ebae9740955a814e745aeba3864db158",
     "semantic_hash": ""
   },
   "frontend/src/app/pricing/page.tsx": {
-    "mtime": 1786019670.4926143,
-    "ast_hash": "c3c0501ed55e03c56aa393fe985b258d",
+    "mtime": 1786600379.27996,
+    "ast_hash": "0370951dda2715d50aef53d49f51e585",
     "semantic_hash": ""
   },
   "frontend/src/app/queue/page.tsx": {
@@ -445,8 +445,8 @@
     "semantic_hash": ""
   },
   "frontend/src/components/layout/AppLayout.tsx": {
-    "mtime": 1786538895.7282279,
-    "ast_hash": "f864ea22c65f13a9d332b3c367a28e90",
+    "mtime": 1786600406.703252,
+    "ast_hash": "5bb666371906bf95586ab056236e14f6",
     "semantic_hash": ""
   },
   "frontend/src/components/layout/Header.tsx": {
@@ -847,6 +847,16 @@
   "api/requirements.txt": {
     "mtime": 1786592198.4227128,
     "ast_hash": "74b6510f7c292523fd8c35e16da303bd",
+    "semantic_hash": ""
+  },
+  "frontend/src/app/privacy/page.tsx": {
+    "mtime": 1786600368.0478847,
+    "ast_hash": "1c923ac65fea4975aadd618d6756522c",
+    "semantic_hash": ""
+  },
+  "frontend/src/app/terms/page.tsx": {
+    "mtime": 1786600362.3280742,
+    "ast_hash": "7f39050975a49dcd5f978d89785f76df",
     "semantic_hash": ""
   }
 }
