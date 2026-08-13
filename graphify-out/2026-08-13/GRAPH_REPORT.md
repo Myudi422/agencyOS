@@ -1,7 +1,7 @@
 # Graph Report - agencyOS  (2026-08-13)
 
 ## Corpus Check
-- 146 files · ~776,401 words
+- 146 files · ~776,399 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
@@ -16,7 +16,7 @@
 
 ## Community Hubs (Navigation)
 - agent/page.tsx
-- useStore
+- calendar/page.tsx
 - models.py
 - yt_clipper_agent.py
 - statistics/page.tsx
@@ -42,7 +42,7 @@
 - midtrans_service.py
 - dependencies
 - update_post
-- AuthProvider.tsx
+- Sidebar.tsx
 - queue/page.tsx
 - YTPlayer
 - Components
@@ -68,10 +68,10 @@
 - auth.py
 - next.config.js
 - next-env.d.ts
-- useAuthStore
+- useStore
 - date-fns
 - WorkspaceMember
-- KolDatabaseDrawer.tsx
+- PostComposerModal.tsx
 - main.py
 - next
 - QueueService
@@ -126,9 +126,9 @@
 Cohesion: 0.11
 Nodes (21): AgentPage(), DAY_LABELS, formatDateTime(), formatTimeOnly(), LogCard(), PLATFORM_ICONS, STATUS_CONFIG, AgentCreateModal() (+13 more)
 
-### Community 1 - "useStore"
-Cohesion: 0.10
-Nodes (18): OAuthCallbackHandler(), CalendarImageThumbnail(), CalendarPage(), getProxiedImageUrl(), PLATFORM_ICONS, PLATFORM_LABELS, DashboardImageThumbnail(), DashboardPage() (+10 more)
+### Community 1 - "calendar/page.tsx"
+Cohesion: 0.40
+Nodes (5): CalendarImageThumbnail(), CalendarPage(), getProxiedImageUrl(), PLATFORM_ICONS, PLATFORM_LABELS
 
 ### Community 2 - "models.py"
 Cohesion: 0.44
@@ -226,9 +226,9 @@ Nodes (15): clsx, dependencies, clsx, jspdf, lucide-react, react-dom, react-is, 
 Cohesion: 0.18
 Nodes (15): approve_public_post_review(), delete_post(), generate_ai_caption(), get_posts(), BackgroundTasks, delete, get, post (+7 more)
 
-### Community 28 - "AuthProvider.tsx"
-Cohesion: 0.21
-Nodes (9): jsonLd, metadata, AuthProvider(), Providers(), getIdToken(), onAuthChange(), auth, firebaseConfig (+1 more)
+### Community 28 - "Sidebar.tsx"
+Cohesion: 0.12
+Nodes (19): jsonLd, metadata, LoginPage(), Sidebar(), SidebarProps, TIER_COLORS, TIER_ICONS, AuthProvider() (+11 more)
 
 ### Community 29 - "queue/page.tsx"
 Cohesion: 0.09
@@ -306,17 +306,17 @@ Nodes (11): Script perbaikan langsung: Ambil hasil dari PostForMe API untuk semu
 Cohesion: 0.12
 Nodes (29): extract_followers_count(), _get_user_target_workspace(), instagram_challenge_resolve(), instagram_connect(), instagram_cookie_login(), instagram_credential_login(), meta_callback(), meta_connect() (+21 more)
 
-### Community 54 - "useAuthStore"
-Cohesion: 0.13
-Nodes (24): LoginPage(), OnboardingPage(), SubscriptionGuard(), TIER_META, PUBLIC_SPLASH_PATHS, SplashScreen(), AppLayout(), PUBLIC_PATHS (+16 more)
+### Community 54 - "useStore"
+Cohesion: 0.12
+Nodes (25): OAuthCallbackHandler(), DashboardImageThumbnail(), DashboardPage(), getProxiedImageUrl(), OnboardingPage(), SubscriptionGuard(), TIER_META, ShieraAiReportWidget() (+17 more)
 
 ### Community 56 - "WorkspaceMember"
 Cohesion: 0.26
 Nodes (13): WorkspaceMember, create_workspace(), get_workspaces(), OnboardingSetupRequest, BaseModel, get, post, Session (+5 more)
 
-### Community 57 - "KolDatabaseDrawer.tsx"
-Cohesion: 0.16
-Nodes (14): GlassToastManager(), Portal(), formatNumberToRupiahString(), getTerbilangShort(), parseRupiahStringToNumber(), RupiahInput(), RupiahInputProps, KolAddEditModal() (+6 more)
+### Community 57 - "PostComposerModal.tsx"
+Cohesion: 0.12
+Nodes (16): GlassToastManager(), Portal(), formatNumberToRupiahString(), getTerbilangShort(), parseRupiahStringToNumber(), RupiahInput(), RupiahInputProps, KolAddEditModal() (+8 more)
 
 ### Community 63 - "QueueService"
 Cohesion: 0.21
